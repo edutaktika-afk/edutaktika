@@ -94,9 +94,24 @@ export const FileMenu = observer(({ store, project }) => {
               icon={<Home />}
               onClick={() => {
                 // Navigate back to the application's homepage
-                // Adjust path if editor is hosted on a different subpath
-                // Use absolute URL and replace to avoid SPA/PWA navigation interception
-                window.location.replace('http://127.0.0.1:5500/Teacher/homepage.html');
+                // Handle both local development and Netlify deployment paths
+                const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const isNetlify = window.location.hostname.includes('netlify.app') || window.location.hostname.includes('netlify.com');
+                const isEditorPath = window.location.pathname.includes('/editor/');
+                
+                let homePath;
+                if (isLocalDev) {
+                  // Local development: Editor runs on localhost:5173, homepage is at localhost:5500
+                  homePath = 'http://127.0.0.1:5500/Teacher/homepage.html';
+                } else if (isNetlify || isEditorPath) {
+                  // Netlify deployment: Editor is in /editor/ subfolder, homepage is at root
+                  homePath = '/Teacher/homepage.html';
+                } else {
+                  // Fallback: assume relative path
+                  homePath = '../Teacher/homepage.html';
+                }
+                
+                window.location.replace(homePath);
               }}
             />
           </Menu>

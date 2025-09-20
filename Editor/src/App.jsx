@@ -18,6 +18,8 @@ import { IconsSection } from './sections/icons-section';
 import { ShapesSection } from './sections/shapes-section';
 import { StableDiffusionSection } from './sections/stable-diffusion-section';
 import { MyDesignsSection } from './sections/my-designs-section';
+import { PhotosSection } from './sections/photos-section';
+import { BackgroundsSection } from './sections/backgrounds-section';
 
 import { useProject } from './project';
 
@@ -63,6 +65,8 @@ DEFAULT_SECTIONS.splice = (start, deleteCount, ...items) =>
 DEFAULT_SECTIONS.splice(3, 1, ShapesSection);
 // add icons
 DEFAULT_SECTIONS.splice(3, 0, IconsSection);
+// add photos and backgrounds sections
+DEFAULT_SECTIONS.splice(4, 0, PhotosSection, BackgroundsSection);
 // add two more sections
 DEFAULT_SECTIONS.push(QuotesSection, QrSection);
 // DEFAULT_SECTIONS.unshift(UploadSection);

@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Bee Quiz - English</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../../CSS/header.css">
+    <link rel="stylesheet" href="../../CSS/footer.css">
+    <script src="../../assets/js/Student Side/header.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@300;500;600&family=Josefin+Sans:wght@100;200;300;400;500;600&family=Lora:ital,wght@1,400;1,500;1,600&family=Varela&family=Varela+Round&display=swap');
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Dosis', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-color: #E1C9EE;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2000 1500'%3E%3Cdefs%3E%3CradialGradient id='a' gradientUnits='objectBoundingBox'%3E%3Cstop offset='0' stop-color='%236087FF'/%3E%3Cstop offset='1' stop-color='%23E1C9EE'/%3E%3C/radialGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='0' y1='750' x2='1550' y2='750'%3E%3Cstop offset='0' stop-color='%23a1a8f7'/%3E%3Cstop offset='1' stop-color='%23E1C9EE'/%3E%3C/linearGradient%3E%3Cpath id='s' fill='url(%23b)' d='M1549.2 51.6c-5.4 99.1-20.2 197.6-44.2 293.6c-24.1 96-57.4 189.4-99.3 278.6c-41.9 89.2-92.4 174.1-150.3 253.3c-58 79.2-123.4 152.6-195.1 219c-71.7 66.4-149.6 125.8-232.2 177.2c-82.7 51.4-170.1 94.7-260.7 129.1c-90.6 34.4-184.4 60-279.5 76.3C192.6 1495 96.1 1502 0 1500c96.1-2.1 191.8-13.3 285.4-33.6c93.6-20.2 185-49.5 272.5-87.2c87.6-37.7 171.3-83.8 249.6-137.3c78.4-53.5 151.5-114.5 217.9-181.7c66.5-67.2 126.4-140.7 178.6-218.9c52.3-78.3 96.9-161.4 133-247.9c36.1-86.5 63.8-176.2 82.6-267.6c18.8-91.4 28.6-184.4 29.6-277.4c0.3-27.6 23.2-48.7 50.8-48.4s49.5 21.8 49.2 49.5c0 0.7 0 1.3-0.1 2L1549.2 51.6z'/%3E%3Cg id='g'%3E%3Cuse href='%23s' transform='scale(0.12) rotate(60)'/%3E%3Cuse href='%23s' transform='scale(0.2) rotate(10)'/%3E%3Cuse href='%23s' transform='scale(0.25) rotate(40)'/%3E%3Cuse href='%23s' transform='scale(0.3) rotate(-20)'/%3E%3Cuse href='%23s' transform='scale(0.4) rotate(-30)'/%3E%3Cuse href='%23s' transform='scale(0.5) rotate(20)'/%3E%3Cuse href='%23s' transform='scale(0.6) rotate(60)'/%3E%3Cuse href='%23s' transform='scale(0.7) rotate(10)'/%3E%3Cuse href='%23s' transform='scale(0.835) rotate(-40)'/%3E%3Cuse href='%23s' transform='scale(0.9) rotate(40)'/%3E%3Cuse href='%23s' transform='scale(1.05) rotate(25)'/%3E%3Cuse href='%23s' transform='scale(1.2) rotate(8)'/%3E%3Cuse href='%23s' transform='scale(1.333) rotate(-60)'/%3E%3Cuse href='%23s' transform='scale(1.45) rotate(-30)'/%3E%3Cuse href='%23s' transform='scale(1.6) rotate(10)'/%3E%3C/g%3E%3C/defs%3E%3Cg %3E%3Cg transform='translate(0 795)'%3E%3Ccircle fill='url(%23a)' r='3000'/%3E%3Cg opacity='0.5'%3E%3Ccircle fill='url(%23a)' r='2000'/%3E%3Ccircle fill='url(%23a)' r='1800'/%3E%3Ccircle fill='url(%23a)' r='1700'/%3E%3Ccircle fill='url(%23a)' r='1651'/%3E%3Ccircle fill='url(%23a)' r='1450'/%3E%3Ccircle fill='url(%23a)' r='1250'/%3E%3Ccircle fill='url(%23a)' r='1175'/%3E%3Ccircle fill='url(%23a)' r='900'/%3E%3Ccircle fill='url(%23a)' r='750'/%3E%3Ccircle fill='url(%23a)' r='500'/%3E%3Ccircle fill='url(%23a)' r='380'/%3E%3Ccircle fill='url(%23a)' r='250'/%3E%3C/g%3E%3Cg transform='rotate(-57.6 0 0)'%3E%3Cuse href='%23g' transform='rotate(10)'/%3E%3Cuse href='%23g' transform='rotate(120)'/%3E%3Cuse href='%23g' transform='rotate(240)'/%3E%3C/g%3E%3Ccircle fill-opacity='0.25' fill='url(%23a)' r='3000'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background-attachment: fixed;
+            background-size: cover;
+        }
+
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .quiz-header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .quiz-progress {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            margin: 0 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .question-image {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .drop-area {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .dropzone {
+            width: 60px;
+            height: 60px;
+            border: 3px dashed #ccc;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #666;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .dropzone.drag-over {
+            border-color: #4ecdc4;
+            background: #e8f8f5;
+            transform: scale(1.05);
+        }
+
+        .dropzone.filled {
+            border-color: #4ecdc4;
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .letters-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .letter-tile {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: grab;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .letter-tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .letter-tile.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .quiz-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .result-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .result-content h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .score-excellent { color: #28a745; }
+        .score-good { color: #ffc107; }
+        .score-poor { color: #dc3545; }
+
+        .feedback {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .correct {
+            background: #28a745 !important;
+            color: white !important;
+        }
+
+        .incorrect {
+            background: #dc3545 !important;
+            color: white !important;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .bounce {
+            animation: bounce 0.6s ease-in-out;
+        }
+
+        /* Navigation Styles */
+        nav ul {
+            display: flex;
+            align-items: center;
+            padding: 0;
+            margin: 0;
+        }
+        nav ul li {
+            list-style: none;
+            margin: 0 10px;
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+        nav ul li a, nav ul li .dropbtn {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        nav ul li a:hover, nav ul li .dropbtn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        .dropdown {
+            position: relative;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #fff;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .dropdown-content li {
+            margin: 0;
+        }
+        .dropdown-content a {
+            color: #333 !important;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.3s ease;
+        }
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+            color: #333 !important;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <!-- Replace your logo-text div with this for per-letter bounce -->
+                <div class="logo-text">
+                    <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="../../Student/homepage.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="../../Student/subject_math.html">Math</a></li>
+                            <li><a href="../../Student/subject_english.html">English</a></li>
+                            <li><a href="../../Student/subject_science.html">Science</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                            <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="../../Student/leaderboard_math.html">Math</a></li>
+                                <li><a href="../../Student/leaderboard_english.html">English</a></li>
+                                <li><a href="../../Student/leaderboard_science.html">Science</a></li>
+                            </ul>
+                        </li>
+                    <li>
+                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
+
+     <!-- Profile Sidebar (Dynamic with Firebase) -->
+<div id="profileSidebar" class="profile-sidebar">
+    <div class="sidebar-content">
+        <button class="close-btn" id="closeSidebar">&times;</button>
+        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+            <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+            <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+        </div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <br>
+        <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+            <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+            Student
+        </div>
+            <div>
+                <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                <strong>ID:</strong> <span id="profileId">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                <strong>First Name:</strong> <span id="profileFirstName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                <strong>Last Name:</strong> <span id="profileLastName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                <strong>Section:</strong> <span id="profileSection">-</span>
+            </div>
+            <div>
+    <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+    <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+    <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+    <strong>City:</strong> <span id="profileAddressCity">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+    <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+    <strong>Country:</strong> <span id="profileAddressCountry">-</span>
+</div>
+        </div>
+        <div class="profile-actions">
+            <button class="profile-action-btn" id="editProfileBtn">
+                <i class="fas fa-edit"></i> Edit Profile
+            </button>
+            <button class="profile-action-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+</div>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1><i class="fas fa-spell-check"></i> Spelling Bee Quiz</h1>
+            <p>Drag and drop the letters to spell the word shown in the picture!</p>
+        </div>
+
+        <div class="quiz-progress">
+            <span id="current-question">Question 1 of 10</span>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <span id="score-display">Score: 0/10</span>
+        </div>
+
+        <div class="question-container">
+            <img id="question-image" class="question-image" src="" alt="Word to spell">
+            
+            <div class="drop-area">
+                <div class="dropzone" data-position="0"></div>
+                <div class="dropzone" data-position="1"></div>
+                <div class="dropzone" data-position="2"></div>
+            </div>
+
+            <div class="letters-container" id="letters-container">
+                <!-- Letters will be dynamically generated -->
+            </div>
+        </div>
+
+        <div class="quiz-controls">
+            <button id="check-answer" class="btn btn-primary">Check Answer</button>
+            <button id="next-question" class="btn btn-secondary hidden">Next Question</button>
+            <button id="finish-quiz" class="btn btn-primary hidden">Finish Quiz</button>
+        </div>
+    </div>
+
+    <div class="result-modal" id="result-modal">
+        <div class="result-content">
+            <h2>Quiz Complete!</h2>
+            <div class="score-display" id="final-score">0/10</div>
+            <div class="feedback" id="final-feedback">
+                <!-- Feedback will be generated based on score -->
+            </div>
+            <button id="restart-quiz" class="btn btn-primary">Try Again</button>
+            <button id="back-to-subject" class="btn btn-secondary">Back to Subject</button>
+        </div>
+    </div>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+            authDomain: "edutaktika.firebaseapp.com",
+            databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+            projectId: "edutaktika",
+            storageBucket: "edutaktika.appspot.com",
+            messagingSenderId: "676848575316",
+            appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+            measurementId: "G-X3GT5TNN87"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        // Quiz data - 10 words for the quiz
+        const quizWords = [
+            { word: 'CAT', letters: ['C', 'A', 'T'], image: 'Spelling bee/images/cat.png' },
+            { word: 'DOG', letters: ['D', 'O', 'G'], image: 'Spelling bee/images/dog.png' },
+            { word: 'HAT', letters: ['H', 'A', 'T'], image: 'Spelling bee/images/hat.png' },
+            { word: 'RUN', letters: ['R', 'U', 'N'], image: 'Spelling bee/images/run.png' },
+            { word: 'FLY', letters: ['F', 'L', 'Y'], image: 'Spelling bee/images/fly.png' },
+            { word: 'MAN', letters: ['M', 'A', 'N'], image: 'Spelling bee/images/man.png' },
+            { word: 'HER', letters: ['H', 'E', 'R'], image: 'Spelling bee/images/her.png' },
+            { word: 'BAD', letters: ['B', 'A', 'D'], image: 'Spelling bee/images/bad.png' },
+            { word: 'VAN', letters: ['V', 'A', 'N'], image: 'Spelling bee/images/van.png' },
+            { word: 'ZIP', letters: ['Z', 'I', 'P'], image: 'Spelling bee/images/zip.png' }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = [];
+        let shuffledLetters = [];
+
+        // DOM elements
+        const questionImage = document.getElementById('question-image');
+        const currentQuestionSpan = document.getElementById('current-question');
+        const progressFill = document.getElementById('progress-fill');
+        const scoreDisplay = document.getElementById('score-display');
+        const lettersContainer = document.getElementById('letters-container');
+        const dropzones = document.querySelectorAll('.dropzone');
+        const checkAnswerBtn = document.getElementById('check-answer');
+        const nextQuestionBtn = document.getElementById('next-question');
+        const finishQuizBtn = document.getElementById('finish-quiz');
+        const resultModal = document.getElementById('result-modal');
+        const finalScore = document.getElementById('final-score');
+        const finalFeedback = document.getElementById('final-feedback');
+        const restartQuizBtn = document.getElementById('restart-quiz');
+        const backToSubjectBtn = document.getElementById('back-to-subject');
+
+        // Initialize quiz
+        function initQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            userAnswers = [];
+            loadQuestion();
+        }
+
+        // Load current question
+        function loadQuestion() {
+            const word = quizWords[currentQuestion];
+            
+            // Update progress
+            currentQuestionSpan.textContent = `Question ${currentQuestion + 1} of 10`;
+            progressFill.style.width = `${((currentQuestion + 1) / 10) * 100}%`;
+            scoreDisplay.textContent = `Score: ${score}/${currentQuestion}`;
+            
+            // Set image
+            questionImage.src = word.image;
+            questionImage.alt = `Spell: ${word.word}`;
+            
+            // Clear dropzones
+            dropzones.forEach(zone => {
+                zone.textContent = '';
+                zone.classList.remove('filled', 'correct', 'incorrect');
+            });
+            
+            // Shuffle letters
+            shuffledLetters = [...word.letters].sort(() => Math.random() - 0.5);
+            
+            // Create letter tiles
+            lettersContainer.innerHTML = '';
+            shuffledLetters.forEach((letter, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'letter-tile';
+                tile.textContent = letter;
+                tile.draggable = true;
+                tile.dataset.letter = letter;
+                tile.dataset.index = index;
+                
+                tile.addEventListener('dragstart', handleDragStart);
+                lettersContainer.appendChild(tile);
+            });
+            
+            // Reset buttons
+            checkAnswerBtn.classList.remove('hidden');
+            nextQuestionBtn.classList.add('hidden');
+            finishQuizBtn.classList.add('hidden');
+        }
+
+        // Drag and drop functionality
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.letter);
+            e.target.classList.add('dragging');
+        }
+
+        // Add drop event listeners to dropzones
+        dropzones.forEach(zone => {
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+            
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('drag-over');
+            });
+            
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                
+                const letter = e.dataTransfer.getData('text/plain');
+                zone.textContent = letter;
+                zone.classList.add('filled');
+                zone.dataset.letter = letter;
+                
+                // Remove the dragged letter from letters container
+                const draggedTile = document.querySelector('.letter-tile.dragging');
+                if (draggedTile) {
+                    draggedTile.remove();
+                }
+            });
+        });
+
+        // Check answer
+        function checkAnswer() {
+            const word = quizWords[currentQuestion];
+            const userWord = Array.from(dropzones).map(zone => zone.dataset.letter || '').join('');
+            
+            let isCorrect = userWord === word.word;
+            
+            // Visual feedback
+            dropzones.forEach((zone, index) => {
+                const userLetter = zone.dataset.letter || '';
+                const correctLetter = word.letters[index];
+                
+                if (userLetter === correctLetter) {
+                    zone.classList.add('correct');
+                } else {
+                    zone.classList.add('incorrect');
+                    zone.classList.add('shake');
+                }
+            });
+            
+            if (isCorrect) {
+                score++;
+                document.querySelector('.question-container').classList.add('bounce');
+            }
+            
+            userAnswers.push({
+                question: currentQuestion + 1,
+                word: word.word,
+                userAnswer: userWord,
+                correct: isCorrect
+            });
+            
+            // Update score display
+            scoreDisplay.textContent = `Score: ${score}/${currentQuestion + 1}`;
+            
+            // Show next button
+            checkAnswerBtn.classList.add('hidden');
+            if (currentQuestion < 9) {
+                nextQuestionBtn.classList.remove('hidden');
+            } else {
+                finishQuizBtn.classList.remove('hidden');
+            }
+        }
+
+        // Next question
+        function nextQuestion() {
+            currentQuestion++;
+            document.querySelector('.question-container').classList.remove('bounce');
+            loadQuestion();
+        }
+
+        // Finish quiz
+        function finishQuiz() {
+            // Save score to Firebase
+            saveScore();
+            
+            // Show results
+            showResults();
+        }
+
+        // Save score to Firebase
+        function saveScore() {
+            firebase.auth().onAuthStateChanged(async function(user) {
+                if (user) {
+                    const uid = user.uid;
+                    const timestamp = Date.now();
+                    const percentage = Math.round((score / 10) * 100);
+                    
+                    const scoreData = {
+                        score: score,
+                        total: 10,
+                        percentage: percentage,
+                        timestamp: timestamp,
+                        answers: userAnswers
+                    };
+                    
+                    // Save individual attempt
+                    await firebase.database().ref(`quizScores/spelling-bee/${uid}/${timestamp}`).set(scoreData);
+                    
+                    // Update summary
+                    const summaryRef = firebase.database().ref(`quizSummaries/spelling-bee/${uid}`);
+                    summaryRef.once('value').then(snap => {
+                        let summary = snap.val() || { attempts: 0, best: 0, bestPercentage: 0, last: 0, lastPercentage: 0 };
+                        
+                        summary.attempts = (summary.attempts || 0) + 1;
+                        summary.last = score;
+                        summary.lastPercentage = percentage;
+                        
+                        if (score > summary.best) {
+                            summary.best = score;
+                            summary.bestPercentage = percentage;
+                        }
+                        
+                        summaryRef.set(summary);
+                    });
+                }
+            });
+        }
+
+        // Show results
+        function showResults() {
+            const percentage = Math.round((score / 10) * 100);
+            finalScore.textContent = `${score}/10`;
+            finalScore.className = `score-display ${getScoreClass(percentage)}`;
+            
+            let feedback = '';
+            if (percentage >= 90) {
+                feedback = 'Excellent work! You\'re a spelling champion! 🏆';
+            } else if (percentage >= 70) {
+                feedback = 'Great job! You\'re doing well with your spelling! 👍';
+            } else if (percentage >= 50) {
+                feedback = 'Good effort! Keep practicing to improve! 💪';
+            } else {
+                feedback = 'Keep practicing! You\'ll get better with more practice! 📚';
+            }
+            
+            finalFeedback.textContent = feedback;
+            resultModal.style.display = 'flex';
+        }
+
+        // Get score class for styling
+        function getScoreClass(percentage) {
+            if (percentage >= 80) return 'score-excellent';
+            if (percentage >= 60) return 'score-good';
+            return 'score-poor';
+        }
+
+        // Event listeners
+        checkAnswerBtn.addEventListener('click', checkAnswer);
+        nextQuestionBtn.addEventListener('click', nextQuestion);
+        finishQuizBtn.addEventListener('click', finishQuiz);
+        
+        restartQuizBtn.addEventListener('click', () => {
+            resultModal.style.display = 'none';
+            initQuiz();
+        });
+        
+        backToSubjectBtn.addEventListener('click', () => {
+            window.location.href = '../../Student/subject_english.html';
+        });
+
+        // Initialize quiz when page loads
+        document.addEventListener('DOMContentLoaded', initQuiz);
+
+        // Header functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Profile sidebar functionality
+            const profileBtn = document.getElementById('profileBtn');
+            const profileSidebar = document.getElementById('profileSidebar');
+            const closeSidebar = document.getElementById('closeSidebar');
+            const profileSidebarOverlay = document.getElementById('profileSidebarOverlay');
+
+            if (profileBtn && profileSidebar) {
+                profileBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    profileSidebar.classList.add('active');
+                    profileSidebarOverlay.style.display = 'block';
+                });
+            }
+
+            if (closeSidebar && profileSidebarOverlay) {
+                closeSidebar.addEventListener('click', function() {
+                    profileSidebar.classList.remove('active');
+                    profileSidebarOverlay.style.display = 'none';
+                });
+
+                profileSidebarOverlay.addEventListener('click', function() {
+                    profileSidebar.classList.remove('active');
+                    profileSidebarOverlay.style.display = 'none';
+                });
+            }
+
+            // Load profile data
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    const uid = user.uid;
+                    firebase.database().ref('students/' + uid).once('value').then(function(snapshot) {
+                        const student = snapshot.val();
+                        if (student) {
+                            document.getElementById('profileName').textContent = `${student.fname} ${student.lname}`;
+                            document.getElementById('profileId').textContent = student.id || '-';
+                            document.getElementById('profileFirstName').textContent = student.fname || '-';
+                            document.getElementById('profileMiddleName').textContent = student.mname || '-';
+                            document.getElementById('profileLastName').textContent = student.lname || '-';
+                            document.getElementById('profileGrade').textContent = student.gradelevel || '-';
+                            document.getElementById('profileSection').textContent = student.section || '-';
+                            document.getElementById('profileAddressStreet').textContent = student.address?.street || '-';
+                            document.getElementById('profileAddressBarangay').textContent = student.address?.barangay || '-';
+                            document.getElementById('profileAddressCity').textContent = student.address?.city || '-';
+                            document.getElementById('profileAddressProvince').textContent = student.address?.province || '-';
+                            document.getElementById('profileAddressCountry').textContent = student.address?.country || '-';
+                        }
+                    });
+                }
+            });
+
+            // Logout functionality
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function() {
+                    firebase.auth().signOut().then(function() {
+                        window.location.href = '../../Student/logreg.html';
+                    });
+                });
+            }
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer id="footer"></footer>
+</body>
+</html>

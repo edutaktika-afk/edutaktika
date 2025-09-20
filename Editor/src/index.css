@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+/* Google Fonts import moved to index.html for better build compatibility */
 
 /* Force sidebar and topbar to use light color scheme */
 .polotno-side-tabs-container,

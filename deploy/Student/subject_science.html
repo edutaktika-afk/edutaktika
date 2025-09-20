@@ -313,7 +313,7 @@
                 <i class="fas fa-gamepad"></i>
                 <h2>Quizzes</h2>
             </div>
-            <div class="lessons-container" id="quizzesContainer"></div>
+            <div class="lessons-container" id="quizzesContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;"></div>
         </div>
 
         <!-- Assessments panel -->
@@ -714,7 +714,7 @@ async function loadYouTubeVideosStudent() {
             const div = document.createElement('div');
             div.className = 'lesson-item';
             div.innerHTML = `
-                <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
+                <div class="lesson-thumbnail" style="background-color: var(--peach); background-image: url('https://img.youtube.com/vi/${videoId}/mqdefault.jpg'); background-size: cover; background-position: center;"></div>
                 <div class="lesson-title">
                     <h3>${title}</h3>
                     <p>Science video lesson</p>
@@ -754,7 +754,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
         <div class="lesson-title">
             <h3>Assessment 1: Science Fundamentals</h3>
             <p>10-item science knowledge assessment.</p>
-            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam.html'">Start</span>
+            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam_science.html'">Start</span>
             <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
         </div>`;
     container.appendChild(card);
@@ -763,7 +763,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
     firebase.auth().onAuthStateChanged(function(user){
         if(!user) return;
         const uid = user.uid;
-        firebase.database().ref('assessmentScores/assessment1/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
+        firebase.database().ref('assessmentScores/assessment1_science/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
             if(!snap.exists()) return;
             let val; snap.forEach(c=> val = c.val ? c.val() : c); // handle object or direct
             const dataObj = (typeof val === 'object') ? val : null;
@@ -803,7 +803,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
     if(!user) return;
     const uid = user.uid;
     // User summary
-    firebase.database().ref('assessmentSummaries/assessment1/' + uid).once('value', snap => {
+    firebase.database().ref('assessmentSummaries/assessment1_science/' + uid).once('value', snap => {
       if(snap.exists()){
         const s = snap.val();
         const lastEl = document.getElementById('a1LastScore');
@@ -813,7 +813,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
       }
     });
     // Leaderboard (pull all summaries once)
-    firebase.database().ref('assessmentSummaries/assessment1').once('value', snap => {
+    firebase.database().ref('assessmentSummaries/assessment1_science').once('value', snap => {
       const lbEl = document.getElementById('a1Leaderboard');
       if(!snap.exists()){ lbEl.textContent = 'No scores yet.'; return; }
       const arr = [];
@@ -826,7 +826,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
 
   // Attempts modal - navigate to assessment page
   const btn = document.getElementById('viewAttemptsFromSubject');
-  if(btn){ btn.addEventListener('click', ()=> { window.location.href = '../Games/Assessment/Assexam.html'; }); }
+  if(btn){ btn.addEventListener('click', ()=> { window.location.href = '../Games/Assessment/Assexam_science.html'; }); }
 })();
 
 // --- Inject Quiz Card for Science (Multiple Attempts Allowed) ---

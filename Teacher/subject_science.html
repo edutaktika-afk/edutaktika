@@ -390,8 +390,9 @@
                     </select>
                 </div>
             </div>
-            <div class="lessons-container">
+            <div class="lessons-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
                 <div id="quiz-list"></div>
+                <div id="student-quiz-cards"></div>
             </div>
         </div>
 
@@ -429,7 +430,7 @@
             <div class="lesson-title">
                 <h3>Assessment 1: Science Fundamentals</h3>
                 <p>10-item science knowledge assessment.</p>
-                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam.html'">Start</span>
+                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam_science.html'">Start</span>
                 <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
             </div>`;
         container.appendChild(card);
@@ -438,7 +439,7 @@
         firebase.auth().onAuthStateChanged(function(user){
             if(!user) return;
             const uid = user.uid;
-            firebase.database().ref('assessmentScores/assessment1/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
+            firebase.database().ref('assessmentScores/assessment1_science/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
                 if(!snap.exists()) return;
                 let val; snap.forEach(c=> val = c.val ? c.val() : c); // handle object or direct
                 const dataObj = (typeof val === 'object') ? val : null;
@@ -454,6 +455,45 @@
                 }
             });
         });
+    })();
+
+    // --- Add Student Quiz Cards to existing Quizzes section ---
+    (function(){
+        const container = document.getElementById('student-quiz-cards');
+        if(!container) return;
+        
+        // Add margin to separate from teacher quizzes
+        container.style.marginTop = '20px';
+
+        // Create Quiz 1: Science Advanced (placeholder)
+        const quiz1 = document.createElement('div');
+        quiz1.className = 'lesson-item';
+        quiz1.innerHTML = `
+            <div class="lesson-thumbnail" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-atom" style="font-size: 2.5rem; color: white;"></i>
+            </div>
+            <div class="lesson-title">
+                <h3>Quiz 1: Science - Coming Soon</h3>
+                <p>Advanced science quiz will be available soon!</p>
+                <span class="lesson-badge" style="cursor:not-allowed; background-color: #ccc; color: #666;">Coming Soon</span>
+                <div style="margin-top:8px;font-size:0.9rem;color:#444;">No quizzes available yet</div>
+            </div>`;
+        container.appendChild(quiz1);
+
+        // Create Quiz 2: Science Basics (placeholder)
+        const quiz2 = document.createElement('div');
+        quiz2.className = 'lesson-item';
+        quiz2.innerHTML = `
+            <div class="lesson-thumbnail" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-flask" style="font-size: 2.5rem; color: white;"></i>
+            </div>
+            <div class="lesson-title">
+                <h3>Quiz 2: Science - Coming Soon</h3>
+                <p>Science quiz will be available soon!</p>
+                <span class="lesson-badge" style="cursor:not-allowed; background-color: #ccc; color: #666;">Coming Soon</span>
+                <div style="margin-top:8px;font-size:0.9rem;color:#444;">No quizzes available yet</div>
+            </div>`;
+        container.appendChild(quiz2);
     })();
     </script>
 
@@ -881,19 +921,17 @@ async function loadTeacherQuizzes(quarter) {
      // Sort quizzes by savedAt (old to new)
     quizzes.sort((a, b) => new Date(a.savedAt) - new Date(b.savedAt));
     quizList.innerHTML = `
-        <div style="display: flex; flex-wrap: nowrap; gap: 18px;">
-            ${quizzes.map(quiz => `
-                <div class="lesson-item" data-quiz="${quiz.title}">
-                    <div class="lesson-thumbnail" style="background-color: #ffdd01"></div>
-                    <div class="lesson-title">
-                        <h3>${quiz.title}</h3>
-                        <p>${quiz.description}</p>
-                        <button class="lesson-badge" onclick="viewQuiz('${quiz.quarter}','${quiz.title}','view','${subjectPage}')" style="cursor:pointer;">View</button>
-                        <button class="lesson-badge" onclick="viewQuiz('${quiz.quarter}','${quiz.title}','edit','${subjectPage}')" style="cursor:pointer;">Edit</button>
-                    </div>
+        ${quizzes.map(quiz => `
+            <div class="lesson-item" data-quiz="${quiz.title}">
+                <div class="lesson-thumbnail" style="background-color: #ffdd01"></div>
+                <div class="lesson-title">
+                    <h3>${quiz.title}</h3>
+                    <p>${quiz.description}</p>
+                    <button class="lesson-badge" onclick="viewQuiz('${quiz.quarter}','${quiz.title}','view','${subjectPage}')" style="cursor:pointer;">View</button>
+                    <button class="lesson-badge" onclick="viewQuiz('${quiz.quarter}','${quiz.title}','edit','${subjectPage}')" style="cursor:pointer;">Edit</button>
                 </div>
-            `).join('')}
-        </div>
+            </div>
+        `).join('')}
     `;
 }
 // Listen for auth and filter changes
@@ -955,11 +993,6 @@ function viewQuiz(quarter, name, mode = 'view', subject = subjectPage) {
 
 <style>
     #quiz-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-    justify-content: flex-start;
-    align-items: stretch;
     margin-top: 10px;
 }
 .lesson-item {

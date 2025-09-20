@@ -423,6 +423,7 @@
             </div>
             <div class="lessons-container">
                 <div id="quiz-list"></div>
+                <div id="student-quiz-cards"></div>
             </div>
         </div>
 
@@ -460,7 +461,7 @@
             <div class="lesson-title">
                 <h3>Assessment 1: English Fundamentals</h3>
                 <p>10-item English language skills assessment.</p>
-                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam.html'">Start</span>
+                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam_english.html'">Start</span>
                 <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
             </div>`;
         container.appendChild(card);
@@ -469,7 +470,7 @@
         firebase.auth().onAuthStateChanged(function(user){
             if(!user) return;
             const uid = user.uid;
-            firebase.database().ref('assessmentScores/assessment1/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
+            firebase.database().ref('assessmentScores/assessment1_english/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
                 if(!snap.exists()) return;
                 let val; snap.forEach(c=> val = c.val ? c.val() : c); // handle object or direct
                 const dataObj = (typeof val === 'object') ? val : null;
@@ -484,6 +485,77 @@
                     }
                 }
             });
+        });
+    })();
+
+    // --- Add Student Quiz Cards to existing Quizzes section ---
+    (function(){
+        const container = document.getElementById('student-quiz-cards');
+        if(!container) return;
+        
+        // Ensure the container has proper grid styling for horizontal layout
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
+        container.style.gap = '20px';
+        container.style.marginTop = '20px';
+
+        // Create Quiz 1: Spelling Bee
+        const quiz1 = document.createElement('div');
+        quiz1.className = 'lesson-item';
+        quiz1.innerHTML = `
+            <div class="lesson-thumbnail" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-spell-check" style="font-size: 2.5rem; color: white;"></i>
+            </div>
+            <div class="lesson-title">
+                <h3>Quiz 1: English - Spelling Bee</h3>
+                <p>Test your spelling skills with drag and drop letters!</p>
+                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/spelling-bee-quiz.html'">Start</span>
+                <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="quiz1LastScore">Last Score: -</div>
+            </div>`;
+        container.appendChild(quiz1);
+
+        // Create Quiz 2: Advanced Spelling
+        const quiz2 = document.createElement('div');
+        quiz2.className = 'lesson-item';
+        quiz2.innerHTML = `
+            <div class="lesson-thumbnail" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-spell-check" style="font-size: 2.5rem; color: white;"></i>
+            </div>
+            <div class="lesson-title">
+                <h3>Quiz 2: English - Advanced Spelling</h3>
+                <p>More challenging spelling words to test your skills!</p>
+                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/spelling-bee-quiz.html'">Start</span>
+                <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="quiz2LastScore">Last Score: -</div>
+            </div>`;
+        container.appendChild(quiz2);
+
+        // Load quiz scores for teachers
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                const uid = user.uid;
+                
+                // Load Quiz 1 score
+                firebase.database().ref('quizSummaries/spelling-bee/' + uid).once('value', snap => {
+                    if (snap.exists()) {
+                        const data = snap.val();
+                        const lastAttempt = Object.values(data).sort((a, b) => b.timestamp - a.timestamp)[0];
+                        if (lastAttempt) {
+                            document.getElementById('quiz1LastScore').textContent = `Last Score: ${lastAttempt.score}/${lastAttempt.total}`;
+                        }
+                    }
+                });
+
+                // Load Quiz 2 score
+                firebase.database().ref('quizSummaries/spelling-bee-advanced/' + uid).once('value', snap => {
+                    if (snap.exists()) {
+                        const data = snap.val();
+                        const lastAttempt = Object.values(data).sort((a, b) => b.timestamp - a.timestamp)[0];
+                        if (lastAttempt) {
+                            document.getElementById('quiz2LastScore').textContent = `Last Score: ${lastAttempt.score}/${lastAttempt.total}`;
+                        }
+                    }
+                });
+            }
         });
     })();
     </script>

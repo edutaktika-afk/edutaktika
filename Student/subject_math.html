@@ -899,7 +899,7 @@ async function loadYouTubeVideosStudent() {
             const div = document.createElement('div');
             div.className = 'lesson-item';
             div.innerHTML = `
-                <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
+                <div class="lesson-thumbnail" style="background-color: var(--peach); background-image: url('https://img.youtube.com/vi/${videoId}/mqdefault.jpg'); background-size: cover; background-position: center;"></div>
                 <div class="lesson-title">
                     <h3>${title}</h3>
                     <p>Math video lesson</p>

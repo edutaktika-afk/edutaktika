@@ -716,7 +716,7 @@ async function loadYouTubeVideosStudent() {
             const div = document.createElement('div');
             div.className = 'lesson-item';
             div.innerHTML = `
-                <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
+                <div class="lesson-thumbnail" style="background-color: var(--peach); background-image: url('https://img.youtube.com/vi/${videoId}/mqdefault.jpg'); background-size: cover; background-position: center;"></div>
                 <div class="lesson-title">
                     <h3>${title}</h3>
                     <p>English video lesson</p>
@@ -756,7 +756,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
         <div class="lesson-title">
             <h3>Assessment 1: English Fundamentals</h3>
             <p>10-item English language skills assessment.</p>
-            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam.html'">Start</span>
+            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam_english.html'">Start</span>
             <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
         </div>`;
     container.appendChild(card);
@@ -765,7 +765,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
     firebase.auth().onAuthStateChanged(function(user){
         if(!user) return;
         const uid = user.uid;
-        firebase.database().ref('assessmentScores/assessment1/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
+        firebase.database().ref('assessmentScores/assessment1_english/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
             if(!snap.exists()) return;
             let val; snap.forEach(c=> val = c.val ? c.val() : c); // handle object or direct
             const dataObj = (typeof val === 'object') ? val : null;
@@ -805,7 +805,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
     if(!user) return;
     const uid = user.uid;
     // User summary
-    firebase.database().ref('assessmentSummaries/assessment1/' + uid).once('value', snap => {
+    firebase.database().ref('assessmentSummaries/assessment1_english/' + uid).once('value', snap => {
       if(snap.exists()){
         const s = snap.val();
         const lastEl = document.getElementById('a1LastScore');
@@ -815,7 +815,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
       }
     });
     // Leaderboard (pull all summaries once)
-    firebase.database().ref('assessmentSummaries/assessment1').once('value', snap => {
+    firebase.database().ref('assessmentSummaries/assessment1_english').once('value', snap => {
       const lbEl = document.getElementById('a1Leaderboard');
       if(!snap.exists()){ lbEl.textContent = 'No scores yet.'; return; }
       const arr = [];
@@ -828,7 +828,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
 
   // Attempts modal - navigate to assessment page
   const btn = document.getElementById('viewAttemptsFromSubject');
-  if(btn){ btn.addEventListener('click', ()=> { window.location.href = '../Games/Assessment/Assexam.html'; }); }
+  if(btn){ btn.addEventListener('click', ()=> { window.location.href = '../Games/Assessment/Assexam_english.html'; }); }
 })();
 
 // --- Inject Quiz Card for English (Multiple Attempts Allowed) ---
@@ -840,9 +840,9 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
     card.innerHTML = `
         <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;">Q1</div>
         <div class="lesson-title">
-            <h3>Quiz 1: English - Grammar & Vocabulary</h3>
-            <p>Test your English grammar and vocabulary skills.</p>
-            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/lesson1.html'">Start</span>
+            <h3>Quiz 1: English - Spelling Bee</h3>
+            <p>Test your spelling skills with drag and drop letters!</p>
+            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/spelling-bee-quiz.html'">Start</span>
             <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="q1LastScore">Last Score: -</div>
             <div style="font-size:0.9rem;color:#444;" id="q1BestScore">Best Score: -</div>
         </div>`;
@@ -852,7 +852,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
         if(!user) return;
         const uid = user.uid;
         // Prefer global quizSummaries path
-        const summaryRef = firebase.database().ref(`quizSummaries/lesson1/${uid}`);
+        const summaryRef = firebase.database().ref(`quizSummaries/spelling-bee/${uid}`);
         summaryRef.once('value').then(snap => {
             if(snap.exists()){
                 const s = snap.val();
@@ -862,7 +862,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
                 if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
             } else {
                 // Fallback student path
-                firebase.database().ref(`students/${uid}/quizzes/lesson1/summary`).once('value').then(msnap => {
+                firebase.database().ref(`students/${uid}/quizzes/spelling-bee/summary`).once('value').then(msnap => {
                     if(!msnap.exists()) return;
                     const s = msnap.val();
                     const lastEl = document.getElementById('q1LastScore');
@@ -884,9 +884,9 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
     card.innerHTML = `
         <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;">Q2</div>
         <div class="lesson-title">
-            <h3>Quiz 2: English - Reading Comprehension</h3>
-            <p>Test your reading and comprehension skills.</p>
-            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/lesson1.html'">Start</span>
+            <h3>Quiz 2: English - Advanced Spelling</h3>
+            <p>More challenging spelling words to test your skills!</p>
+            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/spelling-bee-quiz.html'">Start</span>
             <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="q2LastScore">Last Score: -</div>
             <div style="font-size:0.9rem;color:#444;" id="q2BestScore">Best Score: -</div>
         </div>`;
@@ -895,8 +895,8 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
     firebase.auth().onAuthStateChanged(user => {
         if(!user) return;
         const uid = user.uid;
-        // Use english-reading as the key for this specific quiz
-        const summaryRef = firebase.database().ref(`quizSummaries/english-reading/${uid}`);
+        // Use spelling-bee-advanced as the key for this specific quiz
+        const summaryRef = firebase.database().ref(`quizSummaries/spelling-bee-advanced/${uid}`);
         summaryRef.once('value').then(snap => {
             if(snap.exists()){
                 const s = snap.val();
@@ -906,7 +906,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
                 if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
             } else {
                 // Fallback student path
-                firebase.database().ref(`students/${uid}/quizzes/english-reading/summary`).once('value').then(msnap => {
+                firebase.database().ref(`students/${uid}/quizzes/spelling-bee-advanced/summary`).once('value').then(msnap => {
                     if(!msnap.exists()) return;
                     const s = msnap.val();
                     const lastEl = document.getElementById('q2LastScore');

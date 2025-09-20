@@ -20,22 +20,21 @@
     });
     </script>
     
-    <!-- Leaderboard for Kids - Example HTML & CSS -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <title>Leaderboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS/header.css">
     <link rel="stylesheet" href="../CSS/leaderboard.css">
     <link rel="stylesheet" href="../CSS/footer.css">
-    <link rel="stylesheet" href="../CSS/dropdown.css">
     <link rel="stylesheet" href="../CSS/burger.css">
-    <link rel="icon" type="image/png" href="../images/icons/winner.png" />
-
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 <div id="mainContent" style="display:none;">
@@ -45,6 +44,7 @@
     <span></span>
     <span></span>
 </button>
+
     <header>
         <div class="floating-elements">
             <div class="floating-element"></div>
@@ -83,7 +83,6 @@
                             </ul>
                         </li>
                     <li>
-                    <li>
                         <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
                     </li>
                 </ul>
@@ -95,6 +94,7 @@
 <div class="sidebar-overlay" id="navOverlay"></div>
 <!-- Overlay for profile sidebar -->
 <div class="sidebar-overlay" id="profileSidebarOverlay"></div>
+
 
  <!-- Profile Sidebar (Dynamic with Firebase) -->
 <div id="profileSidebar" class="profile-sidebar">
@@ -167,6 +167,7 @@
         </div>
     </div>
 </div>
+
 <style>
     .profile-sidebar {
     margin-top: 20px;
@@ -180,18 +181,17 @@
 }
 </style>
 
-
         <!-- Firebase App (the core Firebase SDK) -->
         <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-        <script src="../assets/js/Teacher Side/profile.js"></script>
+            
 
     <script src="../assets/js/Teacher Side/header.js"></script>
 
     <div class="leaderboard-container">
-        <div class="leaderboard-title">🌟 Student Leaderboard 🌟</div>
+            <div class="leaderboard-title">🌟 Math Leaderboard - Grade 5 🌟</div>
         <div class="leaderboard-desc">See who's on top this week! Play games, earn points, and climb the ranks!</div>
         <!-- Podium -->
         <div class="podium" id="podium"></div>
@@ -201,7 +201,9 @@
                 <tr>
                     <th>Rank</th>
                     <th>Player</th>
-                    <th>Points</th>
+                        <th>Quiz Points</th>
+                        <th>Assessment Points</th>
+                        <th>Total</th>
                     <th>Badges</th>
                 </tr>
             </thead>
@@ -220,23 +222,90 @@
     </div>
     
     <script>
-    // 1. Firebase config (replace with your own)
-   
+        const firebaseConfig = {
+                apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+                authDomain: "edutaktika.firebaseapp.com",
+                databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+                projectId: "edutaktika",
+                storageBucket: "edutaktika.appspot.com",
+                messagingSenderId: "676848575316",
+                appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+                measurementId: "G-X3GT5TNN87"
+            };
+            // Removed legacy v8 firebase-app.js & firebase-database.js to prevent duplicate global definition
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
+            const auth = firebase.auth();
+       
 
-    // 2. Fetch and display leaderboard
+        // 2. Fetch and display leaderboard (Grade 5 only)
     async function loadLeaderboard() {
+            // Base student snapshot (ordered by quiz points for initial retrieval)
         const snapshot = await db.ref('students').orderByChild('points').once('value');
         let students = [];
         snapshot.forEach(child => {
-            const s = child.val();
+                const s = child.val() || {};
             s._key = child.key;
             students.push(s);
         });
-        // Sort descending by points
-        students.sort((a, b) => (b.points || 0) - (a.points || 0));
 
-        // Podium (top 3)
-        const podiumIndices = [1, 0, 2]; // 2nd, 1st, 3rd
+            // Try global assessmentSummaries first
+            let assessmentTotals = {}; // uid -> total assessment best
+            try {
+                const summariesSnap = await db.ref('assessmentSummaries').once('value');
+                if (summariesSnap.exists()) {
+                    summariesSnap.forEach(assessNode => {
+                        assessNode.forEach(userNode => {
+                            const uid = userNode.key;
+                            const val = userNode.val();
+                            const best = (val && typeof val.best === 'number') ? val.best : 0;
+                            if (!assessmentTotals[uid]) assessmentTotals[uid] = 0;
+                            assessmentTotals[uid] += best; // sum bests across assessments
+                        });
+                    });
+                } else {
+                    // Fallback: compute from students/<uid>/assessments/*/summary already present in student objects
+                    students.forEach(s => {
+                        let total = 0;
+                        if (s.assessments) {
+                            Object.keys(s.assessments).forEach(aid => {
+                                const summary = s.assessments[aid]?.summary;
+                                if (summary && typeof summary.best === 'number') total += summary.best;
+                            });
+                        }
+                        if (total > 0) assessmentTotals[s._key] = total;
+                    });
+                }
+            } catch(err) {
+                console.warn('Assessment totals fetch issue:', err);
+            }
+
+            // Attach quiz, assessment, total points
+            students.forEach(s => {
+                s.quizPoints = parseInt(s.points || 0) || 0;
+                s.assessmentPoints = assessmentTotals[s._key] || 0;
+                s.combinedPoints = s.quizPoints + s.assessmentPoints;
+            });
+
+            // Filter for Grade 5 students only
+            students = students.filter(s => s.gradelevel == 5);
+
+            // Sort descending by combined, then assessment, then quiz, then name
+            students.sort((a,b) => {
+                // Primary sort: Combined points (descending)
+                if (b.combinedPoints !== a.combinedPoints) return b.combinedPoints - a.combinedPoints;
+                // Secondary sort: Assessment points (descending)
+                if (b.assessmentPoints !== a.assessmentPoints) return b.assessmentPoints - a.assessmentPoints;
+                // Tertiary sort: Quiz points (descending)
+                if (b.quizPoints !== a.quizPoints) return b.quizPoints - a.quizPoints;
+                // Final sort: Name (ascending)
+                const nameA = ((a.fname||'') + ' ' + (a.lname||'')).trim();
+                const nameB = ((b.fname||'') + ' ' + (b.lname||'')).trim();
+                return nameA.localeCompare(nameB);
+            });
+
+            // Podium (top 3) based on combinedPoints
+            const podiumIndices = [1, 0, 2]; // 2nd, 1st, 3rd visually
         const podiumClasses = ['silver', 'gold', 'bronze'];
         const podiumRanks = [2, 1, 3];
         let podiumHtml = '';
@@ -249,18 +318,18 @@
                 <div class="podium-rank">${podiumRanks[i]}</div>
                 <img src="${avatar}" class="avatar" alt="${student.fname||''}">
                 <div class="podium-name">${(student.fname||'') + ' ' + (student.lname||'')}</div>
-                <div class="podium-score">${parseInt(student.points)||0} pts</div>
+                    <div class="podium-score">${student.combinedPoints} total</div>
             </div>`;
         });
         document.getElementById('podium').innerHTML = podiumHtml;
 
-        // Leaderboard table
+            // Leaderboard table rows
         let tbodyHtml = '';
         students.forEach((student, idx) => {
             const avatar = student.avatar ? student.avatar : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent((student.fname||'') + (student.lname||''))}`;
-            let badges = "🏅";
-            if (idx === 0) badges = "🏅🏅🏅";
-            else if (idx === 1) badges = "🏅🏅";
+                let badges = '🏅';
+                if (idx === 0) badges = '🏅🏅🏅';
+                else if (idx === 1) badges = '🏅🏅';
             tbodyHtml += `
             <tr${idx === 0 ? ' class="me"' : ''}>
                 <td>${idx + 1}</td>
@@ -268,69 +337,21 @@
                     <span class="player-cell">
                         <img src="${avatar}" class="avatar-small" alt="${student.fname||''}">
                         <span class="player-name">${(student.fname||'') + ' ' + (student.lname||'')}</span>
-                        <span class="tooltiptext">${idx === 0 ? "Top scorer!" : "Great job!"}</span>
+                            <span class="tooltiptext">${idx === 0 ? 'Top scorer!' : 'Great job!'}</span>
                     </span>
                 </td>
-                <td>${parseInt(student.points)||0}</td>
+                    <td>${student.quizPoints}</td>
+                    <td>${student.assessmentPoints}</td>
+                    <td>${student.combinedPoints}</td>
                 <td>${badges}</td>
             </tr>`;
         });
         document.getElementById('leaderboard-body').innerHTML = tbodyHtml;
     }
 
-    // Show all students under the same section as the logged-in teacher
-    async function loadSectionStudents() {
-        // Get current teacher's section
-        const user = firebase.auth().currentUser;
-        if (!user) return;
-        const teacherUID = user.uid;
-        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
-        const teacher = teacherSnap.val();
-        if (!teacher || !teacher.section) return;
-
-        const section = teacher.section;
-
-        // Fetch all students in the same section
-        const studentsSnap = await db.ref('students').orderByChild('section').equalTo(section).once('value');
-        let students = [];
-        studentsSnap.forEach(child => {
-            const s = child.val();
-            s._key = child.key;
-            students.push(s);
-        });
-
-        // Sort by points (optional)
-        students.sort((a, b) => (b.points || 0) - (a.points || 0));
-
-        // Render leaderboard table
-        let tbodyHtml = '';
-        students.forEach((student, idx) => {
-            const avatar = student.avatar ? student.avatar : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent((student.fname||'') + (student.lname||''))}`;
-            let badges = "🏅";
-            if (idx === 0) badges = "🏅🏅🏅";
-            else if (idx === 1) badges = "🏅🏅";
-            tbodyHtml += `
-            <tr${idx === 0 ? ' class="me"' : ''}>
-                <td>${idx + 1}</td>
-                <td>
-                    <span class="player-cell">
-                        <img src="${avatar}" class="avatar-small" alt="${student.fname||''}">
-                        <span class="player-name">${(student.fname||'') + ' ' + (student.lname||'')}</span>
-                        <span class="tooltiptext">${idx === 0 ? "Top scorer!" : "Great job!"}</span>
-                    </span>
-                </td>
-                <td>${parseInt(student.points)||0}</td>
-                <td>${badges}</td>
-            </tr>`;
-        });
-        document.getElementById('leaderboard-body').innerHTML = tbodyHtml;
-    }
-
-    // Use this instead of loadLeaderboard
     document.addEventListener('DOMContentLoaded', function() {
-        firebase.auth().onAuthStateChanged(function(user) {
-            if (user) loadSectionStudents();
-        });
+            loadLeaderboard();
+            loadAssessmentLeaderboard();
     });
     </script>
 
@@ -374,37 +395,273 @@
     </footer>
 
         <!-- Edit Profile Modal -->
-
 <link rel="stylesheet" href="../CSS/editProfile.css">
 
-<div id="editProfileModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
-    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
-        <h3 style="margin-top:0;">Edit Profile</h3>
+    <div id="editProfileModal">
+        <div class="modal-content">
+            <h3>Edit Profile</h3>
         <form id="editProfileForm">
             <label>First Name:<br>
                 <input type="text" id="edit_fname" required>
-            </label><br><br>
+                </label><br>
             <label>Middle Name:<br>
                 <input type="text" id="edit_mname">
-            </label><br><br>
+                </label><br>
             <label>Last Name:<br>
                 <input type="text" id="edit_lname" required>
-            </label><br><br>
+                </label><br>
             <label>Grade Level:<br>
-                <input type="text" id="edit_gradelevel">
-            </label><br><br>
+                    <input type="text" id="edit_gradelevel" required>
+                </label><br>
             <label>Section:<br>
                 <input type="text" id="edit_section">
-            </label><br><br>
+                </label><br>
+                
             <div style="text-align:right;">
-                <button type="button" onclick="closeEditProfileModal()" style="margin-right:10px;">Cancel</button>
+                    <button type="button" onclick="closeEditProfileModal()">Cancel</button>
                 <button type="submit">Save</button>
             </div>
         </form>
     </div>
 </div>
+    <script src="../assets/js/Teacher Side/editProfile.js"></script>
 
-<script src="../assets/js/Teacher Side/editProfile.js"></script>
+    <style>
+        nav ul {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+    }
+    nav ul li {
+        list-style: none;
+        margin: 0 10px;
+        position: relative;
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+    nav ul li a, nav ul li .dropbtn {
+        display: flex;
+        align-items: center;
+        height: 48px; /* Match your nav height */
+        line-height: 48px;
+        padding: 0 18px;
+        color: #2d3923;
+        text-decoration: none;
+        font-size: 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+    nav ul li .dropdown-content {
+        display: none;
+        position: absolute;
+        background: #fff;
+        min-width: 120px;
+        box-shadow: 0 4px 16px #0002;
+        z-index: 1000;
+        border-radius: 8px;
+        padding: 0;
+        margin: 0;
+        top: 100%;
+        left: 0;
+    }
+    nav ul li .dropdown-content li {
+        list-style: none;
+        border-bottom: 1px solid #eee;
+    }
+    nav ul li .dropdown-content li:last-child {
+        border-bottom: none;
+    }
+    nav ul li .dropdown-content a {
+        color:  18px;
+        color: #2d3923;
+        padding: 10px 20px;
+        display: block;
+        text-decoration: none;
+        border-radius: 0;
+        transition: background 0.2s;
+        height: auto;
+        line-height: normal;
+    }
+    nav ul li .dropdown-content a:hover {
+        background: #f0f0f0;
+    }
+    nav ul li.dropdown:hover .dropdown-content {
+        display: block;
+    }
+    </style>
+
+    <script>
+    // Fetch and display student info in the profile sidebarh
+    firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+            firebase.database().ref('teachers/' + user.uid).once('value').then(function(snapshot) {
+                const data = snapshot.val();
+                if (data) {
+                    document.getElementById('profileName').textContent = (data.fname || '') + ' ' + (data.lname || '');
+                    document.getElementById('profileId').textContent = data.id || user.uid;
+                    document.getElementById('profileFirstName').textContent = data.fname || '';
+                    document.getElementById('profileMiddleName').textContent = data.mname || '';
+                    document.getElementById('profileLastName').textContent = data.lname || '';
+                    document.getElementById('profileGrade').textContent = data.gradelevel || '-';
+                    document.getElementById('profileSection').textContent = data.section || '-';
+                    document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "teacher");
+                }
+                if (data.address) {
+                    document.getElementById('profileAddressStreet').textContent = data.address.street || '-';
+                    document.getElementById('profileAddressBarangay').textContent = data.address.barangay || '-';
+                    document.getElementById('profileAddressCity').textContent = data.address.city || '-';
+                    document.getElementById('profileAddressProvince').textContent = data.address.province || '-';
+                    document.getElementById('profileAddressZip').textContent = data.address.zip || '-';
+                    document.getElementById('profileAddressRegion').textContent = data.address.region || '-';
+                }
+                
+            });
+        }
+    });
+    </script>
+
+    <script src="../assets/js/Teacher Side/profile.js"></script>
+
+    <div class="leaderboard-container" style="margin-top:40px;">
+            <div class="leaderboard-title">📘 Assessment Leaderboard - Grade 5</div>
+            <div class="leaderboard-desc">Top Grade 5 students by best assessment scores.</div>
+            <table class="leaderboard-table" id="assessmentLeaderboardTable" style="margin-top:18px;">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Student</th>
+                        <th>Assessment 1 Best</th>
+                        <th>Total Best (All)</th>
+                    </tr>
+                </thead>
+                <tbody id="assessment-leaderboard-body">
+                    <tr><td colspan="4" style="text-align:center;padding:18px;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+    <script>
+    // Unified Assessment Data Fetch
+    async function fetchAssessmentAggregates(){
+      // Try global summaries first
+      const summariesSnap = await firebase.database().ref('assessmentSummaries').once('value');
+      let source = 'summaries';
+      const aggregates = {}; // uid -> {assessmentBest:{id:best}, totalBest}
+      if(summariesSnap.exists()){
+        summariesSnap.forEach(assessNode => {
+          const aid = assessNode.key;
+          assessNode.forEach(userNode => {
+            const uid = userNode.key; const val = userNode.val();
+            if(!aggregates[uid]) aggregates[uid] = { assessmentBest:{}, totalBest:0 };
+            const best = (val && typeof val.best === 'number') ? val.best : 0;
+            aggregates[uid].assessmentBest[aid] = best;
+          });
+        });
+      } else {
+        // Fallback: per student path: students/<uid>/assessments/<assessmentId>/summary
+        source = 'students';
+        const studentsSnap = await firebase.database().ref('students').once('value');
+        studentsSnap.forEach(stuNode => {
+          const uid = stuNode.key;
+          const assessRoot = stuNode.child('assessments');
+          if(!assessRoot.exists()) return;
+          assessRoot.forEach(aNode => {
+            const aid = aNode.key;
+            const summaryNode = aNode.child('summary');
+            if(!summaryNode.exists()) return;
+            const summary = summaryNode.val();
+            const best = (summary && typeof summary.best === 'number') ? summary.best : 0;
+            if(!aggregates[uid]) aggregates[uid] = { assessmentBest:{}, totalBest:0 };
+            aggregates[uid].assessmentBest[aid] = best;
+          });
+        });
+      }
+      // compute totals
+      Object.keys(aggregates).forEach(uid => {
+        const a = aggregates[uid];
+        a.totalBest = Object.values(a.assessmentBest).reduce((s,v)=> s+ (v||0), 0);
+      });
+      return {aggregates, source};
+    }
+    </script>
+    <script>
+    // Assessment leaderboard for Grade 5 only
+    async function loadAssessmentLeaderboard() {
+      const tbody = document.getElementById('assessment-leaderboard-body');
+      if(!tbody) return;
+      try {
+        const [{aggregates}, studentsSnap] = await Promise.all([
+          fetchAssessmentAggregates(),
+          firebase.database().ref('students').once('value')
+        ]);
+        const students = studentsSnap.val() || {};
+        let rows = Object.keys(aggregates).map(uid => {
+          const info = students[uid] || {};
+          const name = ((info.fname||'') + ' ' + (info.lname||'')).trim() || uid.substring(0,6);
+          const a1 = aggregates[uid].assessmentBest['assessment1'] !== undefined ? aggregates[uid].assessmentBest['assessment1'] : '-';
+          return { uid, name, a1, totalBest: aggregates[uid].totalBest, gradelevel: info.gradelevel };
+        });
+        
+        // Filter for Grade 5 students only
+        rows = rows.filter(r => r.gradelevel == 5);
+        rows.sort((a,b)=> {
+            // Primary sort: Total best score (descending)
+            if (b.totalBest !== a.totalBest) return b.totalBest - a.totalBest;
+            // Secondary sort: Assessment 1 score (descending)
+            if (b.a1 !== a.a1) return b.a1 - a.a1;
+            // Final sort: Name (ascending)
+            return a.name.localeCompare(b.name);
+        });
+        if(rows.length === 0){
+          tbody.innerHTML = '<tr><td colspan="4" style="padding:18px;text-align:center;">No Grade 5 assessment data.</td></tr>'; return;
+        }
+        tbody.innerHTML = rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.a1}</td><td>${r.totalBest}</td></tr>`).join('');
+      } catch(e){
+        console.error(e); tbody.innerHTML = `<tr><td colspan='4' style='padding:18px;text-align:center;color:#c00;'>${e.message}</td></tr>`;
+      }
+    }
+    </script>
+    <script>
+    // Update Quiz vs Assessment aggregation to use unified fetch
+    (async function(){
+      const bodyEl = document.getElementById('qa-comparison-body');
+      if(!bodyEl) return;
+      try {
+        const [{aggregates}, studentsSnap] = await Promise.all([
+          fetchAssessmentAggregates(),
+          firebase.database().ref('students').once('value')
+        ]);
+        const students = studentsSnap.val() || {};
+        const rows = Object.keys(students).map(uid => {
+          const stu = students[uid] || {};
+          const quizPoints = parseInt(stu.points || 0);
+          const assessPoints = (aggregates[uid] && aggregates[uid].totalBest) || 0;
+          const overall = quizPoints + assessPoints;
+          const name = ((stu.fname||'') + ' ' + (stu.lname||'')).trim() || uid.substring(0,6);
+          return { uid, name, quizPoints, assessPoints, overall };
+        });
+        rows.sort((a,b)=> {
+            // Primary sort: Overall points (descending)
+            if (b.overall !== a.overall) return b.overall - a.overall;
+            // Secondary sort: Assessment points (descending)
+            if (b.assessPoints !== a.assessPoints) return b.assessPoints - a.assessPoints;
+            // Tertiary sort: Quiz points (descending)
+            if (b.quizPoints !== a.quizPoints) return b.quizPoints - a.quizPoints;
+            // Final sort: Name (ascending)
+            return a.name.localeCompare(b.name);
+        });
+        if(rows.length === 0){ bodyEl.innerHTML = '<tr><td colspan="5" style="padding:18px;text-align:center;">No data.</td></tr>'; return; }
+        bodyEl.innerHTML = rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.quizPoints}</td><td>${r.assessPoints}</td><td>${r.overall}</td></tr>`).join('');
+      } catch(err){
+        console.error('QA comparison error', err);
+        bodyEl.innerHTML = `<tr><td colspan='5' style='padding:18px;text-align:center;color:#c00;'>Error: ${err.message}</td></tr>`;
+      }
+    })();
+    </script>
+
 <script src="../assets/js/navbar.js"></script>
 </div>
 </body>
