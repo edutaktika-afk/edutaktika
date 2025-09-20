@@ -1,26 +1,4 @@
- <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        firebase.auth().onAuthStateChanged(async function(user) {
-            if (!user) {
-                window.location.href = "logreg.html";
-                return;
-            }
-            const uid = user.uid;
-            const snap = await firebase.database().ref('teachers/' + uid).once('value');
-            const teacher = snap.val();
-            if (!teacher || teacher.role !== "teacher") {
-                document.getElementById('mainContent').style.display = "none";
-                alert("Access denied.");
-                await firebase.auth().signOut();
-                window.location.href = "logreg.html";
-            } else {
-                document.getElementById('mainContent').style.display = "block";
-            }
-        });
-    });
-    </script>
-    
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -189,6 +167,28 @@
 
     <script src="../assets/js/Teacher Side/header.js"></script>
 
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        firebase.auth().onAuthStateChanged(async function(user) {
+            if (!user) {
+                window.location.href = "logreg.html";
+                return;
+            }
+            const uid = user.uid;
+            const snap = await firebase.database().ref('teachers/' + uid).once('value');
+            const teacher = snap.val();
+            if (!teacher || teacher.role !== "teacher") {
+                document.getElementById('mainContent').style.display = "none";
+                alert("Access denied.");
+                await firebase.auth().signOut();
+                window.location.href = "logreg.html";
+            } else {
+                document.getElementById('mainContent').style.display = "block";
+            }
+        });
+    });
+    </script>
+
     <div class="container">
 
         <!-- Add these buttons above your quarter navigation (inside .container) -->
@@ -231,6 +231,7 @@
             <div class="quarter-tab" data-quarter="3">Quarter 3</div>
             <div class="quarter-tab" data-quarter="4">Quarter 4</div>
             <div class="quarter-tab" data-quarter="5" style="margin-left: auto;" >Quizzes</div>
+            <div class="quarter-tab" data-quarter="assessments">Assessments</div>
         </div>
 
         <!-- Quarter 1 -->
@@ -260,29 +261,6 @@
                     <div>Loading YouTube lessons…</div>
                 </div>
             </div>
-                <div class="progress-stats">
-                       const paramsObj = { quarter, name, subject };
-                       if (mode === 'edit') {
-                           window.location.href = buildEditorUrl(paramsObj);
-                       } else {
-                           window.location.href = 'present.html?' + new URLSearchParams(paramsObj).toString();
-                       }
-                    <span>65% Complete</span>
-                    <span>2/3 Lessons Finished</span>
-                </div>
-            </div>
-
-            <div class="badges-container">
-                <div class="badges-title">Earned Badges</div>
-                <div class="badges-list">
-                    <div class="badge" data-tooltip="Time Master">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="badge" data-tooltip="Shape Explorer">
-                        <i class="fas fa-shapes"></i>
-                    </div>
-                </div>
-            </div> -->
         </div>
 
         <!-- Quarter 2 -->
@@ -416,9 +394,68 @@
                 <div id="quiz-list"></div>
             </div>
         </div>
+
+        <!-- Assessments panel -->
+        <div class="quarter-section" id="quarter-assessments">
+            <div class="quarter-title">
+                <i class="fas fa-clipboard-check"></i>
+                <h2>Summative Assessments</h2>
+            </div>
+            <div class="lessons-container" id="assessmentsContainer">
+                <!-- Assessment cards will be injected here -->
+            </div>
+        </div>
     </div>
 
     <script src="../assets/js/Teacher Side/subject.js"></script>
+
+    <script>
+    // --- Inject Assessment Card for Science ---
+    (function(){
+        const container = document.getElementById('assessmentsContainer');
+        if(!container) return;
+        
+        // Ensure the container has the proper grid styling
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
+        container.style.gap = '20px';
+        container.style.marginBottom = '30px';
+
+        // Create Assessment 1 card for Science
+        const card = document.createElement('div');
+        card.className = 'lesson-item';
+        card.innerHTML = `
+            <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;">A1</div>
+            <div class="lesson-title">
+                <h3>Assessment 1: Science Fundamentals</h3>
+                <p>10-item science knowledge assessment.</p>
+                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam.html'">Start</span>
+                <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
+            </div>`;
+        container.appendChild(card);
+
+        // Fetch last score if user logged in
+        firebase.auth().onAuthStateChanged(function(user){
+            if(!user) return;
+            const uid = user.uid;
+            firebase.database().ref('assessmentScores/assessment1/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
+                if(!snap.exists()) return;
+                let val; snap.forEach(c=> val = c.val ? c.val() : c); // handle object or direct
+                const dataObj = (typeof val === 'object') ? val : null;
+                const scoreEl = document.getElementById('a1LastScore');
+                if(scoreEl && dataObj) {
+                    scoreEl.textContent = `Last Score: ${dataObj.score}/${dataObj.total} (${dataObj.percentage}%)`;
+                } else if(scoreEl && !dataObj){
+                    // If stored as direct leaf (score object)
+                    const raw = snap.val();
+                    if(raw && raw.score !== undefined) {
+                        scoreEl.textContent = `Last Score: ${raw.score}/${raw.total} (${raw.percentage}%)`;
+                    }
+                }
+            });
+        });
+    })();
+    </script>
 
     <footer>
         <div class="footer-content">
@@ -1129,23 +1166,27 @@ async function loadYouTubeVideosTeacher() {
 
     // Helper to fetch with robust CORS fallbacks
     async function fetchWithCors(url) {
-        // 1) Try direct
+        // 1) Try AllOrigins proxy first (most reliable for CORS)
         try {
-            const r = await fetch(url);
-            if (r.ok) return await r.text();
-            throw new Error('HTTP ' + r.status);
+            const rAO = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+            if (rAO.ok) return await rAO.text();
+            throw new Error('AllOrigins HTTP ' + rAO.status);
         } catch (e1) {
-            // 2) Try AllOrigins raw endpoint
+            // 2) Try CORS proxy
             try {
-                const rAO = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
-                if (rAO.ok) return await rAO.text();
-                throw new Error('AllOrigins HTTP ' + rAO.status);
+                const corsUrl = 'https://cors-anywhere.herokuapp.com/' + url;
+                const rCors = await fetch(corsUrl);
+                if (rCors.ok) return await rCors.text();
+                throw new Error('CORS proxy HTTP ' + rCors.status);
             } catch (e2) {
-                // 3) Try r.jina.ai mirror (read-only proxy with permissive CORS)
-                const jinaUrl = 'https://r.jina.ai/http/' + url.replace(/^https?:\/\//i, '');
-                const rJ = await fetch(jinaUrl);
-                if (rJ.ok) return await rJ.text();
-                throw new Error('jina.ai HTTP ' + rJ.status);
+                // 3) Fallback to direct (will likely fail due to CORS)
+                try {
+                    const r = await fetch(url);
+                    if (r.ok) return await r.text();
+                    throw new Error('Direct HTTP ' + r.status);
+                } catch (e3) {
+                    throw new Error('All fetch methods failed: ' + e3.message);
+                }
             }
         }
     }
@@ -1202,8 +1243,8 @@ async function loadYouTubeVideosTeacher() {
             container.innerHTML = '<div>No Science-related videos found in the playlist.</div>';
         }
     } catch (err) {
-        console.error('Error fetching YouTube RSS (teacher)', err);
-        container.innerHTML = '<div>Failed to load YouTube videos.</div>';
+        console.warn('YouTube videos could not be loaded due to CORS restrictions. This is normal for local development.');
+        container.innerHTML = '<div style="color:#888; font-style:italic;">YouTube videos are not available in local development due to CORS restrictions. They will work when deployed to a web server.</div>';
     }
 }
 

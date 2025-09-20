@@ -267,6 +267,7 @@
             <div class="quarter-tab" data-quarter="3">Quarter 3</div>
             <div class="quarter-tab" data-quarter="4">Quarter 4</div>
             <div class="quarter-tab" data-quarter="5" style="margin-left: auto;">Quizzes</div>
+            <div class="quarter-tab" data-quarter="assessments">Assessments</div>
         </div>
 
         <div class="quarter-section active" id="quarter-1">
@@ -309,10 +310,21 @@
         </div>
         <div class="quarter-section" id="quarter-5">
             <div class="quarter-title">
-                <i class="fas fa-calendar-alt"></i>
+                <i class="fas fa-gamepad"></i>
                 <h2>Quizzes</h2>
             </div>
-            <div class="lessons-container"></div>
+            <div class="lessons-container" id="quizzesContainer"></div>
+        </div>
+
+        <!-- Assessments panel -->
+        <div class="quarter-section" id="quarter-assessments">
+            <div class="quarter-title">
+                <i class="fas fa-clipboard-check"></i>
+                <h2>Summative Assessments</h2>
+            </div>
+            <div class="lessons-container" id="assessmentsContainer">
+                <!-- Assessment cards will be injected here -->
+            </div>
         </div>
     </div>
 
@@ -723,6 +735,207 @@ async function loadYouTubeVideosStudent() {
 
 document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
 
+// --- Inject Assessment Card for Science (One Attempt Only) ---
+(function(){
+    const container = document.getElementById('assessmentsContainer');
+    if(!container) return;
+    
+    // Ensure the container has the proper grid styling
+    container.style.display = 'grid';
+    container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
+    container.style.gap = '20px';
+    container.style.marginBottom = '30px';
+
+    // Create Assessment 1 card for Science
+    const card = document.createElement('div');
+    card.className = 'lesson-item';
+    card.innerHTML = `
+        <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;">A1</div>
+        <div class="lesson-title">
+            <h3>Assessment 1: Science Fundamentals</h3>
+            <p>10-item science knowledge assessment.</p>
+            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam.html'">Start</span>
+            <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
+        </div>`;
+    container.appendChild(card);
+
+    // Fetch last score if user logged in
+    firebase.auth().onAuthStateChanged(function(user){
+        if(!user) return;
+        const uid = user.uid;
+        firebase.database().ref('assessmentScores/assessment1/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
+            if(!snap.exists()) return;
+            let val; snap.forEach(c=> val = c.val ? c.val() : c); // handle object or direct
+            const dataObj = (typeof val === 'object') ? val : null;
+            const scoreEl = document.getElementById('a1LastScore');
+            if(scoreEl && dataObj) {
+                scoreEl.textContent = `Last Score: ${dataObj.score}/${dataObj.total} (${dataObj.percentage}%)`;
+            } else if(scoreEl && !dataObj){
+                // If stored as direct leaf (score object)
+                const raw = snap.val();
+                if(raw && raw.score !== undefined) {
+                    scoreEl.textContent = `Last Score: ${raw.score}/${raw.total} (${raw.percentage}%)`;
+                }
+            }
+        });
+    });
+})();
+
+// --- Extend assessment UI with leaderboard and best score (like Math page) ---
+(function(){
+  const assessCard = document.querySelector('#assessmentsContainer .lesson-item');
+  if(!assessCard) return;
+  // Append placeholders
+  const scoreDiv = assessCard.querySelector('#a1LastScore');
+  if(scoreDiv){
+    scoreDiv.insertAdjacentHTML('afterend', `<div id="a1BestScore" style="font-size:0.9rem;color:#444;">Best Score: -</div><button id="viewAttemptsFromSubject" style="margin-top:6px;padding:4px 10px;font-size:0.75rem;border:none;background:#6d28d9;color:#fff;border-radius:6px;cursor:pointer;">View Attempts</button>`);
+  }
+
+  // Leaderboard container
+  const container = document.getElementById('assessmentsContainer');
+  const lbBox = document.createElement('div');
+  lbBox.style = 'margin-top:28px;background:#fafafa;border:1px solid #eee;padding:16px 18px;border-radius:12px;';
+  lbBox.innerHTML = `<h4 style='margin:0 0 12px 0;'>Assessment 1 Leaderboard (Top 10 by Best Score)</h4><div id='a1Leaderboard' style='font-size:0.85rem;'>Loading...</div>`;
+  container.appendChild(lbBox);
+
+  // Fetch summary + leaderboard
+  firebase.auth().onAuthStateChanged(user => {
+    if(!user) return;
+    const uid = user.uid;
+    // User summary
+    firebase.database().ref('assessmentSummaries/assessment1/' + uid).once('value', snap => {
+      if(snap.exists()){
+        const s = snap.val();
+        const lastEl = document.getElementById('a1LastScore');
+        const bestEl = document.getElementById('a1BestScore');
+        if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+        if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts} attempt${s.attempts>1?'s':''}`;
+      }
+    });
+    // Leaderboard (pull all summaries once)
+    firebase.database().ref('assessmentSummaries/assessment1').once('value', snap => {
+      const lbEl = document.getElementById('a1Leaderboard');
+      if(!snap.exists()){ lbEl.textContent = 'No scores yet.'; return; }
+      const arr = [];
+      snap.forEach(child => { const v = child.val(); arr.push({ uid: child.key, best: v.best, bestPct: v.bestPercentage, last: v.last, attempts: v.attempts || 1 }); });
+      arr.sort((a,b)=> b.best - a.best || a.attempts - b.attempts);
+      const top = arr.slice(0,10);
+      lbEl.innerHTML = top.map((r,i)=> `<div style='display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;'><span>#${i+1}</span><span>${r.uid.substring(0,6)}</span><span>${r.best}</span><span>${r.bestPct}%</span><span>${r.attempts}x</span></div>`).join('');
+    });
+  });
+
+  // Attempts modal - navigate to assessment page
+  const btn = document.getElementById('viewAttemptsFromSubject');
+  if(btn){ btn.addEventListener('click', ()=> { window.location.href = '../Games/Assessment/Assexam.html'; }); }
+})();
+
+// --- Inject Quiz Card for Science (Multiple Attempts Allowed) ---
+(function(){
+    const container = document.getElementById('quizzesContainer');
+    if(!container) return;
+    const card = document.createElement('div');
+    card.className='lesson-item';
+    card.innerHTML = `
+        <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;">Q1</div>
+        <div class="lesson-title">
+            <h3>Quiz 1: Science - Basic Concepts</h3>
+            <p>Test your basic science knowledge and concepts.</p>
+            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/lesson1.html'">Start</span>
+            <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="q1LastScore">Last Score: -</div>
+            <div style="font-size:0.9rem;color:#444;" id="q1BestScore">Best Score: -</div>
+        </div>`;
+    container.appendChild(card);
+
+    firebase.auth().onAuthStateChanged(user => {
+        if(!user) return;
+        const uid = user.uid;
+        // Prefer global quizSummaries path
+        const summaryRef = firebase.database().ref(`quizSummaries/lesson1/${uid}`);
+        summaryRef.once('value').then(snap => {
+            if(snap.exists()){
+                const s = snap.val();
+                const lastEl = document.getElementById('q1LastScore');
+                const bestEl = document.getElementById('q1BestScore');
+                if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+                if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
+            } else {
+                // Fallback student path
+                firebase.database().ref(`students/${uid}/quizzes/lesson1/summary`).once('value').then(msnap => {
+                    if(!msnap.exists()) return;
+                    const s = msnap.val();
+                    const lastEl = document.getElementById('q1LastScore');
+                    const bestEl = document.getElementById('q1BestScore');
+                    if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+                    if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
+                });
+            }
+        });
+    });
+})();
+
+// --- Inject Quiz Card 2 for Science (Experiments & Observations) ---
+(function(){
+    const container = document.getElementById('quizzesContainer');
+    if(!container) return;
+    const card = document.createElement('div');
+    card.className='lesson-item';
+    card.innerHTML = `
+        <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;">Q2</div>
+        <div class="lesson-title">
+            <h3>Quiz 2: Science - Experiments & Observations</h3>
+            <p>Test your understanding of scientific experiments and observations.</p>
+            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/lesson1.html'">Start</span>
+            <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="q2LastScore">Last Score: -</div>
+            <div style="font-size:0.9rem;color:#444;" id="q2BestScore">Best Score: -</div>
+        </div>`;
+    container.appendChild(card);
+
+    firebase.auth().onAuthStateChanged(user => {
+        if(!user) return;
+        const uid = user.uid;
+        // Use science-experiments as the key for this specific quiz
+        const summaryRef = firebase.database().ref(`quizSummaries/science-experiments/${uid}`);
+        summaryRef.once('value').then(snap => {
+            if(snap.exists()){
+                const s = snap.val();
+                const lastEl = document.getElementById('q2LastScore');
+                const bestEl = document.getElementById('q2BestScore');
+                if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+                if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
+            } else {
+                // Fallback student path
+                firebase.database().ref(`students/${uid}/quizzes/science-experiments/summary`).once('value').then(msnap => {
+                    if(!msnap.exists()) return;
+                    const s = msnap.val();
+                    const lastEl = document.getElementById('q2LastScore');
+                    const bestEl = document.getElementById('q2BestScore');
+                    if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+                    if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
+                });
+            }
+        });
+    });
+})();
+
+// --- Extend tab switching to include Assessments ---
+(function(){
+    const tabs = document.querySelectorAll('.quarter-tab');
+    const sections = document.querySelectorAll('.quarter-section');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t=>t.classList.remove('active'));
+            tab.classList.add('active');
+            const target = tab.getAttribute('data-quarter');
+            sections.forEach(sec => sec.classList.remove('active'));
+            if(target === 'assessments') {
+                document.getElementById('quarter-assessments').classList.add('active');
+            } else {
+                const sec = document.getElementById('quarter-' + target);
+                if(sec) sec.classList.add('active');
+            }
+        });
+    });
+})();
 
 </script>
 <script src="../assets/js/navbar.js"></script>

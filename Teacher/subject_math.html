@@ -231,6 +231,7 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
             <div class="quarter-tab" data-quarter="3">Quarter 3</div>
             <div class="quarter-tab" data-quarter="4">Quarter 4</div>
             <div class="quarter-tab" data-quarter="5" style="margin-left: auto;" >Quizzes</div>
+            <div class="quarter-tab" data-quarter="assessments">Assessments</div>
         </div>
 
         <!-- Quarter 1 -->
@@ -417,9 +418,68 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
                 <div id="quiz-list"></div>
             </div>
         </div>
+
+        <!-- Assessments panel -->
+        <div class="quarter-section" id="quarter-assessments">
+            <div class="quarter-title">
+                <i class="fas fa-clipboard-check"></i>
+                <h2>Summative Assessments</h2>
+            </div>
+            <div class="lessons-container" id="assessmentsContainer">
+                <!-- Assessment cards will be injected here -->
+            </div>
+        </div>
     </div>
 
     <script src="../assets/js/Teacher Side/subject.js"></script>
+
+    <script>
+    // --- Inject Assessment Card for Math ---
+    (function(){
+        const container = document.getElementById('assessmentsContainer');
+        if(!container) return;
+        
+        // Ensure the container has the proper grid styling
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
+        container.style.gap = '20px';
+        container.style.marginBottom = '30px';
+
+        // Create Assessment 1 card for Math
+        const card = document.createElement('div');
+        card.className = 'lesson-item';
+        card.innerHTML = `
+            <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;">A1</div>
+            <div class="lesson-title">
+                <h3>Assessment 1: Everyday Math</h3>
+                <p>10-item real‑life math skills check.</p>
+                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam.html'">Start</span>
+                <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
+            </div>`;
+        container.appendChild(card);
+
+        // Fetch last score if user logged in
+        firebase.auth().onAuthStateChanged(function(user){
+            if(!user) return;
+            const uid = user.uid;
+            firebase.database().ref('assessmentScores/assessment1/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
+                if(!snap.exists()) return;
+                let val; snap.forEach(c=> val = c.val ? c.val() : c); // handle object or direct
+                const dataObj = (typeof val === 'object') ? val : null;
+                const scoreEl = document.getElementById('a1LastScore');
+                if(scoreEl && dataObj) {
+                    scoreEl.textContent = `Last Score: ${dataObj.score}/${dataObj.total} (${dataObj.percentage}%)`;
+                } else if(scoreEl && !dataObj){
+                    // If stored as direct leaf (score object)
+                    const raw = snap.val();
+                    if(raw && raw.score !== undefined) {
+                        scoreEl.textContent = `Last Score: ${raw.score}/${raw.total} (${raw.percentage}%)`;
+                    }
+                }
+            });
+        });
+    })();
+    </script>
 
     <footer>
         <div class="footer-content">
