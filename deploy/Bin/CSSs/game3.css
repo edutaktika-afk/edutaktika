@@ -1,0 +1,209 @@
+:root {
+    --primary-color: #6a5acd;
+    --secondary-color: #9370db;
+    --accent-color: #ff8c00;
+    --correct-color: #4caf50;
+    --wrong-color: #f44336;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Comic Neue', cursive;
+    background-color: #f0f8ff;
+    color: var(--dark-color);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.game-container {
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 800px;
+    padding: 25px;
+    text-align: center;
+}
+
+header {
+    margin-bottom: 20px;
+}
+
+h1 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-size: 2.2rem;
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-around;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+.game-area {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.hint-area {
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+#hint-image {
+    max-height: 100px;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+    display: none;
+}
+
+.drop-area {
+    min-height: 80px;
+    border: 3px dashed var(--secondary-color);
+    border-radius: 10px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(147, 112, 219, 0.1);
+    width: 100%;
+    padding: 10px;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.letters-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 10px 0;
+    min-height: 60px;
+}
+
+.letter {
+    width: 50px;
+    height: 50px;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: grab;
+    border-radius: 8px;
+    user-select: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.letter:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.letter.dragging {
+    opacity: 0.5;
+    transform: scale(1.1);
+}
+
+.letter.in-drop-area {
+    background-color: var(--secondary-color);
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.2s;
+    min-width: 100px;
+}
+
+button:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+#check-btn {
+    background-color: var(--correct-color);
+}
+
+#reset-btn {
+    background-color: var(--wrong-color);
+}
+
+#hint-btn {
+    background-color: var(--accent-color);
+}
+
+.message {
+    min-height: 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: all 0.3s;
+}
+
+.correct {
+    color: var(--correct-color);
+}
+
+.wrong {
+    color: var(--wrong-color);
+}
+
+@media (max-width: 600px) {
+    .game-container {
+        padding: 15px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .letter {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+    
+    button {
+        padding: 8px 15px;
+        min-width: 80px;
+    }
+}

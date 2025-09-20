@@ -1,0 +1,130 @@
+.burger-btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 3100;
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    left: 5;
+}
+.burger-btn span {
+    display: block;
+    width: 26px;
+    height: 4px;
+    margin: 4px 0;
+    background: #8b602e;
+    border-radius: 2px;
+    transition: 0.3s;
+    
+}
+@media (max-width: 900px) {
+    .burger-btn {
+        display: flex !important;
+    
+    }
+    nav {
+        position: fixed !important;
+        top: 0;
+        right: 100vw;
+        width: 55vw;
+        max-width: 360px;
+        min-width: 0 !important;
+        height: 100vh;
+        background: linear-gradient(135deg, #e6ffe6 0%, #f9f9ff 100%);
+        /* Use the same gradient or color as your profile sidebar */
+        border-top-right-radius: 32px;
+        border-bottom-right-radius: 32px;
+        box-shadow: -2px 0 24px rgba(46,139,87,0.13), 0 0 0 1px #e0e0e0;
+        z-index: 3000 !important;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 60px 0 0 0;
+        transition: right 0.35s cubic-bezier(.77,0,.18,1);
+        overflow-y: auto;
+        overflow-x: hidden;
+        
+    }
+    nav.open {
+        left: 0;
+    }
+    nav ul {
+        flex-direction: column !important;
+        width: 100%;
+        gap: 0 !important;
+        padding: 0 !important;
+    }
+    nav ul li {
+        width: 100%;
+        text-align: left;
+        padding: 0 24px;
+        margin: 0 0 12px 0 !important;
+    }
+    .sidebar-overlay {
+        z-index: 2999 !important;
+        position: fixed !important;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.25);
+        display: none;
+        transition: opacity 0.25s;
+    }
+    .sidebar-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+     .nav-close-btn {
+        position: absolute !important;
+        top: 18px !important;
+        right: 18px !important;
+        font-size: 2.2rem !important;
+        z-index: 3100 !important;
+        background: none !important;
+        border: none !important;
+        color: #ff69b4 !important;
+        width: 44px !important;
+        height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+}
+/* Animate burger to X */
+.burger-btn.open span:nth-child(1) {
+    transform: translateY(11.5px) rotate(45deg);
+}
+.burger-btn.open span:nth-child(2) {
+    opacity: 0;
+}
+.burger-btn.open span:nth-child(3) {
+    transform: translateY(-11.5px) rotate(-45deg);
+}
+
+/* Overlay styles */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    z-index: 2999; /* nav is 3000 */
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.25);
+    transition: opacity 0.25s;
+}
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+.burger-btn {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .burger-btn {
+        display: flex !important;
+    }
+}

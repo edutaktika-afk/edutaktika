@@ -11,7 +11,7 @@
 
             // Add active class to clicked tab and corresponding section
             tab.classList.add("active");
-            const quarterId = `quarter-${tab.dataset.quarter}`;
+            const quarterId = tab.dataset.quarter === 'assessments' ? 'quarter-assessments' : `quarter-${tab.dataset.quarter}`;
             document.getElementById(quarterId).classList.add("active");
         });
     });
@@ -50,17 +50,19 @@
     const listViewBtn = document.querySelector(".list-view-btn");
     const lectureList = document.querySelector(".lecture-list");
 
-    gridViewBtn.addEventListener("click", () => {
-        gridViewBtn.classList.add("active");
-        listViewBtn.classList.remove("active");
-        lectureList.classList.remove("list-view");
-    });
+    if (gridViewBtn && listViewBtn && lectureList) {
+        gridViewBtn.addEventListener("click", () => {
+            gridViewBtn.classList.add("active");
+            listViewBtn.classList.remove("active");
+            lectureList.classList.remove("list-view");
+        });
 
-    listViewBtn.addEventListener("click", () => {
-        listViewBtn.classList.add("active");
-        gridViewBtn.classList.remove("active");
-        lectureList.classList.add("list-view");
-    });
+        listViewBtn.addEventListener("click", () => {
+            listViewBtn.classList.add("active");
+            gridViewBtn.classList.remove("active");
+            lectureList.classList.add("list-view");
+        });
+    }
 
     
     

@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="../CSS/header.css">
     <link rel="stylesheet" href="../CSS/subject.css">
     <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/burger.css">
     <title>Math</title>
     <style>
         nav ul {
@@ -98,6 +99,13 @@
 </head>
 <body>
     <div id="mainContent" style="display:none;">
+
+                    <!-- Burger icon for mobile -->
+<button id="burgerBtn" class="burger-btn" aria-label="Open menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
     <header>
         <div class="floating-elements">
             <div class="floating-element"></div>
@@ -141,6 +149,11 @@
             </nav>
         </div>
     </header>
+
+        <!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
 
      <!-- Profile Sidebar (Dynamic with Firebase) -->
 <div id="profileSidebar" class="profile-sidebar">
@@ -236,6 +249,18 @@
     <script src="../assets/js/Student Side/header.js"></script>
 
     <div class="container">
+        <!-- Dropdown for mobile -->
+<div class="quarter-dropdown-custom">
+    <button class="quarter-dropdown-btn" id="quarterDropdownBtn">Quarter 1</button>
+    <ul class="quarter-dropdown-list" id="quarterDropdownList">
+        <li data-target="quarter-1" class="active">Quarter 1</li>
+        <li data-target="quarter-2">Quarter 2</li>
+        <li data-target="quarter-3">Quarter 3</li>
+        <li data-target="quarter-4">Quarter 4</li>
+        <li data-target="quarter-5">Quizzes</li>
+        <li data-target="quarter-assessments">Assessments</li>
+    </ul>
+</div>
         <div class="quarter-nav">
             <div class="quarter-tab active" data-quarter="1">Quarter 1</div>
             <div class="quarter-tab" data-quarter="2">Quarter 2</div>
@@ -252,7 +277,7 @@
             </div>
             <div class="lessons-container"></div>
             <!-- YouTube Lessons (auto-fetched) -->
-            <div id="youtube-lessons" style="margin-top: 20px;">
+            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FsQc_kW5q38HD3Geb4VVQz4" style="margin-top: 20px;">
                 <div class="quarter-title" style="align-items:center; gap:10px;">
                     <i class="fab fa-youtube"></i>
                     <h3 style="margin:0;">Video Lessons</h3>
@@ -658,7 +683,7 @@ auth.onAuthStateChanged(async function(user) {
     card.innerHTML = `
         <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;">Q1</div>
         <div class="lesson-title">
-            <h3>Quiz 1: Time & Time Zones</h3>
+            <h3>Quiz 1: Math - Time & Time Zones</h3>
             <p>Drag & drop time conversion and world zones.</p>
             <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/lesson1.html'">Start</span>
             <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="q1LastScore">Last Score: -</div>
@@ -685,6 +710,50 @@ auth.onAuthStateChanged(async function(user) {
                     const s = msnap.val();
                     const lastEl = document.getElementById('q1LastScore');
                     const bestEl = document.getElementById('q1BestScore');
+                    if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+                    if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
+                });
+            }
+        });
+    });
+})();
+
+// --- Inject Quiz Card 2 for Math (Clock Quiz) ---
+(function(){
+    const container = document.getElementById('quizzesContainer');
+    if(!container) return;
+    const card = document.createElement('div');
+    card.className='lesson-item';
+    card.innerHTML = `
+        <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;">Q2</div>
+        <div class="lesson-title">
+            <h3>Quiz 2: Math - Clock Setting</h3>
+            <p>Practice setting analog clocks to requested times.</p>
+            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/clock-quiz.html'">Start</span>
+            <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="q2LastScore">Last Score: -</div>
+            <div style="font-size:0.9rem;color:#444;" id="q2BestScore">Best Score: -</div>
+        </div>`;
+    container.appendChild(card);
+
+    firebase.auth().onAuthStateChanged(user => {
+        if(!user) return;
+        const uid = user.uid;
+        // Use clock-quiz as the key for this specific quiz
+        const summaryRef = firebase.database().ref(`quizSummaries/clock-quiz/${uid}`);
+        summaryRef.once('value').then(snap => {
+            if(snap.exists()){
+                const s = snap.val();
+                const lastEl = document.getElementById('q2LastScore');
+                const bestEl = document.getElementById('q2BestScore');
+                if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+                if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
+            } else {
+                // Fallback student path
+                firebase.database().ref(`students/${uid}/quizzes/clock-quiz/summary`).once('value').then(msnap => {
+                    if(!msnap.exists()) return;
+                    const s = msnap.val();
+                    const lastEl = document.getElementById('q2LastScore');
+                    const bestEl = document.getElementById('q2BestScore');
                     if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
                     if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
                 });
@@ -764,65 +833,95 @@ auth.onAuthStateChanged(async function(user) {
     </div>
  
 <script>
-// Load latest YouTube videos for the channel handle into Quarter 1
-async function loadYouTubeVideos() {
-    const apiKey = "AIzaSyAWPWvF3BK1HPYHw36_kXSUvcf3lW38gls";
-    const handle = "@Edutaktika"; // channel handle
-    const maxResults = 10;
+// Load latest YouTube videos via playlist RSS feed into Quarter 1 (Student)
+async function loadYouTubeVideosStudent() {
+    const wrapper = document.getElementById('youtube-lessons');
+    const container = document.querySelector('#youtube-lessons .lessons-container');
+    if (!container || !wrapper) return;
+
+    // Configure your playlist ID here or set data-playlist-id on #youtube-lessons
+    const playlistId = (wrapper.dataset.playlistId || '').trim();
+    if (!playlistId) {
+        container.innerHTML = '<div style="color:#888;">Set a YouTube playlist ID to load videos.</div>';
+        return;
+    }
+
+    const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${encodeURIComponent(playlistId)}`;
+
+    // CORS proxy for RSS feeds
+    const fetchWithCors = async (url) => {
+        try {
+            const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+            return await response.text();
+        } catch (e) {
+            console.warn('CORS proxy failed, trying direct fetch:', e);
+            return await fetch(url).then(r => r.text());
+        }
+    };
 
     try {
-        // Step 1: Resolve handle to channelId
-        const channelRes = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(handle)}&key=${apiKey}`
-        );
-        const channelData = await channelRes.json();
-        const target = document.querySelector('#youtube-lessons .lessons-container');
-        if (!channelData.items || !channelData.items.length) {
-            if (target) target.innerHTML = '<div>No YouTube channel found.</div>';
+        console.log('Fetching Math playlist:', playlistId);
+        const xmlText = await fetchWithCors(feedUrl);
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(xmlText, 'text/xml');
+        const entries = Array.from(doc.getElementsByTagName('entry'));
+        console.log('Found entries:', entries.length);
+
+        if (!entries.length) {
+            container.innerHTML = '<div>No recent videos found.</div>';
             return;
         }
-        const channelId = channelData.items[0].id.channelId;
 
-        // Step 2: Fetch latest videos for that channel
-        const res = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=${maxResults}`
-        );
-        const data = await res.json();
-
-        const container = document.querySelector('#youtube-lessons .lessons-container');
-        if (!container) return;
-        container.innerHTML = '';
-
-        (data.items || []).forEach(item => {
-            if (item.id && item.id.kind === 'youtube#video') {
-                const videoId = item.id.videoId;
-                const title = item.snippet.title;
-                const desc = item.snippet.description || '';
-                const thumb = item.snippet.thumbnails?.medium?.url || '';
-
-                const div = document.createElement('div');
-                div.className = 'lesson-item';
-                div.innerHTML = `
-                    <div class="lesson-thumbnail" style="background-image:url('${thumb}'); background-size:cover;"></div>
-                    <div class="lesson-title">
-                        <h3>${title}</h3>
-                        <p>${desc.substring(0, 80)}...</p>
-                        <span class="lesson-badge" style="cursor:pointer;"
-                            onclick="window.location.href='video.html?id=${videoId}'">Watch</span>
-                    </div>
-                `;
-                container.appendChild(div);
-            }
+        const YT_NS = 'http://www.youtube.com/xml/schemas/2015';
+        
+        // Math-related keywords to filter content
+        const mathKeywords = ['math', 'mathematics', 'number', 'addition', 'subtraction', 'multiplication', 'division', 'fraction', 'decimal', 'geometry', 'algebra', 'equation', 'problem', 'solve', 'calculate', 'gmdas', 'clock', 'time', 'measurement', 'sequence', 'operation', 'counting', 'place value', 'rounding', 'percentage', 'ratio', 'proportion', 'angle', 'triangle', 'circle', 'square', 'rectangle', 'area', 'perimeter', 'volume', 'statistics', 'graph', 'chart', 'data', 'pattern', 'logic', 'reasoning'];
+        
+        const filteredEntries = entries.filter(entry => {
+            const titleEl = entry.getElementsByTagName('title')[0];
+            const title = titleEl ? (titleEl.textContent || '').toLowerCase() : '';
+            return mathKeywords.some(keyword => title.includes(keyword));
         });
-        if (!container.children.length) container.innerHTML = '<div>No recent videos found.</div>';
+        
+        // If no Math-specific videos found, show all videos from playlist
+        console.log('Filtered entries:', filteredEntries.length, 'out of', entries.length);
+        const videosToShow = filteredEntries.length > 0 ? filteredEntries : entries;
+        
+        videosToShow.slice(0, 5).forEach(entry => {
+            const vidEl = entry.getElementsByTagNameNS?.(YT_NS, 'videoId')?.[0]
+                || entry.getElementsByTagName('yt:videoId')?.[0]
+                || entry.querySelector('yt\\:videoId, videoId');
+            const titleEl = entry.getElementsByTagName('title')[0];
+            const videoId = vidEl ? (vidEl.textContent || '').trim() : '';
+            const title = titleEl ? (titleEl.textContent || 'YouTube Video').trim() : 'YouTube Video';
+            if (!videoId) return;
+
+            const div = document.createElement('div');
+            div.className = 'lesson-item';
+            div.innerHTML = `
+                <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
+                <div class="lesson-title">
+                    <h3>${title}</h3>
+                    <p>Math video lesson</p>
+                    <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='video.html?id=${videoId}'">Watch</span>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+
+        if (!container.children.length) {
+            container.innerHTML = '<div>No math-related videos found in the playlist.</div>';
+        }
     } catch (err) {
-        console.error('Error fetching YouTube videos', err);
-        const container = document.querySelector('#youtube-lessons .lessons-container');
-        if (container) container.innerHTML = '<div>Failed to load YouTube videos.</div>';
+        console.error('Error fetching YouTube videos:', err);
+        container.innerHTML = '<div>Failed to load YouTube videos.</div>';
     }
 }
 
-document.addEventListener('DOMContentLoaded', loadYouTubeVideos);
+document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
 </script>
+<script src="../assets/js/navbar.js"></script>
+
+<script src="../assets/js/tabDropdown.js"></script>
 </body>
 </html>

@@ -1,7 +1,9 @@
 // --- Edit Profile Modal Logic ---
 
 // Open modal and fill with current info
-document.querySelector('.profile-edit-btn').onclick = async function() {
+const profileEditBtn = document.querySelector('.profile-edit-btn');
+if (profileEditBtn) {
+    profileEditBtn.onclick = async function() {
     const user = firebase.auth().currentUser;
     if (!user) return;
     const snap = await firebase.database().ref('teachers/' + user.uid).once('value');
@@ -12,14 +14,17 @@ document.querySelector('.profile-edit-btn').onclick = async function() {
     document.getElementById('edit_gradelevel').value = data.grade || '';
     document.getElementById('edit_section').value = data.section || '';
     document.getElementById('editProfileModal').style.display = 'flex';
-};
+    };
+}
 
 function closeEditProfileModal() {
     document.getElementById('editProfileModal').style.display = 'none';
 }
 
 // Save changes
-document.getElementById('editProfileForm').onsubmit = async function(e) {
+const editProfileForm = document.getElementById('editProfileForm');
+if (editProfileForm) {
+    editProfileForm.onsubmit = async function(e) {
     e.preventDefault();
     const user = firebase.auth().currentUser;
     if (!user) return;
@@ -34,4 +39,5 @@ document.getElementById('editProfileForm').onsubmit = async function(e) {
     closeEditProfileModal();
     // Optionally, refresh profile info on sidebar
     location.reload();
-};
+    };
+}

@@ -12,8 +12,7 @@
     body {
         font-family: 'Baloo 2', Arial, sans-serif;
         margin: 0;
-        background: url('../images/9404194.jpg') no-repeat center center fixed;
-        background-size: cover;
+        background: #f7f9fb;
         padding: 0;
         color: var(--forest-green);
         min-height: 100vh;
@@ -214,7 +213,7 @@
     margin-bottom: 18px;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 900px) {
     .scoring-stats {
         flex-direction: column;
         gap: 12px;
@@ -223,8 +222,6 @@
     .filters-form {
         flex-direction: column;
         gap: 10px;
-        justify-content: center;
-        align-items: center;
     }
     .student-nav {
         flex-direction: column;
@@ -232,129 +229,16 @@
     }
 }
 
-@media screen and (max-width: 700px) {
+@media (max-width: 600px) {
     .container {
-        padding: 0 2vw !important;
-        max-width: 100vw !important;
-        min-width: 0 !important;
-        box-sizing: border-box;
-    }
-    .student-nav {
-        flex-direction: column !important;
-        gap: 6px !important;
-        margin: 18px 0 12px 0 !important;
-    }
-    .student-tab {
-        width: 100% !important;
-        font-size: 1rem !important;
-        padding: 10px 0 !important;
-        border-radius: 12px 12px 0 0 !important;
-        justify-content: center !important;
-    }
-    .filters-form {
-        
-    
-        align-items: stretch !important;
-        width: 40% !important;
-    }
-    .search-bar {
-        
-        
-        justify-content: center;
-        align-items: center;
-    }
-    .filters-form select {
-        width: 100% !important;
-        font-size: 0.98rem !important;
-        padding: 7px 10px !important;
-    }
-    .scoring-stats {
-        flex-direction: column !important;
-        gap: 8px !important;
-        align-items: stretch !important;
-        width: 100% !important;
-    }
-    .stat-box {
-        min-width: 0 !important;
-        width: 100% !important;
-        font-size: 0.98rem !important;
-        padding: 10px 6px !important;
-    }
-    .minimal-table {
-        font-size: 0.97rem !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        overflow-x: auto !important;
-        display: block !important;
+        padding: 0 4vw;
     }
     .minimal-table th, .minimal-table td {
-        font-size: 0.93rem !important;
-        padding: 7px 4px !important;
-        min-width: 80px !important;
-        word-break: break-word !important;
+        font-size: 0.95rem;
+        padding: 8px 6px;
     }
-    #listSection, #student-2 {
-        max-height: 260px !important;
-        margin-bottom: 10px !important;
-    }
-    .mini-btn {
-        font-size: 0.93rem !important;
-        padding: 5px 10px !important;
-        border-radius: 6px !important;
-    }
-}
-
-/* Hide scrollbars on mobile for a cleaner look */
-@media (max-width: 700px) {
-    html, body, .container, .profile-sidebar, #listSection, #student-2 {
-        scrollbar-width: none;         /* Firefox */
-        -ms-overflow-style: none;      /* IE and Edge */
-    }
-    html::-webkit-scrollbar, body::-webkit-scrollbar,
-    .container::-webkit-scrollbar, .profile-sidebar::-webkit-scrollbar,
-    #listSection::-webkit-scrollbar, #student-2::-webkit-scrollbar {
-        display: none;                 /* Chrome, Safari, Opera */
-    }
-}
-
-@media (max-width: 700px) {
-    nav {
-        z-index: 3000 !important;
-        position: fixed !important;
-        top: 0;
-        right: 100vw;
-        width: 85vw;
-        max-width: 360px;
-        min-width: 0 !important;
-        height: 100vh;
-        background: #fff;
-        box-shadow: -2px 0 24px #2e8b5733;
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: flex-start;
-        padding: 60px 0 0 0;
-        transition: right 0.35s cubic-bezier(.77,0,.18,1);
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-    nav.open {
-        left: 0;
-    }
-    .sidebar-overlay {
-        z-index: 2999 !important;
-        position: fixed !important;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.25);
-        display: none;
-        transition: opacity 0.25s;
-    }
-    .sidebar-overlay.active {
-        display: block;
-        opacity: 1;
-    }
-    /* Make sure table and container have lower z-index */
-    .container, .minimal-table {
-        position: relative;
-        z-index: 1;
+    .stat-box {
+        padding: 12px 10px;
+        min-width: 80px;
     }
 }

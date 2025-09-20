@@ -37,6 +37,7 @@
    <link rel="stylesheet" href="../CSS/studentlist.css">
    <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/dropdown.css">
+    <link rel="stylesheet" href="../CSS/burger.css">
     <style>
     .profile-sidebar {
     margin-top: 20px;
@@ -50,12 +51,16 @@
 }
 </style>
    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 <div id="mainContent" style="display:none;">
+
+        <!-- Burger icon for mobile -->
+<button id="burgerBtn" class="burger-btn" aria-label="Open menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
     <header>
         <div class="floating-elements">
             <div class="floating-element"></div>
@@ -362,7 +367,6 @@
         const sectionOptions = Array.from(sections).sort().map(s => `<option value="${s}">${s}</option>`).join('');
         document.getElementById('list_school_year').innerHTML = `<option value="">All School Years</option>${yearOptions}`;
         document.getElementById('scoring_school_year').innerHTML = `<option value="">All School Years</option>${yearOptions}`;
-        document.getElementById('list_section').innerHTML = `<option value="">All Sections</option>${sectionOptions}`;
         document.getElementById('scoring_section').innerHTML = `<option value="">All Sections</option>${sectionOptions}`;
     }
 
@@ -371,13 +375,53 @@ const rowsPerPage = 10;
 
     async function loadStudents(page = 1) {
         const sy = document.getElementById('list_school_year').value;
-        const sec = document.getElementById('list_section').value;
         let ref = db.ref('students');
         const snapshot = await ref.once('value');
         let studentsArr = [];
+
+        // Get teacher's section, school year, and grade level from Firebase
+        const teacherSnap = await db.ref('teachers/' + firebase.auth().currentUser.uid).once('value');
+        const teacher = teacherSnap.val();
+        const teacherSection = teacher && teacher.section ? teacher.section : null;
+        const teacherSY = teacher && teacher.school_year ? teacher.school_year : null;
+        let teacherGrade = teacher && teacher.gradelevel ? teacher.gradelevel : null;
+
+        // If teacher grade level is not set, try to determine it from the students
+        if (!teacherGrade) {
+            const gradeCounts = {};
+            snapshot.forEach(child => {
+                const s = child.val();
+                if (s.section === teacherSection && s.gradelevel) {
+                    gradeCounts[s.gradelevel] = (gradeCounts[s.gradelevel] || 0) + 1;
+                }
+            });
+            
+            let mostCommonGrade = null;
+            let maxCount = 0;
+            for (const [grade, count] of Object.entries(gradeCounts)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    mostCommonGrade = grade;
+                }
+            }
+            
+            if (mostCommonGrade) {
+                teacherGrade = mostCommonGrade;
+                // Update the teacher's grade level in Firebase
+                await db.ref('teachers/' + firebase.auth().currentUser.uid).update({
+                    gradelevel: teacherGrade
+                });
+            } else {
+                teacherGrade = '5'; // Default to Grade 5
+            }
+        }
+
         snapshot.forEach(child => {
             const s = child.val();
-            if ((sy && s.school_year !== sy) || (sec && s.section !== sec)) return;
+            if (sy && s.school_year !== sy) return;
+            if (teacherSection && s.section !== teacherSection) return;
+            if (teacherSY && s.school_year !== teacherSY) return;
+            if (teacherGrade && s.gradelevel !== teacherGrade) return;
             studentsArr.push({ key: child.key, ...s });
         });
 
@@ -438,22 +482,54 @@ const rowsPerPage = 10;
     }
 
     async function loadScoring() {
-    // Get teacher's section and school year from Firebase
+    // Get teacher's section, school year, and grade level from Firebase
     const teacherSnap = await db.ref('teachers/' + firebase.auth().currentUser.uid).once('value');
     const teacher = teacherSnap.val();
     const teacherSection = teacher && teacher.section ? teacher.section : null;
     const teacherSY = teacher && teacher.school_year ? teacher.school_year : null;
+    let teacherGrade = teacher && teacher.gradelevel ? teacher.gradelevel : null;
 
     let ref = db.ref('students');
     const snapshot = await ref.once('value');
     let html = '';
     let total = 0, male = 0, female = 0;
 
+    // If teacher grade level is not set, try to determine it from the students
+    if (!teacherGrade) {
+        const gradeCounts = {};
+        snapshot.forEach(child => {
+            const s = child.val();
+            if (s.section === teacherSection && s.gradelevel) {
+                gradeCounts[s.gradelevel] = (gradeCounts[s.gradelevel] || 0) + 1;
+            }
+        });
+        
+        let mostCommonGrade = null;
+        let maxCount = 0;
+        for (const [grade, count] of Object.entries(gradeCounts)) {
+            if (count > maxCount) {
+                maxCount = count;
+                mostCommonGrade = grade;
+            }
+        }
+        
+        if (mostCommonGrade) {
+            teacherGrade = mostCommonGrade;
+            // Update the teacher's grade level in Firebase
+            await db.ref('teachers/' + firebase.auth().currentUser.uid).update({
+                gradelevel: teacherGrade
+            });
+        } else {
+            teacherGrade = '5'; // Default to Grade 5
+        }
+    }
+
     snapshot.forEach(child => {
         const s = child.val();
-        // Only show students with the same section and school year as the teacher
+        // Only show students with the same section, school year, and grade level as the teacher
         if (teacherSection && s.section !== teacherSection) return;
         if (teacherSY && s.school_year !== teacherSY) return;
+        if (teacherGrade && s.gradelevel !== teacherGrade) return;
         total++;
         if (s.gender === 'Male') male++;
         if (s.gender === 'Female') female++;
@@ -482,7 +558,6 @@ const rowsPerPage = 10;
         await loadScoring();
 
         document.getElementById('list_school_year').addEventListener('change', loadStudents);
-        document.getElementById('list_section').addEventListener('change', loadStudents);
         document.getElementById('scoring_school_year').addEventListener('change', loadScoring);
         document.getElementById('scoring_section').addEventListener('change', loadScoring);
     });
@@ -504,18 +579,57 @@ async function filterAndSearchStudents() {
     const snapshot = await ref.once('value');
     let html = '';
 
-    // Get teacher's section and school year from Firebase
+    // Get teacher's section, school year, and grade level from Firebase
     const teacherSnap = await db.ref('teachers/' + firebase.auth().currentUser.uid).once('value');
     const teacher = teacherSnap.val();
     const teacherSection = teacher && teacher.section ? teacher.section : null;
     const teacherSY = teacher && teacher.school_year ? teacher.school_year : null;
+    const teacherGrade = teacher && teacher.gradelevel ? teacher.gradelevel : null;
+
+    // If teacher grade level is not set, try to determine it from the students or set a default
+    let effectiveTeacherGrade = teacherGrade;
+    if (!effectiveTeacherGrade) {
+        // Try to find the most common grade level among students in the teacher's section
+        const gradeCounts = {};
+        snapshot.forEach(child => {
+            const s = child.val();
+            if (s.section === teacherSection && s.gradelevel) {
+                gradeCounts[s.gradelevel] = (gradeCounts[s.gradelevel] || 0) + 1;
+            }
+        });
+        
+        // Find the most common grade level
+        let mostCommonGrade = null;
+        let maxCount = 0;
+        for (const [grade, count] of Object.entries(gradeCounts)) {
+            if (count > maxCount) {
+                maxCount = count;
+                mostCommonGrade = grade;
+            }
+        }
+        
+        if (mostCommonGrade) {
+            effectiveTeacherGrade = mostCommonGrade;
+            
+            // Update the teacher's grade level in Firebase
+            await db.ref('teachers/' + firebase.auth().currentUser.uid).update({
+                gradelevel: effectiveTeacherGrade
+            });
+        } else {
+            // If we can't determine from students, default to Grade 5
+            effectiveTeacherGrade = '5';
+        }
+    }
 
     // --- Calculate stats (without search) ---
     let total = 0, male = 0, female = 0;
     snapshot.forEach(child => {
         const s = child.val();
+        
         if (teacherSection && s.section !== teacherSection) return;
         if (teacherSY && s.school_year !== teacherSY) return;
+        if (effectiveTeacherGrade && s.gradelevel !== effectiveTeacherGrade) return;
+        
         total++;
         if (s.gender === 'Male') male++;
         if (s.gender === 'Female') female++;
@@ -529,6 +643,7 @@ async function filterAndSearchStudents() {
         const s = child.val();
         if (teacherSection && s.section !== teacherSection) return;
         if (teacherSY && s.school_year !== teacherSY) return;
+        if (effectiveTeacherGrade && s.gradelevel !== effectiveTeacherGrade) return;
         const fullName = `${s.fname || ''} ${s.mname || ''} ${s.lname || ''}`.toLowerCase();
         if (search && !fullName.includes(search)) return;
         html += `<tr>
@@ -824,5 +939,8 @@ async function showStudentDetails(studentId) {
     min-width: 0;
 }
 </style>
+
+<script src="../assets/js/navbar.js"></script>
+<script src="../assets/js/tabDropdown.js"></script>
 </body>
 </html>

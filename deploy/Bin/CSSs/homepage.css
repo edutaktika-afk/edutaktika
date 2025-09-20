@@ -343,87 +343,6 @@
             gap: 16px;
         }
     }
-    @media (max-width: 700px) {
-    header, .header-content, nav ul {
-        flex-direction: column !important;
-        align-items: center !important;
-        width: 100vw !important;
-        min-width: 0 !important;
-        padding: 0 !important;
-    }
-    .logo {
-        margin: 0 auto 10px auto !important;
-        justify-content: center !important;
-        padding-right: 50px !important;
-    }
-    .logo-text {
-        font-size: 1.3rem !important;
-        text-align: center !important;
-    }
-    nav ul {
-        gap: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-    nav ul li {
-        margin: 0 0 8px 0 !important;
-        width: 100vw !important;
-        text-align: center !important;
-    }
-    .dropdown-content {
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        min-width: 140px !important;
-    }
-    
-    .sidebar-overlay {
-        display: none;
-        position: fixed;
-        z-index: 1999;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.25);
-        transition: opacity 0.25s;
-    }
-    .sidebar-overlay.active {
-        display: block;
-        opacity: 1;
-    }
-    .hero-container, .section-title, .mv-container, .benefits-grid {
-        padding: 0 2vw !important;
-        max-width: 100vw !important;
-    }
-    .graph-card, .mv-card, .benefit-card {
-        min-width: 0 !important;
-        max-width: 100vw !important;
-        padding: 18px 6px !important;
-    }
-    .footer-content, .footer-column {
-        flex-direction: column !important;
-        align-items: center !important;
-        text-align: center !important;
-        padding: 0 !important;
-    }
-    .footer-column {
-        margin-bottom: 18px !important;
-    }
-    .footer-bottom {
-        flex-direction: column !important;
-        align-items: center !important;
-        gap: 8px !important;
-        font-size: 0.95rem !important;
-    }
-}
-
-/* Hide scrollbars on mobile for a cleaner look */
-@media (max-width: 700px) {
-    html, body, .profile-sidebar {
-        scrollbar-width: none;         /* Firefox */
-        -ms-overflow-style: none;      /* IE and Edge */
-    }
-    html::-webkit-scrollbar, body::-webkit-scrollbar, .profile-sidebar::-webkit-scrollbar {
-        display: none;                 /* Chrome, Safari, Opera */
-    }
-}
 
     /* Fade-in and slide-up scroll effect */
 .scroll-fade {
@@ -475,5 +394,3 @@
 .profile-sidebar::-webkit-scrollbar {
     display: none;                 /* Chrome, Safari, Opera */
 }
-
-

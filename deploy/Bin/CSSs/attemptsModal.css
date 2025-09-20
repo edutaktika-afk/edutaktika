@@ -1,0 +1,5 @@
+/* Attempts Modal Shared Styles */
+#attemptsModal { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.45); z-index:1200; align-items:center; justify-content:center; }
+#attemptsModal .modal-content { background:#fff; padding:24px 28px; border-radius:18px; width:95%; max-width:520px; max-height:80vh; overflow:auto; box-shadow:0 8px 28px #0004; }
+.attempt-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee; font-size:13px; font-family:monospace; }
+.attempt-row:last-child { border-bottom:none; }

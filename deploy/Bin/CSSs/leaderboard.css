@@ -16,8 +16,6 @@
             font-family: 'Comic Neue', 'Comic Sans MS', cursive, sans-serif;
             margin: 0;
             padding: 0;
-             background: url('../images/9404194.jpg') no-repeat center center fixed;
-            background-size: cover;
         }
         .leaderboard-container {
             max-width: 900px;
@@ -215,62 +213,4 @@
 }
 .profile-sidebar::-webkit-scrollbar {
     display: none;                 /* Chrome, Safari, Opera */
-}
-
-@media (max-width: 700px) {
-    .filters-form {
-        flex-direction: row !important;   /* One line on mobile */
-        gap: 10px !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 100% !important;
-        flex-wrap: wrap;
-    }
-    .filters-form select,
-    .filters-form input[type="search"],
-    .search-bar {
-        width: auto !important;
-        min-width: 0 !important;
-        flex: 1 1 0;
-    }
-}
-
-@media (max-width: 600px) {
-    html, body, .container, .profile-sidebar, #listSection, #student-2, .filters-form {
-        scrollbar-width: none;         /* Firefox */
-        -ms-overflow-style: none;      /* IE and Edge */
-    }
-    html::-webkit-scrollbar, body::-webkit-scrollbar,
-    .container::-webkit-scrollbar, .profile-sidebar::-webkit-scrollbar,
-    #listSection::-webkit-scrollbar, #student-2::-webkit-scrollbar,
-    .filters-form::-webkit-scrollbar {
-        display: none;                 /* Chrome, Safari, Opera */
-    }
-}
-@media (max-width: 700px) {
-    .leaderboard-container {
-        padding: 16px 4vw 16px 4vw;
-        border-radius: 16px;
-        max-width: 99vw;
-    }
-    .podium {
-        gap: 12px;
-        flex-wrap: wrap;
-    }
-    .leaderboard-title {
-        font-size: 1.3rem;
-        font-weight: bold;
-    }
-    .leaderboard-desc {
-        font-size: 1rem;
-        margin-bottom: 0;
-    }
-    .leaderboard-table th,
-    .leaderboard-table td {
-        padding: 8px 2px;
-        font-size: 0.95rem;
-    }
-    .pagination {
-        font-size: 0.95rem;
-    }
 }

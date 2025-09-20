@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <title>Login & Register</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <style>
     :root {
         --primary: #2e8b57;
         --secondary: #ffd700;
@@ -22,6 +26,14 @@
         font-family: 'Baloo 2', 'Comic Sans MS', cursive, sans-serif;
         box-sizing: border-box;
     }
+    /* Global font consistency (student) */
+    body, button, input, select, textarea, label, p, h1, h2, h3, h4, h5, h6, .tab-btn, .action-btn, .container, .auth-hero-content {
+        font-family: 'Baloo 2', 'Comic Sans MS', cursive, sans-serif;
+    }
+    /* Preserve FontAwesome */
+    .fa, .fas, .far, .fal, .fab { font-family: 'Font Awesome 6 Free'; }
+    .fas, .fa-solid { font-weight: 900; }
+    .fa::before, .fas::before, .far::before, .fal::before, .fab::before { font-family: 'Font Awesome 6 Free'; font-weight: 900; }
     body {
         min-height: 100vh;
         display: flex;
@@ -243,41 +255,124 @@ label {
 }
 @media (max-width: 700px) {
     .auth-main-container {
-        flex-direction: column;
-        padding: 0;
+        align-items: stretch !important;
+        min-height: 100vh !important;
+        height: auto !important;
+    }
+    body {
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
     }
     .auth-left, .auth-right {
         width: 100%;
         min-width: 0;
-        padding: 0;
+        margin: 0;
+        padding: 0 0 0 0;
+        align-items: center;
+        justify-content: center;
     }
-    .container {
-        max-width: 98vw;
-        padding: 10px 2vw;
-        max-height: 98vh;
+    .auth-hero-content {
+        text-align: center;
+        padding: 0 2vw;
+    }
+    .auth-hero-content h1 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+    .auth-hero-content p {
+        font-size: 1rem;
+        margin-bottom: 18px;
+        max-width: 95vw;
     }
     .auth-hero-img {
+        display: block;
+        margin: 14px auto 0 auto; /* <-- center image */
         width: 220px;
     }
-}
-.form-section {
-    display: none;
-}
-.form-row {
-    display: flex;
-    gap: 12px;
-    width: 100%;
-    margin-bottom: 0;
-}
-.form-row .form-group {
-    flex: 1 1 0;
-    min-width: 0;
-    margin-bottom: 0;
-}
-@media (max-width: 900px) {
+    .container {
+        background: rgba(255,255,255,0.98);
+        border-radius: 18px;
+        box-shadow: 0 8px 32px #2e8b5733, 0 2px 8px #ffd70055;
+        padding: 32px 24px 24px 24px;
+        width: 100%;
+        max-height: none !important;
+        min-width: 0;           /* <-- allow shrinking on mobile */
+        position: relative;
+        box-sizing: border-box;
+        z-index: 2;
+        border: 2px solid var(--primary);
+        animation: popIn 0.7s;
+        min-height: 0 !important;
+        height: auto !important;
+        box-sizing: border-box;
+        max-height: 90vh;
+        overflow-y: visible !important;
+    }
     .form-row {
         flex-direction: column;
         gap: 0;
+    }
+    .form-group {
+        margin-bottom: 10px;
+        min-width: 0;
+    }
+    input, select {
+        font-size: 1rem;
+        min-width: 0;
+    }
+    .action-btn, button[type="submit"] {
+        font-size: 1rem;
+        padding: 12px 0;
+    }
+    .tabs {
+        flex-direction: row;
+        font-size: 1rem;
+    }
+    .tab-btn {
+        font-size: 1rem;
+        padding: 8px 0;
+    }
+    .form-group {
+        margin-bottom: 10px;
+    }
+    .tabs {
+        flex-direction: row;
+        font-size: 0.98rem;
+    }
+    .tab-btn {
+        font-size: 0.98rem;
+        padding: 8px 0;
+    }
+    .action-btn, button[type="submit"] {
+        font-size: 1rem;
+        padding: 12px 0;
+    }
+    label {
+        font-size: 0.98rem;
+    }
+    input, select {
+        font-size: 0.97rem;
+    }
+    .btnBack button {
+        padding: 7px 10px;
+        font-size: 0.95rem;
+        border-radius: 6px;
+        box-shadow: 1px 1px 0 #baffd9;
+    }
+    .btnBack {
+        top: 10px !important;
+        right: 10px !important;
+    }
+}
+
+/* Hide scrollbars on mobile for a cleaner look */
+@media (max-width: 700px) {
+    html, body {
+        scrollbar-width: none;         /* Firefox */
+        -ms-overflow-style: none;      /* IE and Edge */
+    }
+    html::-webkit-scrollbar, body::-webkit-scrollbar {
+        display: none;                 /* Chrome, Safari, Opera */
     }
 }
     </style>
@@ -728,6 +823,20 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 
  <script src="../assets/js/Student Side/logreg.js"></script>
+ <script>
+ // Password visibility toggle (added to mirror teacher page)
+ function togglePassword(id, trigger){
+     const input = document.getElementById(id);
+     if(!input) return;
+     const icon = trigger.querySelector('i');
+     const showing = input.type === 'text';
+     input.type = showing ? 'password' : 'text';
+     if(icon){
+         icon.classList.toggle('fa-eye', showing);
+         icon.classList.toggle('fa-eye-slash', !showing);
+     }
+ }
+ </script>
  <script>
 function showRegisterSuccessModal() {
     document.getElementById('registerSuccessModal').style.display = 'flex';

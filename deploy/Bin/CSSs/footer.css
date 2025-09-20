@@ -1,0 +1,97 @@
+
+   :root {
+        --primary: #2e8b57;
+        --secondary: #ffd700;
+        --accent: #ff69b4;
+        --background: #f0f8ff;
+        --card-bg: #ffffff;
+        --text-main: #22223b;
+        --text-light: #9a8c98;
+        --shadow: 0 4px 24px rgba(46, 139, 87, 0.08);
+        --radius: 18px;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Comic Sans MS", "Marker Felt", "Arial Rounded MT Bold",
+            sans-serif;
+    }
+
+    body {
+        
+        overflow-x: hidden;
+    }
+
+
+    footer {
+        background: #2e8b57;
+        color: #232946;
+        padding: 60px 0 20px;
+        position: relative;
+        /* make border wave */
+        opacity: 0.9;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .footer-column h3 {
+        font-size: 1.3rem;
+        margin-bottom: 20px;
+        color:white;
+    }
+    .edu {
+        color: var(--sun-yellow);
+        text-shadow: 2px 2px 0 var(--sun-yellow);
+    }
+
+    .footer-column ul {
+        list-style: none;
+    }
+
+    .footer-column p {
+        color:  var(--card-bg);
+    }
+
+    .footer-column ul li {
+        margin-bottom: 10px;
+    }
+
+    .footer-column ul li a {
+        color:  var(--card-bg);
+        text-decoration: none;
+        transition: all 0.3s;
+        font-weight: 600;
+    }
+
+    .footer-column ul li a:hover {
+        color: #4f8cff;
+        padding-left: 5px;
+    }
+
+    .footer-bottom {
+        text-align: center;
+        padding-top: 40px;
+        margin-top: 40px;
+        border-top: 1px solid rgba(35, 41, 70, 0.1);
+        color: white;
+    }
+
+    .footer-links a {
+        color: white;
+        text-decoration: none;
+        margin: 0 10px;
+        font-size: 1.3rem;
+    }
+
+    .footer-links a:hover {
+        color: #ffb6b9;
+    }

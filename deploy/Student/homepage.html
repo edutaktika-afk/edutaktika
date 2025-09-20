@@ -31,13 +31,19 @@ document.addEventListener("DOMContentLoaded", function() {
     <link rel="stylesheet" href="../CSS/header.css">
     <link rel="stylesheet" href="../CSS/homepage.css">
     <link rel="stylesheet" href="../CSS/footer.css">
-
+    <link rel="stylesheet" href="../CSS/burger.css">
     <title>Home</title>
     
 </head>
 
 <body>
     <div id="mainContent" style="display:none;">
+            <!-- Burger icon for mobile -->
+<button id="burgerBtn" class="burger-btn" aria-label="Open menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
         <header>
             <div class="floating-elements">
                 <div class="floating-element"></div>
@@ -83,6 +89,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 </nav>
             </div>
         </header>
+
+        <!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
 
      <!-- Profile Sidebar (Dynamic with Firebase) -->
 <div id="profileSidebar" class="profile-sidebar">
@@ -597,6 +608,7 @@ document.addEventListener("DOMContentLoaded", function() {
     </style>
 
             <script src="../assets/js/Student Side/profile.js"></script>
+            <script src="../assets/js/navbar.js"></script>
 </body>
 
 </html>

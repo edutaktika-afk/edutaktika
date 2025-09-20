@@ -32,6 +32,7 @@
     <link rel="stylesheet" href="../CSS/subject.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/dropdown.css">
+    <link rel="stylesheet" href="../CSS/burger.css">
     <link rel="icon" type="image/png" href="../images/icons/math.png" />
     <title>Math</title>
     <style>
@@ -50,7 +51,12 @@
 
 <body>
     <div id="mainContent" style="display:none;">
-
+    <!-- Burger icon for mobile -->
+<button id="burgerBtn" class="burger-btn" aria-label="Open menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
    <header>
         <div class="floating-elements">
             <div class="floating-element"></div>
@@ -96,7 +102,10 @@
         </div>
     </header>
 
-
+<!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
  <!-- Profile Sidebar (Dynamic with Firebase) -->
 <div id="profileSidebar" class="profile-sidebar">
     <div class="sidebar-content">
@@ -202,6 +211,19 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
 });
 </script>
 
+<!-- Dropdown for mobile -->
+<div class="quarter-dropdown-custom">
+    <button class="quarter-dropdown-btn" id="quarterDropdownBtn">Quarter 1</button>
+    <ul class="quarter-dropdown-list" id="quarterDropdownList">
+        <li data-target="quarter-1" class="active">Quarter 1</li>
+        <li data-target="quarter-2">Quarter 2</li>
+        <li data-target="quarter-3">Quarter 3</li>
+        <li data-target="quarter-4">Quarter 4</li>
+        <li data-target="quarter-5">Quizzes</li>
+        <li data-target="quarter-assessments">Assessments</li>
+    </ul>
+</div>
+
         <!-- Quarter Navigation -->
         <div class="quarter-nav">
             <div class="quarter-tab active" data-quarter="1">Quarter 1</div>
@@ -209,6 +231,7 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
             <div class="quarter-tab" data-quarter="3">Quarter 3</div>
             <div class="quarter-tab" data-quarter="4">Quarter 4</div>
             <div class="quarter-tab" data-quarter="5" style="margin-left: auto;" >Quizzes</div>
+            <div class="quarter-tab" data-quarter="assessments">Assessments</div>
         </div>
 
         <!-- Quarter 1 -->
@@ -230,7 +253,7 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
             </div>
 
             <!-- YouTube Lessons (auto-fetched) -->
-            <div id="youtube-lessons" data-channel-id="UCjPqk3KZAKIdGShdVLx9fqQ" style="margin-top: 20px;">
+            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FsQc_kW5q38HD3Geb4VVQz4" style="margin-top: 20px;">
                 <div class="quarter-title" style="align-items:center; gap:10px;">
                     <i class="fab fa-youtube"></i>
                     <h3 style="margin:0;">Video Lessons</h3>
@@ -395,9 +418,68 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
                 <div id="quiz-list"></div>
             </div>
         </div>
+
+        <!-- Assessments panel -->
+        <div class="quarter-section" id="quarter-assessments">
+            <div class="quarter-title">
+                <i class="fas fa-clipboard-check"></i>
+                <h2>Summative Assessments</h2>
+            </div>
+            <div class="lessons-container" id="assessmentsContainer">
+                <!-- Assessment cards will be injected here -->
+            </div>
+        </div>
     </div>
 
     <script src="../assets/js/Teacher Side/subject.js"></script>
+
+    <script>
+    // --- Inject Assessment Card for Math ---
+    (function(){
+        const container = document.getElementById('assessmentsContainer');
+        if(!container) return;
+        
+        // Ensure the container has the proper grid styling
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
+        container.style.gap = '20px';
+        container.style.marginBottom = '30px';
+
+        // Create Assessment 1 card for Math
+        const card = document.createElement('div');
+        card.className = 'lesson-item';
+        card.innerHTML = `
+            <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;">A1</div>
+            <div class="lesson-title">
+                <h3>Assessment 1: Everyday Math</h3>
+                <p>10-item real‑life math skills check.</p>
+                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam.html'">Start</span>
+                <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
+            </div>`;
+        container.appendChild(card);
+
+        // Fetch last score if user logged in
+        firebase.auth().onAuthStateChanged(function(user){
+            if(!user) return;
+            const uid = user.uid;
+            firebase.database().ref('assessmentScores/assessment1/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
+                if(!snap.exists()) return;
+                let val; snap.forEach(c=> val = c.val ? c.val() : c); // handle object or direct
+                const dataObj = (typeof val === 'object') ? val : null;
+                const scoreEl = document.getElementById('a1LastScore');
+                if(scoreEl && dataObj) {
+                    scoreEl.textContent = `Last Score: ${dataObj.score}/${dataObj.total} (${dataObj.percentage}%)`;
+                } else if(scoreEl && !dataObj){
+                    // If stored as direct leaf (score object)
+                    const raw = snap.val();
+                    if(raw && raw.score !== undefined) {
+                        scoreEl.textContent = `Last Score: ${raw.score}/${raw.total} (${raw.percentage}%)`;
+                    }
+                }
+            });
+        });
+    })();
+    </script>
 
     <footer>
         <div class="footer-content">
@@ -1083,20 +1165,20 @@ document.getElementById('createQuizForm').onsubmit = async function(e) {
 </script>
 
 <script>
-// Load latest YouTube videos via channel RSS feed into Quarter 1 (Teacher)
+// Load latest YouTube videos via playlist RSS feed into Quarter 1 (Teacher)
 async function loadYouTubeVideosTeacher() {
     const wrapper = document.getElementById('youtube-lessons');
     const container = document.querySelector('#youtube-lessons .lessons-container');
     if (!container || !wrapper) return;
 
-    // Configure your channel ID here or set data-channel-id on #youtube-lessons
-    const channelId = (wrapper.dataset.channelId || '').trim();
-    if (!channelId) {
-        container.innerHTML = '<div style="color:#888;">Set a YouTube channel ID to load videos.</div>';
+    // Configure your playlist ID here or set data-playlist-id on #youtube-lessons
+    const playlistId = (wrapper.dataset.playlistId || '').trim();
+    if (!playlistId) {
+        container.innerHTML = '<div style="color:#888;">Set a YouTube playlist ID to load videos.</div>';
         return;
     }
 
-    const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(channelId)}`;
+    const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${encodeURIComponent(playlistId)}`;
 
     // Helper to fetch with robust CORS fallbacks
     async function fetchWithCors(url) {
@@ -1135,7 +1217,17 @@ async function loadYouTubeVideosTeacher() {
         container.innerHTML = '';
 
         const YT_NS = 'http://www.youtube.com/xml/schemas/2015';
-        entries.slice(0, 5).forEach(entry => {
+        
+        // Math-related keywords to filter content
+        const mathKeywords = ['math', 'mathematics', 'number', 'addition', 'subtraction', 'multiplication', 'division', 'fraction', 'decimal', 'geometry', 'algebra', 'equation', 'problem', 'solve', 'calculate', 'gmdas', 'clock', 'time', 'measurement', 'sequence', 'operation', 'counting', 'place value', 'rounding', 'percentage', 'ratio', 'proportion', 'angle', 'triangle', 'circle', 'square', 'rectangle', 'area', 'perimeter', 'volume', 'statistics', 'graph', 'chart', 'data', 'pattern', 'logic', 'reasoning'];
+        
+        const filteredEntries = entries.filter(entry => {
+            const titleEl = entry.getElementsByTagName('title')[0];
+            const title = titleEl ? (titleEl.textContent || '').toLowerCase() : '';
+            return mathKeywords.some(keyword => title.includes(keyword));
+        });
+        
+        filteredEntries.slice(0, 5).forEach(entry => {
             const vidEl = entry.getElementsByTagNameNS?.(YT_NS, 'videoId')?.[0]
                 || entry.getElementsByTagName('yt:videoId')?.[0]
                 || entry.querySelector('yt\\:videoId, videoId');
@@ -1160,7 +1252,7 @@ async function loadYouTubeVideosTeacher() {
         });
 
         if (!container.children.length) {
-            container.innerHTML = '<div>No recent videos found.</div>';
+            container.innerHTML = '<div>No math-related videos found in the playlist.</div>';
         }
     } catch (err) {
         console.error('Error fetching YouTube RSS (teacher)', err);
@@ -1170,7 +1262,8 @@ async function loadYouTubeVideosTeacher() {
 
 document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
 </script>
-
+<script src="../assets/js/navbar.js"></script>
+<script src="../assets/js/tabDropdown.js"></script>
     </div>
 </body>
 

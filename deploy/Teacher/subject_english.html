@@ -32,6 +32,7 @@
     <link rel="stylesheet" href="../CSS/subject.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/dropdown.css">
+    <link rel="stylesheet" href="../CSS/burger.css">
     <link rel="icon" type="image/png" href="../images/icons/eng.png" />
     <title>English</title>
     
@@ -39,7 +40,12 @@
 
 <body>
     <div id="mainContent" style="display:none;">
-
+    <!-- Burger icon for mobile -->
+<button id="burgerBtn" class="burger-btn" aria-label="Open menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
    <header>
         <div class="floating-elements">
             <div class="floating-element"></div>
@@ -84,7 +90,10 @@
             </nav>
         </div>
     </header>
-
+<!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
 
  <!-- Profile Sidebar (Dynamic with Firebase) -->
 <div id="profileSidebar" class="profile-sidebar">
@@ -208,6 +217,20 @@
 })();
 </script>
 
+<!-- Dropdown for mobile -->
+<div class="quarter-dropdown-custom">
+    <button class="quarter-dropdown-btn" id="quarterDropdownBtn">Quarter 1</button>
+    <ul class="quarter-dropdown-list" id="quarterDropdownList">
+        <li data-target="quarter-1" class="active">Quarter 1</li>
+        <li data-target="quarter-2">Quarter 2</li>
+        <li data-target="quarter-3">Quarter 3</li>
+        <li data-target="quarter-4">Quarter 4</li>
+        <li data-target="quarter-5">Quizzes</li>
+        <li data-target="quarter-assessments">Assessments</li>
+    </ul>
+</div>
+
+
         <!-- Quarter Navigation -->
         <div class="quarter-nav">
             <div class="quarter-tab active" data-quarter="1">Quarter 1</div>
@@ -215,6 +238,7 @@
             <div class="quarter-tab" data-quarter="3">Quarter 3</div>
             <div class="quarter-tab" data-quarter="4">Quarter 4</div>
             <div class="quarter-tab" data-quarter="5" style="margin-left: auto;" >Quizzes</div>
+            <div class="quarter-tab" data-quarter="assessments">Assessments</div>
         </div>
 
         <!-- Quarter 1 -->
@@ -233,6 +257,17 @@
                 
 
                 
+            </div>
+
+            <!-- YouTube Lessons (auto-fetched) -->
+            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FslU5009s_m_AhD0bQNbiaW" style="margin-top: 20px;">
+                <div class="quarter-title" style="align-items:center; gap:10px;">
+                    <i class="fab fa-youtube"></i>
+                    <h3 style="margin:0;">Video Lessons</h3>
+                </div>
+                <div class="lessons-container">
+                    <div>Loading YouTube lessons…</div>
+                </div>
             </div>
 
             <!-- <div class="progress-container">
@@ -390,9 +425,68 @@
                 <div id="quiz-list"></div>
             </div>
         </div>
+
+        <!-- Assessments panel -->
+        <div class="quarter-section" id="quarter-assessments">
+            <div class="quarter-title">
+                <i class="fas fa-clipboard-check"></i>
+                <h2>Summative Assessments</h2>
+            </div>
+            <div class="lessons-container" id="assessmentsContainer">
+                <!-- Assessment cards will be injected here -->
+            </div>
+        </div>
     </div>
 
     <script src="../assets/js/Teacher Side/subject.js"></script>
+
+    <script>
+    // --- Inject Assessment Card for English ---
+    (function(){
+        const container = document.getElementById('assessmentsContainer');
+        if(!container) return;
+        
+        // Ensure the container has the proper grid styling
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
+        container.style.gap = '20px';
+        container.style.marginBottom = '30px';
+
+        // Create Assessment 1 card for English
+        const card = document.createElement('div');
+        card.className = 'lesson-item';
+        card.innerHTML = `
+            <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;">A1</div>
+            <div class="lesson-title">
+                <h3>Assessment 1: English Fundamentals</h3>
+                <p>10-item English language skills assessment.</p>
+                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam.html'">Start</span>
+                <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
+            </div>`;
+        container.appendChild(card);
+
+        // Fetch last score if user logged in
+        firebase.auth().onAuthStateChanged(function(user){
+            if(!user) return;
+            const uid = user.uid;
+            firebase.database().ref('assessmentScores/assessment1/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
+                if(!snap.exists()) return;
+                let val; snap.forEach(c=> val = c.val ? c.val() : c); // handle object or direct
+                const dataObj = (typeof val === 'object') ? val : null;
+                const scoreEl = document.getElementById('a1LastScore');
+                if(scoreEl && dataObj) {
+                    scoreEl.textContent = `Last Score: ${dataObj.score}/${dataObj.total} (${dataObj.percentage}%)`;
+                } else if(scoreEl && !dataObj){
+                    // If stored as direct leaf (score object)
+                    const raw = snap.val();
+                    if(raw && raw.score !== undefined) {
+                        scoreEl.textContent = `Last Score: ${raw.score}/${raw.total} (${raw.percentage}%)`;
+                    }
+                }
+            });
+        });
+    })();
+    </script>
 
     <footer>
         <div class="footer-content">
@@ -1077,6 +1171,114 @@ document.getElementById('createQuizForm').onsubmit = async function(e) {
     window.location.href = 'quizEditor.html?' + params;
 };
 </script>
+
+<script>
+// Load latest YouTube videos via playlist RSS feed into Quarter 1 (Teacher) - English
+async function loadYouTubeVideosTeacher() {
+    const wrapper = document.getElementById('youtube-lessons');
+    const container = document.querySelector('#youtube-lessons .lessons-container');
+    if (!container || !wrapper) return;
+
+    // Configure your playlist ID here or set data-playlist-id on #youtube-lessons
+    const playlistId = (wrapper.dataset.playlistId || '').trim();
+    if (!playlistId) {
+        container.innerHTML = '<div style="color:#888;">Set a YouTube playlist ID to load videos.</div>';
+        return;
+    }
+
+    const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${encodeURIComponent(playlistId)}`;
+
+    // Helper to fetch with robust CORS fallbacks
+    async function fetchWithCors(url) {
+        // 1) Try direct
+        try {
+            const r = await fetch(url);
+            if (r.ok) return await r.text();
+            throw new Error('HTTP ' + r.status);
+        } catch (e1) {
+            // 2) Try AllOrigins raw endpoint
+            try {
+                const rAO = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+                if (rAO.ok) return await rAO.text();
+                throw new Error('AllOrigins HTTP ' + rAO.status);
+            } catch (e2) {
+                // 3) Try r.jina.ai mirror (read-only proxy with permissive CORS)
+                const jinaUrl = 'https://r.jina.ai/http/' + url.replace(/^https?:\/\//i, '');
+                const rJ = await fetch(jinaUrl);
+                if (rJ.ok) return await rJ.text();
+                throw new Error('jina.ai HTTP ' + rJ.status);
+            }
+        }
+    }
+
+    try {
+        console.log('Fetching English playlist:', playlistId);
+        const xmlText = await fetchWithCors(feedUrl);
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(xmlText, 'text/xml');
+        const entries = Array.from(doc.getElementsByTagName('entry'));
+        console.log('Found entries:', entries.length);
+
+        if (!entries.length) {
+            container.innerHTML = '<div>No recent videos found.</div>';
+            return;
+        }
+
+        container.innerHTML = '';
+
+        const YT_NS = 'http://www.youtube.com/xml/schemas/2015';
+        
+        // English-related keywords to filter content (simplified for better matching)
+        const englishKeywords = ['english', 'language', 'grammar', 'vocabulary', 'reading', 'writing', 'speaking', 'listening', 'comprehension', 'literature', 'poetry', 'story', 'essay', 'paragraph', 'sentence', 'word', 'spelling', 'pronunciation', 'phonics', 'alphabet', 'letter', 'noun', 'verb', 'adjective', 'adverb', 'preposition', 'conjunction', 'interjection', 'tense', 'present', 'past', 'future', 'singular', 'plural', 'subject', 'predicate', 'clause', 'phrase', 'punctuation', 'capitalization', 'comma', 'period', 'question', 'exclamation', 'quotation', 'apostrophe', 'hyphen', 'dash', 'parentheses', 'brackets', 'semicolon', 'colon', 'ellipsis', 'narrative', 'descriptive', 'expository', 'persuasive', 'argumentative', 'creative', 'fiction', 'non-fiction', 'biography', 'autobiography', 'memoir', 'journal', 'diary', 'letter', 'email', 'report', 'review', 'summary', 'analysis', 'critique', 'interpretation', 'theme', 'plot', 'character', 'setting', 'conflict', 'resolution', 'climax', 'denouement', 'dialogue', 'monologue', 'soliloquy', 'aside', 'flashback', 'foreshadowing', 'irony', 'symbolism', 'metaphor', 'simile', 'personification', 'alliteration', 'assonance', 'consonance', 'rhyme', 'rhythm', 'meter', 'stanza', 'verse', 'prose', 'drama', 'play', 'script', 'act', 'scene', 'stage', 'direction', 'lesson', 'learn', 'teach', 'teacher', 'student', 'class', 'school', 'education', 'study', 'learn', 'practice', 'exercise', 'activity', 'worksheet', 'quiz', 'test', 'exam', 'grade', 'level', 'elementary', 'primary', 'secondary', 'high', 'middle', 'junior', 'senior', 'kindergarten', 'pre-school', 'nursery', 'toddler', 'child', 'kid', 'student', 'pupil', 'learner', 'beginner', 'intermediate', 'advanced', 'basic', 'fundamental', 'foundation', 'introduction', 'overview', 'summary', 'review', 'recap', 'recapitulation', 'conclusion', 'ending', 'finish', 'complete', 'done', 'finished', 'accomplished', 'achieved', 'succeeded', 'passed', 'failed', 'mistake', 'error', 'correct', 'incorrect', 'right', 'wrong', 'true', 'false', 'yes', 'no', 'maybe', 'perhaps', 'possibly', 'definitely', 'certainly', 'absolutely', 'never', 'always', 'sometimes', 'often', 'rarely', 'seldom', 'frequently', 'occasionally', 'regularly', 'irregularly', 'consistently', 'inconsistently', 'constantly', 'continuously', 'intermittently', 'sporadically', 'randomly', 'systematically', 'methodically', 'carefully', 'carelessly', 'quickly', 'slowly', 'fast', 'slow', 'rapid', 'gradual', 'sudden', 'immediate', 'instant', 'delayed', 'postponed', 'cancelled', 'scheduled', 'planned', 'unplanned', 'expected', 'unexpected', 'surprising', 'shocking', 'amazing', 'wonderful', 'terrible', 'awful', 'excellent', 'outstanding', 'remarkable', 'extraordinary', 'ordinary', 'normal', 'typical', 'atypical', 'unusual', 'strange', 'weird', 'odd', 'peculiar', 'unique', 'special', 'particular', 'specific', 'general', 'broad', 'narrow', 'wide', 'deep', 'shallow', 'high', 'low', 'tall', 'short', 'big', 'small', 'large', 'tiny', 'huge', 'enormous', 'gigantic', 'massive', 'miniature', 'microscopic', 'macroscopic', 'visible', 'invisible', 'hidden', 'obvious', 'clear', 'unclear', 'vague', 'precise', 'exact', 'approximate', 'rough', 'smooth', 'even', 'uneven', 'level', 'slanted', 'tilted', 'straight', 'curved', 'bent', 'twisted', 'spiral', 'circular', 'round', 'square', 'rectangular', 'triangular', 'oval', 'elliptical', 'diamond', 'heart', 'star', 'cross', 'plus', 'minus', 'times', 'divided', 'equals'];
+        
+        const filteredEntries = entries.filter(entry => {
+            const titleEl = entry.getElementsByTagName('title')[0];
+            const title = titleEl ? (titleEl.textContent || '').toLowerCase() : '';
+            return englishKeywords.some(keyword => title.includes(keyword));
+        });
+        
+        // If no English-specific videos found, show all videos from playlist
+        console.log('Filtered entries:', filteredEntries.length, 'out of', entries.length);
+        const videosToShow = filteredEntries.length > 0 ? filteredEntries : entries;
+        
+        videosToShow.slice(0, 5).forEach(entry => {
+            const vidEl = entry.getElementsByTagNameNS?.(YT_NS, 'videoId')?.[0]
+                || entry.getElementsByTagName('yt:videoId')?.[0]
+                || entry.querySelector('yt\\:videoId, videoId');
+            const titleEl = entry.getElementsByTagName('title')[0];
+            const videoId = vidEl ? (vidEl.textContent || '').trim() : '';
+            const title = titleEl ? (titleEl.textContent || 'YouTube Video').trim() : 'YouTube Video';
+            if (!videoId) return;
+
+            const card = document.createElement('div');
+            card.className = 'lesson-item';
+            const watchUrl = `video.html?id=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}`;
+            card.innerHTML = `
+                <div class="video-embed" style="position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;margin-bottom:12px;background:#000;">
+                    <iframe src="https://www.youtube.com/embed/${videoId}" title="${title.replace(/"/g, '&quot;')}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" loading="lazy"></iframe>
+                </div>
+                <div class="lesson-title">
+                    <h3>${title}</h3>
+                    <button class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='${watchUrl}'">Watch</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        if (!container.children.length) {
+            container.innerHTML = '<div>No videos found in the playlist. Debug: ' + entries.length + ' total entries, ' + filteredEntries.length + ' filtered entries.</div>';
+        }
+    } catch (err) {
+        console.error('Error fetching YouTube RSS (teacher)', err);
+        container.innerHTML = '<div>Failed to load YouTube videos.</div>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
+</script>
+<script src="../assets/js/navbar.js"></script>
+
+<script src="../assets/js/tabDropdown.js"></script>
 </div>
 </body>
 

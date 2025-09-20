@@ -1,0 +1,122 @@
+/* Modal overlay */
+.edit-profile-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.35);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+
+/* Modal card */
+.edit-profile-card {
+    background: linear-gradient(180deg, #e0ffe6 0%, #b2f2c9 100%);
+    /* #e0ffe6 is a soft mint green, #b2f2c9 is a light green */
+    border-radius: 28px;
+    box-shadow: 0 4px 24px rgba(79,140,255,0.10);
+    max-width: 350px;
+    width: 90%;
+    padding: 36px 28px 28px 28px;
+    text-align: center;
+    position: relative;
+    font-family: 'Baloo 2', cursive, Arial, sans-serif;
+    animation: sidebarDrop 0.5s cubic-bezier(.77,0,.18,1);
+}
+
+.edit-profile-card h3 {
+    margin-top: 0;
+    margin-bottom: 18px;
+    font-size: 1.4rem;
+    color: #3f4d34;
+    font-family: 'Baloo 2', cursive, Arial, sans-serif;
+}
+
+.edit-profile-card label {
+    display: block;
+    text-align: left;
+    margin-bottom: 16px;
+    font-weight: 600;
+    color: #3f4d34;
+    font-size: 1.05rem;
+}
+
+.edit-profile-card input[type="text"] {
+    width: 100%;
+    padding: 9px 14px;
+    margin-top: 6px;
+    border: 2px solid #e0eaff;
+    border-radius: 14px;
+    background: #fff;
+    font-size: 1.08rem;
+    font-family: 'Baloo 2', cursive, Arial, sans-serif;
+    box-shadow: 0 2px 8px #e0eaff33;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.edit-profile-card input[type="text"]:focus {
+    border-color: #4faaff;
+}
+
+.edit-profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.edit-profile-actions button {
+    background: #4faaff;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 22px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.edit-profile-actions button[type="button"] {
+    background: #ffe6f7;
+    color: #ff69b4;
+}
+
+.edit-profile-actions button[type="button"]:hover {
+    background: #ff69b4;
+    color: #fff;
+}
+
+.edit-profile-actions button[type="submit"]:hover {
+    background: #2e8b57;
+}
+
+.edit-profile-card .close-btn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: none;
+    border: none;
+    font-size: 1.7rem;
+    color: #ff69b4;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.edit-profile-card .close-btn:hover {
+    color: #2e8b57;
+}
+
+/* Optional: Modal drop animation */
+@keyframes sidebarDrop {
+    0% {
+        transform: translateY(-60px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

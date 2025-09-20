@@ -26,13 +26,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Leaderboard</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS/header.css">
     <link rel="stylesheet" href="../CSS/leaderboard.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/dropdown.css">
+    <link rel="stylesheet" href="../CSS/burger.css">
     <link rel="icon" type="image/png" href="../images/icons/winner.png" />
 <style>
     .profile-sidebar {
@@ -49,7 +50,12 @@
 </head>
 <body>
 <div id="mainContent" style="display:none;">
-
+    <!-- Burger icon for mobile -->
+<button id="burgerBtn" class="burger-btn" aria-label="Open menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
     <header>
         <div class="floating-elements">
             <div class="floating-element"></div>
@@ -94,6 +100,11 @@
             </nav>
         </div>
     </header>
+
+<!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
 
  <!-- Profile Sidebar (Dynamic with Firebase) -->
 <div id="profileSidebar" class="profile-sidebar">
@@ -392,6 +403,7 @@
 </div>
 
 <script src="../assets/js/Teacher Side/editProfile.js"></script>
+<script src="../assets/js/navbar.js"></script>
 </div>
 </body>
 </html>
