@@ -35,6 +35,80 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        /* Add AFTER existing leaderboard table styles */
+@media (max-width: 560px) {
+  /* Hide Quiz (col 3) & Assessment (col 4), keep Rank, Player, Total, Badges */
+  .leaderboard-table th:nth-child(3),
+  .leaderboard-table td:nth-child(3),
+  .leaderboard-table th:nth-child(4),
+  .leaderboard-table td:nth-child(4) {
+    display: none !important;
+  }
+
+  .leaderboard-table {
+    table-layout: fixed;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 6px 4px !important;
+    font-size: .72rem !important;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  /* Rank */
+  .leaderboard-table th:nth-child(1),
+  .leaderboard-table td:nth-child(1) {
+    width: 42px;
+  }
+
+  /* Player cell */
+  .leaderboard-table th:nth-child(2),
+  .leaderboard-table td:nth-child(2) {
+    width: 46%;
+  }
+  .player-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .player-cell img {
+    width: 30px;
+    height: 30px;
+  }
+  .player-cell span {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Total */
+  .leaderboard-table th:nth-child(5),
+  .leaderboard-table td:nth-child(5) {
+    width: 20%;
+  }
+
+  /* Badges */
+  .leaderboard-table th:nth-child(6),
+  .leaderboard-table td:nth-child(6) {
+    width: 18%;
+    text-align: center;
+  }
+}
+
+/* Ultra narrow tweak */
+@media (max-width: 400px) {
+  .leaderboard-table th,
+  .leaderboard-table td { font-size: .68rem !important; }
+  .player-cell img { width: 26px; height: 26px; }
+}
+    </style>
 </head>
 <body>
 <div id="mainContent" style="display:none;">
@@ -487,6 +561,21 @@
 
     <script src="../assets/js/Teacher Side/profile.js"></script>
 
+<script>
+// Ensure logout functionality works
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutSwitch = document.getElementById('logoutSwitch');
+    if (logoutSwitch) {
+        logoutSwitch.onclick = function() {
+            firebase.auth().signOut().then(function() {
+                window.location.href = "logreg.html";
+            }).catch(function(error) {
+                console.error('Logout error:', error);
+            });
+        };
+    }
+});
+</script>
 
 <script src="../assets/js/navbar.js"></script>
 

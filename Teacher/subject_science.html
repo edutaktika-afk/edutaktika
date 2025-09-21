@@ -465,7 +465,7 @@
         // Add margin to separate from teacher quizzes
         container.style.marginTop = '20px';
 
-        // Create Quiz 1: Science Advanced (placeholder)
+        // Create Quiz 1: Science Quiz
         const quiz1 = document.createElement('div');
         quiz1.className = 'lesson-item';
         quiz1.innerHTML = `
@@ -473,14 +473,14 @@
                 <i class="fas fa-atom" style="font-size: 2.5rem; color: white;"></i>
             </div>
             <div class="lesson-title">
-                <h3>Quiz 1: Science - Coming Soon</h3>
-                <p>Advanced science quiz will be available soon!</p>
-                <span class="lesson-badge" style="cursor:not-allowed; background-color: #ccc; color: #666;">Coming Soon</span>
-                <div style="margin-top:8px;font-size:0.9rem;color:#444;">No quizzes available yet</div>
+                <h3>Quiz 1: Science Fundamentals</h3>
+                <p>Test your knowledge of basic science concepts!</p>
+                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/science_quiz.html'">Start Quiz</span>
+                <div style="margin-top:8px;font-size:0.9rem;color:#444;">10 multiple choice questions</div>
             </div>`;
         container.appendChild(quiz1);
 
-        // Create Quiz 2: Science Basics (placeholder)
+        // Create Quiz 2: Science Experiments
         const quiz2 = document.createElement('div');
         quiz2.className = 'lesson-item';
         quiz2.innerHTML = `
@@ -488,10 +488,10 @@
                 <i class="fas fa-flask" style="font-size: 2.5rem; color: white;"></i>
             </div>
             <div class="lesson-title">
-                <h3>Quiz 2: Science - Coming Soon</h3>
-                <p>Science quiz will be available soon!</p>
-                <span class="lesson-badge" style="cursor:not-allowed; background-color: #ccc; color: #666;">Coming Soon</span>
-                <div style="margin-top:8px;font-size:0.9rem;color:#444;">No quizzes available yet</div>
+                <h3>Quiz 2: Science Experiments</h3>
+                <p>Test your understanding of scientific experiments!</p>
+                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/science_quiz.html'">Start Quiz</span>
+                <div style="margin-top:8px;font-size:0.9rem;color:#444;">10 multiple choice questions</div>
             </div>`;
         container.appendChild(quiz2);
     })();
