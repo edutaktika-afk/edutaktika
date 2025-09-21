@@ -261,6 +261,22 @@
                     <div>Loading YouTube lessons…</div>
                 </div>
             </div>
+<<<<<<< HEAD
+=======
+            
+
+            <!--<div class="badges-container">
+                <div class="badges-title">Earned Badges</div>
+                <div class="badges-list">
+                    <div class="badge" data-tooltip="Time Master">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="badge" data-tooltip="Shape Explorer">
+                        <i class="fas fa-shapes"></i>
+                    </div>
+                </div>
+            </div> -->
+>>>>>>> f2ae106 (SUNDAY)
         </div>
 
         <!-- Quarter 2 -->
@@ -550,7 +566,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
                     if (!container) return;
                     container.innerHTML = '';
                     if (!snapshot.exists()) {
-                        container.innerHTML = "<div>No lessons found for this subject and quarter.</div>";
+                        
                         return;
                     }
                     snapshot.forEach(function(child) {
@@ -813,7 +829,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
 
         // Render lessons
         if (lessons.length === 0) {
-            container.innerHTML = "<div>No lessons found for this subject and quarter.</div>";
+           
         } else {
             container.innerHTML = lessons.map(lesson => `
                 <div class="lesson-item" data-presentation="${lesson.title}">
@@ -1252,7 +1268,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
 </script>
 
 <script src="../assets/js/navbar.js"></script>
-<script src="../assets/js/tabDropdown.js"></script>
+<script src="../assets/tabDropdown.js"></script>
     </div>
 </body>
 

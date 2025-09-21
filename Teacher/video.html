@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="../CSS/header.css">
   <link rel="stylesheet" href="../CSS/subject.css">
   <link rel="stylesheet" href="../CSS/footer.css">
+  <link rel="stylesheet" href="../CSS/burger.css">
   <!-- Plyr (optional, for alternative player UI) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3/dist/plyr.css" />
   <style>
@@ -115,6 +116,65 @@
     nav ul li .dropdown-content a:hover { background: #f0f0f0; }
     nav ul li.dropdown:hover .dropdown-content { display: block; }
   </style>
+  <style>
+    @media (max-width: 700px){
+  .toolbar{
+   
+    align-items: stretch;
+    gap:10px;
+    padding:4px 0 10px;
+  }
+  .toolbar > div:first-child{
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .toolbar a.back{
+    padding:6px 10px;
+    font-size:.78rem;
+  }
+  .toolbar h1{
+    font-size:15px;
+    line-height:1.2;
+    margin:0;
+    flex:1;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .right-controls{
+    width:100%;
+    justify-content:flex-start;
+    gap:6px;
+  }
+  .right-controls label{
+    font-size:.7rem;
+  }
+  select#playerSelect{
+    flex:0 0 auto;
+    font-size:.75rem;
+    padding:5px 8px;
+    max-width:160px;
+  }
+}
+
+/* Ultra narrow: put selector on same line wrapped under title if needed */
+@media (max-width:420px){
+  .toolbar{
+    gap:6px;
+  }
+  .right-controls{
+    order:2;
+  }
+  .toolbar h1{
+    font-size:14px;
+  }
+  select#playerSelect{
+    max-width:140px;
+  }
+}
+  </style>
 </head>
 <body>
   <div id="mainContent" style="display:none;">
@@ -185,7 +245,7 @@
       <div class="toolbar">
         <div style="display:flex; align-items:center; gap:12px;">
           <a class="back" href="subject_math.html"><i class="fa fa-arrow-left"></i> Back to Math</a>
-          <h1>Video Lessons</h1>
+          
         </div>
         <div class="right-controls">
           <label for="playerSelect" style="font-size:12px; opacity:.8; color:#2d3923;">Player</label>
