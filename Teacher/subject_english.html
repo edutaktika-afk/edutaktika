@@ -653,7 +653,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
                     if (!container) return;
                     container.innerHTML = '';
                     if (!snapshot.exists()) {
-                        container.innerHTML = "<div>No lessons found for this subject and quarter.</div>";
+                       
                         return;
                     }
                     snapshot.forEach(function(child) {
@@ -909,7 +909,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
 
         // Render lessons
         if (lessons.length === 0) {
-            container.innerHTML = "<div>No lessons found for this subject and quarter.</div>";
+            
         } else {
             container.innerHTML = lessons.map(lesson => `
                 <div class="lesson-item" data-presentation="${lesson.title}">
@@ -1350,7 +1350,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
 </script>
 <script src="../assets/js/navbar.js"></script>
 
-<script src="../assets/js/tabDropdown.js"></script>
+<script src="../assets/tabDropdown.js"></script>
 </div>
 </body>
 
