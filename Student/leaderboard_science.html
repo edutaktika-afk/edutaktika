@@ -421,7 +421,6 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             loadLeaderboard();
-            loadAssessmentLeaderboard();
         });
         </script>
 
@@ -463,43 +462,8 @@
                 <p>© 2023 Eduktaktika. All rights reserved.</p>
             </div>
         </footer>
-<<<<<<< HEAD
-<!--    
-    <link rel="stylesheet" href="../CSS/editProfile.css">
-
-    <div id="editProfileModal">
-        <div class="modal-content">
-            <h3>Edit Profile</h3>
-            <form id="editProfileForm">
-                <label>First Name:<br>
-                    <input type="text" id="edit_fname" required>
-                </label><br>
-                <label>Middle Name:<br>
-                    <input type="text" id="edit_mname">
-                </label><br>
-                <label>Last Name:<br>
-                    <input type="text" id="edit_lname" required>
-                </label><br>
-                <label>Grade Level:<br>
-                    <input type="text" id="edit_gradelevel" required>
-                </label><br>
-                <label>Section:<br>
-                    <input type="text" id="edit_section">
-                </label><br>
-                
-                <div style="text-align:right;">
-                    <button type="button" onclick="closeEditProfileModal()">Cancel</button>
-                    <button type="submit">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <script src="../assets/js/Student Side/editProfile.js"></script> -->
-=======
-
 
     <script src="../assets/js/Student Side/editProfile.js"></script>
->>>>>>> 01f58808eb3e5631c60a4c3790f96da20872eb2b
 
     <style>
         nav ul {
@@ -600,123 +564,7 @@
 
     <script src="../assets/js/Student Side/profile.js"></script>
 
-    <div class="leaderboard-container" style="margin-top:40px;">
-            <div class="leaderboard-title">📘 Assessment Leaderboard</div>
-            <div class="leaderboard-desc">Top students by best assessment scores.</div>
-            <table class="leaderboard-table" id="assessmentLeaderboardTable" style="margin-top:18px;">
-                <thead>
-                    <tr>
-                        <th>Rank</th>
-                        <th>Student</th>
-                        <th>Assessment 1 Best</th>
-                        <th>Total Best (All)</th>
-                    </tr>
-                </thead>
-                <tbody id="assessment-leaderboard-body">
-                    <tr><td colspan="4" style="text-align:center;padding:18px;">Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
 
-    <script>
-    // Unified Assessment Data Fetch
-    async function fetchAssessmentAggregates(){
-      // Try global summaries first
-      const summariesSnap = await firebase.database().ref('assessmentSummaries').once('value');
-      let source = 'summaries';
-      const aggregates = {}; // uid -> {assessmentBest:{id:best}, totalBest}
-      if(summariesSnap.exists()){
-        summariesSnap.forEach(assessNode => {
-          const aid = assessNode.key;
-          assessNode.forEach(userNode => {
-            const uid = userNode.key; const val = userNode.val();
-            if(!aggregates[uid]) aggregates[uid] = { assessmentBest:{}, totalBest:0 };
-            const best = (val && typeof val.best === 'number') ? val.best : 0;
-            aggregates[uid].assessmentBest[aid] = best;
-          });
-        });
-      } else {
-        // Fallback: per student path: students/<uid>/assessments/<assessmentId>/summary
-        source = 'students';
-        const studentsSnap = await firebase.database().ref('students').once('value');
-        studentsSnap.forEach(stuNode => {
-          const uid = stuNode.key;
-          const assessRoot = stuNode.child('assessments');
-          if(!assessRoot.exists()) return;
-          assessRoot.forEach(aNode => {
-            const aid = aNode.key;
-            const summaryNode = aNode.child('summary');
-            if(!summaryNode.exists()) return;
-            const summary = summaryNode.val();
-            const best = (summary && typeof summary.best === 'number') ? summary.best : 0;
-            if(!aggregates[uid]) aggregates[uid] = { assessmentBest:{}, totalBest:0 };
-            aggregates[uid].assessmentBest[aid] = best;
-          });
-        });
-      }
-      // compute totals
-      Object.keys(aggregates).forEach(uid => {
-        const a = aggregates[uid];
-        a.totalBest = Object.values(a.assessmentBest).reduce((s,v)=> s+ (v||0), 0);
-      });
-      return {aggregates, source};
-    }
-    </script>
-    <script>
-    // Replace previous Assessment leaderboard logic with unified fetch
-    (async function(){
-      const tbody = document.getElementById('assessment-leaderboard-body');
-      if(!tbody) return;
-      try {
-        const [{aggregates}, studentsSnap] = await Promise.all([
-          fetchAssessmentAggregates(),
-          firebase.database().ref('students').once('value')
-        ]);
-        const students = studentsSnap.val() || {};
-        const rows = Object.keys(aggregates).map(uid => {
-          const info = students[uid] || {};
-          const name = ((info.fname||'') + ' ' + (info.lname||'')).trim() || uid.substring(0,6);
-          const a1 = aggregates[uid].assessmentBest['assessment1'] !== undefined ? aggregates[uid].assessmentBest['assessment1'] : '-';
-          return { uid, name, a1, totalBest: aggregates[uid].totalBest };
-        });
-        rows.sort((a,b)=> b.totalBest - a.totalBest || a.name.localeCompare(b.name));
-        if(rows.length === 0){
-          tbody.innerHTML = '<tr><td colspan="4" style="padding:18px;text-align:center;">No assessment data.</td></tr>'; return;
-        }
-        tbody.innerHTML = rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.a1}</td><td>${r.totalBest}</td></tr>`).join('');
-      } catch(e){
-        console.error(e); tbody.innerHTML = `<tr><td colspan='4' style='padding:18px;text-align:center;color:#c00;'>${e.message}</td></tr>`;
-      }
-    })();
-    </script>
-    <script>
-    // Update Quiz vs Assessment aggregation to use unified fetch
-    (async function(){
-      const bodyEl = document.getElementById('qa-comparison-body');
-      if(!bodyEl) return;
-      try {
-        const [{aggregates}, studentsSnap] = await Promise.all([
-          fetchAssessmentAggregates(),
-          firebase.database().ref('students').once('value')
-        ]);
-        const students = studentsSnap.val() || {};
-        const rows = Object.keys(students).map(uid => {
-          const stu = students[uid] || {};
-          const quizPoints = parseInt(stu.points || 0);
-          const assessPoints = (aggregates[uid] && aggregates[uid].totalBest) || 0;
-          const overall = quizPoints + assessPoints;
-          const name = ((stu.fname||'') + ' ' + (stu.lname||'')).trim() || uid.substring(0,6);
-          return { uid, name, quizPoints, assessPoints, overall };
-        });
-        rows.sort((a,b)=> b.overall - a.overall || b.assessPoints - a.assessPoints || b.quizPoints - a.quizPoints);
-        if(rows.length === 0){ bodyEl.innerHTML = '<tr><td colspan="5" style="padding:18px;text-align:center;">No data.</td></tr>'; return; }
-        bodyEl.innerHTML = rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}</td><td>${r.quizPoints}</td><td>${r.assessPoints}</td><td>${r.overall}</td></tr>`).join('');
-      } catch(err){
-        console.error('QA comparison error', err);
-        bodyEl.innerHTML = `<tr><td colspan='5' style='padding:18px;text-align:center;color:#c00;'>Error: ${err.message}</td></tr>`;
-      }
-    })();
-    </script>
 
     <script src="../assets/js/navbar.js"></script>
     </div>
