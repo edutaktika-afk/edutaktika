@@ -309,11 +309,25 @@ label {
         overflow-y: visible !important;
     }
     .form-row {
+        
+        gap: 0;
+    }
+    .form-row.name-row {
         flex-direction: column;
         gap: 0;
     }
+    #reg_mname {
+        width: 100% !important;
+    }
+    #reg_lname, #reg_fname {
+        width: 100% !important;
+    }
+    .form-row.name-row .form-group {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
     .form-group {
-        margin-bottom: 10px;
+        margin-bottom: 5px;
         min-width: 0;
     }
     input, select {
@@ -375,6 +389,15 @@ label {
         display: none;                 /* Chrome, Safari, Opera */
     }
 }
+.form-row {
+    display: flex;
+    gap: 16px;
+}
+.form-row .form-group {
+    flex: 1;
+}
+
+
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </head>
@@ -432,21 +455,21 @@ label {
                                 <input type="text" name="reg_id" id="reg_id" required pattern="\d{12}" inputmode="numeric" maxlength="12" minlength="12" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                                 <div id="lrn-message" style="font-size:0.95em;color:#c0392b;margin-top:2px;"></div>
                             </div>
-                            <div class="form-row">
+                            <div class="form-row name-row" >
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-user"></i></span>
                                     <label for="reg_fname">First Name</label>
-                                    <input type="text" name="reg_fname" id="reg_fname" required>
+                                    <input type="text" pattern="[A-Za-z]+" name="reg_fname" id="reg_fname" required style="width: 190%;">
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group" style="margin-left: 61px;">
                                     <span class="input-icon"><i class="fas fa-user"></i></span>
                                     <label for="reg_mname">M.I</label>
-                                    <input type="text" name="reg_mname" id="reg_mname">
+                                    <input type="text" pattern="[A-Za-z]+" name="reg_mname" id="reg_mname" style="width: 111%;">
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group" style="margin-right: 70px;">
                                     <span class="input-icon"><i class="fas fa-user"></i></span>
                                     <label for="reg_lname">Last Name</label>
-                                    <input type="text" name="reg_lname" id="reg_lname" required>
+                                    <input type="text" pattern="[A-Za-z]+" name="reg_lname" id="reg_lname" required style="width: 190%;">
                                 </div>
                             </div>
                             <div class="form-group">
@@ -456,23 +479,32 @@ label {
                             </div>
                             <div class="form-group">
                                 <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
+                                <label for="reg_address_province">Province</label>
+                                <!-- FIXED province to Pampanga (readonly) -->
+                                <input type="text" name="reg_address_province" id="reg_address_province" value="Pampanga" readonly
+                                style="background:#eee;cursor:not-allowed;">
+                            </div>
+                            <!-- Barangay (was input -> select) -->
+                            <div class="form-row pair">
+                                <div class="form-group">
+                                    <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
+                                    <label for="reg_address_city">Municipality/City</label>
+                                    <select name="reg_address_city" id="reg_address_city" required>
+                                        <option value="">Select City / Municipality</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
+                                    <label for="reg_address_barangay">Barangay</label>
+                                    <select name="reg_address_barangay" id="reg_address_barangay" required disabled>
+                                        <option value="">Select Barangay</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
                                 <label for="reg_address_street">House/Building No. & Street</label>
                                 <input type="text" name="reg_address_street" id="reg_address_street" placeholder="" required>
-                            </div>
-                            <div class="form-group">
-                                <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
-                                <label for="reg_address_barangay">Barangay</label>
-                                <input type="text" name="reg_address_barangay" id="reg_address_barangay" placeholder="" required>
-                            </div>
-                            <div class="form-group">
-                                <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
-                                <label for="reg_address_city">Municipality/City</label>
-                                <input type="text" name="reg_address_city" id="reg_address_city" placeholder="" required>
-                            </div>
-                            <div class="form-group">
-                                <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
-                                <label for="reg_address_province">Province</label>
-                                <input type="text" name="reg_address_province" id="reg_address_province" placeholder="" required>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
@@ -493,7 +525,7 @@ label {
                                     <span class="input-icon"><i class="fas fa-graduation-cap"></i></span>
                                     <label for="reg_grade">Grade Level</label>
                                     <select name="reg_grade" id="reg_grade" required>
-                                        <option value="">Select Grade</option>
+                                        <option value="">Select</option>
                                         <option value="5">5</option>
                                         <option value="6">6</option>
                                     </select>
@@ -502,7 +534,7 @@ label {
                                     <span class="input-icon"><i class="fas fa-book"></i></span>
                                     <label for="reg_subject">Subject</label>
                                     <select name="reg_subject" id="reg_subject" required>
-                                        <option value="">Select Subject</option>
+                                        <option value="">Select</option>
                                         <option value="Math">Math</option>
                                         <option value="Science">Science</option>
                                         <option value="English">English</option>
@@ -512,7 +544,7 @@ label {
                                     <span class="input-icon"><i class="fas fa-users"></i></span>
                                     <label for="reg_section">Section</label>
                                     <select name="reg_section" id="reg_section" required>
-                                        <option value="">Select Section</option>
+                                        <option value="">Select</option>
                                         <option value="Apple">Apple</option>
                                         <option value="Banana">Banana</option>
                                         <option value="Cherry">Cherry</option>
@@ -531,18 +563,18 @@ label {
                                     <span class="input-icon"><i class="fas fa-venus-mars"></i></span>
                                     <label for="reg_gender">Gender</label>
                                     <select name="reg_gender" id="reg_gender" required style="padding-left:38px;">
+                                        <option value="" disabled selected>Select</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-calendar"></i></span>
                                     <label for="reg_school_year">School Year</label>
                                     <select name="reg_school_year" id="reg_school_year" required>
-                                        <option value="">Select School Year</option>
-                                        <option value="2024-2025">2024-2025</option>
-                                        <option value="2025-2026">2025-2026</option>
+                                        <option value="">Select</option>
+                                        <option value="2024-2025">2025-2026</option>
+                                        <option value="2025-2026">2026-2027</option>
                                     </select>
                                 </div>
                             </div>
@@ -820,6 +852,68 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
+
+// Dynamic City / Barangay for Pampanga
+const citySelect = document.getElementById('reg_address_city');
+const barangaySelect = document.getElementById('reg_address_barangay');
+
+const pampangaCities = [
+  "Angeles City","Apalit","Arayat","Bacolor","Candaba","Floridablanca","Guagua",
+  "Lubao","Mabalacat City","Macabebe","Magalang","Masantol","Mexico","Minalin",
+  "Porac","San Fernando City","San Luis","San Simon","Santa Ana","Santa Rita",
+  "Santo Tomas","Sasmuan"
+];
+
+// Minimal barangay samples (add full lists as needed)
+const barangaysByCity = {
+  "Angeles City": ["Anunas","Balibago","Cutcut","Malabanias","Pampang","Pulung Maragul","Pulungbulu"],
+  "Apalit": ["Balucuc","Calantipe","Cansinala","Colgante","Sampaloc","Sucad"],
+  "Arayat": ["Arenas","Baliti","Camba","Cupang","Gatiawan","Guemasan"],
+  "Bacolor": ["Balaya","Cabambangan","Calibutbut","Cansinala","Dolores","San Vicente"],
+  "Candaba": ["Bambang","Bahala","Barit","Dalayap","Lourdes","Paligui"],
+  "Floridablanca": ["Anon","Apalit","Basa Air Base","Del Carmen","Paguiruan","San Jose"],
+  "Guagua": ["Assumpta","Balibago","Jose Abad Santos","Lambac","Plaza Burgos","San Pablo"],
+  "Lubao": ["Bancal","Calangain","Del Carmen","Prado Siongco","San Antonio","Santo Niño"],
+  "Mabalacat City": ["Atlu-Bola","Camachiles","Dau","Dolores","Lakandula","Mamatitang","Mawaque"],
+  "Macabebe": ["Consuelo","Cansinala","San Gabriel","San Juan","San Rafael","Tacasan"],
+  "Magalang": ["Camias","Dolores","San Francisco","San Isidro","San Nicolas 1st","Sta Cruz"],
+  "Masantol": ["Arenas","Bagang","Bebe Anac","Nigui","San Agustin","San Nicolas"],
+  "Mexico": ["Balas","Bucao","Cawayan","Dolores","Laguio","Luz","Santo Domingo"],
+  "Minalin": ["Bulac","Cauayan","Lourdes","Maniago","San Francisco Solano","Sta Rita"],
+  "Porac": ["Babo Pangulo","Babo Sacan","Camias","Manibaug Libutad","Pio","Santa Cruz","Sapang Uwak"],
+  "San Fernando City": ["Baliti","Calulut","Del Carmen","Del Rosario","Lara","San Agustin","Sto Niño"],
+  "San Luis": ["San Agustin","San Carlos","San Isidro","San Juan","San Nicolas","Santa Catalina"],
+  "San Simon": ["Concepcion","De La Paz","San Agustin","San Isidro","San Jose","San Nicolas"],
+  "Santa Ana": ["San Agustin","San Bartolome","San Isidro","San Joaquin","San Nicolas","Santa Lucia"],
+  "Santa Rita": ["Becuran","Dila Dila","San Agustin","San Basilio","San Jose","San Matias"],
+  "Santo Tomas": ["Poblacion","Moraza","San Matias","San Vicente","Santo Rosario","Sapa"],
+  "Sasmuan": ["Batasan","Malusac","San Antonio","San Nicolas 1st","San Pedro","Santa Monica"]
+};
+
+function populateCities() {
+  pampangaCities.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    citySelect.appendChild(opt);
+  });
+}
+function populateBarangays(city) {
+  barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+  barangaySelect.disabled = true;
+  if (!city || !barangaysByCity[city]) return;
+  barangaysByCity[city].forEach(b => {
+    const opt = document.createElement('option');
+    opt.value = b;
+    opt.textContent = b;
+    barangaySelect.appendChild(opt);
+  });
+  barangaySelect.disabled = false;
+}
+citySelect.addEventListener('change', () => populateBarangays(citySelect.value));
+
+// Init
+populateCities();
 </script>
 
  <script src="../assets/js/Student Side/logreg.js"></script>
@@ -871,6 +965,27 @@ lrnInput.addEventListener('input', function() {
         lrnMsg.style.color = 'green';
     }
 });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const reg_fname = document.getElementById('reg_fname');
+
+        reg_fname.addEventListener('input', function(event) {
+            // Replace any non-letter character with an empty string
+            event.target.value = event.target.value.replace(/[^a-zA-Z]/g, '');
+        });
+        const reg_mname = document.getElementById('reg_mname');
+        reg_mname.addEventListener('input', function(event) {
+            // Replace any non-letter character with an empty string
+            event.target.value = event.target.value.replace(/[^a-zA-Z]/g, '');
+        });
+        const reg_lname = document.getElementById('reg_lname');
+        reg_lname.addEventListener('input', function(event) {
+            // Replace any non-letter character with an empty string
+            event.target.value = event.target.value.replace(/[^a-zA-Z]/g, '');
+        }); 
+    });
 </script>
  
 </body>

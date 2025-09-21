@@ -752,3 +752,28 @@
         z-index: 110 !important;
     }
 }
+
+
+.pagination{
+  display:flex;
+  gap:6px;
+  justify-content:center;
+  margin:18px 0 4px;
+  flex-wrap:wrap;
+}
+.pagination button{
+  background:#2e8b57;
+  color:#fff;
+  border:none;
+  padding:6px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:.8rem;
+  font-weight:600;
+}
+.pagination button.active{background:#ffd54f;color:#2d3923;}
+.pagination button:disabled{background:#b7c8bb;cursor:not-allowed;}
+.pagination .ellipsis{padding:6px 4px;font-size:.8rem;color:#555;}
+@media (max-width:560px){
+  .pagination button{padding:5px 10px;font-size:.7rem;}
+}

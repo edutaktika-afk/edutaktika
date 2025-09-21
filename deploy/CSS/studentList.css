@@ -1,12 +1,13 @@
 :root {
         --primary: #2e8b57;
+        --forest-green: #2e8b57;
         --secondary: #ffd700;
         --accent: #ff69b4;
         --background: #f0f8ff;
         --card-bg: #ffffff;
         --text-main: #22223b;
-        --text-light: #9a8c98;
-        --shadow: 0 4px 24px rgba(46, 139, 87, 0.08);
+        --text-light: #5f6972;
+        --shadow: 0 4px 24px rgba(46,139,87,0.08);
         --radius: 18px;
     }
     body {
@@ -112,12 +113,25 @@
     margin-top: 6px;
 }
 
+.minimal-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .minimal-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0 8px;
-    margin-top: 18px;
-    background: transparent;
+    min-width: 640px; /* prevents column squish */
+}
+
+.minimal-table th,
+.minimal-table td {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 160px;
 }
 
 .minimal-table th, .minimal-table td {
@@ -177,13 +191,15 @@
 
 .filters-form {
     display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin-bottom: 18px;
     flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+    width: 100%;
 }
 
 .filters-form select {
+    flex: 1 1 180px;
+    min-width: 150px;
     background: #fffbe6;
     border: 1.5px solid #2e8b57;
     border-radius: 8px;
@@ -207,8 +223,10 @@
     font-size: 1rem;
 }
 
-/* Make table scrollable */
+/* Make list + scoring sections scroll independently without overlaying nav */
 #listSection, #student-2 {
+    position: relative;
+    z-index: 1;
     max-height: 420px;
     overflow-y: auto;
     margin-bottom: 18px;
@@ -280,6 +298,23 @@
         font-size: 0.98rem !important;
         padding: 10px 6px !important;
     }
+    .minimal-table-wrapper {
+        border: 1px solid #ffffff55;
+        border-radius: 14px;
+        background: #ffffffaa;
+        backdrop-filter: blur(2px);
+        padding: 4px 4px 10px;
+    }
+    .minimal-table {
+        min-width: 560px;
+        font-size: .9rem !important;
+    }
+    .minimal-table th,
+    .minimal-table td {
+        padding: 8px 10px !important;
+        font-size: .82rem !important;
+        max-width: 130px;
+    }
     .minimal-table {
         font-size: 0.97rem !important;
         width: 100% !important;
@@ -294,7 +329,7 @@
         word-break: break-word !important;
     }
     #listSection, #student-2 {
-        max-height: 260px !important;
+        max-height: 300px !important;
         margin-bottom: 10px !important;
     }
     .mini-btn {
@@ -304,57 +339,133 @@
     }
 }
 
-/* Hide scrollbars on mobile for a cleaner look */
-@media (max-width: 700px) {
-    html, body, .container, .profile-sidebar, #listSection, #student-2 {
-        scrollbar-width: none;         /* Firefox */
-        -ms-overflow-style: none;      /* IE and Edge */
+/* Ultra narrow stack (avoid squish) */
+@media (max-width: 460px) {
+    .scoring-stats .stat-box,
+    .filters-form select {
+        flex: 1 1 100%;
     }
-    html::-webkit-scrollbar, body::-webkit-scrollbar,
-    .container::-webkit-scrollbar, .profile-sidebar::-webkit-scrollbar,
-    #listSection::-webkit-scrollbar, #student-2::-webkit-scrollbar {
-        display: none;                 /* Chrome, Safari, Opera */
+    .student-tab {
+        flex: 1 1 100%;
     }
 }
 
+/* ============ OFF-CANVAS NAV (RIGHT → LEFT SLIDE) ============ */
 @media (max-width: 700px) {
     nav {
-        z-index: 3000 !important;
         position: fixed !important;
         top: 0;
-        right: 100vw;
-        width: 85vw;
-        max-width: 360px;
-        min-width: 0 !important;
-        height: 100vh;
-        background: #fff;
-        box-shadow: -2px 0 24px #2e8b5733;
+        right: 0;
+        bottom: 0;
+        width: min(85vw, 340px);
+        background: #ffffff;
+        box-shadow: -2px 0 24px rgba(46,139,87,0.15);
+        padding: 70px 0 30px 0;
+        display: flex;
         flex-direction: column;
-        align-items: flex-start;
-        justify-content: flex-start;
-        padding: 60px 0 0 0;
-        transition: right 0.35s cubic-bezier(.77,0,.18,1);
+        gap: 6px;
         overflow-y: auto;
         overflow-x: hidden;
+        z-index: 3000 !important;
+
+        transform: translateX(100%);
+        transition: transform .35s cubic-bezier(.77,0,.18,1);
+        will-change: transform;
     }
     nav.open {
-        left: 0;
+        transform: translateX(0);
     }
+
     .sidebar-overlay {
-        z-index: 2999 !important;
         position: fixed !important;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.25);
-        display: none;
-        transition: opacity 0.25s;
+        inset: 0;
+        background: rgba(0,0,0,.30);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity .25s ease, visibility .25s ease;
+        z-index: 2999 !important;
     }
     .sidebar-overlay.active {
-        display: block;
         opacity: 1;
+        visibility: visible;
     }
-    /* Make sure table and container have lower z-index */
-    .container, .minimal-table {
-        position: relative;
-        z-index: 1;
+
+    body.nav-open {
+        overflow: hidden;
+        touch-action: none;
     }
 }
+
+/* Prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    nav { transition: none !important; }
+    .burger-btn span { transition: none !important; }
+}
+
+
+/* ==== FINAL OVERRIDE: make S.Y + search fit one line on mobile ==== */
+@media (max-width:700px){
+  /* Container */
+  .filters-form,
+  #list-filters-form{
+    width:100% !important;
+    max-width:100% !important;
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    align-items:center !important;
+    justify-content:center;
+    gap:8px !important;
+    padding:4px 10px 0 !important;
+  }
+
+  /* School Year select width (EDIT THIS NUMBER) */
+  .filters-form select#list_school_year,
+  #list-filters-form select#list_school_year{
+    flex:0 0 115px !important;
+    width:120px !important;
+    min-width:120px !important;
+    margin:0 !important;
+  }
+
+  /* Search wrapper (takes remaining space) */
+  .filters-form .search-bar,
+  #list-filters-form .search-bar{
+    flex:1 1 auto !important;
+    display:flex !important;
+    align-items:center;
+    gap:6px;
+    min-width:0 !important;
+    width:auto !important;
+    max-width:100% !important;
+    padding:12px 8px !important;
+    margin:0 !important;
+    
+  }
+  .filters-form .search-bar input,
+  #list-filters-form .search-bar input{
+    width:90% !important;
+    min-width:0 !important;
+  }
+
+  /* Remove table min-width forcing horizontal scroll */
+  .minimal-table{
+    min-width:0 !important;
+  }
+}
+
+/* Ultra narrow: allow wrap if absolutely needed */
+@media (max-width:360px){
+  .filters-form,
+  #list-filters-form{
+    flex-wrap:wrap !important;
+  }
+  .filters-form select#list_school_year,
+  #list-filters-form select#list_school_year,
+  .filters-form .search-bar,
+  #list-filters-form .search-bar{
+    flex:1 1 100% !important;
+    width:100% !important;
+  }
+}
+
