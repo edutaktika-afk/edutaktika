@@ -1,3 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Leaderboard - Teacher - Edutaktika</title>
+</head>
+<body>
  <script>
     document.addEventListener("DOMContentLoaded", function() {
         firebase.auth().onAuthStateChanged(async function(user) {
@@ -15,6 +23,8 @@
                 window.location.href = "logreg.html";
             } else {
                 document.getElementById('mainContent').style.display = "block";
+                // Load leaderboard after authentication is confirmed
+                loadLeaderboard();
             }
         });
     });
@@ -306,10 +316,33 @@
             const auth = firebase.auth();
        
 
-        // 2. Fetch and display leaderboard (Grade 5 only)
+        // 2. Fetch and display leaderboard (Math subject only - teacher's section)
     async function loadLeaderboard() {
-            // Base student snapshot (ordered by quiz points for initial retrieval)
-        const snapshot = await db.ref('students').orderByChild('points').once('value');
+            // Get current teacher's section and grade level
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) return;
+            
+            const teacherSnapshot = await db.ref('teachers/' + currentUser.uid).once('value');
+            const teacherData = teacherSnapshot.val();
+            const teacherSection = teacherData ? teacherData.section : null;
+            const teacherGrade = teacherData ? teacherData.gradelevel : null;
+            
+            if (!teacherSection || !teacherGrade) {
+                console.error('Could not determine teacher section or grade level');
+                return;
+            }
+            
+            // Update title to show teacher's section and grade
+            const titleEl = document.querySelector('.leaderboard-title');
+            if (titleEl) {
+                titleEl.textContent = `🌟 Math Leaderboard - Grade ${teacherGrade} - Section ${teacherSection} 🌟`;
+            }
+            
+            // Update page title
+            document.title = `Math Leaderboard - Grade ${teacherGrade} - Section ${teacherSection}`;
+            
+            // Base student snapshot
+        const snapshot = await db.ref('students').once('value');
         let students = [];
         snapshot.forEach(child => {
                 const s = child.val() || {};
@@ -317,46 +350,43 @@
             students.push(s);
         });
 
-            // Try global assessmentSummaries first
-            let assessmentTotals = {}; // uid -> total assessment best
-            try {
-                const summariesSnap = await db.ref('assessmentSummaries').once('value');
-                if (summariesSnap.exists()) {
-                    summariesSnap.forEach(assessNode => {
-                        assessNode.forEach(userNode => {
-                            const uid = userNode.key;
-                            const val = userNode.val();
-                            const best = (val && typeof val.best === 'number') ? val.best : 0;
-                            if (!assessmentTotals[uid]) assessmentTotals[uid] = 0;
-                            assessmentTotals[uid] += best; // sum bests across assessments
-                        });
-                    });
-                } else {
-                    // Fallback: compute from students/<uid>/assessments/*/summary already present in student objects
-                    students.forEach(s => {
-                        let total = 0;
-                        if (s.assessments) {
-                            Object.keys(s.assessments).forEach(aid => {
-                                const summary = s.assessments[aid]?.summary;
-                                if (summary && typeof summary.best === 'number') total += summary.best;
-                            });
+            // Calculate Math-specific scores
+            students.forEach(s => {
+                // Math quiz points - only from math quizzes
+                let mathQuizPoints = 0;
+                if (s.quizzes) {
+                    Object.keys(s.quizzes).forEach(quizKey => {
+                        // Only count math-related quizzes
+                        if (quizKey.includes('math') || quizKey.includes('lesson1') || quizKey.includes('clock-quiz')) {
+                            const summary = s.quizzes[quizKey]?.summary;
+                            if (summary && typeof summary.best === 'number') {
+                                mathQuizPoints += summary.best;
+                            }
                         }
-                        if (total > 0) assessmentTotals[s._key] = total;
                     });
                 }
-            } catch(err) {
-                console.warn('Assessment totals fetch issue:', err);
-            }
-
-            // Attach quiz, assessment, total points
-            students.forEach(s => {
-                s.quizPoints = parseInt(s.points || 0) || 0;
-                s.assessmentPoints = assessmentTotals[s._key] || 0;
+                
+                // Math assessment points - only from math assessments
+                let mathAssessmentPoints = 0;
+                if (s.assessments) {
+                    Object.keys(s.assessments).forEach(aid => {
+                        // Only count math-related assessments
+                        if (aid.includes('math') || aid === 'assessment1') {
+                            const summary = s.assessments[aid]?.summary;
+                            if (summary && typeof summary.best === 'number') {
+                                mathAssessmentPoints += summary.best;
+                            }
+                        }
+                    });
+                }
+                
+                s.quizPoints = mathQuizPoints;
+                s.assessmentPoints = mathAssessmentPoints;
                 s.combinedPoints = s.quizPoints + s.assessmentPoints;
             });
 
-            // Filter for Grade 5 students only
-            students = students.filter(s => s.gradelevel == 5);
+            // Filter for teacher's section and grade level only
+            students = students.filter(s => s.section === teacherSection && s.gradelevel == teacherGrade);
 
             // Sort descending by combined, then assessment, then quiz, then name
             students.sort((a,b) => {
@@ -417,9 +447,7 @@
         document.getElementById('leaderboard-body').innerHTML = tbodyHtml;
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-            loadLeaderboard();
-    });
+    // loadLeaderboard() is now called after authentication is confirmed
     </script>
 
     <footer>

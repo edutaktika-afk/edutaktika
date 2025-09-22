@@ -715,11 +715,11 @@
                         answers: userAnswers
                     };
                     
-                    // Save individual attempt
-                    await firebase.database().ref(`quizScores/spelling-bee/${uid}/${timestamp}`).set(scoreData);
+                    // Save individual attempt (using same structure as other quizzes)
+                    await firebase.database().ref(`students/${uid}/quizzes/spelling-bee/attempts/${timestamp}`).set(scoreData);
                     
-                    // Update summary
-                    const summaryRef = firebase.database().ref(`quizSummaries/spelling-bee/${uid}`);
+                    // Update summary (using same structure as other quizzes)
+                    const summaryRef = firebase.database().ref(`students/${uid}/quizzes/spelling-bee/summary`);
                     summaryRef.once('value').then(snap => {
                         let summary = snap.val() || { attempts: 0, best: 0, bestPercentage: 0, last: 0, lastPercentage: 0 };
                         
@@ -780,8 +780,36 @@
             window.location.href = '../../Student/subject_english.html';
         });
 
+        // Load previous scores
+        function loadPreviousScores() {
+            firebase.auth().onAuthStateChanged(async function(user) {
+                if (user) {
+                    const uid = user.uid;
+                    const summaryRef = firebase.database().ref(`students/${uid}/quizzes/spelling-bee/summary`);
+                    summaryRef.once('value').then(snap => {
+                        const summary = snap.val();
+                        if (summary) {
+                            // Update the score display elements if they exist
+                            const lastScoreEl = document.querySelector('.last-score');
+                            const bestScoreEl = document.querySelector('.best-score');
+                            
+                            if (lastScoreEl) {
+                                lastScoreEl.textContent = `${summary.last}/10 (${summary.lastPercentage}%)`;
+                            }
+                            if (bestScoreEl) {
+                                bestScoreEl.textContent = `${summary.best}/10 (${summary.bestPercentage}%) in ${summary.attempts} attempt${summary.attempts !== 1 ? 's' : ''}`;
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
         // Initialize quiz when page loads
-        document.addEventListener('DOMContentLoaded', initQuiz);
+        document.addEventListener('DOMContentLoaded', function() {
+            initQuiz();
+            loadPreviousScores();
+        });
 
         // Header functionality
         document.addEventListener('DOMContentLoaded', function() {

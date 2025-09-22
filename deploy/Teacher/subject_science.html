@@ -196,9 +196,6 @@
             <button id="createLessonBtn" style="background:#388e3c;color:#fff;border:none;border-radius:6px;padding:10px 28px;font-size:1.1rem;font-weight:600;cursor:pointer;">
                 <i class="fa fa-plus"></i> Create Lesson
             </button>
-            <button id="createQuizBtn" style="background:#ffe600;color:#000;border:none;border-radius:6px;padding:10px 28px;font-size:1.1rem;font-weight:600;cursor:pointer;margin-left: auto;">
-                <i class="fa fa-plus"></i> Create Quiz
-            </button>
         </div>
 
                <script>
@@ -261,22 +258,6 @@
                     <div>Loading YouTube lessons…</div>
                 </div>
             </div>
-<<<<<<< HEAD
-=======
-            
-
-            <!--<div class="badges-container">
-                <div class="badges-title">Earned Badges</div>
-                <div class="badges-list">
-                    <div class="badge" data-tooltip="Time Master">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="badge" data-tooltip="Shape Explorer">
-                        <i class="fas fa-shapes"></i>
-                    </div>
-                </div>
-            </div> -->
->>>>>>> f2ae106 (SUNDAY)
         </div>
 
         <!-- Quarter 2 -->
@@ -481,7 +462,7 @@
         // Add margin to separate from teacher quizzes
         container.style.marginTop = '20px';
 
-        // Create Quiz 1: Science Advanced (placeholder)
+        // Create Quiz 1: Science Quiz
         const quiz1 = document.createElement('div');
         quiz1.className = 'lesson-item';
         quiz1.innerHTML = `
@@ -489,14 +470,14 @@
                 <i class="fas fa-atom" style="font-size: 2.5rem; color: white;"></i>
             </div>
             <div class="lesson-title">
-                <h3>Quiz 1: Science - Coming Soon</h3>
-                <p>Advanced science quiz will be available soon!</p>
-                <span class="lesson-badge" style="cursor:not-allowed; background-color: #ccc; color: #666;">Coming Soon</span>
-                <div style="margin-top:8px;font-size:0.9rem;color:#444;">No quizzes available yet</div>
+                <h3>Quiz 1: Science Fundamentals</h3>
+                <p>Test your knowledge of basic science concepts!</p>
+                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/science_quiz.html'">Start Quiz</span>
+                <div style="margin-top:8px;font-size:0.9rem;color:#444;">10 multiple choice questions</div>
             </div>`;
         container.appendChild(quiz1);
 
-        // Create Quiz 2: Science Basics (placeholder)
+        // Create Quiz 2: Science Experiments
         const quiz2 = document.createElement('div');
         quiz2.className = 'lesson-item';
         quiz2.innerHTML = `
@@ -504,10 +485,10 @@
                 <i class="fas fa-flask" style="font-size: 2.5rem; color: white;"></i>
             </div>
             <div class="lesson-title">
-                <h3>Quiz 2: Science - Coming Soon</h3>
-                <p>Science quiz will be available soon!</p>
-                <span class="lesson-badge" style="cursor:not-allowed; background-color: #ccc; color: #666;">Coming Soon</span>
-                <div style="margin-top:8px;font-size:0.9rem;color:#444;">No quizzes available yet</div>
+                <h3>Quiz 2: Science Experiments</h3>
+                <p>Test your understanding of scientific experiments!</p>
+                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/science_quiz.html'">Start Quiz</span>
+                <div style="margin-top:8px;font-size:0.9rem;color:#444;">10 multiple choice questions</div>
             </div>`;
         container.appendChild(quiz2);
     })();
@@ -980,32 +961,6 @@ function viewQuiz(quarter, name, mode = 'view', subject = subjectPage) {
 
 </script>
 
-<div id="createQuizModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
-    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
-        <h3 style="margin-top:0;">Create New Quiz</h3>
-        <form id="createQuizForm">
-            <label>Quarter:<br>
-                <select id="quiz_quarter" required>
-                    <option value="">Select Quarter</option>
-                    <option value="1">Quarter 1</option>
-                    <option value="2">Quarter 2</option>
-                    <option value="3">Quarter 3</option>
-                    <option value="4">Quarter 4</option>
-                </select>
-            </label><br><br>
-            <label>Title:<br>
-                <input type="text" id="quiz_title" required>
-            </label><br><br>
-            <label>Description:<br>
-                <textarea id="quiz_desc" rows="2"></textarea>
-            </label><br><br>
-            <div style="text-align:right;">
-                <button type="button" onclick="closeCreateQuizModal()" style="margin-right:10px;">Cancel</button>
-                <button type="submit">Save</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <style>
     #quiz-list {
@@ -1144,57 +1099,7 @@ function viewQuiz(quarter, name, mode = 'view', subject = subjectPage) {
 </style>
 
 <script>
-    // Show modal on Create Quiz click
-document.getElementById('createQuizBtn').onclick = function() {
-    document.getElementById('createQuizModal').style.display = 'flex';
-};
-function closeCreateQuizModal() {
-    document.getElementById('createQuizModal').style.display = 'none';
-}
 
-// Handle quiz creation and save to teacher's section
-document.getElementById('createQuizForm').onsubmit = async function(e) {
-    e.preventDefault();
-    const quarter = document.getElementById('quiz_quarter').value;
-    const title = document.getElementById('quiz_title').value.trim();
-    const desc = document.getElementById('quiz_desc').value.trim();
-
-    if (!quarter || !title) {
-        alert('Quarter and Title are required!');
-        return;
-    }
-
-    const quizData = {
-        questions: [],
-        title: title,
-        quarter: quarter,
-        description: desc,
-        savedAt: new Date().toISOString()
-    };
-
-    const user = firebase.auth().currentUser;
-    if (!user) {
-        alert("You must be logged in as a teacher to create a quiz.");
-        return;
-    }
-    const teacherSnap = await db.ref('teachers/' + user.uid).once('value');
-    const teacher = teacherSnap.val();
-    if (!teacher || !teacher.section) {
-        alert("No section found for this teacher.");
-        return;
-    }
-    const section = teacher.section;
-    await db.ref('teachers/' + user.uid + '/sections/' + section + '/quizzes/' + subjectPage + '/' + quarter + '/' + title).set(quizData);
-
-    closeCreateQuizModal();
-    // Refresh the quiz list for the selected quarter
-    document.getElementById('quiz-quarter-filter').value = quarter;
-    loadTeacherQuizzes(quarter);
-
-    // Redirect to QuizEditor.html for the new quiz
-    const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(title)}&subject=${encodeURIComponent(subjectPage)}`;
-    window.location.href = 'quizEditor.html?' + params;
-};
 </script>
 
 <script>

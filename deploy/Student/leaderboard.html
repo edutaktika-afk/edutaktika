@@ -15,6 +15,8 @@
                 window.location.href = "logreg.html";
             } else {
                 document.getElementById('mainContent').style.display = "block";
+                // Load leaderboard after authentication is confirmed
+                loadLeaderboard();
             }
         });
     });
@@ -154,10 +156,32 @@
             const auth = firebase.auth();
        
 
-        // 2. Fetch and display leaderboard (now includes assessment points + total)
+        // 2. Fetch and display leaderboard (Overall - all subjects combined)
         async function loadLeaderboard() {
-            // Base student snapshot (ordered by quiz points for initial retrieval)
-            const snapshot = await db.ref('students').orderByChild('points').once('value');
+            // Get current user's grade level
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) return;
+            
+            const userSnapshot = await db.ref('students/' + currentUser.uid).once('value');
+            const userData = userSnapshot.val();
+            const userGrade = userData ? userData.gradelevel : null;
+            
+            if (!userGrade) {
+                console.error('Could not determine user grade level');
+                return;
+            }
+            
+            // Update title to show current user's grade
+            const titleEl = document.querySelector('.leaderboard-title');
+            if (titleEl) {
+                titleEl.textContent = `🌟 Overall Leaderboard - Grade ${userGrade} 🌟`;
+            }
+            
+            // Update page title
+            document.title = `Overall Leaderboard - Grade ${userGrade}`;
+            
+            // Base student snapshot
+            const snapshot = await db.ref('students').once('value');
             let students = [];
             snapshot.forEach(child => {
                 const s = child.val() || {};
@@ -165,43 +189,37 @@
                 students.push(s);
             });
 
-            // Try global assessmentSummaries first
-            let assessmentTotals = {}; // uid -> total assessment best
-            try {
-                const summariesSnap = await db.ref('assessmentSummaries').once('value');
-                if (summariesSnap.exists()) {
-                    summariesSnap.forEach(assessNode => {
-                        assessNode.forEach(userNode => {
-                            const uid = userNode.key;
-                            const val = userNode.val();
-                            const best = (val && typeof val.best === 'number') ? val.best : 0;
-                            if (!assessmentTotals[uid]) assessmentTotals[uid] = 0;
-                            assessmentTotals[uid] += best; // sum bests across assessments
-                        });
-                    });
-                } else {
-                    // Fallback: compute from students/<uid>/assessments/*/summary already present in student objects
-                    students.forEach(s => {
-                        let total = 0;
-                        if (s.assessments) {
-                            Object.keys(s.assessments).forEach(aid => {
-                                const summary = s.assessments[aid]?.summary;
-                                if (summary && typeof summary.best === 'number') total += summary.best;
-                            });
+            // Calculate overall scores (all subjects combined)
+            students.forEach(s => {
+                // Total quiz points from all subjects
+                let totalQuizPoints = 0;
+                if (s.quizzes) {
+                    Object.keys(s.quizzes).forEach(quizKey => {
+                        const summary = s.quizzes[quizKey]?.summary;
+                        if (summary && typeof summary.best === 'number') {
+                            totalQuizPoints += summary.best;
                         }
-                        if (total > 0) assessmentTotals[s._key] = total;
                     });
                 }
-            } catch(err) {
-                console.warn('Assessment totals fetch issue:', err);
-            }
-
-            // Attach quiz, assessment, total points
-            students.forEach(s => {
-                s.quizPoints = parseInt(s.points || 0) || 0;
-                s.assessmentPoints = assessmentTotals[s._key] || 0;
+                
+                // Total assessment points from all subjects
+                let totalAssessmentPoints = 0;
+                if (s.assessments) {
+                    Object.keys(s.assessments).forEach(aid => {
+                        const summary = s.assessments[aid]?.summary;
+                        if (summary && typeof summary.best === 'number') {
+                            totalAssessmentPoints += summary.best;
+                        }
+                    });
+                }
+                
+                s.quizPoints = totalQuizPoints;
+                s.assessmentPoints = totalAssessmentPoints;
                 s.combinedPoints = s.quizPoints + s.assessmentPoints;
             });
+
+            // Filter for current user's grade level only
+            students = students.filter(s => s.gradelevel == userGrade);
 
             // Sort descending by combined, then assessment, then quiz, then name
             students.sort((a,b) => b.combinedPoints - a.combinedPoints || b.assessmentPoints - a.assessmentPoints || b.quizPoints - a.quizPoints || ((a.fname||'')+(a.lname||'')).localeCompare((b.fname||'')+(b.lname||'')) );
@@ -251,7 +269,7 @@
             document.getElementById('leaderboard-body').innerHTML = tbodyHtml;
         }
 
-        document.addEventListener('DOMContentLoaded', loadLeaderboard);
+        // loadLeaderboard() is now called after authentication is confirmed
         </script>
 
         <footer>

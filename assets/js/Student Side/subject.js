@@ -50,17 +50,21 @@
     const listViewBtn = document.querySelector(".list-view-btn");
     const lectureList = document.querySelector(".lecture-list");
 
-    gridViewBtn.addEventListener("click", () => {
-        gridViewBtn.classList.add("active");
-        listViewBtn.classList.remove("active");
-        lectureList.classList.remove("list-view");
-    });
+    if (gridViewBtn) {
+        gridViewBtn.addEventListener("click", () => {
+            gridViewBtn.classList.add("active");
+            if (listViewBtn) listViewBtn.classList.remove("active");
+            if (lectureList) lectureList.classList.remove("list-view");
+        });
+    }
 
-    listViewBtn.addEventListener("click", () => {
-        listViewBtn.classList.add("active");
-        gridViewBtn.classList.remove("active");
-        lectureList.classList.add("list-view");
-    });
+    if (listViewBtn) {
+        listViewBtn.addEventListener("click", () => {
+            listViewBtn.classList.add("active");
+            if (gridViewBtn) gridViewBtn.classList.remove("active");
+            if (lectureList) lectureList.classList.add("list-view");
+        });
+    }
 
     
     

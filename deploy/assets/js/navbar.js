@@ -68,17 +68,17 @@ profileSidebarOverlay.addEventListener('click', function(e) {
     }
 });
 
-document.getElementById('closeNavBtn').addEventListener('click', function() {
-    document.querySelector('nav').classList.remove('open');
-    document.getElementById('burgerBtn').classList.remove('open');
-    document.getElementById('navOverlay').classList.remove('active');
-    document.body.style.overflow = '';
-});
-
-document.getElementById('closeNavBtn').addEventListener('click', function() {
-    document.querySelector('nav').classList.remove('open');
-    document.getElementById('burgerBtn').classList.remove('open');
-    document.getElementById('navOverlay').classList.remove('active');
-    document.body.style.overflow = '';
-});
+const closeNavBtn = document.getElementById('closeNavBtn');
+if (closeNavBtn) {
+    closeNavBtn.addEventListener('click', function() {
+        const nav = document.querySelector('nav');
+        const burgerBtn = document.getElementById('burgerBtn');
+        const navOverlay = document.getElementById('navOverlay');
+        
+        if (nav) nav.classList.remove('open');
+        if (burgerBtn) burgerBtn.classList.remove('open');
+        if (navOverlay) navOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+}
 

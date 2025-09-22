@@ -1,3 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Subject - Edutaktika</title>
+</head>
+<body>
  <script>
     document.addEventListener("DOMContentLoaded", function() {
         firebase.auth().onAuthStateChanged(async function(user) {
@@ -368,10 +376,7 @@
 
      <script src="../assets/js/Student Side/subject.js"></script>
 
-    <!-- Firebase App (the core Firebase SDK) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- Firebase scripts already included above -->
     <script>
     const firebaseConfig = {
         apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
@@ -697,7 +702,10 @@ async function loadYouTubeVideosStudent() {
         const filteredEntries = entries.filter(entry => {
             const titleEl = entry.getElementsByTagName('title')[0];
             const title = titleEl ? (titleEl.textContent || '').toLowerCase() : '';
-            return englishKeywords.some(keyword => title.includes(keyword));
+            console.log('Video title:', title);
+            const matches = englishKeywords.some(keyword => title.includes(keyword));
+            console.log('Matches English keywords:', matches);
+            return matches;
         });
         
         // If no English-specific videos found, show all videos from playlist

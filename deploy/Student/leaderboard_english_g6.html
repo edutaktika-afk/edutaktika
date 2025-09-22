@@ -1,3 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Leaderboard - Grade 6 - Edutaktika</title>
+</head>
+<body>
  <script>
     document.addEventListener("DOMContentLoaded", function() {
         firebase.auth().onAuthStateChanged(async function(user) {
@@ -15,13 +23,14 @@
                 window.location.href = "logreg.html";
             } else {
                 document.getElementById('mainContent').style.display = "block";
+                // Load leaderboard after authentication is confirmed
+                loadLeaderboard();
+                loadAssessmentLeaderboard();
             }
         });
     });
     </script>
 
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -358,10 +367,7 @@
             document.getElementById('leaderboard-body').innerHTML = tbodyHtml;
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            loadLeaderboard();
-            loadAssessmentLeaderboard();
-        });
+        // loadLeaderboard() and loadAssessmentLeaderboard() are now called after authentication is confirmed
         </script>
 
         <footer>
