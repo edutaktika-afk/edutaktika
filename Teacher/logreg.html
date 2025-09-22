@@ -474,8 +474,8 @@ label {
                         <div class="form-inner">
                             <div class="form-group">
                                 <span class="input-icon"><i class="fas fa-id-card"></i></span>
-                                <label for="reg_id">ID</label>
-                                <input type="text" name="reg_id" id="reg_id" required pattern="\d{12}" inputmode="numeric" maxlength="12" minlength="12" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+                                <label for="reg_id">ID Number</label>
+                                <input type="text" name="reg_id" id="reg_id" required pattern="\d{12}" inputmode="numeric" maxlength="6" minlength="6" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                                 <div id="lrn-message" style="font-size:0.95em;color:#c0392b;margin-top:2px;"></div>
                                 <span id="lrn-warning" class="field-warning" style="display:none;">ID is required</span>
                             </div>
@@ -756,8 +756,8 @@ document.getElementById('registerForm').onsubmit = async function(e) {
         return;
     }
     const lrn = document.getElementById('reg_id').value;
-    if (!/^\d{12}$/.test(lrn)) {
-        showCustomModal('LRN must be exactly 12 digits.');
+    if (!/^\d{7}$/.test(lrn)) {
+        showCustomModal('ID number must be exactly 6 digits.');
         return;
     }
     // Collect other fields
@@ -929,14 +929,14 @@ const lrnMsg = document.getElementById('lrn-message');
 lrnInput.addEventListener('input', function() {
     if (lrnInput.value.length === 0) {
         lrnMsg.textContent = '';
-    } else if (lrnInput.value.length < 12) {
-        lrnMsg.textContent = 'LRN must be exactly 12 digits.';
+    } else if (lrnInput.value.length < 6) {
+        lrnMsg.textContent = 'ID number must be exactly 6 digits.';
         lrnMsg.style.color = '#c0392b';
-    } else if (lrnInput.value.length > 12) {
-        lrnMsg.textContent = 'LRN must be exactly 12 digits.';
+    } else if (lrnInput.value.length > 6) {
+        lrnMsg.textContent = 'ID number must be exactly 6 digits.';
         lrnMsg.style.color = '#c0392b';
     } else {
-        lrnMsg.textContent = '✔️ LRN is valid.';
+        lrnMsg.textContent = '✔️ ID number is valid.';
         lrnMsg.style.color = 'green';
     }
 });
