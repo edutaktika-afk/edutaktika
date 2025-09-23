@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="../CSS/fonts.css">
+<!-- ...inside <head> -->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="../CSS/header.css">
@@ -36,6 +39,8 @@
     <span></span>
     <span></span>
 </button>
+<!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
    <header>
         <div class="floating-elements">
             <div class="floating-element"></div>
@@ -56,14 +61,17 @@
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="subject_math.html">Math</a></li>
-                            <li><a href="subject_english.html">English</a></li>
-                            <li><a href="subject_science.html">Science</a></li>
-                        </ul>
-                    </li>
+                    <li class="dropdown subject-dropdown">
+      <button id="navSubjectBtn" class="dropbtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+        <span id="navSubjectLabel">Subject</span>
+        <i class="fa fa-caret-down" aria-hidden="true" style="margin-left:6px;font-size:.75rem;"></i>
+      </button>
+      <ul id="navSubjectMenu" class="dropdown-content" role="listbox" aria-labelledby="navSubjectBtn">
+        <li><a href="subject_math.html" data-subject="Math" role="option">Math</a></li>
+        <li><a href="subject_english.html" data-subject="English" role="option">English</a></li>
+        <li><a href="subject_science.html" data-subject="Science" role="option">Science</a></li>
+      </ul>
+    </li>
                     <li><a href="studentlist.html">Student</a></li>
                     <li class="dropdown">
                             <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
@@ -231,25 +239,27 @@
             <div class="quarter-tab" data-quarter="assessments">Assessments</div>
         </div>
 
-        <!-- Quarter 1 -->
+<!-- Quarter 1 -->
         <div class="quarter-section active" id="quarter-1">
             <div class="quarter-title">
                 <i class="fas fa-calendar-alt"></i>
                 <h2>
                     Quarter 1: 
                     <span class="bounce-word">
-                        <span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span>
+<span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+
                     </span>
                 </h2>
             </div>
 
             <div class="lessons-container">
                 
-                   // (Legacy viewPresentation removed; unified version below)
-                </div>
+
+                
+            </div>
 
             <!-- YouTube Lessons (auto-fetched) -->
-            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FvX8con4ltjXkQQTOySuXMD" style="margin-top: 20px;">
+            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FsQc_kW5q38HD3Geb4VVQz4" style="margin-top: 20px;">
                 <div class="quarter-title" style="align-items:center; gap:10px;">
                     <i class="fab fa-youtube"></i>
                     <h3 style="margin:0;">Video Lessons</h3>
@@ -258,6 +268,29 @@
                     <div>Loading YouTube lessons…</div>
                 </div>
             </div>
+
+            <!-- <div class="progress-container">
+                <div class="progress-title">Quarter Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%"></div>
+                </div>
+                <div class="progress-stats">
+                    <span>65% Complete</span>
+                    <span>2/3 Lessons Finished</span>
+                </div>
+            </div>
+
+            <div class="badges-container">
+                <div class="badges-title">Earned Badges</div>
+                <div class="badges-list">
+                    <div class="badge" data-tooltip="Time Master">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="badge" data-tooltip="Shape Explorer">
+                        <i class="fas fa-shapes"></i>
+                    </div>
+                </div>
+            </div> -->
         </div>
 
         <!-- Quarter 2 -->
@@ -267,7 +300,8 @@
                  <h2>
                     Quarter 2: 
                     <span class="bounce-word">
-                        <span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span>
+                        <span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+
                     </span>
                 </h2>
             </div>
@@ -304,7 +338,13 @@
         <div class="quarter-section" id="quarter-3">
             <div class="quarter-title">
                 <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 3: Decimals & Percentages</h2>
+                <h2>Quarter 3:
+                     <span class="bounce-word">
+                        <span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+
+                    </span>
+                </h2>
+                
             </div>
 
             <div class="lessons-container">
@@ -339,7 +379,12 @@
         <div class="quarter-section" id="quarter-4">
             <div class="quarter-title">
                 <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 4: Geometry & Measurement</h2>
+                <h2>Quarter 4: 
+                        <span class="bounce-word">
+                            <span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+    
+                        </span>
+                </h2>
             </div>
 
             <div class="lessons-container">
@@ -494,45 +539,46 @@
     })();
     </script>
 
-   <footer>
-        <div class="footer-content">
-            <div class="footer-column">
-                <h3 class="edu">Eduktaktika</h3>
-                <p>
-                    Making learning fun and engaging through interactive game-based
-                    education.
-                </p>
-            </div>
-            <div class="footer-column" style="margin-left: 90px;">
-                <h3>Quick Links</h3>
-                <ul>
-                    <li><a href="homepage.html">Home</a></li>
-                    <li><a href="subject_english.html">Subject English</a></li>
-                    <li><a href="subject_math.html">Subject Math</a></li>
-                    <li><a href="subject_science.html">Subject Science</a></li>
-                    <li><a href="studentlist.html">Student</a></li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h3></h3>
-                <ul>
-                    <br>
-                     <li><a href="leaderboard_math.html">Leaderboard Math</a></li>
-                    <li><a href="leaderboard_english.html">Leaderboard English</a></li>
-                    <li><a href="leaderboard_science.html">Leaderboard Science</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="footer-links">
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-youtube"></i></a>
-            </div>
-            <p>© 2025 Eduktaktika. All rights reserved.</p>
-        </div>
-    </footer>
+<footer>
+  <div class="footer-wrap">
+    <div class="footer-col">
+      <h4 class="footer-brand">Eduktaktika</h4>
+      <p>Interactive, game‑based learning for Math, English, and Science.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <ul class="footer-social">
+        <li><a href="homepage.html">Homepage</a></li>
+        <li><a href="studentlist.html">Student</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Subjects</h4>
+      <ul class="footer-links">
+        <li><a href="subject_math.html">Math</a></li>
+        <li><a href="subject_english.html">English</a></li>
+        <li><a href="subject_science.html">Science</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Leaderboards</h4>
+      <ul class="footer-links">
+        <li><a href="leaderboard_math.html">Math</a></li>
+        <li><a href="leaderboard_english.html">English</a></li>
+        <li><a href="leaderboard_science.html">Science</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-social-row">
+      <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+    </div>
+    <p>© 2025 Eduktaktika. All rights reserved.</p>
+  </div>
+</footer>
 
         <!-- Edit Profile Modal -->
 
@@ -1104,44 +1150,33 @@ function viewQuiz(quarter, name, mode = 'view', subject = subjectPage) {
 </script>
 
 <script>
-// Load latest YouTube videos via playlist RSS feed into Quarter 1 (Teacher) - Science
+// Load latest YouTube videos via playlist RSS feed into Quarter 1 (Teacher) - English
 async function loadYouTubeVideosTeacher() {
     const wrapper = document.getElementById('youtube-lessons');
     const container = document.querySelector('#youtube-lessons .lessons-container');
     if (!container || !wrapper) return;
-
-    // Configure your playlist ID here or set data-playlist-id on #youtube-lessons
     const playlistId = (wrapper.dataset.playlistId || '').trim();
     if (!playlistId) {
         container.innerHTML = '<div style="color:#888;">Set a YouTube playlist ID to load videos.</div>';
         return;
     }
-
     const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${encodeURIComponent(playlistId)}`;
 
-    // Helper to fetch with robust CORS fallbacks
     async function fetchWithCors(url) {
-        // 1) Try AllOrigins proxy first (most reliable for CORS)
         try {
-            const rAO = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
-            if (rAO.ok) return await rAO.text();
-            throw new Error('AllOrigins HTTP ' + rAO.status);
-        } catch (e1) {
-            // 2) Try CORS proxy
+            const r = await fetch(url);
+            if (r.ok) return await r.text();
+            throw new Error('HTTP ' + r.status);
+        } catch {
             try {
-                const corsUrl = 'https://cors-anywhere.herokuapp.com/' + url;
-                const rCors = await fetch(corsUrl);
-                if (rCors.ok) return await rCors.text();
-                throw new Error('CORS proxy HTTP ' + rCors.status);
-            } catch (e2) {
-                // 3) Fallback to direct (will likely fail due to CORS)
-                try {
-                    const r = await fetch(url);
-                    if (r.ok) return await r.text();
-                    throw new Error('Direct HTTP ' + r.status);
-                } catch (e3) {
-                    throw new Error('All fetch methods failed: ' + e3.message);
-                }
+                const rAO = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+                if (rAO.ok) return await rAO.text();
+                throw new Error();
+            } catch {
+                const jinaUrl = 'https://r.jina.ai/http/' + url.replace(/^https?:\/\//i, '');
+                const rJ = await fetch(jinaUrl);
+                if (rJ.ok) return await rJ.text();
+                throw new Error('All fetch attempts failed');
             }
         }
     }
@@ -1151,63 +1186,176 @@ async function loadYouTubeVideosTeacher() {
         const parser = new DOMParser();
         const doc = parser.parseFromString(xmlText, 'text/xml');
         const entries = Array.from(doc.getElementsByTagName('entry'));
-
-        if (!entries.length) {
-            container.innerHTML = '<div>No recent videos found.</div>';
-            return;
-        }
-
         container.innerHTML = '';
 
         const YT_NS = 'http://www.youtube.com/xml/schemas/2015';
-        
-        // Science-related keywords to filter content
-        const scienceKeywords = ['science', 'scientific', 'experiment', 'laboratory', 'lab', 'chemistry', 'physics', 'biology', 'earth', 'space', 'astronomy', 'geology', 'meteorology', 'ecology', 'environment', 'nature', 'plant', 'animal', 'human', 'body', 'cell', 'molecule', 'atom', 'element', 'compound', 'reaction', 'energy', 'force', 'motion', 'gravity', 'magnetism', 'electricity', 'light', 'sound', 'heat', 'temperature', 'pressure', 'volume', 'mass', 'density', 'matter', 'solid', 'liquid', 'gas', 'plasma', 'state', 'change', 'evaporation', 'condensation', 'melting', 'freezing', 'sublimation', 'deposition', 'mixture', 'solution', 'suspension', 'colloid', 'pure', 'substance', 'acid', 'base', 'ph', 'neutral', 'indicator', 'litmus', 'phenolphthalein', 'bromothymol', 'blue', 'red', 'cabbage', 'universal', 'indicator', 'paper', 'strip', 'digital', 'meter', 'probe', 'sensor', 'thermometer', 'barometer', 'hygrometer', 'anemometer', 'rain', 'gauge', 'wind', 'vane', 'compass', 'magnifying', 'glass', 'microscope', 'telescope', 'binoculars', 'camera', 'video', 'recorder', 'stopwatch', 'timer', 'scale', 'balance', 'ruler', 'meter', 'stick', 'tape', 'measure', 'measuring', 'cup', 'beaker', 'flask', 'test', 'tube', 'petri', 'dish', 'slide', 'cover', 'slip', 'dropper', 'pipette', 'funnel', 'filter', 'paper', 'strainer', 'sieve', 'colander', 'spoon', 'spatula', 'tongs', 'forceps', 'scissors', 'knife', 'blade', 'cutter', 'hammer', 'nail', 'screw', 'screwdriver', 'wrench', 'pliers', 'clamp', 'stand', 'ring', 'gauze', 'mat', 'pad', 'tripod', 'bunsen', 'burner', 'alcohol', 'lamp', 'candle', 'match', 'lighter', 'fire', 'flame', 'heat', 'source', 'hot', 'plate', 'stove', 'oven', 'microwave', 'refrigerator', 'freezer', 'ice', 'water', 'bath', 'cooling', 'heating', 'insulation', 'conduction', 'convection', 'radiation', 'thermal', 'energy', 'transfer', 'flow', 'current', 'circuit', 'battery', 'wire', 'bulb', 'switch', 'resistor', 'capacitor', 'transformer', 'generator', 'motor', 'electromagnet', 'magnetic', 'field', 'pole', 'north', 'south', 'attract', 'repel', 'force', 'push', 'pull', 'friction', 'inertia', 'momentum', 'acceleration', 'velocity', 'speed', 'distance', 'time', 'position', 'direction', 'vector', 'scalar', 'magnitude', 'unit', 'measurement', 'precision', 'accuracy', 'error', 'uncertainty', 'significant', 'figures', 'decimal', 'places', 'rounding', 'estimation', 'approximation', 'calculation', 'computation', 'formula', 'equation', 'variable', 'constant', 'coefficient', 'exponent', 'power', 'root', 'square', 'cube', 'logarithm', 'exponential', 'linear', 'quadratic', 'cubic', 'polynomial', 'function', 'graph', 'plot', 'chart', 'table', 'data', 'statistics', 'mean', 'median', 'mode', 'range', 'variance', 'deviation', 'standard', 'distribution', 'frequency', 'histogram', 'bar', 'line', 'pie', 'scatter', 'correlation', 'regression', 'trend', 'pattern', 'relationship', 'proportion', 'ratio', 'percentage', 'fraction', 'decimal', 'percent', 'probability', 'chance', 'likelihood', 'odds', 'risk', 'safety', 'hazard', 'danger', 'caution', 'warning', 'precaution', 'protection', 'equipment', 'gear', 'clothing', 'gloves', 'goggles', 'mask', 'apron', 'coat', 'uniform', 'helmet', 'boots', 'shoes', 'socks', 'pants', 'shirt', 'blouse', 'dress', 'skirt', 'shorts', 'underwear', 'bra', 'panties', 'briefs', 'boxers', 'undershirt', 'tank', 'top', 'crop', 'hoodie', 'sweater', 'jacket', 'vest', 'cardigan', 'blazer', 'suit', 'tie', 'bow', 'scarf', 'hat', 'cap', 'beanie', 'headband', 'bandana', 'hair', 'tie', 'clip', 'pin', 'barrette', 'comb', 'brush', 'shampoo', 'conditioner', 'soap', 'body', 'wash', 'gel', 'cream', 'lotion', 'moisturizer', 'sunscreen', 'tanning', 'oil', 'spray', 'powder', 'deodorant', 'antiperspirant', 'perfume', 'cologne', 'fragrance', 'scent', 'aroma', 'odor', 'smell', 'taste', 'flavor', 'texture', 'feel', 'touch', 'smooth', 'rough', 'soft', 'hard', 'smooth', 'bumpy', 'lumpy', 'grainy', 'sandy', 'rocky', 'stony', 'pebbly', 'gravelly', 'dusty', 'dirty', 'clean', 'pure', 'clear', 'transparent', 'opaque', 'translucent', 'shiny', 'dull', 'matte', 'glossy', 'reflective', 'absorbent', 'waterproof', 'breathable', 'stretchy', 'elastic', 'rigid', 'flexible', 'bendable', 'malleable', 'ductile', 'brittle', 'fragile', 'durable', 'strong', 'weak', 'heavy', 'light', 'dense', 'sparse', 'thick', 'thin', 'wide', 'narrow', 'broad', 'deep', 'shallow', 'long', 'short', 'tall', 'high', 'low', 'big', 'small', 'large', 'tiny', 'huge', 'enormous', 'gigantic', 'massive', 'miniature', 'microscopic', 'macroscopic', 'visible', 'invisible', 'hidden', 'obvious', 'clear', 'unclear', 'vague', 'precise', 'exact', 'approximate', 'rough', 'smooth', 'even', 'uneven', 'level', 'slanted', 'tilted', 'straight', 'curved', 'bent', 'twisted', 'spiral', 'circular', 'round', 'square', 'rectangular', 'triangular', 'oval', 'elliptical', 'diamond', 'heart', 'star', 'cross', 'plus', 'minus', 'times', 'divided', 'equals', 'plus', 'minus', 'times', 'divided', 'equals', 'plus', 'minus', 'times', 'divided', 'equals'];
-        
+        const englishKeywords = ['english','grammar','vocabulary','reading','writing','spelling','phonics','lesson','literature','language'];
+
         const filteredEntries = entries.filter(entry => {
             const titleEl = entry.getElementsByTagName('title')[0];
             const title = titleEl ? (titleEl.textContent || '').toLowerCase() : '';
-            return scienceKeywords.some(keyword => title.includes(keyword));
+            return englishKeywords.some(k => title.includes(k));
         });
-        
-        filteredEntries.slice(0, 5).forEach(entry => {
-            const vidEl = entry.getElementsByTagNameNS?.(YT_NS, 'videoId')?.[0]
+
+        const videosToShow = (filteredEntries.length ? filteredEntries : entries).slice(0,5);
+
+        videosToShow.forEach(entry => {
+            const vidEl = entry.getElementsByTagNameNS?.(YT_NS,'videoId')?.[0]
                 || entry.getElementsByTagName('yt:videoId')?.[0]
                 || entry.querySelector('yt\\:videoId, videoId');
             const titleEl = entry.getElementsByTagName('title')[0];
             const videoId = vidEl ? (vidEl.textContent || '').trim() : '';
+            if(!videoId) return;
             const title = titleEl ? (titleEl.textContent || 'YouTube Video').trim() : 'YouTube Video';
-            if (!videoId) return;
+            const watchUrl = `video.html?id=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}`;
 
             const card = document.createElement('div');
-            card.className = 'lesson-item';
-            const watchUrl = `video.html?id=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}`;
+            card.className = 'lesson-item video-card';
+            card.setAttribute('data-watch-url', watchUrl);
+
             card.innerHTML = `
-                <div class="video-embed" style="position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;margin-bottom:12px;background:#000;">
-                    <iframe src="https://www.youtube.com/embed/${videoId}" title="${title.replace(/"/g, '&quot;')}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" loading="lazy"></iframe>
+                <div class="video-embed clickable-overlay" style="position:relative;width:100%;padding-top:56.25%;border-radius:10px;overflow:hidden;margin-bottom:12px;background:#000;">
+                    <img src="https://i.ytimg.com/vi/${videoId}/hqdefault.jpg" alt="${title.replace(/"/g,'&quot;')}" 
+                         style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;">
+                    <div class="play-badge" aria-hidden="true">▶</div>
                 </div>
                 <div class="lesson-title">
                     <h3>${title}</h3>
-                    <button class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='${watchUrl}'">Watch</button>
+                    <button class="lesson-badge watch-btn" type="button">Watch</button>
                 </div>
             `;
+
+            // Click handlers (whole card)
+            card.addEventListener('click', (e) => {
+                // Prevent double if button
+                if (e.target.closest('.watch-btn')) {
+                    window.location.href = watchUrl;
+                    return;
+                }
+                // Ignore text selection drag
+                if (window.getSelection && window.getSelection().toString().length) return;
+                window.location.href = watchUrl;
+            });
+
             container.appendChild(card);
         });
 
-        if (!container.children.length) {
-            container.innerHTML = '<div>No Science-related videos found in the playlist.</div>';
+        if(!container.children.length){
+            container.innerHTML = '<div>No videos found.</div>';
         }
-    } catch (err) {
-        console.warn('YouTube videos could not be loaded due to CORS restrictions. This is normal for local development.');
-        container.innerHTML = '<div style="color:#888; font-style:italic;">YouTube videos are not available in local development due to CORS restrictions. They will work when deployed to a web server.</div>';
+    } catch(err){
+        console.error(err);
+        container.innerHTML = '<div>Failed to load videos.</div>';
     }
 }
-
 document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
+
 </script>
 
 <script src="../assets/js/navbar.js"></script>
 <script src="../assets/tabDropdown.js"></script>
+<script src="../assets/js/header-dynamic-labels.js"></script>
+<!-- Add before closing </body> if not already included -->
+<script src="../assets/js/burger-toggle.js"></script>
+<!-- Empty quarter placeholder styles & logic -->
+<style>
+    .empty-quarter-msg {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 26px 20px;
+        margin: 6px 0 14px 0;
+        border: 2px dashed #bbb;
+        border-radius: 14px;
+        background: #fafafa;
+        font-size: 0.95rem;
+        line-height: 1.45;
+        text-align: center;
+        color: #333;
+        font-weight: 600;
+        letter-spacing: .4px;
+        position: relative;
+        animation: fadeInEmpty .4s ease;
+    }
+    .empty-quarter-msg:before {
+        content: "";
+        position: absolute;
+        inset: 4px;
+        border-radius: 10px;
+        background: repeating-linear-gradient(45deg,#00000006 0 10px,transparent 10px 20px);
+        pointer-events: none;
+        z-index: 0;
+    }
+    .empty-quarter-msg > * { position: relative; z-index: 1; }
+    @keyframes fadeInEmpty { from { opacity:0; transform: translateY(4px);} to { opacity:1; transform: translateY(0);} }
+    .empty-quarter-msg strong { color:#059981; }
+    @media (prefers-color-scheme: dark) {
+        .empty-quarter-msg { background:#1e1e1e; border-color:#444; color:#ddd; }
+        .empty-quarter-msg strong { color:#4dd6c3; }
+    }
+</style>
+<script>
+(function(){
+    const QUARTER_SELECTOR = '.quarter-section';
+    const IGNORE_IDS = new Set(['quarter-5','quarter-assessments']);
+    const quarterSections = Array.from(document.querySelectorAll(QUARTER_SELECTOR)).filter(sec=> !IGNORE_IDS.has(sec.id));
+
+    function sectionHasLessonCards(section){
+        // Any authored lesson or quiz style card
+        const cards = section.querySelectorAll('.lessons-container .lesson-item');
+        // Exclude video cards check separately
+        return cards.length > 0;
+    }
+    function sectionHasVideoCards(section){
+        if(section.id !== 'quarter-1') return false; // only quarter 1 hosts YouTube block
+        const vidContainer = section.querySelector('#youtube-lessons .lessons-container');
+        if(!vidContainer) return false;
+        return !!vidContainer.querySelector('.video-card');
+    }
+    function removePlaceholder(section){
+        const el = section.querySelector('.empty-quarter-msg');
+        if(el) el.remove();
+    }
+    function addPlaceholder(section){
+        if(section.querySelector('.empty-quarter-msg')) return; // already present
+        const firstContainer = section.querySelector('.lessons-container');
+        const host = firstContainer || section;
+        const div = document.createElement('div');
+        div.className = 'empty-quarter-msg';
+        div.innerHTML = '<strong>No lessons available yet.</strong><br><span style="font-weight:400;">Click the "Create Lesson" button to add one.</span>';
+        host.appendChild(div);
+    }
+    function evaluate(section){
+        if(sectionHasLessonCards(section) || sectionHasVideoCards(section)){
+            removePlaceholder(section);
+        } else {
+            addPlaceholder(section);
+        }
+    }
+
+    // Initial evaluation (after DOM paint but before async Firebase completes)
+    quarterSections.forEach(sec=> evaluate(sec));
+
+    // Observe each lessons container for changes
+    const obsConfig = { childList: true }; // we only care about direct children (cards)
+    const observer = new MutationObserver(mutations => {
+        // Collect unique quarter sections touched
+        const touched = new Set();
+        mutations.forEach(m => {
+            const sec = m.target.closest('.quarter-section');
+            if(sec && !IGNORE_IDS.has(sec.id)) touched.add(sec);
+        });
+        touched.forEach(sec => evaluate(sec));
+    });
+
+    quarterSections.forEach(sec => {
+        // Observe every lessons-container inside the section (main + youtube sub)
+        sec.querySelectorAll('.lessons-container').forEach(c => observer.observe(c, obsConfig));
+    });
+
+    // Safety re-checks after typical async operations (Firebase & YouTube fetch)
+    [1500, 3000, 6000].forEach(delay => setTimeout(()=> quarterSections.forEach(evaluate), delay));
+})();
+</script>
     </div>
 </body>
 
