@@ -265,7 +265,7 @@
             </div>
 
             <!-- YouTube Lessons (auto-fetched) -->
-            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FsQc_kW5q38HD3Geb4VVQz4" style="margin-top: 20px;">
+            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FslU5009s_m_AhD0bQNbiaW" style="margin-top: 20px;">
                 <div class="quarter-title" style="align-items:center; gap:10px;">
                     <i class="fab fa-youtube"></i>
                     <h3 style="margin:0;">Video Lessons</h3>
@@ -1274,16 +1274,26 @@ async function loadYouTubeVideosTeacher() {
             return englishKeywords.some(k => title.includes(k));
         });
 
-        const videosToShow = (filteredEntries.length ? filteredEntries : entries).slice(0,5);
+        // Sort all entries by published date (chronological order - newest first)
+        const sortedEntries = (filteredEntries.length ? filteredEntries : entries).sort((a, b) => {
+            const dateA = new Date(a.getElementsByTagName('published')[0]?.textContent || 0);
+            const dateB = new Date(b.getElementsByTagName('published')[0]?.textContent || 0);
+            return dateB - dateA; // Newest first
+        });
+
+        // Show all videos (remove the .slice(0,5) limit)
+        const videosToShow = sortedEntries;
 
         videosToShow.forEach(entry => {
             const vidEl = entry.getElementsByTagNameNS?.(YT_NS,'videoId')?.[0]
                 || entry.getElementsByTagName('yt:videoId')?.[0]
                 || entry.querySelector('yt\\:videoId, videoId');
             const titleEl = entry.getElementsByTagName('title')[0];
+            const publishedEl = entry.getElementsByTagName('published')[0];
             const videoId = vidEl ? (vidEl.textContent || '').trim() : '';
             if(!videoId) return;
             const title = titleEl ? (titleEl.textContent || 'YouTube Video').trim() : 'YouTube Video';
+            const publishedDate = publishedEl ? new Date(publishedEl.textContent).toLocaleDateString() : '';
             const watchUrl = `video.html?id=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}`;
 
             const card = document.createElement('div');
@@ -1298,6 +1308,7 @@ async function loadYouTubeVideosTeacher() {
                 </div>
                 <div class="lesson-title">
                     <h3>${title}</h3>
+                    <p style="font-size:0.9rem;color:#666;margin:4px 0;">Published: ${publishedDate}</p>
                     <button class="lesson-badge watch-btn" type="button">Watch</button>
                 </div>
             `;
