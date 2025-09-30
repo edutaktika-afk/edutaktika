@@ -50,11 +50,11 @@
       </div>
       <nav>
         <ul>
-          <li><a href="../../Student/homepage.html" id="navHome">Home</a></li>
-          <li><a href="../../Student/subject_math.html" id="navMath">Math</a></li>
-          <li><a href="../../Student/subject_english.html" id="navEnglish">English</a></li>
-          <li><a href="../../Student/subject_science.html" id="navScience">Science</a></li>
-          <li><a href="../../Student/leaderboard.html" id="navLeaderboard">Leaderboard</a></li>
+          <li><a href="#" id="navHome" onclick="return false;" style="pointer-events: none; opacity: 0.6;">Home</a></li>
+          <li><a href="#" id="navMath" onclick="return false;" style="pointer-events: none; opacity: 0.6;">Math</a></li>
+          <li><a href="#" id="navEnglish" onclick="return false;" style="pointer-events: none; opacity: 0.6;">English</a></li>
+          <li><a href="#" id="navScience" onclick="return false;" style="pointer-events: none; opacity: 0.6;">Science</a></li>
+          <li><a href="#" id="navLeaderboard" onclick="return false;" style="pointer-events: none; opacity: 0.6;">Leaderboard</a></li>
         </ul>
       </nav>
     </div>
@@ -160,6 +160,8 @@
                 showTeacherView();
             } else {
                 console.log('Science Assessment - Not a teacher or teacher data not found');
+                // Enable navigation for students
+                enableNavigationForStudents();
             }
         }
     });
@@ -183,23 +185,79 @@
         
         if (navHome) {
             navHome.href = '../../Teacher/homepage.html';
+            navHome.onclick = null;
+            navHome.style.pointerEvents = 'auto';
+            navHome.style.opacity = '1';
             console.log('Science Assessment - Updated navHome href');
         }
         if (navMath) {
             navMath.href = '../../Teacher/subject_math.html';
+            navMath.onclick = null;
+            navMath.style.pointerEvents = 'auto';
+            navMath.style.opacity = '1';
             console.log('Science Assessment - Updated navMath href');
         }
         if (navEnglish) {
             navEnglish.href = '../../Teacher/subject_english.html';
+            navEnglish.onclick = null;
+            navEnglish.style.pointerEvents = 'auto';
+            navEnglish.style.opacity = '1';
             console.log('Science Assessment - Updated navEnglish href');
         }
         if (navScience) {
             navScience.href = '../../Teacher/subject_science.html';
+            navScience.onclick = null;
+            navScience.style.pointerEvents = 'auto';
+            navScience.style.opacity = '1';
             console.log('Science Assessment - Updated navScience href');
         }
         if (navLeaderboard) {
             navLeaderboard.href = '../../Teacher/leaderboard.html';
+            navLeaderboard.onclick = null;
+            navLeaderboard.style.pointerEvents = 'auto';
+            navLeaderboard.style.opacity = '1';
             console.log('Science Assessment - Updated navLeaderboard href');
+        }
+    }
+
+    // Function to enable navigation for students
+    function enableNavigationForStudents() {
+        console.log('Science Assessment - Enabling navigation for students');
+        const navHome = document.getElementById('navHome');
+        const navMath = document.getElementById('navMath');
+        const navEnglish = document.getElementById('navEnglish');
+        const navScience = document.getElementById('navScience');
+        const navLeaderboard = document.getElementById('navLeaderboard');
+        
+        if (navHome) {
+            navHome.href = '../../Student/homepage.html';
+            navHome.onclick = null;
+            navHome.style.pointerEvents = 'auto';
+            navHome.style.opacity = '1';
+        }
+        if (navMath) {
+            navMath.href = '../../Student/subject_math.html';
+            navMath.onclick = null;
+            navMath.style.pointerEvents = 'auto';
+            navMath.style.opacity = '1';
+        }
+        if (navEnglish) {
+            navEnglish.href = '../../Student/subject_english.html';
+            navEnglish.onclick = null;
+            navEnglish.style.pointerEvents = 'auto';
+            navEnglish.style.opacity = '1';
+        }
+        if (navScience) {
+            navScience.href = '../../Student/subject_science.html';
+            navScience.onclick = null;
+            navScience.style.pointerEvents = 'auto';
+            navScience.style.opacity = '1';
+        }
+        if (navLeaderboard) {
+            navLeaderboard.href = '../../Student/leaderboard.html';
+            navLeaderboard.onclick = null;
+            navLeaderboard.style.pointerEvents = 'auto';
+            navLeaderboard.style.opacity = '1';
         }
     }
 
