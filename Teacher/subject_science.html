@@ -1189,24 +1189,34 @@ async function loadYouTubeVideosTeacher() {
         container.innerHTML = '';
 
         const YT_NS = 'http://www.youtube.com/xml/schemas/2015';
-        const englishKeywords = ['english','grammar','vocabulary','reading','writing','spelling','phonics','lesson','literature','language'];
+        const scienceKeywords = ['science','biology','chemistry','physics','earth','space','astronomy','geology','meteorology','oceanography','botany','zoology','anatomy','physiology','ecology','environment','nature','experiment','observation','hypothesis','theory','law','principle','concept','phenomenon','matter','energy','force','motion','gravity','magnetism','electricity','light','sound','heat','temperature','pressure','density','volume','mass','weight','atom','molecule','element','compound','mixture','solution','acid','base','salt','reaction','synthesis','decomposition','combustion','oxidation','reduction','photosynthesis','respiration','digestion','circulation','reproduction','evolution','adaptation','mutation','genetics','dna','rna','protein','cell','tissue','organ','system','organism','species','genus','family','order','class','phylum','kingdom','domain','taxonomy','classification','identification','characteristics','features','properties','behavior','habitat','ecosystem','biome','food chain','food web','energy pyramid','carbon cycle','nitrogen cycle','water cycle','pollution','conservation','renewable','non-renewable','fossil fuel','solar','wind','hydroelectric','nuclear','fossil','extinction','endangered','threatened','invasive','native','endemic','biodiversity','sustainability','climate','weather','atmosphere','hydrosphere','lithosphere','biosphere','tectonic','volcano','earthquake','tsunami','hurricane','tornado','flood','drought','erosion','deposition','sedimentation','fossilization','mineral','rock','igneous','sedimentary','metamorphic','crystal','gem','metal','nonmetal','metalloid','periodic table','atomic number','atomic mass','electron','proton','neutron','nucleus','orbit','shell','valence','bond','ionic','covalent','metallic','polar','nonpolar','solubility','conductivity','malleability','ductility','luster','hardness','streak','cleavage','fracture','density','specific gravity','magnetism','fluorescence','phosphorescence','radioactivity','half-life','isotope','ion','cation','anion','ph','indicator','litmus','phenolphthalein','bromothymol blue','universal indicator','titration','neutralization','buffer','salt','precipitate','catalyst','enzyme','substrate','product','reactant','activation energy','endothermic','exothermic','thermodynamics','entropy','enthalpy','gibbs free energy','equilibrium','le chatelier','kinetics','rate','concentration','temperature','pressure','surface area','particle size','collision theory','transition state','intermediate','mechanism','stereochemistry','isomer','constitutional','stereoisomer','enantiomer','diastereomer','meso','racemic','chiral','achiral','optical activity','specific rotation','polarimeter','spectroscopy','ir','nmr','uv-vis','mass spec','chromatography','hplc','gc','tlc','electrophoresis','centrifugation','distillation','filtration','crystallization','sublimation','extraction','purification','synthesis','analysis','qualitative','quantitative','accuracy','precision','error','uncertainty','significant figures','scientific notation','unit conversion','dimensional analysis','stoichiometry','limiting reagent','excess reagent','theoretical yield','actual yield','percent yield','molarity','molality','normality','mole fraction','mass percent','volume percent','ppm','ppb','concentration','dilution','serial dilution','standard curve','calibration','linear regression','correlation','r-squared','standard deviation','confidence interval','t-test','f-test','anova','chi-square','hypothesis testing','null hypothesis','alternative hypothesis','type i error','type ii error','p-value','significance level','alpha','beta','power','effect size','sample size','randomization','replication','control','treatment','placebo','double-blind','single-blind','open-label','crossover','parallel','factorial','blocking','stratification','matching','pairing','covariate','confounding','bias','selection bias','measurement bias','recall bias','reporting bias','publication bias','survivorship bias','healthy user bias','lead-time bias','length-time bias','overdiagnosis bias','verification bias','workup bias','referral bias','spectrum bias','differential misclassification','non-differential misclassification','information bias','confounding bias','selection bias','chance','random error','systematic error','precision','accuracy','validity','reliability','sensitivity','specificity','positive predictive value','negative predictive value','likelihood ratio','odds ratio','relative risk','absolute risk','attributable risk','number needed to treat','number needed to harm','hazard ratio','survival analysis','kaplan-meier','cox regression','log-rank test','cox proportional hazards','time-to-event','censoring','competing risks','frailty','random effects','fixed effects','mixed effects','generalized linear model','logistic regression','poisson regression','negative binomial','gamma regression','beta regression','tobit regression','censored regression','truncated regression','sample selection','endogeneity','instrumental variables','two-stage least squares','generalized method of moments','maximum likelihood','bayesian','markov chain monte carlo','gibbs sampling','metropolis-hastings','importance sampling','rejection sampling','inverse transform','box-muller','acceptance-rejection','composition','alias method','walker algorithm','marsaglia polar','ziggurat','ratio of uniforms','exponential','gamma','beta','dirichlet','multinomial','poisson','negative binomial','geometric','hypergeometric','binomial','bernoulli','uniform','normal','lognormal','chi-square','f-distribution','t-distribution','cauchy','laplace','logistic','weibull','pareto','exponential','gamma','beta','dirichlet','multinomial','poisson','negative binomial','geometric','hypergeometric','binomial','bernoulli','uniform','normal','lognormal','chi-square','f-distribution','t-distribution','cauchy','laplace','logistic','weibull','pareto'];
 
         const filteredEntries = entries.filter(entry => {
             const titleEl = entry.getElementsByTagName('title')[0];
             const title = titleEl ? (titleEl.textContent || '').toLowerCase() : '';
-            return englishKeywords.some(k => title.includes(k));
+            return scienceKeywords.some(k => title.includes(k));
         });
 
-        const videosToShow = (filteredEntries.length ? filteredEntries : entries).slice(0,5);
+        // Sort all entries by published date (chronological order - newest first)
+        const sortedEntries = (filteredEntries.length ? filteredEntries : entries).sort((a, b) => {
+            const dateA = new Date(a.getElementsByTagName('published')[0]?.textContent || 0);
+            const dateB = new Date(b.getElementsByTagName('published')[0]?.textContent || 0);
+            return dateB - dateA; // Newest first
+        });
+
+        // Show all videos (remove the .slice(0,5) limit)
+        const videosToShow = sortedEntries;
 
         videosToShow.forEach(entry => {
             const vidEl = entry.getElementsByTagNameNS?.(YT_NS,'videoId')?.[0]
                 || entry.getElementsByTagName('yt:videoId')?.[0]
                 || entry.querySelector('yt\\:videoId, videoId');
             const titleEl = entry.getElementsByTagName('title')[0];
+            const publishedEl = entry.getElementsByTagName('published')[0];
             const videoId = vidEl ? (vidEl.textContent || '').trim() : '';
             if(!videoId) return;
             const title = titleEl ? (titleEl.textContent || 'YouTube Video').trim() : 'YouTube Video';
+            const publishedDate = publishedEl ? new Date(publishedEl.textContent).toLocaleDateString() : '';
             const watchUrl = `video.html?id=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}`;
 
             const card = document.createElement('div');
@@ -1221,6 +1231,7 @@ async function loadYouTubeVideosTeacher() {
                 </div>
                 <div class="lesson-title">
                     <h3>${title}</h3>
+                    <p style="font-size:0.9rem;color:#666;margin:4px 0;">Published: ${publishedDate}</p>
                     <button class="lesson-badge watch-btn" type="button">Watch</button>
                 </div>
             `;
