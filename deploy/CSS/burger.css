@@ -22,13 +22,10 @@
     background: #8b602e;
     border-radius: 2px;
     transition: 0.3s;
-    
+    color: #2e8b57;
 }
-@media (max-width: 900px) {
-    .burger-btn {
-        display: flex !important;
-    
-    }
+@media (max-width: 700px) {
+
     nav {
         position: fixed !important;
         top: 0;
@@ -37,6 +34,7 @@
         max-width: 360px;
         min-width: 0 !important;
         height: 100vh;
+
         background: linear-gradient(135deg, #e6ffe6 0%, #f9f9ff 100%);
         /* Use the same gradient or color as your profile sidebar */
         border-top-right-radius: 32px;
@@ -95,16 +93,7 @@
         justify-content: center !important;
     }
 }
-/* Animate burger to X */
-.burger-btn.open span:nth-child(1) {
-    transform: translateY(11.5px) rotate(45deg);
-}
-.burger-btn.open span:nth-child(2) {
-    opacity: 0;
-}
-.burger-btn.open span:nth-child(3) {
-    transform: translateY(-11.5px) rotate(-45deg);
-}
+
 
 /* Overlay styles */
 .sidebar-overlay {
@@ -123,8 +112,112 @@
     display: none;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 700px) {
     .burger-btn {
         display: flex !important;
     }
+}
+
+/* --- Mobile Burger & Drawer Override (force top-left) --- */
+@media (max-width:700px){
+.burger-btn{
+    position:fixed;
+    top:14px;
+    left:14px;
+    width:48px;
+    height:48px;
+    padding:0;
+    background:#fff;
+    border:3px solid #2e8b57;
+    border-radius:14px;
+    cursor:pointer;
+    z-index:1400;
+    box-shadow:0 6px 14px -4px #00000030,0 4px 0 #2e8b57;
+  }
+  /* Reset any previous flex settings */
+  .burger-btn{display:block;}
+  .burger-btn span{
+    position:absolute;
+    left: 8.5px;
+    margin-top: auto;
+    right:14px;
+    height:4px;
+    background:#2e8b57;
+    border-radius:3px;
+    transform-origin:center;
+    transition:
+      transform .42s cubic-bezier(.65,.05,.19,.98),
+      opacity .28s,
+      background .25s;
+  }
+  .burger-btn span:nth-child(1){top:14px;}
+  .burger-btn span:nth-child(2){top:22px;}
+  .burger-btn span:nth-child(3){top:30px;}
+
+  /* Open state → perfect X */
+  .burger-btn.open span:nth-child(1){
+    transform:translateY(8px) rotate(45deg);
+  }
+  .burger-btn.open span:nth-child(2){
+    opacity:0;
+  }
+  .burger-btn.open span:nth-child(3){
+    transform:translateY(-8px) rotate(-45deg);
+  }
+
+  .burger-btn:focus-visible{
+    outline:4px solid #ffb400;
+    outline-offset:3px;
+  }
+  .burger-btn:hover:not(.open) span{
+    background:#256d45;
+  }
+  /* Drawer nav */
+  header nav#mainNav{
+    position:fixed;
+    top:0;
+    left:0;
+    height:100dvh;
+    width:280px;
+    background:#ffffff;
+    box-shadow:0 0 0 2px #2e8b57,0 20px 46px -8px #00000055;
+    padding:90px 26px 40px;
+    transform:translateX(-110%);
+    transition:transform .45s cubic-bezier(.65,.05,.19,.98);
+    z-index:1300;
+    overflow-y:auto;
+  }
+  header nav#mainNav ul{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    padding:0;
+    margin:0;
+  }
+  body.nav-open header nav#mainNav{transform:translateX(0);}
+  #navOverlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.35);
+    backdrop-filter:blur(2px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .35s;
+    z-index:1200;
+  }
+  body.nav-open #navOverlay{
+    opacity:1;
+    pointer-events:auto;
+  }
+}
+
+/* Hide burger on desktop */
+@media (min-width:701px){
+  .burger-btn{display:none;}
+  header nav#mainNav{position:static;transform:none !important;width:auto;height:auto;box-shadow:none;padding:0;}
+  #navOverlay{display:none !important;}
+}
+
+@media (min-width:701px){
+  .burger-btn{display:none;}
 }

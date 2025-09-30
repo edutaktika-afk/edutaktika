@@ -92,11 +92,11 @@
     header nav ul { display:flex; align-items:center; padding:0; margin:0; }
     header nav ul li { list-style:none; margin:0 10px; position:relative; height:100%; display:flex; align-items:center; }
     header nav ul li a, header nav ul li .dropbtn { display:flex; align-items:center; height:48px; line-height:48px; padding:0 18px; color:#2d3923; text-decoration:none; font-size:1rem; background:none; border:none; cursor:pointer; }
-    header nav ul li .dropdown-content { display:none; position:absolute; background:#fff; min-width:140px; box-shadow:0 4px 16px #0002; z-index:1000; border-radius:8px; padding:6px 0; margin:0; top:100%; left:0; }
-    header nav ul li .dropdown-content li { list-style:none; border-bottom:1px solid #eee; }
-    header nav ul li .dropdown-content li:last-child { border-bottom:none; }
-    header nav ul li .dropdown-content a { color:#2d3923; padding:10px 16px; display:block; text-decoration:none; border-radius:0; transition:background 0.2s; height:auto; line-height:normal; }
-    header nav ul li .dropdown-content a:hover { background:#f0f0f0; }
+    header nav ul li.dropdown .dropdown-content { display:none; position:absolute; background:#fff; min-width:140px; box-shadow:0 4px 16px #0002; z-index:1000; border-radius:8px; padding:6px 0; margin:0; top:100%; left:0; }
+    header nav ul li.dropdown .dropdown-content li { list-style:none; border-bottom:1px solid #eee; }
+    header nav ul li.dropdown .dropdown-content li:last-child { border-bottom:none; }
+    header nav ul li.dropdown .dropdown-content a { color:#2d3923; padding:10px 16px; display:block; text-decoration:none; border-radius:0; transition:background 0.2s; height:auto; line-height:normal; }
+    header nav ul li.dropdown .dropdown-content a:hover { background:#f0f0f0; }
     header nav ul li.dropdown:hover .dropdown-content { display:block; }
   </style>
 </head>
@@ -114,7 +114,7 @@
         <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
         <div class="logo-text"><span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span></div>
       </div>
-      <nav>
+      <nav id="dynamic-nav">
         <ul>
           <li><a href="../../Student/homepage.html">Home</a></li>
           <li class="dropdown">
@@ -193,41 +193,6 @@
     </div>
   </main>
 
-  <footer>
-    <div class="footer-content">
-      <div class="footer-column">
-        <h3 class="edu">Eduktaktika</h3>
-        <p>Making learning fun and engaging through interactive game-based education.</p>
-      </div>
-      <div class="footer-column">
-        <h3>Quick Links</h3>
-        <ul>
-          <li><a href="../../Student/homepage.html">Home</a></li>
-          <li><a href="../../Student/subject_math.html">Subject</a></li>
-          <li><a href="../../Student/studentlist.html">Student</a></li>
-          <li><a href="../../Student/leaderboard.html">Leaderboard</a></li>
-        </ul>
-      </div>
-      <div class="footer-column">
-        <h3>Support</h3>
-        <ul>
-          <li><a href="#">Help Center</a></li>
-          <li><a href="#">Contact Us</a></li>
-          <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Terms of Service</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <div class="footer-links">
-        <a href="#"><i class="fab fa-facebook"></i></a>
-        <a href="#"><i class="fab fa-twitter"></i></a>
-        <a href="#"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-youtube"></i></a>
-      </div>
-      <p>© 2023 Eduktaktika. All rights reserved.</p>
-    </div>
-  </footer>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -395,6 +360,15 @@
                 if (backBtn) {
                     backBtn.textContent = 'Back to Lessons (Teacher)';
                 }
+                
+                // Update navigation for teachers
+                updateNavigationForTeachers();
+                
+                // Show teacher view with answer sheet
+                showTeacherView();
+            } else {
+                // Enable navigation for students
+                enableNavigationForStudents();
             }
         }
     });
@@ -411,23 +385,106 @@
 
     auth.onAuthStateChanged(u=>{ if(u){ document.getElementById('viewAttemptsBtn').style.display='inline-block'; }});
 
+
+    function updateNavigationForTeachers() {
+        const nav = document.getElementById('dynamic-nav');
+        nav.innerHTML = `
+            <ul>
+                <li><a href="../../Teacher/homepage.html">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                    <ul class="dropdown-content">
+                        <li><a href="../../Teacher/subject_math.html">Math</a></li>
+                        <li><a href="../../Teacher/subject_english.html">English</a></li>
+                        <li><a href="../../Teacher/subject_science.html">Science</a></li>
+                    </ul>
+                </li>
+                <li><a href="../../Teacher/admin.html">Admin</a></li>
+                <li><a href="../../Teacher/leaderboard.html">Leaderboard</a></li>
+            </ul>
+        `;
+    }
+
+    function enableNavigationForStudents() {
+        const nav = document.getElementById('dynamic-nav');
+        nav.innerHTML = `
+            <ul>
+                <li><a href="../../Student/homepage.html">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                    <ul class="dropdown-content">
+                        <li><a href="../../Student/subject_math.html">Math</a></li>
+                        <li><a href="../../Student/subject_english.html">English</a></li>
+                        <li><a href="../../Student/subject_science.html">Science</a></li>
+                    </ul>
+                </li>
+                <li><a href="../../Student/studentlist.html">Student</a></li>
+                <li><a href="../../Student/leaderboard.html">Leaderboard</a></li>
+            </ul>
+        `;
+    }
+
+    function showTeacherView() {
+        // Hide the start modal for teachers
+        document.getElementById('start-modal').style.display = 'none';
+        
+        // Show the game container and replace its content with answer sheet
+        const gameContainer = document.querySelector('.game-container');
+        gameContainer.style.display = 'block';
+        gameContainer.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h3 style="color: #2e8b57;">Answer Sheet</h3>
+                <p style="color: #666;">This view shows all questions with correct answers highlighted</p>
+            </div>
+            <div id="answerSheet"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="window.location.href='../../Teacher/subject_science.html'" style="background: #6d28d9; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                    Back to Teacher Dashboard
+                </button>
+            </div>
+        `;
+        
+        // Display all questions with answers
+        const answerSheet = document.getElementById('answerSheet');
+        QUESTIONS.forEach((q, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.style.cssText = 'margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;';
+            
+            questionDiv.innerHTML = `
+                <h4 style="color: #333; margin-bottom: 10px;">Question ${index + 1}: ${q.question}</h4>
+                <div style="margin-left: 20px;">
+                    ${q.answers.map((answer, answerIndex) => `
+                        <div style="margin: 5px 0; padding: 5px; border-radius: 4px; ${answerIndex === q.correct ? 'background: #d4edda; border: 1px solid #c3e6cb; color: #155724; font-weight: bold;' : 'background: #f8f9fa;'}">
+                            ${String.fromCharCode(65 + answerIndex)}. ${answer}
+                            ${answerIndex === q.correct ? ' ✓' : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            answerSheet.appendChild(questionDiv);
+        });
+    }
+
+
+
     function startQuiz(){
       loadQuestion();
     }
 
-    function loadQuestion(){
-      const question = QUESTIONS[currentIndex];
+    function loadQuestion(index = currentIndex){
+      const question = QUESTIONS[index];
       questionEl.textContent = question.question;
       answersEl.innerHTML = '';
       selectedAnswer = null;
       submitBtn.disabled = true;
       submitBtn.textContent = 'Submit Answer';
 
-      question.answers.forEach((answer, index) => {
+      question.answers.forEach((answer, answerIndex) => {
         const btn = document.createElement('button');
         btn.className = 'answer-btn';
         btn.textContent = answer;
-        btn.onclick = () => selectAnswer(index, btn);
+        btn.onclick = () => selectAnswer(answerIndex, btn);
         answersEl.appendChild(btn);
       });
 
