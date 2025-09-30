@@ -50,11 +50,11 @@
       </div>
       <nav>
         <ul>
-          <li><a href="../../Student/homepage.html">Home</a></li>
-          <li><a href="../../Student/subject_math.html">Math</a></li>
-          <li><a href="../../Student/subject_english.html">English</a></li>
-          <li><a href="../../Student/subject_science.html">Science</a></li>
-          <li><a href="../../Student/leaderboard.html">Leaderboard</a></li>
+          <li><a href="../../Student/homepage.html" id="navHome">Home</a></li>
+          <li><a href="../../Student/subject_math.html" id="navMath">Math</a></li>
+          <li><a href="../../Student/subject_english.html" id="navEnglish">English</a></li>
+          <li><a href="../../Student/subject_science.html" id="navScience">Science</a></li>
+          <li><a href="../../Student/leaderboard.html" id="navLeaderboard">Leaderboard</a></li>
         </ul>
       </nav>
     </div>
@@ -149,11 +149,29 @@
                     backLink.innerHTML = '<i class="fa fa-arrow-left"></i> Back to Science (Teacher)';
                 }
                 
+                // Update navigation links for teachers
+                updateNavigationForTeachers();
+                
                 // Show teacher view with answers
                 showTeacherView();
             }
         }
     });
+
+    // Function to update navigation links for teachers
+    function updateNavigationForTeachers() {
+        const navHome = document.getElementById('navHome');
+        const navMath = document.getElementById('navMath');
+        const navEnglish = document.getElementById('navEnglish');
+        const navScience = document.getElementById('navScience');
+        const navLeaderboard = document.getElementById('navLeaderboard');
+        
+        if (navHome) navHome.href = '../../Teacher/homepage.html';
+        if (navMath) navMath.href = '../../Teacher/subject_math.html';
+        if (navEnglish) navEnglish.href = '../../Teacher/subject_english.html';
+        if (navScience) navScience.href = '../../Teacher/subject_science.html';
+        if (navLeaderboard) navLeaderboard.href = '../../Teacher/leaderboard.html';
+    }
 
     const quizData = [
       { question: "What is the center of our solar system?", options: ["Earth","Moon","Sun","Mars"], correct:2 },
