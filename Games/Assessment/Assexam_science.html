@@ -61,7 +61,7 @@
   </header>
   <main>
   <div class="quiz-container">
-    <a class="back-link" href="../../Student/subject_science.html"><i class="fa fa-arrow-left"></i> Back to Science</a>
+    <a class="back-link" id="backLink" href="../../Student/subject_science.html"><i class="fa fa-arrow-left"></i> Back to Science</a>
     <h2 style="margin-top:0;text-align:center;">Assessment 1: Science Fundamentals</h2>
     <div id="quiz">
       <div class="question" id="questionText"></div>
@@ -131,6 +131,30 @@
 
     const ASSESSMENT_KEY = 'assessment1_science';
 
+    // Detect if user is teacher and adjust back link and view
+    let isTeacher = false;
+    auth.onAuthStateChanged(async function(user) {
+        if (user) {
+            const uid = user.uid;
+            // Check if user is a teacher
+            const teacherSnap = await db.ref('teachers/' + uid).once('value');
+            const teacher = teacherSnap.val();
+            
+            if (teacher && teacher.role === "teacher") {
+                isTeacher = true;
+                // User is a teacher, update back link to teacher page
+                const backLink = document.getElementById('backLink');
+                if (backLink) {
+                    backLink.href = '../../Teacher/subject_science.html';
+                    backLink.innerHTML = '<i class="fa fa-arrow-left"></i> Back to Science (Teacher)';
+                }
+                
+                // Show teacher view with answers
+                showTeacherView();
+            }
+        }
+    });
+
     const quizData = [
       { question: "What is the center of our solar system?", options: ["Earth","Moon","Sun","Mars"], correct:2 },
       { question: "Which of these is a living thing?", options: ["rock","tree","water","air"], correct:1 },
@@ -146,6 +170,46 @@
 
     let currentQuestion = 0;
     let score = 0;
+
+    // Teacher view function
+    function showTeacherView() {
+        const quizContainer = document.querySelector('.quiz-container');
+        const title = quizContainer.querySelector('h2');
+        title.textContent = 'Assessment 1: Science Fundamentals (Teacher View)';
+        
+        // Hide the quiz interface and show answer sheet
+        const quiz = document.getElementById('quiz');
+        quiz.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h3 style="color: #2e8b57;">Answer Sheet</h3>
+                <p style="color: #666;">This view shows all questions with correct answers highlighted</p>
+            </div>
+            <div id="answerSheet"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="window.location.href='../../Teacher/subject_science.html'" style="background: #6d28d9; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                    Back to Teacher Dashboard
+                </button>
+            </div>
+        `;
+        
+        // Display all questions with answers
+        const answerSheet = document.getElementById('answerSheet');
+        quizData.forEach((q, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.style.cssText = 'margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;';
+            questionDiv.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 10px;">Question ${index + 1}: ${q.question}</div>
+                <div style="margin-left: 20px;">
+                    ${q.options.map((option, optIndex) => `
+                        <div style="padding: 5px 0; ${optIndex === q.correct ? 'background: #d4edda; color: #155724; font-weight: bold; padding: 8px; border-radius: 4px;' : ''}">
+                            ${String.fromCharCode(65 + optIndex)}. ${option} ${optIndex === q.correct ? '✓' : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            answerSheet.appendChild(questionDiv);
+        });
+    }
 
     const questionText = document.getElementById('questionText');
     const optionsContainer = document.getElementById('options');
@@ -268,7 +332,10 @@
 
     auth.onAuthStateChanged(u=>{ if(u){ viewAttemptsBtn.style.display='inline-block'; } });
 
-    loadQuestion();
+    // Only load question for students, teachers see answer sheet
+    if (!isTeacher) {
+        loadQuestion();
+    }
   </script>
 </body>
 </html>

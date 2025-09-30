@@ -379,7 +379,33 @@
     };
 
     document.getElementById('play-again-btn').onclick = () => { location.reload(); };
-    document.getElementById('to-lessons-btn').onclick = () => { window.location.href='../../Student/subject_science.html#quizzes'; };
+    // Detect if user is teacher and adjust back button
+    let isTeacher = false;
+    firebase.auth().onAuthStateChanged(async function(user) {
+        if (user) {
+            const uid = user.uid;
+            // Check if user is a teacher
+            const teacherSnap = await firebase.database().ref('teachers/' + uid).once('value');
+            const teacher = teacherSnap.val();
+            
+            if (teacher && teacher.role === "teacher") {
+                isTeacher = true;
+                // Update back button for teachers
+                const backBtn = document.getElementById('to-lessons-btn');
+                if (backBtn) {
+                    backBtn.textContent = 'Back to Lessons (Teacher)';
+                }
+            }
+        }
+    });
+
+    document.getElementById('to-lessons-btn').onclick = () => { 
+        if (isTeacher) {
+            window.location.href='../../Teacher/subject_science.html#quizzes';
+        } else {
+            window.location.href='../../Student/subject_science.html#quizzes';
+        }
+    };
 
     document.getElementById('viewAttemptsBtn').addEventListener('click', openAttemptsModal);
 
