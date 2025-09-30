@@ -776,8 +776,29 @@
             initQuiz();
         });
         
+        // Detect if user is teacher and adjust back button
+        let isTeacher = false;
+        firebase.auth().onAuthStateChanged(async function(user) {
+            if (user) {
+                const uid = user.uid;
+                // Check if user is a teacher
+                const teacherSnap = await firebase.database().ref('teachers/' + uid).once('value');
+                const teacher = teacherSnap.val();
+                
+                if (teacher && teacher.role === "teacher") {
+                    isTeacher = true;
+                    // Update back button for teachers
+                    backToSubjectBtn.textContent = 'Back to Subject (Teacher)';
+                }
+            }
+        });
+
         backToSubjectBtn.addEventListener('click', () => {
-            window.location.href = '../../Student/subject_english.html';
+            if (isTeacher) {
+                window.location.href = '../../Teacher/subject_english.html';
+            } else {
+                window.location.href = '../../Student/subject_english.html';
+            }
         });
 
         // Load previous scores
