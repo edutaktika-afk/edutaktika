@@ -478,11 +478,30 @@
     .bounce-word span:nth-child(9) { animation-delay: 0.56s; }
     .bounce-word span:nth-child(10) { animation-delay: 0.63s; }
     .bounce-word span:nth-child(11) { animation-delay: 0.70s; }
+    .bounce-word span:nth-child(12) { animation-delay: 0.77s; }
+.bounce-word span:nth-child(13) { animation-delay: 0.84s; }
+.bounce-word span:nth-child(14) { animation-delay: 0.91s; }
+.bounce-word span:nth-child(15) { animation-delay: 0.98s; }
+.bounce-word span:nth-child(16) { animation-delay: 1.05s; }
+.bounce-word span:nth-child(17) { animation-delay: 1.12s; }
+.bounce-word span:nth-child(18) { animation-delay: 1.19s; }
+.bounce-word span:nth-child(19) { animation-delay: 1.26s; }
+.bounce-word span:nth-child(20) { animation-delay: 1.33s; }
+.bounce-word span:nth-child(21) { animation-delay: 1.40s; }
+.bounce-word span:nth-child(22) { animation-delay: 1.47s; }
+.bounce-word span:nth-child(23) { animation-delay: 1.54s; }
+.bounce-word span:nth-child(24) { animation-delay: 1.61s; }
+.bounce-word span:nth-child(25) { animation-delay: 1.68s; }
+.bounce-word span:nth-child(26) { animation-delay: 1.75s; }
+.bounce-word span:nth-child(27) { animation-delay: 1.82s; }
+.bounce-word span:nth-child(28) { animation-delay: 1.89s; }
+.bounce-word span:nth-child(29) { animation-delay: 1.96s; }
+.bounce-word span:nth-child(30) { animation-delay: 2.03s; }
 
     @keyframes bounce-letter {
         0%, 100% { transform: translateY(0);}
-        20% { transform: translateY(-18px);}
-        40% { transform: translateY(0);}
+        30% { transform: translateY(-18px);}
+        50% { transform: translateY(0);}
     }
 
     /* Responsive */
@@ -777,3 +796,188 @@
 @media (max-width:560px){
   .pagination button{padding:5px 10px;font-size:.7rem;}
 }
+.lesson-item.video-card {
+  cursor:pointer;
+  transition:transform .22s cubic-bezier(.65,.05,.19,.98), box-shadow .22s;
+  position:relative;
+}
+.lesson-item.video-card:hover {
+  transform:translateY(-6px);
+  box-shadow:0 10px 26px -4px #00000033;
+}
+.lesson-item.video-card:active {
+  transform:translateY(-2px);
+}
+.lesson-item.video-card .play-badge {
+  position:absolute;
+  bottom:10px;
+  right:10px;
+  background:#ff4d67;
+  color:#fff;
+  font-size:.85rem;
+  font-weight:700;
+  padding:8px 12px;
+  border-radius:8px;
+  box-shadow:0 4px 0 #101418;
+  letter-spacing:.5px;
+  pointer-events:none;
+}
+.lesson-item.video-card .video-embed::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  border:3px solid transparent;
+  border-radius:10px;
+  transition:border-color .25s;
+}
+.lesson-item.video-card:hover .video-embed::after {
+  border-color:#2e8b57;
+}
+/* Focus outline for accessibility (JS can add .video-card:focus-within by making div tabindex="0" if desired) */
+.lesson-item.video-card:focus-within {
+  outline:3px solid #2e8b57;
+  outline-offset:4px;
+}
+
+/* -------------------------------------------------- */
+/* Unified Lesson Card Title Styling                  */
+/* Ensures every lesson card (lessons, quizzes, vids) */
+/* has a consistent typography & spacing.             */
+/* -------------------------------------------------- */
+.lesson-item .lesson-title h3 {
+    font-family: 'Outfit','Poppins',sans-serif;
+    font-size: clamp(1.05rem, 0.9rem + 0.55vw, 1.25rem);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: .4px;
+    margin: 0 0 8px 0 !important;
+    padding: 0;
+    color: var(--forest-green, #2e8b57);
+    text-align: left;
+    display: -webkit-box;
+    line-clamp: 2; /* Standard draft property */
+    -webkit-line-clamp: 2;           /* truncate overly long titles to 2 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Ensure description below titles also consistent */
+.lesson-item .lesson-title p {
+    font-family: 'Outfit','Poppins',sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.35;
+    margin: 0 0 12px 0 !important;
+    color: #444;
+    text-align: left;
+}
+
+/* Compact on very small screens */
+@media (max-width: 520px) {
+    .lesson-item .lesson-title h3 { font-size: 1.05rem; line-clamp: 3; -webkit-line-clamp: 3; }
+    .lesson-item .lesson-title p { font-size: 0.85rem; }
+}
+
+/* Clickable lesson/quiz/assessment cards */
+.lesson-item.clickable-card, .lesson-item[data-quiz], .lesson-item[data-assessment] {
+    cursor: pointer;
+    position: relative;
+}
+.lesson-item.clickable-card:focus-within, .lesson-item[data-quiz]:focus, .lesson-item[data-assessment]:focus {
+    outline: 3px solid #2e8b57;
+    outline-offset: 4px;
+}
+
+/* Quiz quarter filter styling */
+#quiz-quarter-filter {
+    padding: 8px 14px;
+    border: 2px solid var(--secondary, #ffd700);
+    border-radius: 14px;
+    background: #fff;
+    font-family: 'Outfit','Poppins',sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #22223b;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    transition: border-color .25s, box-shadow .25s, background .25s;
+}
+#quiz-quarter-filter:focus {
+    outline: none;
+    border-color: #2e8b57;
+    box-shadow: 0 0 0 4px rgba(46,139,87,0.25);
+}
+#quiz-quarter-filter:hover {
+    background: #f9f9f9;
+}
+@media (max-width:700px){
+    #quiz-quarter-filter { font-size: 0.9rem; padding: 7px 12px; }
+}
+
+/* -------------------------------------------------- */
+/* Empty state placeholder (student & teacher parity) */
+/* -------------------------------------------------- */
+.empty-state {
+    background: var(--surface-alt, #fafafa);
+    border: 2px dashed var(--border-color, #d8d8d8);
+    padding: 28px 20px;
+    border-radius: 14px;
+    text-align: center;
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    font-family: var(--font-sans, system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif);
+    box-shadow: 0 2px 0 #00000008 inset;
+    margin: 18px 0 8px;
+    animation: fadeInEmpty .4s ease;
+}
+
+@keyframes fadeInEmpty {
+    from {opacity:0; transform: translateY(4px);} to {opacity:1; transform: translateY(0);}
+}
+
+/* Empty state for Quizzes & Assessments */
+.empty-qa-msg{
+  background:#ffffff;
+  border:2px dashed #cbd5e1;
+  border-radius:18px;
+  padding:32px 26px;
+  font-family:"Outfit","Poppins",system-ui,sans-serif;
+  text-align:center;
+  color:#475569;
+  font-size:.9rem;
+  line-height:1.4;
+  box-shadow:0 4px 12px -4px #00000014;
+  animation:qaFade .4s ease;
+}
+.empty-qa-msg strong{display:block;font-size:1.05rem;margin-bottom:6px;color:#0f172a;}
+@keyframes qaFade {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Full-card clickability (student) --- */
+.lesson-item.clickable-card,
+.lesson-item.video-card.clickable-card {
+  cursor:pointer;
+  position:relative;
+  transition:transform .25s cubic-bezier(.65,.05,.19,.98), box-shadow .25s;
+}
+.lesson-item.clickable-card:hover,
+.lesson-item.video-card.clickable-card:hover {
+  transform:translateY(-4px);
+  box-shadow:0 14px 32px -8px #00000025;
+}
+.lesson-item.clickable-card:active,
+.lesson-item.video-card.clickable-card:active {
+  transform:translateY(-1px);
+}
+.lesson-item.clickable-card:focus-visible,
+.lesson-item.video-card.clickable-card:focus-visible {
+  outline:4px solid #2e8b57;
+  outline-offset:4px;
+}
+.lesson-item.clickable-card .lesson-badge,
+.lesson-item.video-card.clickable-card .lesson-badge {
+  position:relative;
+  z-index:2;
+}
+

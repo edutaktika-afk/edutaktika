@@ -1,4 +1,55 @@
- <script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../CSS/fonts.css">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../CSS/header.css">
+    <link rel="stylesheet" href="../CSS/subject.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/dropdown.css">
+    <link rel="stylesheet" href="../CSS/burger.css">
+    <link rel="icon" type="image/png" href="../images/icons/eng.png" />
+    <title>English</title>
+    <style>
+    /* Force horizontal layout for quiz cards with higher specificity */
+    .lessons-container #student-quiz-cards,
+    #student-quiz-cards {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+        gap: 20px !important;
+        margin-top: 20px !important;
+    }
+
+    /* Override the single column rule specifically for quiz cards */
+    .lessons-container #student-quiz-cards {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    }
+
+    /* Ensure quiz cards maintain horizontal layout on all screen sizes */
+    @media (max-width: 700px) {
+        .lessons-container #student-quiz-cards,
+        #student-quiz-cards {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+            gap: 15px !important;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .lessons-container #student-quiz-cards,
+        #student-quiz-cards {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 12px !important;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div id="mainContent" style="display:none;">
+<script>
     document.addEventListener("DOMContentLoaded", function() {
         firebase.auth().onAuthStateChanged(async function(user) {
             if (!user) {
@@ -19,31 +70,6 @@
         });
     });
     </script>
-    
-    <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="../CSS/fonts.css">
-<!-- ...inside <head> -->
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="../CSS/header.css">
-    <link rel="stylesheet" href="../CSS/subject.css">
-    <link rel="stylesheet" href="../CSS/footer.css">
-    <link rel="stylesheet" href="../CSS/dropdown.css">
-    <link rel="stylesheet" href="../CSS/burger.css">
-    <link rel="icon" type="image/png" href="../images/icons/eng.png" />
-    <title>English</title>
-    
-</head>
-
-<body>
-    <div id="mainContent" style="display:none;">
     <!-- Burger icon for mobile -->
 <button id="burgerBtn" class="burger-btn" aria-label="Open menu">
     <span></span>
@@ -532,6 +558,17 @@
         container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
         container.style.gap = '20px';
         container.style.marginTop = '20px';
+        
+        // Override any CSS that might force single column layout
+        container.style.setProperty('grid-template-columns', 'repeat(auto-fit, minmax(300px, 1fr))', 'important');
+        container.style.setProperty('gap', '20px', 'important');
+        container.style.setProperty('display', 'grid', 'important');
+        
+        // Force the parent lessons-container to not interfere
+        const parentContainer = container.closest('.lessons-container');
+        if (parentContainer) {
+            parentContainer.style.setProperty('display', 'block', 'important');
+        }
 
         // Create Quiz 1: Spelling Bee
         const quiz1 = document.createElement('div');
@@ -1239,39 +1276,61 @@ async function loadYouTubeVideosTeacher() {
     const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${encodeURIComponent(playlistId)}`;
 
     async function fetchWithCors(url) {
-        try {
-            const r = await fetch(url);
-            if (r.ok) return await r.text();
-            throw new Error('HTTP ' + r.status);
-        } catch {
+        // Try multiple CORS proxy services
+        const proxies = [
+            'https://api.allorigins.win/raw?url=',
+            'https://cors-anywhere.herokuapp.com/',
+            'https://api.codetabs.com/v1/proxy?quest=',
+            'https://thingproxy.freeboard.io/fetch/'
+        ];
+        
+        for (const proxy of proxies) {
             try {
-                const rAO = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
-                if (rAO.ok) return await rAO.text();
-                throw new Error();
-            } catch {
-                const jinaUrl = 'https://r.jina.ai/http/' + url.replace(/^https?:\/\//i, '');
-                const rJ = await fetch(jinaUrl);
-                if (rJ.ok) return await rJ.text();
-                throw new Error('All fetch attempts failed');
+                const response = await fetch(proxy + encodeURIComponent(url));
+                if (response.ok) {
+                    return await response.text();
+                }
+            } catch (e) {
+                console.warn(`Proxy ${proxy} failed:`, e);
+                continue;
             }
         }
+        
+        // If all proxies fail, try direct fetch (will likely fail due to CORS)
+        try {
+            const response = await fetch(url);
+            if (response.ok) return await response.text();
+        } catch (e) {
+            console.warn('Direct fetch failed:', e);
+        }
+        
+        throw new Error('All fetch attempts failed - CORS blocked');
     }
 
     try {
+        console.log('Fetching YouTube playlist:', playlistId);
         const xmlText = await fetchWithCors(feedUrl);
+        console.log('XML data length:', xmlText.length);
+        
         const parser = new DOMParser();
         const doc = parser.parseFromString(xmlText, 'text/xml');
         const entries = Array.from(doc.getElementsByTagName('entry'));
+        console.log('Found entries:', entries.length);
+        
         container.innerHTML = '';
 
         const YT_NS = 'http://www.youtube.com/xml/schemas/2015';
-        const englishKeywords = ['english','grammar','vocabulary','reading','writing','spelling','phonics','lesson','literature','language'];
+        const englishKeywords = ['english','grammar','vocabulary','reading','writing','spelling','phonics','lesson','literature','language','comprehension','sentence','word','story','poem','essay','paragraph','noun','verb','adjective','adverb','pronoun','preposition','conjunction','interjection','tense','present','past','future','singular','plural','capitalization','punctuation','apostrophe','comma','period','question','exclamation','quotation','dialogue','character','setting','plot','theme','moral','fable','tale','narrative','descriptive','persuasive','informative','expository','creative','fiction','non-fiction','biography','autobiography','diary','journal','letter','email','report','summary','outline','draft','revise','edit','proofread','publish','author','writer','reader','listener','speaker','viewer','audience','purpose','tone','mood','style','voice','point of view','first person','second person','third person','omniscient','limited','objective','subjective','symbolism','metaphor','simile','personification','alliteration','rhyme','rhythm','meter','stanza','verse','line','couplet','quatrain','sonnet','haiku','limerick','ballad','epic','lyric','dramatic','monologue','soliloquy','aside','dialogue','stage directions','props','costumes','lighting','sound','music','dance','movement','gesture','facial expression','body language','eye contact','posture','pace','volume','pitch','tone','emphasis','stress','intonation','pronunciation','articulation','enunciation','fluency','clarity','coherence','cohesion','unity','variety','emphasis','balance','proportion','harmony','contrast','repetition','parallelism','antithesis','climax','anticlimax','suspense','foreshadowing','flashback','irony','satire','humor','wit','sarcasm','understatement','overstatement','hyperbole','litotes','euphemism','dysphemism','oxymoron','paradox','allusion','reference','citation','quotation','paraphrase','summary','synthesis','analysis','evaluation','criticism','interpretation','explanation','description','narration','exposition','argumentation','persuasion','entertainment','education','information','instruction','guidance','advice','suggestion','recommendation','opinion','belief','attitude','feeling','emotion','mood','atmosphere','ambiance','environment','setting','context','background','history','culture','tradition','custom','ritual','ceremony','celebration','festival','holiday','vacation','travel','journey','adventure','exploration','discovery','invention','creation','innovation','development','progress','improvement','advancement','achievement','success','failure','mistake','error','correction','revision','editing','proofreading','publishing','printing','distribution','circulation','popularity','fame','reputation','recognition','appreciation','admiration','respect','honor','award','prize','trophy','medal','certificate','diploma','degree','qualification','skill','ability','talent','gift','genius','intelligence','wisdom','knowledge','understanding','comprehension','insight','perception','awareness','consciousness','mindfulness','attention','concentration','focus','dedication','commitment','perseverance','determination','motivation','inspiration','encouragement','support','help','assistance','guidance','mentorship','teaching','learning','education','training','practice','exercise','drill','rehearsal','preparation','study','research','investigation','inquiry','question','answer','solution','problem','challenge','difficulty','obstacle','barrier','limitation','restriction','constraint','rule','regulation','law','principle','standard','criterion','measure','test','exam','quiz','assignment','project','task','activity','exercise','homework','lesson','class','course','program','curriculum','syllabus','schedule','timetable','calendar','agenda','plan','strategy','method','technique','approach','procedure','process','system','framework','structure','organization','arrangement','order','sequence','series','chain','link','connection','relationship','association','correlation','comparison','contrast','similarity','difference','distinction','classification','categorization','grouping','sorting','ranking','rating','evaluation','assessment','judgment','opinion','view','perspective','standpoint','position','stance','attitude','approach','methodology','philosophy','theory','hypothesis','assumption','premise','conclusion','result','outcome','consequence','effect','impact','influence','significance','importance','relevance','value','worth','benefit','advantage','disadvantage','strength','weakness','opportunity','threat','risk','danger','safety','security','protection','defense','offense','attack','challenge','competition','contest','game','match','tournament','championship','victory','defeat','win','loss','tie','draw','score','point','goal','target','objective','aim','purpose','intention','plan','strategy','tactic','move','action','step','stage','phase','level','grade','rank','status','position','role','function','duty','responsibility','obligation','requirement','necessity','need','want','desire','wish','hope','dream','aspiration','ambition','goal','target','objective','aim','purpose','mission','vision','ideal','standard','model','example','sample','specimen','instance','case','situation','circumstance','condition','state','status','position','location','place','site','spot','area','region','zone','territory','country','nation','state','province','city','town','village','community','neighborhood','district','ward','block','street','avenue','road','highway','path','way','route','direction','course','journey','trip','travel','voyage','expedition','adventure','exploration','discovery','invention','creation','innovation','development','progress','advancement','evolution','growth','expansion','extension','enlargement','increase','decrease','reduction','diminution','contraction','compression','condensation','concentration','focus','emphasis','stress','pressure','tension','strain','force','power','energy','strength','weakness','ability','capability','capacity','potential','possibility','probability','chance','opportunity','risk','danger','safety','security','protection','defense','offense','attack','challenge','competition','contest','game','match','tournament','championship','victory','defeat','win','loss','tie','draw','score','point','goal','target','objective','aim','purpose','intention','plan','strategy','tactic','move','action','step','stage','phase','level','grade','rank','status','position','role','function','duty','responsibility','obligation','requirement','necessity','need','want','desire','wish','hope','dream','aspiration','ambition','important','elements','element','events','event','sequencing','sequence','noting','note','notes','seven','at least','two','lesson','lessons'];
 
         const filteredEntries = entries.filter(entry => {
             const titleEl = entry.getElementsByTagName('title')[0];
             const title = titleEl ? (titleEl.textContent || '').toLowerCase() : '';
-            return englishKeywords.some(k => title.includes(k));
+            const matches = englishKeywords.some(k => title.includes(k));
+            console.log(`Video: "${title}" - Matches: ${matches}`);
+            return matches;
         });
+        
+        console.log(`Filtered entries: ${filteredEntries.length} out of ${entries.length}`);
 
         // Sort all entries by published date (chronological order - newest first)
         const sortedEntries = (filteredEntries.length ? filteredEntries : entries).sort((a, b) => {
@@ -1307,7 +1366,6 @@ async function loadYouTubeVideosTeacher() {
                 </div>
                 <div class="lesson-title">
                     <h3>${title}</h3>
-                    <p style="font-size:0.9rem;color:#666;margin:4px 0;">Published: ${publishedDate}</p>
                     <button class="lesson-badge watch-btn" type="button">Watch</button>
                 </div>
             `;
@@ -1331,8 +1389,15 @@ async function loadYouTubeVideosTeacher() {
             container.innerHTML = '<div>No videos found.</div>';
         }
     } catch(err){
-        console.error(err);
-        container.innerHTML = '<div>Failed to load videos.</div>';
+        console.error('Error loading YouTube videos:', err);
+        container.innerHTML = `
+            <div style="padding: 20px; text-align: center; color: #666;">
+                <h4>Unable to load videos</h4>
+                <p>CORS policy is blocking the YouTube RSS feed.</p>
+                <p>Error: ${err.message}</p>
+                <p>Please try refreshing the page or check your browser's developer console for more details.</p>
+            </div>
+        `;
     }
 }
 document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);

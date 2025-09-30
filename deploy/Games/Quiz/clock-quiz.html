@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="../../CSS/header.css">
   <link rel="stylesheet" href="../../CSS/subject.css">
-  <link rel="stylesheet" href="../../CSS/footer.css">
+  <link rel="stylesheet" href="../../CSS/dropdown.css">
   <link rel="stylesheet" href="../SAMPLE%20GAMES/draggable-analog-clock/draggable-analog-clock.css">
   <style>
     :root {
@@ -69,20 +69,8 @@
         <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
         <div class="logo-text"><span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span></div>
       </div>
-      <nav>
-        <ul>
-          <li><a href="../../Student/homepage.html">Home</a></li>
-          <li class="dropdown">
-            <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-            <ul class="dropdown-content">
-              <li><a href="../../Student/subject_math.html">Math</a></li>
-              <li><a href="../../Student/subject_english.html">English</a></li>
-              <li><a href="../../Student/subject_science.html">Science</a></li>
-            </ul>
-          </li>
-          <li><a href="../../Student/studentlist.html">Student</a></li>
-          <li><a href="../../Student/leaderboard.html">Leaderboard</a></li>
-        </ul>
+      <nav id="dynamic-nav">
+        <!-- Navigation will be populated based on user role -->
       </nav>
     </div>
   </header>
@@ -92,9 +80,10 @@
       <!-- Start Modal -->
       <div id="start-modal" class="modal-bg" style="display:flex;">
         <div class="modal-content">
-          <h2>Set the Clock</h2>
-          <p class="small">Practice setting an analog clock to the requested time. 10 questions, earn points, and track your attempts.</p>
+          <h2 id="modal-title">Set the Clock</h2>
+          <p class="small" id="modal-description">Practice setting an analog clock to the requested time. 10 questions, earn points, and track your attempts.</p>
           <button id="start-btn" class="modal-btn">Start</button>
+          <button id="answer-sheet-btn" class="modal-btn" style="background:#6d28d9; display:none;">Answer Sheet</button>
         </div>
       </div>
       <!-- Instructions Modal -->
@@ -141,45 +130,24 @@
         </div>
         <div id="uploadStatus"></div>
         <button id="viewAttemptsBtn">View Attempts</button>
+        <div id="teacher-navigation" style="display:none; margin-top:20px; text-align:center;">
+          <button id="prev-question-btn" class="modal-btn" style="background:#6d28d9; margin-right:10px;">Previous</button>
+          <button id="next-question-btn" class="modal-btn" style="background:#6d28d9;">Next</button>
+        </div>
       </div>
     </div>
   </main>
 
-  <footer>
-    <div class="footer-content">
-      <div class="footer-column">
-        <h3 class="edu">Eduktaktika</h3>
-        <p>Making learning fun and engaging through interactive game-based education.</p>
+      <!-- Answer Sheet Modal -->
+      <div id="answer-sheet-modal" class="modal-bg">
+        <div class="modal-content">
+          <h2>Answer Sheet</h2>
+          <div id="answer-sheet-content" class="small" style="text-align:left; line-height:1.6;">
+            <!-- Answer sheet content will be populated here -->
+          </div>
+          <button id="close-answer-sheet-btn" class="modal-btn">Close</button>
+        </div>
       </div>
-      <div class="footer-column">
-        <h3>Quick Links</h3>
-        <ul>
-          <li><a href="../../Student/homepage.html">Home</a></li>
-          <li><a href="../../Student/subject_math.html">Subject</a></li>
-          <li><a href="../../Student/studentlist.html">Student</a></li>
-          <li><a href="../../Student/leaderboard.html">Leaderboard</a></li>
-        </ul>
-      </div>
-      <div class="footer-column">
-        <h3>Support</h3>
-        <ul>
-          <li><a href="#">Help Center</a></li>
-          <li><a href="#">Contact Us</a></li>
-          <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Terms of Service</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <div class="footer-links">
-        <a href="#"><i class="fab fa-facebook"></i></a>
-        <a href="#"><i class="fab fa-twitter"></i></a>
-        <a href="#"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-youtube"></i></a>
-      </div>
-      <p>© 2023 Eduktaktika. All rights reserved.</p>
-    </div>
-  </footer>
 
   <!-- Draggable Analog Clock -->
   <script src="../SAMPLE%20GAMES/draggable-analog-clock/draggable-analog-clock.js"></script>
@@ -285,10 +253,6 @@
     const QUESTIONS = genQuestions(TOTAL_QUESTIONS);
 
     // UI flows
-    document.getElementById('start-btn').onclick = function(){
-      document.getElementById('start-modal').style.display='none';
-      document.getElementById('instructions-modal').style.display='flex';
-    };
     document.getElementById('close-instructions-btn').onclick = function(){
       document.getElementById('instructions-modal').style.display='none';
       document.querySelector('.game-container').style.display='';
@@ -296,11 +260,162 @@
     };
 
     document.getElementById('play-again-btn').onclick = () => { location.reload(); };
-    document.getElementById('to-lessons-btn').onclick = () => { window.location.href='../../Student/subject_math.html#quizzes'; };
+
+    document.getElementById('to-lessons-btn').onclick = () => { 
+        if (isTeacher) {
+            window.location.href='../../Teacher/subject_math.html#quizzes';
+        } else {
+            window.location.href='../../Student/subject_math.html#quizzes';
+        }
+    };
 
     document.getElementById('viewAttemptsBtn').addEventListener('click', openAttemptsModal);
 
     auth.onAuthStateChanged(u=>{ if(u){ document.getElementById('viewAttemptsBtn').style.display='inline-block'; }});
+
+    // Teacher functionality
+    let isTeacher = false;
+    let currentQuestionIndex = 0;
+
+    // Check if user is teacher and setup UI accordingly
+    auth.onAuthStateChanged(async function(user) {
+        if (user) {
+            const uid = user.uid;
+            const teacherSnap = await db.ref('teachers/' + uid).once('value');
+            const teacher = teacherSnap.val();
+            
+            if (teacher && teacher.role === "teacher") {
+                isTeacher = true;
+                setupTeacherUI();
+                addTeacherNavigation();
+            } else {
+                setupStudentUI();
+            }
+            addDynamicNavigation();
+        }
+    });
+
+    function setupTeacherUI() {
+        // Update start modal for teachers
+        document.getElementById('modal-title').textContent = 'Teacher View - Clock Quiz';
+        document.getElementById('modal-description').textContent = 'View the clock quiz questions and answers. You can navigate through questions and see the answer sheet.';
+        document.getElementById('start-btn').textContent = 'View Quiz';
+        document.getElementById('answer-sheet-btn').style.display = 'inline-block';
+        
+        // Show teacher navigation
+        document.getElementById('teacher-navigation').style.display = 'block';
+    }
+
+    function setupStudentUI() {
+        // Hide answer sheet button for students
+        document.getElementById('answer-sheet-btn').style.display = 'none';
+    }
+
+    function addTeacherNavigation() {
+        // Navigation will be handled in the quiz logic
+    }
+
+    function addDynamicNavigation() {
+        const nav = document.getElementById('dynamic-nav');
+        if (!nav) return;
+        
+        if (isTeacher) {
+            nav.innerHTML = `
+                <ul>
+                    <li><a href="../../Teacher/homepage.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="../../Teacher/subject_math.html">Math</a></li>
+                            <li><a href="../../Teacher/subject_english.html">English</a></li>
+                            <li><a href="../../Teacher/subject_science.html">Science</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="../../Teacher/studentlist.html">Students</a></li>
+                    <li><a href="../../Teacher/leaderboard.html">Leaderboard</a></li>
+                </ul>
+            `;
+        } else {
+            nav.innerHTML = `
+                <ul>
+                    <li><a href="../../Student/homepage.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="../../Student/subject_math.html">Math</a></li>
+                            <li><a href="../../Student/subject_english.html">English</a></li>
+                            <li><a href="../../Student/subject_science.html">Science</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="../../Student/studentlist.html">Student</a></li>
+                    <li><a href="../../Student/leaderboard.html">Leaderboard</a></li>
+                </ul>
+            `;
+        }
+    }
+
+    function showAnswerSheet() {
+        const content = document.getElementById('answer-sheet-content');
+        let html = '<h3>Clock Quiz Answer Sheet</h3><ol>';
+        
+        QUESTIONS.forEach((q, index) => {
+            const timeStr = formatTime(q.hour, q.minute);
+            html += `<li><strong>Question ${index + 1}:</strong> Set the clock to <strong>${timeStr}</strong></li>`;
+        });
+        
+        html += '</ol>';
+        content.innerHTML = html;
+        document.getElementById('answer-sheet-modal').style.display = 'flex';
+    }
+
+    function formatTime(hour, minute) {
+        const period = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+        const displayMinute = minute.toString().padStart(2, '0');
+        return `${displayHour}:${displayMinute} ${period}`;
+    }
+
+    function updateTeacherNavigation() {
+        if (!isTeacher) return;
+        
+        const prevBtn = document.getElementById('prev-question-btn');
+        const nextBtn = document.getElementById('next-question-btn');
+        
+        prevBtn.disabled = currentQuestionIndex === 0;
+        nextBtn.disabled = currentQuestionIndex >= TOTAL_QUESTIONS - 1;
+    }
+
+    // Event listeners for teacher functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.id === 'answer-sheet-btn') {
+            showAnswerSheet();
+        } else if (e.target.id === 'close-answer-sheet-btn') {
+            document.getElementById('answer-sheet-modal').style.display = 'none';
+        } else if (e.target.id === 'prev-question-btn' && isTeacher) {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion(currentQuestionIndex);
+                updateTeacherNavigation();
+            }
+        } else if (e.target.id === 'next-question-btn' && isTeacher) {
+            if (currentQuestionIndex < TOTAL_QUESTIONS - 1) {
+                currentQuestionIndex++;
+                loadQuestion(currentQuestionIndex);
+                updateTeacherNavigation();
+            }
+        } else if (e.target.id === 'start-btn') {
+            if (isTeacher) {
+                // Teachers skip instructions and go directly to quiz
+                document.getElementById('start-modal').style.display = 'none';
+                document.querySelector('.game-container').style.display = '';
+                startQuiz();
+            } else {
+                // Students see instructions first
+                document.getElementById('start-modal').style.display = 'none';
+                document.getElementById('instructions-modal').style.display = 'flex';
+            }
+        }
+    });
 
     function startQuiz(){
       // Build/attach clock
@@ -314,17 +429,43 @@
         clockMode: '12h',
         initialTime: { hour: 12, minute: 0 }
       });
-      // Intercept submit to check, score, and advance
-      clockApi.onSubmit(function(state){
-        const target = QUESTIONS[currentIndex];
-        const t = clockApi.getState();
-        const diff = Math.abs((t.hour*60 + t.minute) - (target.hour*60 + target.minute));
-        const correct = diff <= TOLERANCE_MIN;
-        if(correct) score++;
-        nextQuestion();
-      });
+      
+      if (isTeacher) {
+        // Teachers can't submit answers, just view
+        clockApi.disableSubmit();
+        // Set clock to correct time for teachers
+        clockApi._setTime(QUESTIONS[0].hour, QUESTIONS[0].minute);
+        currentQuestionIndex = 0;
+        updateTeacherNavigation();
+      } else {
+        // Students can submit answers
+        clockApi.onSubmit(function(state){
+          const target = QUESTIONS[currentIndex];
+          const t = clockApi.getState();
+          const diff = Math.abs((t.hour*60 + t.minute) - (target.hour*60 + target.minute));
+          const correct = diff <= TOLERANCE_MIN;
+          if(correct) score++;
+          nextQuestion();
+        });
+      }
+      
       // First render
       updateHud();
+    }
+
+    function loadQuestion(index) {
+      if (!isTeacher || !clockApi) return;
+      
+      currentQuestionIndex = index;
+      const question = QUESTIONS[index];
+      
+      // Update clock to show correct answer
+      clockApi._setTime(question.hour, question.minute);
+      clockApi.setTarget({ hour: question.hour, minute: question.minute });
+      
+      // Update HUD
+      updateHud();
+      updateTeacherNavigation();
     }
 
     function nextQuestion(){
@@ -348,6 +489,8 @@
     }
 
     function endQuiz(){
+      if (isTeacher) return; // Teachers don't see final modal
+      
       const pct = Math.round(score / TOTAL_QUESTIONS * 100);
       document.getElementById('final-score').textContent = `Your Score: ${score}/${TOTAL_QUESTIONS} (${pct}%)`;
       document.getElementById('final-modal').style.display='flex';

@@ -2,10 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lesson 1 Quiz - Time & World Time Zones</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="../../CSS/header.css">
-    <link rel="stylesheet" href="../../CSS/footer.css">
+    <link rel="stylesheet" href="../../CSS/fonts.css">
+    <link rel="stylesheet" href="../../CSS/dropdown.css">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #2e8b57;
@@ -177,14 +180,8 @@
                 <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
                 <div class="logo-text"><span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span></div>
             </div>
-            <nav>
-                <ul>
-                    <li><a href="../../Student/homepage.html">Home</a></li>
-                    <li><a href="../../Student/subject_math.html">Math</a></li>
-                    <li><a href="../../Student/subject_english.html">English</a></li>
-                    <li><a href="../../Student/subject_science.html">Science</a></li>
-                    <li><a href="../../Student/leaderboard.html">Leaderboard</a></li>
-                </ul>
+            <nav id="dynamic-nav">
+                <!-- Navigation will be populated by JavaScript based on user role -->
             </nav>
         </div>
     </header>
@@ -229,16 +226,16 @@
             <button id="play-again-btn" class="modal-btn">Back to Lessons</button>
         </div>
     </div>
-    <div class="game-container" style="display:none;">
-        <h2 style="color:var(--primary);margin-bottom:18px;">Time & World Time Zones</h2>
-        <div class="question" id="question"></div>
-        <div class="answers" id="answers"></div>
-        <div class="dropzone" id="dropzone">Drop the correct answer here</div>
-        <div id="feedback"></div>
-        <div id="uploadStatus" style="font-size:13px;margin-top:10px;color:#444;"></div>
-        <button id="viewAttemptsBtn" style="display:none;margin-top:12px; background:#6d28d9; color:#fff; border:none; padding:10px 18px; border-radius:8px; cursor:pointer;">View Attempts</button>
-    </div>
-    <button id="edit-game-btn" style="position: absolute; top: 20px; right: 20px; z-index: 1000; border-radius:6px; cursor:pointer;">Edit Game</button>
+     <div class="game-container" style="display:none;">
+         <h2 style="color:var(--primary);margin-bottom:18px;">Time & World Time Zones</h2>
+         <div class="question" id="question"></div>
+         <div class="answers" id="answers"></div>
+         <div class="dropzone" id="dropzone">Drop the correct answer here</div>
+         <div id="feedback"></div>
+         <div id="uploadStatus" style="font-size:13px;margin-top:10px;color:#444;"></div>
+         <button id="viewAttemptsBtn" style="display:none;margin-top:12px; background:#6d28d9; color:#fff; border:none; padding:10px 18px; border-radius:8px; cursor:pointer;">View Attempts</button>
+         <button id="answerSheetBtn" style="display:none;margin-top:12px; background:#28a745; color:#fff; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; margin-left:10px;">Answer Sheet</button>
+     </div>
     <div id="edit-modal" class="modal-bg">
         <div class="modal-content" style="max-width:600px; width:96vw;">
             <h2 style="margin-top:0; margin-bottom:24px;">Edit Questions</h2>
@@ -250,53 +247,31 @@
             </div>
         </div>
     </div>
-        <!-- Attempts Modal -->
-        <div id="attemptsModal">
-            <div class="modal-content">
-                <h3 style="margin-top:0;">Your Attempts</h3>
-                <div id="attemptsList">Loading...</div>
-                <div style="text-align:right;margin-top:18px;">
-                    <button onclick="closeAttemptsModal()">Close</button>
-                </div>
-            </div>
-        </div>
+         <!-- Attempts Modal -->
+         <div id="attemptsModal">
+             <div class="modal-content">
+                 <h3 style="margin-top:0;">Your Attempts</h3>
+                 <div id="attemptsList">Loading...</div>
+                 <div style="text-align:right;margin-top:18px;">
+                     <button onclick="closeAttemptsModal()">Close</button>
+                 </div>
+             </div>
+         </div>
+         
+         <!-- Answer Sheet Modal -->
+         <div id="answerSheetModal" class="modal-bg">
+             <div class="modal-content" style="max-width:700px; width:96vw; max-height:80vh; overflow-y:auto;">
+                 <h2 style="margin-top:0; margin-bottom:24px; color:var(--primary);">📋 Answer Sheet</h2>
+                 <div id="answerSheetContent">
+                     <!-- Answer sheet content will be populated here -->
+                 </div>
+                 <div style="text-align:right; margin-top:24px;">
+                     <button onclick="closeAnswerSheetModal()" style="padding:8px 24px; border-radius:6px; background:#6c757d; color:#fff; border:none; font-size:16px;">Close</button>
+                 </div>
+             </div>
+         </div>
         </div><!-- /page-wrapper -->
         </main>
-        <!-- Footer -->
-        <footer>
-            <div class="footer-content">
-                <div class="footer-column">
-                    <h3 class="edu">Edutaktika</h3>
-                    <p>Making learning fun and engaging through interactive game-based education.</p>
-                </div>
-                <div class="footer-column">
-                    <h3>Quick Links</h3>
-                    <ul>
-                        <li><a href="../../Student/homepage.html">Home</a></li>
-                        <li><a href="../../Student/subject_math.html">Math</a></li>
-                        <li><a href="../../Student/leaderboard.html">Leaderboard</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>Support</h3>
-                    <ul>
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                        <li><a href="#">Terms of Service</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <div class="footer-links">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-youtube"></i></a>
-                </div>
-                <p>© 2025 Edutaktika. All rights reserved.</p>
-            </div>
-        </footer>
 
         <link rel="stylesheet" href="../../CSS/attemptsModal.css">
         <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -354,26 +329,166 @@
         document.getElementById('viewAttemptsBtn').addEventListener('click', openAttemptsModal);
         auth.onAuthStateChanged(u=>{ if(u){ document.getElementById('viewAttemptsBtn').style.display='inline-block'; loadAttempts(); } });
         </script>
-        <script>
-        // Existing game logic (augmented with saveAttempt call)
-        // Questions for 12/24-hour time and world time zones
-        let current = 0;
-        let score = 0;
-        let userAnswer = "";
+         <script>
+         // Teacher detection and role-based functionality
+         let isTeacher = false;
+         let userRole = 'student';
+         
+         // Initialize Firebase and detect user role
+         firebase.auth().onAuthStateChanged(async function(user) {
+             if (user) {
+                 const uid = user.uid;
+                 
+                 // Check if user is a teacher
+                 const teacherSnap = await firebase.database().ref('teachers/' + uid).once('value');
+                 const teacher = teacherSnap.val();
+                 
+                 if (teacher && teacher.role === "teacher") {
+                     isTeacher = true;
+                     userRole = 'teacher';
+                     setupTeacherUI();
+                 } else {
+                     // Check if user is a student
+                     const studentSnap = await firebase.database().ref('students/' + uid).once('value');
+                     const student = studentSnap.val();
+                     if (student && student.role === "student") {
+                         userRole = 'student';
+                         setupStudentUI();
+                     }
+                 }
+                 
+                 setupNavigation();
+             } else {
+                 // Redirect to login if not authenticated
+                 window.location.href = '../../Student/logreg.html';
+             }
+         });
+         
+         function setupNavigation() {
+             const nav = document.getElementById('dynamic-nav');
+             if (isTeacher) {
+                 nav.innerHTML = `
+                     <ul>
+                         <li><a href="../../Teacher/homepage.html">Home</a></li>
+                         <li class="dropdown subject-dropdown">
+                             <button class="dropbtn" type="button">
+                                 <span>Subject</span>
+                                 <i class="fa fa-caret-down" style="margin-left:6px;font-size:.75rem;"></i>
+                             </button>
+                             <ul class="dropdown-content">
+                                 <li><a href="../../Teacher/subject_math.html">Math</a></li>
+                                 <li><a href="../../Teacher/subject_english.html">English</a></li>
+                                 <li><a href="../../Teacher/subject_science.html">Science</a></li>
+                             </ul>
+                         </li>
+                         <li><a href="../../Teacher/studentlist.html">Student</a></li>
+                         <li class="dropdown">
+                             <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                             <ul class="dropdown-content">
+                                 <li><a href="../../Teacher/leaderboard_math.html">Math</a></li>
+                                 <li><a href="../../Teacher/leaderboard_english.html">English</a></li>
+                                 <li><a href="../../Teacher/leaderboard_science.html">Science</a></li>
+                             </ul>
+                         </li>
+                     </ul>
+                 `;
+             } else {
+                 nav.innerHTML = `
+                     <ul>
+                         <li><a href="../../Student/homepage.html">Home</a></li>
+                         <li><a href="../../Student/subject_math.html">Math</a></li>
+                         <li><a href="../../Student/subject_english.html">English</a></li>
+                         <li><a href="../../Student/subject_science.html">Science</a></li>
+                         <li><a href="../../Student/leaderboard.html">Leaderboard</a></li>
+                     </ul>
+                 `;
+             }
+         }
+         
+         function setupTeacherUI() {
+             // Show answer sheet button for teachers
+             document.getElementById('answerSheetBtn').style.display = 'inline-block';
+             
+             // Add event listener for answer sheet button
+             document.getElementById('answerSheetBtn').addEventListener('click', showAnswerSheet);
+             
+             // Modify the start modal for teachers
+             const startModal = document.getElementById('start-modal');
+             const startContent = startModal.querySelector('.modal-content');
+             startContent.innerHTML = `
+                 <h2>Time & World Time Zones - Teacher View</h2>
+                 <p style="font-size:1.2rem;">This is a read-only view of the quiz for teachers.</p>
+                 <p style="font-size:1.1rem; color:#666;">You can view questions and answers but cannot take the quiz.</p>
+                 <button id="start-btn" class="modal-btn">View Quiz</button>
+             `;
+             
+             
+             // Add navigation controls after the game container is shown
+             setTimeout(() => {
+                 addTeacherNavigation();
+             }, 100);
+         }
+         
+         function setupStudentUI() {
+             // Hide answer sheet button for students
+             document.getElementById('answerSheetBtn').style.display = 'none';
+         }
+         
+         function showAnswerSheet() {
+             const modal = document.getElementById('answerSheetModal');
+             const content = document.getElementById('answerSheetContent');
+             
+             let html = '<div style="text-align:left;">';
+             questions.forEach((q, index) => {
+                 html += `
+                     <div style="margin-bottom:24px; padding:16px; border:1px solid #ddd; border-radius:8px; background:#f9f9f9;">
+                         <h4 style="color:var(--primary); margin-bottom:12px;">Question ${index + 1}:</h4>
+                         <p style="margin-bottom:12px; font-size:1.1rem;">${q.q}</p>
+                         <div style="margin-bottom:8px;">
+                             <strong>Choices:</strong>
+                             <ul style="margin:8px 0; padding-left:20px;">
+                                 ${q.choices.map(choice => `<li>${choice}</li>`).join('')}
+                             </ul>
+                         </div>
+                         <div style="background:#d4edda; padding:8px; border-radius:4px; border-left:4px solid #28a745;">
+                             <strong style="color:#155724;">Correct Answer: ${q.a}</strong>
+                         </div>
+                     </div>
+                 `;
+             });
+             html += '</div>';
+             
+             content.innerHTML = html;
+             modal.style.display = 'flex';
+         }
+         
+         function closeAnswerSheetModal() {
+             document.getElementById('answerSheetModal').style.display = 'none';
+         }
+         
+         // Existing game logic (augmented with saveAttempt call)
+         // Questions for 12/24-hour time and world time zones
+         let current = 0;
+         let score = 0;
+         let userAnswer = "";
 
-        // Start screen logic
-        document.getElementById('start-btn').onclick = function() {
-            document.getElementById('start-modal').style.display = 'none';
-            document.getElementById('instructions-modal').style.display = 'flex';
-        };
-
-        // Hide Edit button initially
-        document.getElementById('edit-game-btn').style.display = 'none';
+        // Start screen logic using event delegation
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'start-btn') {
+                document.getElementById('start-modal').style.display = 'none';
+                if (isTeacher) {
+                    // Skip instructions for teachers and go directly to read-only quiz view
+                    document.querySelector('.game-container').style.display = '';
+                    loadQuestion();
+                } else {
+                    document.getElementById('instructions-modal').style.display = 'flex';
+                }
+            }
+        });
 
         document.getElementById('close-instructions-btn').onclick = function() {
             document.getElementById('instructions-modal').style.display = 'none';
             document.querySelector('.game-container').style.display = '';
-            document.getElementById('edit-game-btn').style.display = ''; // Show Edit button after instructions
             loadQuestion();
         };
 
@@ -381,6 +496,7 @@
             document.getElementById('question').innerHTML = questions[current].q;
             document.getElementById('feedback').textContent = '';
             userAnswer = "";
+            
             // Answers
             const answersDiv = document.getElementById('answers');
             answersDiv.innerHTML = '';
@@ -388,38 +504,81 @@
                 const btn = document.createElement('div');
                 btn.className = 'draggable';
                 btn.textContent = ans;
-                btn.draggable = true;
-                btn.ondragstart = function(e) {
-                    btn.classList.add('dragging');
-                    e.dataTransfer.setData('text/plain', ans);
-                };
-                btn.ondragend = function() {
-                    btn.classList.remove('dragging');
-                };
+                
+                if (isTeacher) {
+                    // Make read-only for teachers
+                    btn.draggable = false;
+                    btn.style.opacity = '0.6';
+                    btn.style.cursor = 'not-allowed';
+                    btn.style.border = '3px solid #ccc';
+                    
+                    // Highlight correct answer for teachers
+                    if (ans === questions[current].a) {
+                        btn.style.background = '#d4edda';
+                        btn.style.border = '3px solid #28a745';
+                        btn.style.color = '#155724';
+                    }
+                } else {
+                    // Normal functionality for students
+                    btn.draggable = true;
+                    btn.ondragstart = function(e) {
+                        btn.classList.add('dragging');
+                        e.dataTransfer.setData('text/plain', ans);
+                    };
+                    btn.ondragend = function() {
+                        btn.classList.remove('dragging');
+                    };
+                }
+                
                 answersDiv.appendChild(btn);
             });
+            
             // Dropzone
             const dropzone = document.getElementById('dropzone');
-            dropzone.textContent = "Drop the correct answer here";
-            dropzone.classList.remove('active');
-            dropzone.ondragover = function(e) {
-                e.preventDefault();
-                dropzone.classList.add('active');
-            };
-            dropzone.ondragleave = function() {
+            if (isTeacher) {
+                // Show correct answer in dropzone for teachers
+                dropzone.textContent = `Correct Answer: ${questions[current].a}`;
+                dropzone.style.background = '#d4edda';
+                dropzone.style.color = '#155724';
+                dropzone.style.border = '3px solid #28a745';
+                dropzone.style.cursor = 'not-allowed';
+                dropzone.ondragover = null;
+                dropzone.ondragleave = null;
+                dropzone.ondrop = null;
+            } else {
+                // Normal functionality for students
+                dropzone.textContent = "Drop the correct answer here";
+                dropzone.style.background = 'var(--peach)';
+                dropzone.style.color = 'var(--white)';
+                dropzone.style.border = '3px dashed var(--primary)';
+                dropzone.style.cursor = 'default';
                 dropzone.classList.remove('active');
-            };
-            dropzone.ondrop = function(e) {
-                e.preventDefault();
-                dropzone.classList.remove('active');
-                const dropped = e.dataTransfer.getData('text/plain');
-                dropzone.textContent = dropped;
-                userAnswer = dropped;
-                showReviewModal(dropped);
-            };
+                dropzone.ondragover = function(e) {
+                    e.preventDefault();
+                    dropzone.classList.add('active');
+                };
+                dropzone.ondragleave = function() {
+                    dropzone.classList.remove('active');
+                };
+                dropzone.ondrop = function(e) {
+                    e.preventDefault();
+                    dropzone.classList.remove('active');
+                    const dropped = e.dataTransfer.getData('text/plain');
+                    dropzone.textContent = dropped;
+                    userAnswer = dropped;
+                    showReviewModal(dropped);
+                };
+            }
+            
+            // Update teacher navigation if applicable
+            if (isTeacher) {
+                updateTeacherNavigation();
+            }
         }
 
         function showReviewModal(ans) {
+            if (isTeacher) return; // Prevent teachers from seeing review modal
+            
             let correct = ans === questions[current].a;
             document.getElementById('review-title').textContent = correct ? "✅ Correct!" : "❌ Incorrect!";
             document.getElementById('review-question').innerHTML = "Question: " + questions[current].q;
@@ -430,6 +589,7 @@
         }
 
         document.getElementById('next-btn').onclick = function() {
+            if (isTeacher) return; // Prevent teachers from using next button
             document.getElementById('review-modal').style.display = 'none';
             current++;
             if (current < questions.length) {
@@ -438,8 +598,64 @@
                 showFinalModal();
             }
         };
+        
+        // Add navigation controls for teachers
+        function addTeacherNavigation() {
+            if (isTeacher) {
+                const gameContainer = document.querySelector('.game-container');
+                const navControls = document.createElement('div');
+                navControls.style.cssText = 'margin-top: 20px; display: flex; justify-content: space-between; align-items: center;';
+                navControls.innerHTML = `
+                    <button id="prev-btn" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; ${current === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">Previous</button>
+                    <span style="font-weight: bold; color: var(--primary);">Question ${current + 1} of ${questions.length}</span>
+                    <button id="next-nav-btn" style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; ${current === questions.length - 1 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">Next</button>
+                `;
+                gameContainer.appendChild(navControls);
+                
+                // Add event listeners for navigation
+                document.getElementById('prev-btn').addEventListener('click', function() {
+                    if (current > 0) {
+                        current--;
+                        loadQuestion();
+                        updateTeacherNavigation();
+                    }
+                });
+                
+                document.getElementById('next-nav-btn').addEventListener('click', function() {
+                    if (current < questions.length - 1) {
+                        current++;
+                        loadQuestion();
+                        updateTeacherNavigation();
+                    }
+                });
+            }
+        }
+        
+        function updateTeacherNavigation() {
+            if (isTeacher) {
+                const prevBtn = document.getElementById('prev-btn');
+                const nextBtn = document.getElementById('next-nav-btn');
+                const questionCounter = document.querySelector('span');
+                
+                if (prevBtn) {
+                    prevBtn.style.opacity = current === 0 ? '0.5' : '1';
+                    prevBtn.style.cursor = current === 0 ? 'not-allowed' : 'pointer';
+                }
+                
+                if (nextBtn) {
+                    nextBtn.style.opacity = current === questions.length - 1 ? '0.5' : '1';
+                    nextBtn.style.cursor = current === questions.length - 1 ? 'not-allowed' : 'pointer';
+                }
+                
+                if (questionCounter) {
+                    questionCounter.textContent = `Question ${current + 1} of ${questions.length}`;
+                }
+            }
+        }
 
         function showFinalModal() {
+            if (isTeacher) return; // Prevent teachers from seeing final modal
+            
             document.getElementById('final-score').textContent = `Your score: ${score} / ${questions.length}`;
             document.getElementById('final-modal').style.display = 'flex';
             // Save attempt to Firebase
@@ -447,14 +663,15 @@
         }
 
         document.getElementById('play-again-btn').onclick = function() {
-            // Redirect to lessons/quiz menu (Math subject page)
-            window.location.href = '../../Student/subject_math.html';
+            if (isTeacher) {
+                // Redirect to teacher math subject page
+                window.location.href = '../../Teacher/subject_math.html';
+            } else {
+                // Redirect to lessons/quiz menu (Math subject page)
+                window.location.href = '../../Student/subject_math.html';
+            }
         };
 
-        // Edit button logic
-        document.getElementById('edit-game-btn').onclick = function() {
-            showEditModal();
-        };
 
         function showEditModal() {
             document.getElementById('edit-modal').style.display = 'flex';

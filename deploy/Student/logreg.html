@@ -5,7 +5,10 @@
     <title>Login & Register</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../CSS/fonts.css">
+<!-- ...inside <head> -->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
    <style>
@@ -238,6 +241,29 @@ label {
     margin-bottom: 12px;
     font-size: 1rem;
 }
+/* Live validation styles */
+.input-error {
+    border: 2px solid #e74c3c !important;
+    background: #fdf2f2 !important;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1) !important;
+}
+.input-success {
+    border: 2px solid #27ae60 !important;
+    background: #f8fff8 !important;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1) !important;
+}
+.field-warning {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    margin-top: 2px;
+    display: block;
+}
+.field-success {
+    color: #27ae60;
+    font-size: 0.85rem;
+    margin-top: 2px;
+    display: block;
+}
 @media (max-width: 1100px) {
     .auth-main-container {
         flex-direction: column;
@@ -454,12 +480,14 @@ label {
                                 <label for="reg_id">LRN</label>
                                 <input type="text" name="reg_id" id="reg_id" required pattern="\d{12}" inputmode="numeric" maxlength="12" minlength="12" oninput="this.value=this.value.replace(/[^0-9]/g,'');">
                                 <div id="lrn-message" style="font-size:0.95em;color:#c0392b;margin-top:2px;"></div>
+                                <span id="lrn-warning" class="field-warning" style="display:none;">LRN is required</span>
                             </div>
                             <div class="form-row name-row" >
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-user"></i></span>
                                     <label for="reg_fname">First Name</label>
                                     <input type="text" pattern="[A-Za-z]+" name="reg_fname" id="reg_fname" required>
+                                    <span id="fname-warning" class="field-warning" style="display:none;">First name is required</span>
                                 </div>
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-user"></i></span>
@@ -470,12 +498,14 @@ label {
                                     <span class="input-icon"><i class="fas fa-user"></i></span>
                                     <label for="reg_lname">Last Name</label>
                                     <input type="text" pattern="[A-Za-z]+" name="reg_lname" id="reg_lname" required>
+                                    <span id="lname-warning" class="field-warning" style="display:none;">Last name is required</span>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <span class="input-icon"><i class="fas fa-envelope"></i></span>
                                 <label for="reg_email">Email</label>
                                 <input type="email" name="reg_email" id="reg_email" required>
+                                <span id="email-warning" class="field-warning" style="display:none;">Email is required</span>
                             </div>
                             <div class="form-group">
                                 <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
@@ -484,35 +514,41 @@ label {
                                 <input type="text" name="reg_address_province" id="reg_address_province" value="Pampanga" readonly
                                 style="background:#eee;cursor:not-allowed;">
                             </div>
-                            <!-- Barangay (was input -> select) -->
+                            <!-- Municipality and Barangay -->
                             <div class="form-row pair">
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
                                     <label for="reg_address_city">Municipality/City</label>
-                                    <select name="reg_address_city" id="reg_address_city" required>
-                                        <option value="">Select City / Municipality</option>
-                                    </select>
+                                    <!-- FIXED municipality to Apalit (readonly) -->
+                                    <input type="text" name="reg_address_city" id="reg_address_city" value="Apalit" readonly style="background:#eee;cursor:not-allowed;">
                                 </div>
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
                                     <label for="reg_address_barangay">Barangay</label>
-                                    <select name="reg_address_barangay" id="reg_address_barangay" required disabled>
+                                    <select name="reg_address_barangay" id="reg_address_barangay" required>
                                         <option value="">Select Barangay</option>
+                                        <option value="Balucuc">Balucuc</option>
+                                        <option value="Calantipe">Calantipe</option>
+                                        <option value="Cansinala">Cansinala</option>
+                                        <option value="Colgante">Colgante</option>
+                                        <option value="Sampaloc">Sampaloc</option>
+                                        <option value="Sucad">Sucad</option>
                                     </select>
+                                    <span id="barangay-warning" class="field-warning" style="display:none;">Please select a barangay</span>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
                                 <label for="reg_address_street">House/Building No. & Street</label>
                                 <input type="text" name="reg_address_street" id="reg_address_street" placeholder="" required>
+                                <span id="street-warning" class="field-warning" style="display:none;">Street address is required</span>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
                                     <label for="reg_address_zip">ZIP Code</label>
-                                    <!-- Restricted to range 0400 - 9811 (Philippines); enforce 4 digits then JS checks range -->
-                                    <input type="text" name="reg_address_zip" id="reg_address_zip" placeholder="" required pattern="\d{4}" maxlength="4" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4);">
-                                    <div id="zip-message" style="font-size:0.95em;color:#c0392b;margin-top:2px;"></div>
+                                    <!-- FIXED ZIP to 2016 for Apalit area (readonly) -->
+                                    <input type="text" name="reg_address_zip" id="reg_address_zip" value="2016" readonly style="background:#eee;cursor:not-allowed;">
                                 </div>
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
@@ -677,20 +713,8 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
-// ZIP & Age live validation (Student)
-const zipInput = document.getElementById('reg_address_zip');
-const zipMsg = document.getElementById('zip-message');
+// Age live validation (Student) - ZIP is now fixed to 2016
 const ageInput = document.getElementById('reg_age');
-
-function validateZip() {
-    const v = zipInput.value;
-    if (!v) { zipMsg.textContent=''; return false; }
-    if (v.length !== 4) { zipMsg.textContent = 'ZIP must be exactly 4 digits (0400 - 9811).'; zipMsg.style.color='#c0392b'; return false; }
-    const num = parseInt(v,10);
-    if (num < 400 || num > 9811) { zipMsg.textContent='ZIP out of allowed range (0400 - 9811).'; zipMsg.style.color='#c0392b'; return false; }
-    zipMsg.textContent='✔️ ZIP valid'; zipMsg.style.color='green'; return true;
-}
-zipInput.addEventListener('input', validateZip);
 
 function validateAge() {
     if (ageInput.value === '') { ageInput.setCustomValidity(''); return false; }
@@ -723,7 +747,6 @@ ageInput.addEventListener('input', debounce(function() {
 document.getElementById('registerForm').onsubmit = async function(e) {
     e.preventDefault();
     const email = document.getElementById('reg_email').value;
-    if (!validateZip()) { return; }
     if (!validateAge()) { return; }
     const password = document.getElementById('reg_password').value;
     const confirm = document.getElementById('reg_confirm_password').value;
@@ -853,67 +876,170 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-// Dynamic City / Barangay for Pampanga
-const citySelect = document.getElementById('reg_address_city');
-const barangaySelect = document.getElementById('reg_address_barangay');
+// Municipality is now fixed to Apalit, barangays are hardcoded in HTML
 
-const pampangaCities = [
-  "Angeles City","Apalit","Arayat","Bacolor","Candaba","Floridablanca","Guagua",
-  "Lubao","Mabalacat City","Macabebe","Magalang","Masantol","Mexico","Minalin",
-  "Porac","San Fernando City","San Luis","San Simon","Santa Ana","Santa Rita",
-  "Santo Tomas","Sasmuan"
-];
-
-// Minimal barangay samples (add full lists as needed)
-const barangaysByCity = {
-  "Angeles City": ["Anunas","Balibago","Cutcut","Malabanias","Pampang","Pulung Maragul","Pulungbulu"],
-  "Apalit": ["Balucuc","Calantipe","Cansinala","Colgante","Sampaloc","Sucad"],
-  "Arayat": ["Arenas","Baliti","Camba","Cupang","Gatiawan","Guemasan"],
-  "Bacolor": ["Balaya","Cabambangan","Calibutbut","Cansinala","Dolores","San Vicente"],
-  "Candaba": ["Bambang","Bahala","Barit","Dalayap","Lourdes","Paligui"],
-  "Floridablanca": ["Anon","Apalit","Basa Air Base","Del Carmen","Paguiruan","San Jose"],
-  "Guagua": ["Assumpta","Balibago","Jose Abad Santos","Lambac","Plaza Burgos","San Pablo"],
-  "Lubao": ["Bancal","Calangain","Del Carmen","Prado Siongco","San Antonio","Santo Niño"],
-  "Mabalacat City": ["Atlu-Bola","Camachiles","Dau","Dolores","Lakandula","Mamatitang","Mawaque"],
-  "Macabebe": ["Consuelo","Cansinala","San Gabriel","San Juan","San Rafael","Tacasan"],
-  "Magalang": ["Camias","Dolores","San Francisco","San Isidro","San Nicolas 1st","Sta Cruz"],
-  "Masantol": ["Arenas","Bagang","Bebe Anac","Nigui","San Agustin","San Nicolas"],
-  "Mexico": ["Balas","Bucao","Cawayan","Dolores","Laguio","Luz","Santo Domingo"],
-  "Minalin": ["Bulac","Cauayan","Lourdes","Maniago","San Francisco Solano","Sta Rita"],
-  "Porac": ["Babo Pangulo","Babo Sacan","Camias","Manibaug Libutad","Pio","Santa Cruz","Sapang Uwak"],
-  "San Fernando City": ["Baliti","Calulut","Del Carmen","Del Rosario","Lara","San Agustin","Sto Niño"],
-  "San Luis": ["San Agustin","San Carlos","San Isidro","San Juan","San Nicolas","Santa Catalina"],
-  "San Simon": ["Concepcion","De La Paz","San Agustin","San Isidro","San Jose","San Nicolas"],
-  "Santa Ana": ["San Agustin","San Bartolome","San Isidro","San Joaquin","San Nicolas","Santa Lucia"],
-  "Santa Rita": ["Becuran","Dila Dila","San Agustin","San Basilio","San Jose","San Matias"],
-  "Santo Tomas": ["Poblacion","Moraza","San Matias","San Vicente","Santo Rosario","Sapa"],
-  "Sasmuan": ["Batasan","Malusac","San Antonio","San Nicolas 1st","San Pedro","Santa Monica"]
-};
-
-function populateCities() {
-  pampangaCities.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c;
-    opt.textContent = c;
-    citySelect.appendChild(opt);
-  });
+// Live validation for required fields
+function validateField(field, warningId, customMessage = null) {
+    const warning = document.getElementById(warningId);
+    const isValid = field.value.trim() !== '';
+    
+    if (isValid) {
+        field.classList.remove('input-error');
+        field.classList.add('input-success');
+        warning.style.display = 'none';
+    } else {
+        field.classList.remove('input-success');
+        field.classList.add('input-error');
+        warning.style.display = 'block';
+        if (customMessage) {
+            warning.textContent = customMessage;
+        }
+    }
+    
+    return isValid;
 }
-function populateBarangays(city) {
-  barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
-  barangaySelect.disabled = true;
-  if (!city || !barangaysByCity[city]) return;
-  barangaysByCity[city].forEach(b => {
-    const opt = document.createElement('option');
-    opt.value = b;
-    opt.textContent = b;
-    barangaySelect.appendChild(opt);
-  });
-  barangaySelect.disabled = false;
-}
-citySelect.addEventListener('change', () => populateBarangays(citySelect.value));
 
-// Init
-populateCities();
+// Add live validation to required fields
+document.addEventListener('DOMContentLoaded', function() {
+    // LRN field
+    const lrnField = document.getElementById('reg_id');
+    lrnField.addEventListener('blur', () => validateField(lrnField, 'lrn-warning'));
+    lrnField.addEventListener('input', () => {
+        if (lrnField.value.trim() !== '') {
+            lrnField.classList.remove('input-error');
+            lrnField.classList.add('input-success');
+            document.getElementById('lrn-warning').style.display = 'none';
+        }
+    });
+    
+    // First Name field
+    const fnameField = document.getElementById('reg_fname');
+    fnameField.addEventListener('blur', () => validateField(fnameField, 'fname-warning'));
+    fnameField.addEventListener('input', () => {
+        if (fnameField.value.trim() !== '') {
+            fnameField.classList.remove('input-error');
+            fnameField.classList.add('input-success');
+            document.getElementById('fname-warning').style.display = 'none';
+        }
+    });
+    
+    // Last Name field
+    const lnameField = document.getElementById('reg_lname');
+    lnameField.addEventListener('blur', () => validateField(lnameField, 'lname-warning'));
+    lnameField.addEventListener('input', () => {
+        if (lnameField.value.trim() !== '') {
+            lnameField.classList.remove('input-error');
+            lnameField.classList.add('input-success');
+            document.getElementById('lname-warning').style.display = 'none';
+        }
+    });
+    
+    // Email field
+    const emailField = document.getElementById('reg_email');
+    emailField.addEventListener('blur', () => {
+        const isValid = emailField.value.trim() !== '' && emailField.checkValidity();
+        validateField(emailField, 'email-warning');
+    });
+    emailField.addEventListener('input', () => {
+        if (emailField.value.trim() !== '') {
+            emailField.classList.remove('input-error');
+            if (emailField.checkValidity()) {
+                emailField.classList.add('input-success');
+            }
+            document.getElementById('email-warning').style.display = 'none';
+        }
+    });
+    
+    // Barangay field
+    const barangayField = document.getElementById('reg_address_barangay');
+    barangayField.addEventListener('change', () => validateField(barangayField, 'barangay-warning'));
+    
+    // Street field
+    const streetField = document.getElementById('reg_address_street');
+    streetField.addEventListener('blur', () => validateField(streetField, 'street-warning'));
+    streetField.addEventListener('input', () => {
+        if (streetField.value.trim() !== '') {
+            streetField.classList.remove('input-error');
+            streetField.classList.add('input-success');
+            document.getElementById('street-warning').style.display = 'none';
+        }
+    });
+    
+    // Grade field
+    const gradeField = document.getElementById('reg_grade');
+    gradeField.addEventListener('change', () => {
+        const warning = document.getElementById('grade-warning') || (() => {
+            const span = document.createElement('span');
+            span.id = 'grade-warning';
+            span.className = 'field-warning';
+            span.style.display = 'none';
+            span.textContent = 'Please select a grade level';
+            gradeField.parentNode.appendChild(span);
+            return span;
+        })();
+        validateField(gradeField, 'grade-warning');
+    });
+    
+    // Subject field
+    const subjectField = document.getElementById('reg_subject');
+    subjectField.addEventListener('change', () => {
+        const warning = document.getElementById('subject-warning') || (() => {
+            const span = document.createElement('span');
+            span.id = 'subject-warning';
+            span.className = 'field-warning';
+            span.style.display = 'none';
+            span.textContent = 'Please select a subject';
+            subjectField.parentNode.appendChild(span);
+            return span;
+        })();
+        validateField(subjectField, 'subject-warning');
+    });
+    
+    // Section field
+    const sectionField = document.getElementById('reg_section');
+    sectionField.addEventListener('change', () => {
+        const warning = document.getElementById('section-warning') || (() => {
+            const span = document.createElement('span');
+            span.id = 'section-warning';
+            span.className = 'field-warning';
+            span.style.display = 'none';
+            span.textContent = 'Please select a section';
+            sectionField.parentNode.appendChild(span);
+            return span;
+        })();
+        validateField(sectionField, 'section-warning');
+    });
+    
+    // Gender field
+    const genderField = document.getElementById('reg_gender');
+    genderField.addEventListener('change', () => {
+        const warning = document.getElementById('gender-warning') || (() => {
+            const span = document.createElement('span');
+            span.id = 'gender-warning';
+            span.className = 'field-warning';
+            span.style.display = 'none';
+            span.textContent = 'Please select a gender';
+            genderField.parentNode.appendChild(span);
+            return span;
+        })();
+        validateField(genderField, 'gender-warning');
+    });
+    
+    // School Year field
+    const schoolYearField = document.getElementById('reg_school_year');
+    schoolYearField.addEventListener('change', () => {
+        const warning = document.getElementById('schoolyear-warning') || (() => {
+            const span = document.createElement('span');
+            span.id = 'schoolyear-warning';
+            span.className = 'field-warning';
+            span.style.display = 'none';
+            span.textContent = 'Please select a school year';
+            schoolYearField.parentNode.appendChild(span);
+            return span;
+        })();
+        validateField(schoolYearField, 'schoolyear-warning');
+    });
+});
 </script>
 
  <script src="../assets/js/Student Side/logreg.js"></script>

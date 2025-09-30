@@ -26,6 +26,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="../CSS/fonts.css">
+<!-- ...inside <head> -->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="../CSS/header.css">
@@ -45,6 +48,37 @@
 }
 .profile-sidebar::-webkit-scrollbar {
     display: none;                 /* Chrome, Safari, Opera */
+}
+
+/* Force horizontal layout for quiz cards with higher specificity */
+.lessons-container #student-quiz-cards,
+#student-quiz-cards {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 20px !important;
+    margin-top: 20px !important;
+}
+
+/* Override the single column rule specifically for quiz cards */
+.lessons-container #student-quiz-cards {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+}
+
+/* Ensure quiz cards maintain horizontal layout on all screen sizes */
+@media (max-width: 700px) {
+    .lessons-container #student-quiz-cards,
+    #student-quiz-cards {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 15px !important;
+    }
+}
+
+@media (max-width: 520px) {
+    .lessons-container #student-quiz-cards,
+    #student-quiz-cards {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
 }
 </style>
 </head>
@@ -77,14 +111,17 @@
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="subject_math.html">Math</a></li>
-                            <li><a href="subject_english.html">English</a></li>
-                            <li><a href="subject_science.html">Science</a></li>
-                        </ul>
-                    </li>
+                    <li class="dropdown subject-dropdown">
+      <button id="navSubjectBtn" class="dropbtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+        <span id="navSubjectLabel">Subject</span>
+        <i class="fa fa-caret-down" aria-hidden="true" style="margin-left:6px;font-size:.75rem;"></i>
+      </button>
+      <ul id="navSubjectMenu" class="dropdown-content" role="listbox" aria-labelledby="navSubjectBtn">
+        <li><a href="subject_math.html" data-subject="Math" role="option">Math</a></li>
+        <li><a href="subject_english.html" data-subject="English" role="option">English</a></li>
+        <li><a href="subject_science.html" data-subject="Science" role="option">Science</a></li>
+      </ul>
+    </li>
                     <li><a href="studentlist.html">Student</a></li>
                     <li class="dropdown">
                             <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
@@ -238,7 +275,8 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
                 <h2>
                     Quarter 1: 
                     <span class="bounce-word">
-                        <span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span>
+<span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+
                     </span>
                 </h2>
             </div>
@@ -291,7 +329,8 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
                  <h2>
                     Quarter 2: 
                     <span class="bounce-word">
-                        <span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span>
+                        <span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+
                     </span>
                 </h2>
             </div>
@@ -328,7 +367,13 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
         <div class="quarter-section" id="quarter-3">
             <div class="quarter-title">
                 <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 3: Decimals & Percentages</h2>
+                <h2>Quarter 3:
+                     <span class="bounce-word">
+                        <span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+
+                    </span>
+                </h2>
+                
             </div>
 
             <div class="lessons-container">
@@ -363,7 +408,12 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
         <div class="quarter-section" id="quarter-4">
             <div class="quarter-title">
                 <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 4: Geometry & Measurement</h2>
+                <h2>Quarter 4: 
+                        <span class="bounce-word">
+                            <span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+    
+                        </span>
+                </h2>
             </div>
 
             <div class="lessons-container">
@@ -445,16 +495,24 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
 
         // Create Assessment 1 card for Math
         const card = document.createElement('div');
-        card.className = 'lesson-item';
+        card.className = 'lesson-item clickable-card';
+        card.setAttribute('tabindex','0');
+        card.setAttribute('role','button');
+        card.setAttribute('aria-label','Open Assessment 1: Everyday Math');
         card.innerHTML = `
             <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;">A1</div>
             <div class="lesson-title">
                 <h3>Assessment 1: Everyday Math</h3>
                 <p>10-item real‑life math skills check.</p>
-                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam.html'">Start</span>
+                <span class="lesson-badge" style="cursor:pointer;" data-action="start">Start</span>
                 <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
             </div>`;
         container.appendChild(card);
+        card.addEventListener('click', (e)=>{
+            if(e.target.closest('[data-action="start"]')) { window.location.href='../Games/Assessment/Assexam.html'; return; }
+            window.location.href='../Games/Assessment/Assexam.html';
+        });
+        card.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); window.location.href='../Games/Assessment/Assexam.html'; }});
 
         // Fetch last score if user logged in
         firebase.auth().onAuthStateChanged(function(user){
@@ -488,10 +546,23 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
         container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
         container.style.gap = '20px';
         container.style.marginTop = '20px';
+        
+        // Override any CSS that might force single column layout
+        container.style.setProperty('grid-template-columns', 'repeat(auto-fit, minmax(300px, 1fr))', 'important');
+        container.style.setProperty('gap', '20px', 'important');
+        container.style.setProperty('display', 'grid', 'important');
+        
+        // Force the parent lessons-container to not interfere
+        const parentContainer = container.closest('.lessons-container');
+        if (parentContainer) {
+            parentContainer.style.setProperty('display', 'block', 'important');
+        }
 
         // Create Quiz 1: Time & Time Zones
         const quiz1 = document.createElement('div');
-        quiz1.className = 'lesson-item';
+        quiz1.className = 'lesson-item clickable-card';
+        quiz1.setAttribute('tabindex','0');
+        quiz1.setAttribute('role','button');
         quiz1.innerHTML = `
             <div class="lesson-thumbnail" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
                 <i class="fas fa-clock" style="font-size: 2.5rem; color: white;"></i>
@@ -499,14 +570,21 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
             <div class="lesson-title">
                 <h3>Quiz 1: Math - Time & Time Zones</h3>
                 <p>Test your understanding of time and time zones.</p>
-                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/lesson1.html'">Start</span>
+                <span class="lesson-badge" style="cursor:pointer;" data-action="start">Start</span>
                 <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="mathQuiz1LastScore">Last Score: -</div>
             </div>`;
         container.appendChild(quiz1);
+        quiz1.addEventListener('click',(e)=>{
+            if(e.target.closest('[data-action="start"]')) { window.location.href='../Games/Quiz/lesson1.html'; return; }
+            window.location.href='../Games/Quiz/lesson1.html';
+        });
+        quiz1.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); window.location.href='../Games/Quiz/lesson1.html'; }});
 
         // Create Quiz 2: Clock Setting
         const quiz2 = document.createElement('div');
-        quiz2.className = 'lesson-item';
+        quiz2.className = 'lesson-item clickable-card';
+        quiz2.setAttribute('tabindex','0');
+        quiz2.setAttribute('role','button');
         quiz2.innerHTML = `
             <div class="lesson-thumbnail" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center;">
                 <i class="fas fa-clock" style="font-size: 2.5rem; color: white;"></i>
@@ -514,10 +592,15 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
             <div class="lesson-title">
                 <h3>Quiz 2: Math - Clock Setting</h3>
                 <p>Practice setting clocks and reading time.</p>
-                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/clock-quiz.html'">Start</span>
+                <span class="lesson-badge" style="cursor:pointer;" data-action="start">Start</span>
                 <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="mathQuiz2LastScore">Last Score: -</div>
             </div>`;
         container.appendChild(quiz2);
+        quiz2.addEventListener('click',(e)=>{
+            if(e.target.closest('[data-action="start"]')) { window.location.href='../Games/Quiz/clock-quiz.html'; return; }
+            window.location.href='../Games/Quiz/clock-quiz.html';
+        });
+        quiz2.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); window.location.href='../Games/Quiz/clock-quiz.html'; }});
 
         // Load quiz scores for teachers
         firebase.auth().onAuthStateChanged(function(user) {
@@ -550,75 +633,48 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
     })();
     </script>
 
-    <footer>
-        <div class="footer-content">
-            <div class="footer-column">
-                <h3 class="edu">Eduktaktika</h3>
-                <p>
-                    Making learning fun and engaging through interactive game-based
-                    education.
-                </p>
-            </div>
-            <div class="footer-column">
-                <h3>Quick Links</h3>
-                <ul>
-                    <li><a href="homepage.php">Home</a></li>
-                    <li><a href="subjectTeacher.php">Subject</a></li>
-                    <li><a href="studentlistTeacher.php">Student</a></li>
-                    <li><a href="leaderboardTeacher.php">Leaderboard</a></li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h3>Support</h3>
-                <ul>
-                    <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="footer-links">
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-youtube"></i></a>
-            </div>
-            <p>© 2023 Eduktaktika. All rights reserved.</p>
-        </div>
-    </footer>
 
-        <!-- Edit Profile Modal -->
-
-<link rel="stylesheet" href="../CSS/editProfile.css">
-
-<div id="editProfileModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
-    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
-        <h3 style="margin-top:0;">Edit Profile</h3>
-        <form id="editProfileForm">
-            <label>First Name:<br>
-                <input type="text" id="edit_fname" required>
-            </label><br><br>
-            <label>Middle Name:<br>
-                <input type="text" id="edit_mname">
-            </label><br><br>
-            <label>Last Name:<br>
-                <input type="text" id="edit_lname" required>
-            </label><br><br>
-            <label>Grade Level:<br>
-                <input type="text" id="edit_gradelevel">
-            </label><br><br>
-            <label>Section:<br>
-                <input type="text" id="edit_section">
-            </label><br><br>
-            <div style="text-align:right;">
-                <button type="button" onclick="closeEditProfileModal()" style="margin-right:10px;">Cancel</button>
-                <button type="submit">Save</button>
-            </div>
-        </form>
+<footer>
+  <div class="footer-wrap">
+    <div class="footer-col">
+      <h4 class="footer-brand">Eduktaktika</h4>
+      <p>Interactive, game‑based learning for Math, English, and Science.</p>
     </div>
-</div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <ul class="footer-social">
+        <li><a href="homepage.html">Homepage</a></li>
+        <li><a href="studentlist.html">Student</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Subjects</h4>
+      <ul class="footer-links">
+        <li><a href="subject_math.html">Math</a></li>
+        <li><a href="subject_english.html">English</a></li>
+        <li><a href="subject_science.html">Science</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Leaderboards</h4>
+      <ul class="footer-links">
+        <li><a href="leaderboard_math.html">Math</a></li>
+        <li><a href="leaderboard_english.html">English</a></li>
+        <li><a href="leaderboard_science.html">Science</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-social-row">
+      <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+    </div>
+    <p>© 2025 Eduktaktika. All rights reserved.</p>
+  </div>
+</footer>
+
 
 <script src="../assets/js/Teacher Side/editProfile.js"></script>
 <script>
@@ -669,11 +725,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
     }
 });
 
-// Remove the old global loader and its call!
-// function loadPresentationsByQuarter(quarter) { ... }
-// ['1','2','3','4','5'].forEach(loadPresentationsByQuarter);
 
-// Removed older viewPresentation (Editor.html) – unified environment-aware version exists later in file.
 </script>
 
 <style>
@@ -763,7 +815,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
     }
 </style>
 
-<!-- Add this near the end of your body, before </body> -->
+
 <div id="createLessonModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
     <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
         <h3 style="margin-top:0;">Create New Lesson</h3>
@@ -1075,40 +1127,33 @@ function viewQuiz(quarter, name, mode = 'view', subject = subjectPage) {
 </script>
 
 <script>
-// Load latest YouTube videos via playlist RSS feed into Quarter 1 (Teacher)
+// Load latest YouTube videos via playlist RSS feed into Quarter 1 (Teacher) - English
 async function loadYouTubeVideosTeacher() {
     const wrapper = document.getElementById('youtube-lessons');
     const container = document.querySelector('#youtube-lessons .lessons-container');
     if (!container || !wrapper) return;
-
-    // Configure your playlist ID here or set data-playlist-id on #youtube-lessons
     const playlistId = (wrapper.dataset.playlistId || '').trim();
     if (!playlistId) {
         container.innerHTML = '<div style="color:#888;">Set a YouTube playlist ID to load videos.</div>';
         return;
     }
-
     const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${encodeURIComponent(playlistId)}`;
 
-    // Helper to fetch with robust CORS fallbacks
     async function fetchWithCors(url) {
-        // 1) Try direct
         try {
             const r = await fetch(url);
             if (r.ok) return await r.text();
             throw new Error('HTTP ' + r.status);
-        } catch (e1) {
-            // 2) Try AllOrigins raw endpoint
+        } catch {
             try {
                 const rAO = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
                 if (rAO.ok) return await rAO.text();
-                throw new Error('AllOrigins HTTP ' + rAO.status);
-            } catch (e2) {
-                // 3) Try r.jina.ai mirror (read-only proxy with permissive CORS)
+                throw new Error();
+            } catch {
                 const jinaUrl = 'https://r.jina.ai/http/' + url.replace(/^https?:\/\//i, '');
                 const rJ = await fetch(jinaUrl);
                 if (rJ.ok) return await rJ.text();
-                throw new Error('jina.ai HTTP ' + rJ.status);
+                throw new Error('All fetch attempts failed');
             }
         }
     }
@@ -1118,62 +1163,184 @@ async function loadYouTubeVideosTeacher() {
         const parser = new DOMParser();
         const doc = parser.parseFromString(xmlText, 'text/xml');
         const entries = Array.from(doc.getElementsByTagName('entry'));
-
-        if (!entries.length) {
-            container.innerHTML = '<div>No recent videos found.</div>';
-            return;
-        }
-
         container.innerHTML = '';
 
         const YT_NS = 'http://www.youtube.com/xml/schemas/2015';
-        
-        // Math-related keywords to filter content
         const mathKeywords = ['math', 'mathematics', 'number', 'addition', 'subtraction', 'multiplication', 'division', 'fraction', 'decimal', 'geometry', 'algebra', 'equation', 'problem', 'solve', 'calculate', 'gmdas', 'clock', 'time', 'measurement', 'sequence', 'operation', 'counting', 'place value', 'rounding', 'percentage', 'ratio', 'proportion', 'angle', 'triangle', 'circle', 'square', 'rectangle', 'area', 'perimeter', 'volume', 'statistics', 'graph', 'chart', 'data', 'pattern', 'logic', 'reasoning'];
-        
+
         const filteredEntries = entries.filter(entry => {
             const titleEl = entry.getElementsByTagName('title')[0];
             const title = titleEl ? (titleEl.textContent || '').toLowerCase() : '';
-            return mathKeywords.some(keyword => title.includes(keyword));
+            return mathKeywords.some(k => title.includes(k));
         });
-        
-        filteredEntries.slice(0, 5).forEach(entry => {
-            const vidEl = entry.getElementsByTagNameNS?.(YT_NS, 'videoId')?.[0]
+
+        // Sort all entries by published date (chronological order - newest first)
+        const sortedEntries = (filteredEntries.length ? filteredEntries : entries).sort((a, b) => {
+            const dateA = new Date(a.getElementsByTagName('published')[0]?.textContent || 0);
+            const dateB = new Date(b.getElementsByTagName('published')[0]?.textContent || 0);
+            return dateB - dateA; // Newest first
+        });
+
+        // Show all videos (remove the .slice(0,5) limit)
+        const videosToShow = sortedEntries;
+
+        videosToShow.forEach(entry => {
+            const vidEl = entry.getElementsByTagNameNS?.(YT_NS,'videoId')?.[0]
                 || entry.getElementsByTagName('yt:videoId')?.[0]
                 || entry.querySelector('yt\\:videoId, videoId');
             const titleEl = entry.getElementsByTagName('title')[0];
+            const publishedEl = entry.getElementsByTagName('published')[0];
             const videoId = vidEl ? (vidEl.textContent || '').trim() : '';
+            if(!videoId) return;
             const title = titleEl ? (titleEl.textContent || 'YouTube Video').trim() : 'YouTube Video';
-            if (!videoId) return;
+            const publishedDate = publishedEl ? new Date(publishedEl.textContent).toLocaleDateString() : '';
+            const watchUrl = `video.html?id=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}`;
 
             const card = document.createElement('div');
-            card.className = 'lesson-item';
-            const watchUrl = `video.html?id=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}`;
+            card.className = 'lesson-item video-card';
+            card.setAttribute('data-watch-url', watchUrl);
+
             card.innerHTML = `
-                <div class="video-embed" style="position:relative;width:100%;padding-top:56.25%;border-radius:8px;overflow:hidden;margin-bottom:12px;background:#000;">
-                    <iframe src="https://www.youtube.com/embed/${videoId}" title="${title.replace(/"/g, '&quot;')}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" loading="lazy"></iframe>
+                <div class="video-embed clickable-overlay" style="position:relative;width:100%;padding-top:56.25%;border-radius:10px;overflow:hidden;margin-bottom:12px;background:#000;">
+                    <img src="https://i.ytimg.com/vi/${videoId}/hqdefault.jpg" alt="${title.replace(/"/g,'&quot;')}" 
+                         style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;">
+                    <div class="play-badge" aria-hidden="true">▶</div>
                 </div>
                 <div class="lesson-title">
                     <h3>${title}</h3>
-                    <button class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='${watchUrl}'">Watch</button>
+                    <p style="font-size:0.9rem;color:#666;margin:4px 0;">Published: ${publishedDate}</p>
+                    <button class="lesson-badge watch-btn" type="button">Watch</button>
                 </div>
             `;
+
+            // Click handlers (whole card)
+            card.addEventListener('click', (e) => {
+                // Prevent double if button
+                if (e.target.closest('.watch-btn')) {
+                    window.location.href = watchUrl;
+                    return;
+                }
+                // Ignore text selection drag
+                if (window.getSelection && window.getSelection().toString().length) return;
+                window.location.href = watchUrl;
+            });
+
             container.appendChild(card);
         });
 
-        if (!container.children.length) {
-            container.innerHTML = '<div>No math-related videos found in the playlist.</div>';
+        if(!container.children.length){
+            container.innerHTML = '<div>No videos found.</div>';
         }
-    } catch (err) {
-        console.error('Error fetching YouTube RSS (teacher)', err);
-        container.innerHTML = '<div>Failed to load YouTube videos.</div>';
+    } catch(err){
+        console.error(err);
+        container.innerHTML = '<div>Failed to load videos.</div>';
     }
 }
-
 document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
+
 </script>
 <script src="../assets/js/navbar.js"></script>
 <script src="../assets/tabDropdown.js"></script>
+<script src="../assets/js/header-dynamic-labels.js"></script>
+<!-- Empty quarter placeholder styles & logic -->
+<style>
+    .empty-quarter-msg {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 26px 20px;
+        margin: 6px 0 14px 0;
+        border: 2px dashed #bbb;
+        border-radius: 14px;
+        background: #fafafa;
+        font-size: 0.95rem;
+        line-height: 1.45;
+        text-align: center;
+        color: #333;
+        font-weight: 600;
+        letter-spacing: .4px;
+        position: relative;
+        animation: fadeInEmpty .4s ease;
+    }
+    .empty-quarter-msg:before {
+        content: "";
+        position: absolute;
+        inset: 4px;
+        border-radius: 10px;
+        background: repeating-linear-gradient(45deg,#00000006 0 10px,transparent 10px 20px);
+        pointer-events: none;
+        z-index: 0;
+    }
+    .empty-quarter-msg > * { position: relative; z-index: 1; }
+    @keyframes fadeInEmpty { from { opacity:0; transform: translateY(4px);} to { opacity:1; transform: translateY(0);} }
+    .empty-quarter-msg strong { color:#059981; }
+    @media (prefers-color-scheme: dark) {
+        .empty-quarter-msg { background:#1e1e1e; border-color:#444; color:#ddd; }
+        .empty-quarter-msg strong { color:#4dd6c3; }
+    }
+</style>
+<script>
+(function(){
+    const QUARTER_SELECTOR = '.quarter-section';
+    const IGNORE_IDS = new Set(['quarter-5','quarter-assessments']);
+    const quarterSections = Array.from(document.querySelectorAll(QUARTER_SELECTOR)).filter(sec=> !IGNORE_IDS.has(sec.id));
+
+    function sectionHasLessonCards(section){
+        // Any authored lesson or quiz style card
+        const cards = section.querySelectorAll('.lessons-container .lesson-item');
+        // Exclude video cards check separately
+        return cards.length > 0;
+    }
+    function sectionHasVideoCards(section){
+        if(section.id !== 'quarter-1') return false; // only quarter 1 hosts YouTube block
+        const vidContainer = section.querySelector('#youtube-lessons .lessons-container');
+        if(!vidContainer) return false;
+        return !!vidContainer.querySelector('.video-card');
+    }
+    function removePlaceholder(section){
+        const el = section.querySelector('.empty-quarter-msg');
+        if(el) el.remove();
+    }
+    function addPlaceholder(section){
+        if(section.querySelector('.empty-quarter-msg')) return; // already present
+        const firstContainer = section.querySelector('.lessons-container');
+        const host = firstContainer || section;
+        const div = document.createElement('div');
+        div.className = 'empty-quarter-msg';
+        div.innerHTML = '<strong>No lessons available yet.</strong><br><span style="font-weight:400;">Click the "Create Lesson" button to add one.</span>';
+        host.appendChild(div);
+    }
+    function evaluate(section){
+        if(sectionHasLessonCards(section) || sectionHasVideoCards(section)){
+            removePlaceholder(section);
+        } else {
+            addPlaceholder(section);
+        }
+    }
+
+    // Initial evaluation (after DOM paint but before async Firebase completes)
+    quarterSections.forEach(sec=> evaluate(sec));
+
+    // Observe each lessons container for changes
+    const obsConfig = { childList: true }; // we only care about direct children (cards)
+    const observer = new MutationObserver(mutations => {
+        // Collect unique quarter sections touched
+        const touched = new Set();
+        mutations.forEach(m => {
+            const sec = m.target.closest('.quarter-section');
+            if(sec && !IGNORE_IDS.has(sec.id)) touched.add(sec);
+        });
+        touched.forEach(sec => evaluate(sec));
+    });
+
+    quarterSections.forEach(sec => {
+        // Observe every lessons-container inside the section (main + youtube sub)
+        sec.querySelectorAll('.lessons-container').forEach(c => observer.observe(c, obsConfig));
+    });
+
+    // Safety re-checks after typical async operations (Firebase & YouTube fetch)
+    [1500, 3000, 6000].forEach(delay => setTimeout(()=> quarterSections.forEach(evaluate), delay));
+})();
+</script>
     </div>
 </body>
 

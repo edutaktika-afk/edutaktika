@@ -350,7 +350,7 @@
                     <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
                 </div>
             </div>
-            <nav>
+            <nav id="dynamic-nav">
                 <ul>
                     <li><a href="../../Student/homepage.html">Home</a></li>
                     <li class="dropdown">
@@ -776,6 +776,63 @@
             initQuiz();
         });
         
+        // Dynamic navigation functions
+        function addDynamicNavigation() {
+            const nav = document.getElementById('dynamic-nav');
+            if (isTeacher) {
+                nav.innerHTML = `
+                    <ul>
+                        <li><a href="../../Teacher/homepage.html">Home</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="../../Teacher/subject_math.html">Math</a></li>
+                                <li><a href="../../Teacher/subject_english.html">English</a></li>
+                                <li><a href="../../Teacher/subject_science.html">Science</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="../../Teacher/leaderboard_math.html">Math</a></li>
+                                <li><a href="../../Teacher/leaderboard_english.html">English</a></li>
+                                <li><a href="../../Teacher/leaderboard_science.html">Science</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="../../Teacher/admin.html">Admin</a></li>
+                        <li>
+                            <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                        </li>
+                    </ul>
+                `;
+            } else {
+                nav.innerHTML = `
+                    <ul>
+                        <li><a href="../../Student/homepage.html">Home</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="../../Student/subject_math.html">Math</a></li>
+                                <li><a href="../../Student/subject_english.html">English</a></li>
+                                <li><a href="../../Student/subject_science.html">Science</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="../../Student/leaderboard_math.html">Math</a></li>
+                                <li><a href="../../Student/leaderboard_english.html">English</a></li>
+                                <li><a href="../../Student/leaderboard_science.html">Science</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                        </li>
+                    </ul>
+                `;
+            }
+        }
+
         // Detect if user is teacher and adjust back button
         let isTeacher = false;
         firebase.auth().onAuthStateChanged(async function(user) {
@@ -789,6 +846,11 @@
                     isTeacher = true;
                     // Update back button for teachers
                     backToSubjectBtn.textContent = 'Back to Subject (Teacher)';
+                    // Update navigation for teachers
+                    addDynamicNavigation();
+                } else {
+                    // Update navigation for students
+                    addDynamicNavigation();
                 }
             }
         });
@@ -896,7 +958,5 @@
         });
     </script>
 
-    <!-- Footer -->
-    <footer id="footer"></footer>
 </body>
 </html>

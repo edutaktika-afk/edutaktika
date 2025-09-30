@@ -49,6 +49,37 @@
 .profile-sidebar::-webkit-scrollbar {
     display: none;                 /* Chrome, Safari, Opera */
 }
+
+/* Force horizontal layout for quiz cards with higher specificity */
+.lessons-container #student-quiz-cards,
+#student-quiz-cards {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 20px !important;
+    margin-top: 20px !important;
+}
+
+/* Override the single column rule specifically for quiz cards */
+.lessons-container #student-quiz-cards {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+}
+
+/* Ensure quiz cards maintain horizontal layout on all screen sizes */
+@media (max-width: 700px) {
+    .lessons-container #student-quiz-cards,
+    #student-quiz-cards {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 15px !important;
+    }
+}
+
+@media (max-width: 520px) {
+    .lessons-container #student-quiz-cards,
+    #student-quiz-cards {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
+}
 </style>
 </head>
 
@@ -515,6 +546,17 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
         container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
         container.style.gap = '20px';
         container.style.marginTop = '20px';
+        
+        // Override any CSS that might force single column layout
+        container.style.setProperty('grid-template-columns', 'repeat(auto-fit, minmax(300px, 1fr))', 'important');
+        container.style.setProperty('gap', '20px', 'important');
+        container.style.setProperty('display', 'grid', 'important');
+        
+        // Force the parent lessons-container to not interfere
+        const parentContainer = container.closest('.lessons-container');
+        if (parentContainer) {
+            parentContainer.style.setProperty('display', 'block', 'important');
+        }
 
         // Create Quiz 1: Time & Time Zones
         const quiz1 = document.createElement('div');
