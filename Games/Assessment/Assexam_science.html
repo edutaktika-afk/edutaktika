@@ -134,13 +134,17 @@
     // Detect if user is teacher and adjust back link and view
     let isTeacher = false;
     auth.onAuthStateChanged(async function(user) {
+        console.log('Science Assessment - Auth state changed:', user);
         if (user) {
             const uid = user.uid;
+            console.log('Science Assessment - User UID:', uid);
             // Check if user is a teacher
             const teacherSnap = await db.ref('teachers/' + uid).once('value');
             const teacher = teacherSnap.val();
+            console.log('Science Assessment - Teacher data:', teacher);
             
             if (teacher && teacher.role === "teacher") {
+                console.log('Science Assessment - Teacher detected, updating navigation');
                 isTeacher = true;
                 // User is a teacher, update back link to teacher page
                 const backLink = document.getElementById('backLink');
@@ -154,23 +158,49 @@
                 
                 // Show teacher view with answers
                 showTeacherView();
+            } else {
+                console.log('Science Assessment - Not a teacher or teacher data not found');
             }
         }
     });
 
     // Function to update navigation links for teachers
     function updateNavigationForTeachers() {
+        console.log('Science Assessment - Updating navigation for teachers');
         const navHome = document.getElementById('navHome');
         const navMath = document.getElementById('navMath');
         const navEnglish = document.getElementById('navEnglish');
         const navScience = document.getElementById('navScience');
         const navLeaderboard = document.getElementById('navLeaderboard');
         
-        if (navHome) navHome.href = '../../Teacher/homepage.html';
-        if (navMath) navMath.href = '../../Teacher/subject_math.html';
-        if (navEnglish) navEnglish.href = '../../Teacher/subject_english.html';
-        if (navScience) navScience.href = '../../Teacher/subject_science.html';
-        if (navLeaderboard) navLeaderboard.href = '../../Teacher/leaderboard.html';
+        console.log('Science Assessment - Navigation elements found:', {
+            navHome: !!navHome,
+            navMath: !!navMath,
+            navEnglish: !!navEnglish,
+            navScience: !!navScience,
+            navLeaderboard: !!navLeaderboard
+        });
+        
+        if (navHome) {
+            navHome.href = '../../Teacher/homepage.html';
+            console.log('Science Assessment - Updated navHome href');
+        }
+        if (navMath) {
+            navMath.href = '../../Teacher/subject_math.html';
+            console.log('Science Assessment - Updated navMath href');
+        }
+        if (navEnglish) {
+            navEnglish.href = '../../Teacher/subject_english.html';
+            console.log('Science Assessment - Updated navEnglish href');
+        }
+        if (navScience) {
+            navScience.href = '../../Teacher/subject_science.html';
+            console.log('Science Assessment - Updated navScience href');
+        }
+        if (navLeaderboard) {
+            navLeaderboard.href = '../../Teacher/leaderboard.html';
+            console.log('Science Assessment - Updated navLeaderboard href');
+        }
     }
 
     const quizData = [
