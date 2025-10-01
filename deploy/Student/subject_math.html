@@ -34,6 +34,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="stylesheet" href="../CSS/fonts.css">
+<!-- ...inside <head> -->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="../CSS/header.css">
     <link rel="stylesheet" href="../CSS/subject.css">
     <link rel="stylesheet" href="../CSS/footer.css">
@@ -134,12 +138,15 @@
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="subject_math.html">Math</a></li>
-                            <li><a href="subject_english.html">English</a></li>
-                            <li><a href="subject_science.html">Science</a></li>
+                    <li class="dropdown subject-dropdown">
+                        <button id="navSubjectBtn" class="dropbtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+                            <span id="navSubjectLabel">Subject</span>
+                            <i class="fa fa-caret-down" aria-hidden="true" style="margin-left:6px;font-size:.75rem;"></i>
+                        </button>
+                        <ul id="navSubjectMenu" class="dropdown-content" role="listbox" aria-labelledby="navSubjectBtn">
+                            <li><a href="subject_math.html" data-subject="Math" role="option">Math</a></li>
+                            <li><a href="subject_english.html" data-subject="English" role="option">English</a></li>
+                            <li><a href="subject_science.html" data-subject="Science" role="option">Science</a></li>
                         </ul>
                     </li>
                    <li class="dropdown">
@@ -281,9 +288,12 @@
         <div class="quarter-section active" id="quarter-1">
             <div class="quarter-title">
                 <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 1: <span class="bounce-word"><span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span></span></h2>
+                <h2>Quarter 1: <span class="bounce-word"><span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+</h2>
             </div>
-            <div class="lessons-container"></div>
+            <div class="lessons-container">
+
+            </div>
             <!-- YouTube Lessons (auto-fetched) -->
             <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FsQc_kW5q38HD3Geb4VVQz4" style="margin-top: 20px;">
                 <div class="quarter-title" style="align-items:center; gap:10px;">
@@ -291,28 +301,37 @@
                     <h3 style="margin:0;">Video Lessons</h3>
                 </div>
                 <div class="lessons-container">
-                    <div>Loading YouTube lessons…</div>
+                
                 </div>
             </div>
         </div>
         <div class="quarter-section" id="quarter-2">
             <div class="quarter-title">
                 <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 2: <span class="bounce-word"><span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span></span></h2>
+                <h2>Quarter 2: <span class="bounce-word"><span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+</h2>
             </div>
             <div class="lessons-container"></div>
         </div>
         <div class="quarter-section" id="quarter-3">
             <div class="quarter-title">
                 <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 3: Decimals & Percentages</h2>
+                <h2>Quarter 3: 
+                    <span class="bounce-word">
+                        <span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+                    </span>
+                </h2>
             </div>
             <div class="lessons-container"></div>
         </div>
         <div class="quarter-section" id="quarter-4">
             <div class="quarter-title">
                 <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 4: Geometry & Measurement</h2>
+                <h2>Quarter 4: 
+                    <span class="bounce-word">
+                        <span>M</span><span>a</span><span>t</span><span>h</span><span>e</span><span>m</span><span>a</span><span>t</span><span>i</span><span>c</span><span>s</span>
+                    </span>
+                </h2>
             </div>
             <div class="lessons-container"></div>
         </div>
@@ -338,41 +357,46 @@
         </div>
     </div>
 
-    <footer>
-        <div class="footer-content">
-            <div class="footer-column">
-                <h3 class="edu">Eduktaktika</h3>
-                <p>Making learning fun and engaging through interactive game-based education.</p>
-            </div>
-            <div class="footer-column">
-                <h3>Quick Links</h3>
-                <ul>
-                    <li><a href="homepage.php">Home</a></li>
-                    <li><a href="subject.php">Subject</a></li>
-                    <li><a href="studentlist.php">Student</a></li>
-                    <li><a href="leaderboard.php">Leaderboard</a></li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h3>Support</h3>
-                <ul>
-                    <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="footer-links">
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-youtube"></i></a>
-            </div>
-            <p>© 2023 Eduktaktika. All rights reserved.</p>
-        </div>
-    </footer>
+<footer>
+  <div class="footer-wrap">
+    <div class="footer-col">
+      <h4 class="footer-brand">Eduktaktika</h4>
+      <p>Interactive, game‑based learning for Math, English, and Science.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <ul class="footer-social">
+        <li><a href="homepage.html">Homepage</a></li>
+        <li><a href="studentlist.html">Student</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Subjects</h4>
+      <ul class="footer-links">
+        <li><a href="subject_math.html">Math</a></li>
+        <li><a href="subject_english.html">English</a></li>
+        <li><a href="subject_science.html">Science</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Leaderboards</h4>
+      <ul class="footer-links">
+        <li><a href="leaderboard_math.html">Math</a></li>
+        <li><a href="leaderboard_english.html">English</a></li>
+        <li><a href="leaderboard_science.html">Science</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-social-row">
+      <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+    </div>
+    <p>© 2025 Eduktaktika. All rights reserved.</p>
+  </div>
+</footer>
 
      <script src="../assets/js/Student Side/subject.js"></script>
 
@@ -679,7 +703,7 @@ auth.onAuthStateChanged(async function(user) {
     });
 })();
 
-// --- Inject Quiz Card & Score (Lesson 1) ---
+
 (function(){
     const container = document.getElementById('quizzesContainer');
     if(!container) return;
@@ -723,7 +747,7 @@ auth.onAuthStateChanged(async function(user) {
     });
 })();
 
-// --- Inject Quiz Card 2 for Math (Clock Quiz) ---
+
 (function(){
     const container = document.getElementById('quizzesContainer');
     if(!container) return;
@@ -767,7 +791,6 @@ auth.onAuthStateChanged(async function(user) {
     });
 })();
 
-// --- Extend tab switching to include Assessments ---
 (function(){
     const tabs = document.querySelectorAll('.quarter-tab');
     const sections = document.querySelectorAll('.quarter-section');
@@ -797,12 +820,7 @@ auth.onAuthStateChanged(async function(user) {
     scoreDiv.insertAdjacentHTML('afterend', `<div id="a1BestScore" style="font-size:0.9rem;color:#444;">Best Score: -</div><button id="viewAttemptsFromSubject" style="margin-top:6px;padding:4px 10px;font-size:0.75rem;border:none;background:#6d28d9;color:#fff;border-radius:6px;cursor:pointer;">View Attempts</button>`);
   }
 
-  // Leaderboard container
-  const container = document.getElementById('assessmentsContainer');
-  const lbBox = document.createElement('div');
-  lbBox.style = 'margin-top:28px;background:#fafafa;border:1px solid #eee;padding:16px 18px;border-radius:12px;';
-  lbBox.innerHTML = `<h4 style='margin:0 0 12px 0;'>Assessment 1 Leaderboard (Top 10 by Best Score)</h4><div id='a1Leaderboard' style='font-size:0.85rem;'>Loading...</div>`;
-  container.appendChild(lbBox);
+
 
   // Fetch summary + leaderboard
   firebase.auth().onAuthStateChanged(user => {
@@ -836,9 +854,150 @@ auth.onAuthStateChanged(async function(user) {
 })();
 </script>
     </div>
+
+    <style>
+    #quiz-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    justify-content: flex-start;
+    align-items: stretch;
+    margin-top: 10px;
+}
+.lesson-item {
+    flex: 1 1 260px;
+    min-width: 220px;
+    max-width: 320px;
+    box-sizing: border-box;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px #0001;
+    padding: 18px 14px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: 8px;
+}
+.lesson-thumbnail {
+    width: 100%;
+    height: 80px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background-size: cover;
+    background-position: center;
+}
+.lesson-title h3 {
+    font-size: 1.15rem;
+    margin: 0 0 6px 0;
+}
+.lesson-title p {
+    font-size: 0.98rem;
+    color: #444;
+    margin: 0 0 10px 0;
+}
+.lesson-badge {
+    background: #ffe600;
+    color: #222;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 18px;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-right: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.lesson-badge:hover {
+    background: #ffd600;
+}
+    #createQuizModal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.35);
+        z-index: 99999;
+        align-items: center;
+        justify-content: center;
+    }
+    #createQuizModal .modal-content {
+        background: #fff;
+        padding: 32px 28px;
+        border-radius: 16px;
+        max-width: 370px;
+        width: 90%;
+        box-shadow: 0 4px 24px #0002;
+        text-align: left;
+        position: relative;
+        animation: modalPop 0.25s;
+    }
+        @keyframes modalPop {
+        0% { transform: scale(0.95); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    #createQuizModal h3 {
+        margin-top: 0;
+        margin-bottom: 18px;
+        font-size: 1.35rem;
+        color: #059981;
+        letter-spacing: 1px;
+    }
+    #createQuizModal label {
+        font-weight: 500;
+        color: #2d3923;
+        font-size: 1rem;
+    }
+    #createQuizModal input, #createQuizModal select, #createQuizModal textarea {
+        width: 100%;
+        padding: 8px 10px;
+        margin-top: 4px;
+        margin-bottom: 12px;
+        border: 1px solid #b2b2b2;
+        border-radius: 6px;
+        font-size: 1rem;
+        background: #f8f8f8;
+        transition: border 0.2s;
+    }
+    #createQuizModal input:focus, #createQuizModal select:focus, #createQuizModal textarea:focus {
+        border: 1.5px solid #059981;
+        outline: none;
+        background: #fff;
+    }
+    #createQuizModal .modal-actions {
+        text-align: right;
+        margin-top: 10px;
+    }
+    #createQuizModal button[type="button"] {
+        background: #eee;
+        color: #333;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 18px;
+        font-size: 1rem;
+        margin-right: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #createQuizModal button[type="button"]:hover {
+        background: #e0e0e0;
+    }
+    #createQuizModal button[type="submit"] {
+        background: #059981;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 22px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #createLessonModal button[type="submit"]:hover {
+        background: #037a65;
+    }
+</style>
  
 <script>
-// Load latest YouTube videos via playlist RSS feed into Quarter 1 (Student)
+
 async function loadYouTubeVideosStudent() {
     const wrapper = document.getElementById('youtube-lessons');
     const container = document.querySelector('#youtube-lessons .lessons-container');
@@ -880,7 +1039,7 @@ async function loadYouTubeVideosStudent() {
         const YT_NS = 'http://www.youtube.com/xml/schemas/2015';
         
         // Math-related keywords to filter content
-        const mathKeywords = ['math', 'mathematics', 'number', 'addition', 'subtraction', 'multiplication', 'division', 'fraction', 'decimal', 'geometry', 'algebra', 'equation', 'problem', 'solve', 'calculate', 'gmdas', 'clock', 'time', 'measurement', 'sequence', 'operation', 'counting', 'place value', 'rounding', 'percentage', 'ratio', 'proportion', 'angle', 'triangle', 'circle', 'square', 'rectangle', 'area', 'perimeter', 'volume', 'statistics', 'graph', 'chart', 'data', 'pattern', 'logic', 'reasoning'];
+        const mathKeywords = ['math', 'mathematics', 'number', 'addition', 'subtraction', 'multiplication', 'division', 'fraction', 'decimal', 'geometry', 'algebra', 'equation', 'problem', 'solve', 'calculate', 'gmdas', 'clock', 'time', 'measurement', 'sequence', 'operation', 'counting', 'place value', 'rounding', 'percentage', 'ratio', 'proportion', 'angle', 'triangle', 'circle', 'square', 'rectangle', 'area', 'perimeter', 'volume', 'statistics', 'graph', 'chart', 'data', 'pattern', 'logic', 'reasoning', 'arithmetic', 'computation', 'calculation', 'formula', 'theorem', 'proof', 'concept', 'principle', 'rule', 'method', 'technique', 'strategy', 'approach', 'solution', 'answer', 'result', 'sum', 'difference', 'product', 'quotient', 'remainder', 'factor', 'multiple', 'prime', 'composite', 'even', 'odd', 'positive', 'negative', 'integer', 'whole', 'natural', 'rational', 'irrational', 'real', 'imaginary', 'complex', 'variable', 'constant', 'coefficient', 'exponent', 'power', 'root', 'square root', 'cube root', 'logarithm', 'trigonometry', 'sine', 'cosine', 'tangent', 'secant', 'cosecant', 'cotangent', 'radian', 'degree', 'coordinate', 'axis', 'origin', 'slope', 'intercept', 'function', 'domain', 'range', 'graph', 'plot', 'curve', 'line', 'parabola', 'hyperbola', 'ellipse', 'circle', 'sphere', 'cylinder', 'cone', 'pyramid', 'prism', 'polygon', 'quadrilateral', 'pentagon', 'hexagon', 'octagon', 'dodecagon', 'polyhedron', 'tetrahedron', 'cube', 'octahedron', 'dodecahedron', 'icosahedron', 'symmetry', 'reflection', 'rotation', 'translation', 'dilation', 'similarity', 'congruence', 'parallel', 'perpendicular', 'intersection', 'midpoint', 'bisector', 'median', 'altitude', 'centroid', 'circumcenter', 'incenter', 'orthocenter', 'circumradius', 'inradius', 'diameter', 'radius', 'chord', 'tangent', 'secant', 'arc', 'sector', 'segment', 'central angle', 'inscribed angle', 'intercepted arc', 'chord length', 'arc length', 'sector area', 'segment area', 'surface area', 'lateral area', 'volume', 'capacity', 'density', 'mass', 'weight', 'force', 'pressure', 'velocity', 'acceleration', 'momentum', 'energy', 'work', 'power', 'efficiency', 'ratio', 'proportion', 'rate', 'speed', 'distance', 'time', 'average', 'mean', 'median', 'mode', 'range', 'standard deviation', 'variance', 'correlation', 'regression', 'probability', 'permutation', 'combination', 'factorial', 'binomial', 'normal distribution', 'standard normal', 'z-score', 'confidence interval', 'hypothesis testing', 'null hypothesis', 'alternative hypothesis', 'type I error', 'type II error', 'p-value', 'significance level', 'critical value', 'test statistic', 'degrees of freedom', 'chi-square', 't-test', 'f-test', 'anova', 'linear regression', 'multiple regression', 'correlation coefficient', 'coefficient of determination', 'residual', 'outlier', 'leverage', 'influence', 'multicollinearity', 'heteroscedasticity', 'autocorrelation', 'durbin-watson', 'breusch-pagan', 'white test', 'jarque-bera', 'shapiro-wilk', 'kolmogorov-smirnov', 'mann-whitney', 'wilcoxon', 'kruskal-wallis', 'friedman', 'spearman', 'kendall', 'cronbach alpha', 'factor analysis', 'principal component', 'cluster analysis', 'discriminant analysis', 'logistic regression', 'poisson regression', 'negative binomial', 'gamma regression', 'beta regression', 'tobit regression', 'censored regression', 'truncated regression', 'sample selection', 'endogeneity', 'instrumental variables', 'two-stage least squares', 'generalized method of moments', 'maximum likelihood', 'bayesian', 'markov chain monte carlo', 'gibbs sampling', 'metropolis-hastings', 'importance sampling', 'rejection sampling', 'inverse transform', 'box-muller', 'acceptance-rejection', 'composition', 'alias method', 'walker algorithm', 'marsaglia polar', 'ziggurat', 'ratio of uniforms', 'exponential', 'gamma', 'beta', 'dirichlet', 'multinomial', 'poisson', 'negative binomial', 'geometric', 'hypergeometric', 'binomial', 'bernoulli', 'uniform', 'normal', 'lognormal', 'chi-square', 'f-distribution', 't-distribution', 'cauchy', 'laplace', 'logistic', 'weibull', 'pareto', 'exponential', 'gamma', 'beta', 'dirichlet', 'multinomial', 'poisson', 'negative binomial', 'geometric', 'hypergeometric', 'binomial', 'bernoulli', 'uniform', 'normal', 'lognormal', 'chi-square', 'f-distribution', 't-distribution', 'cauchy', 'laplace', 'logistic', 'weibull', 'pareto'];
         
         const filteredEntries = entries.filter(entry => {
             const titleEl = entry.getElementsByTagName('title')[0];
@@ -888,17 +1047,23 @@ async function loadYouTubeVideosStudent() {
             return mathKeywords.some(keyword => title.includes(keyword));
         });
         
-        // If no Math-specific videos found, show all videos from playlist
-        console.log('Filtered entries:', filteredEntries.length, 'out of', entries.length);
-        const videosToShow = filteredEntries.length > 0 ? filteredEntries : entries;
+        // Sort all entries by published date (chronological order - newest first)
+        const sortedEntries = (filteredEntries.length > 0 ? filteredEntries : entries).sort((a, b) => {
+            const dateA = new Date(a.getElementsByTagName('published')[0]?.textContent || 0);
+            const dateB = new Date(b.getElementsByTagName('published')[0]?.textContent || 0);
+            return dateB - dateA; // Newest first
+        });
         
-        videosToShow.slice(0, 5).forEach(entry => {
+        // Show all videos (remove the .slice(0,5) limit)
+        sortedEntries.forEach(entry => {
             const vidEl = entry.getElementsByTagNameNS?.(YT_NS, 'videoId')?.[0]
                 || entry.getElementsByTagName('yt:videoId')?.[0]
                 || entry.querySelector('yt\\:videoId, videoId');
             const titleEl = entry.getElementsByTagName('title')[0];
+            const publishedEl = entry.getElementsByTagName('published')[0];
             const videoId = vidEl ? (vidEl.textContent || '').trim() : '';
             const title = titleEl ? (titleEl.textContent || 'YouTube Video').trim() : 'YouTube Video';
+            const publishedDate = publishedEl ? new Date(publishedEl.textContent).toLocaleDateString() : '';
             if (!videoId) return;
 
             const div = document.createElement('div');
@@ -907,7 +1072,7 @@ async function loadYouTubeVideosStudent() {
                 <div class="lesson-thumbnail" style="background-color: var(--peach); background-image: url('https://img.youtube.com/vi/${videoId}/mqdefault.jpg'); background-size: cover; background-position: center;"></div>
                 <div class="lesson-title">
                     <h3>${title}</h3>
-                    <p>Math video lesson</p>
+                    <p style="font-size:0.9rem;color:#666;margin:4px 0;">Published: ${publishedDate}</p>
                     <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='video.html?id=${videoId}'">Watch</span>
                 </div>
             `;
@@ -928,5 +1093,16 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
 <script src="../assets/js/navbar.js"></script>
 
 <script src="../assets/tabDropdown.js"></script>
+
+<script src="../assets/js/header-dynamic-labels.js"></script>
+<script src="../assets/js/student-empty-state.js"></script>
+
+<script src="../assets/js/student-qa-empty-state.js"></script>
+
+<script src="../assets/js/Student Side/student-card-clickable.js"></script>
+</body>
+</html>
+</body>
+</html>
 </body>
 </html>

@@ -34,6 +34,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="stylesheet" href="../CSS/fonts.css">
+<!-- ...inside <head> -->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="../CSS/header.css">
     <link rel="stylesheet" href="../CSS/subject.css">
     <link rel="stylesheet" href="../CSS/footer.css">
@@ -134,14 +138,17 @@
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="subject_math.html">Math</a></li>
-                            <li><a href="subject_english.html">English</a></li>
-                            <li><a href="subject_science.html">Science</a></li>
-                        </ul>
-                    </li>
+                    <li class="dropdown subject-dropdown">
+      <button id="navSubjectBtn" class="dropbtn" type="button" aria-haspopup="listbox" aria-expanded="false">
+        <span id="navSubjectLabel">Subject</span>
+        <i class="fa fa-caret-down" aria-hidden="true" style="margin-left:6px;font-size:.75rem;"></i>
+      </button>
+      <ul id="navSubjectMenu" class="dropdown-content" role="listbox" aria-labelledby="navSubjectBtn">
+        <li><a href="subject_math.html" data-subject="Math" role="option">Math</a></li>
+        <li><a href="subject_english.html" data-subject="English" role="option">English</a></li>
+        <li><a href="subject_science.html" data-subject="Science" role="option">Science</a></li>
+      </ul>
+    </li>
                     <li class="dropdown">
                             <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
                             <ul class="dropdown-content">
@@ -281,7 +288,11 @@
         <div class="quarter-section active" id="quarter-1">
             <div class="quarter-title">
                 <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 1: <span class="bounce-word"><span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span></span></h2>
+                <h2>Quarter 1: 
+                    <span class="bounce-word">
+                        <span>S</span><span>C</span><span>I</span><span>E</span><span>N</span><span>C</span><span>E</span></span>
+                    </span>
+                </h2>
             </div>
             <div class="lessons-container"></div>
             <!-- YouTube Lessons (auto-fetched) -->
@@ -298,22 +309,36 @@
         <div class="quarter-section" id="quarter-2">
             <div class="quarter-title">
                 <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 2: <span class="bounce-word"><span>F</span><span>o</span><span>u</span><span>n</span><span>d</span><span>a</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span></span></h2>
+                <h2>Quarter 2: 
+                    <span class="bounce-word">
+                        <span>S</span><span>C</span><span>I</span><span>E</span><span>N</span><span>C</span><span>E</span></span>
+                    </span>
+                </h2>
             </div>
             <div class="lessons-container"></div>
         </div>
         <div class="quarter-section" id="quarter-3">
             <div class="quarter-title">
                 <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 3: Decimals & Percentages</h2>
+                <h2>Quarter 3: 
+                    <span class="bounce-word">
+                        <span>S</span><span>C</span><span>I</span><span>E</span><span>N</span><span>C</span><span>E</span></span>
+                    </span>
+                </h2>
             </div>
+
             <div class="lessons-container"></div>
         </div>
         <div class="quarter-section" id="quarter-4">
             <div class="quarter-title">
                 <i class="fas fa-calendar-alt"></i>
-                <h2>Quarter 4: Geometry & Measurement</h2>
+                <h2>Quarter 4: 
+                    <span class="bounce-word">
+                        <span>S</span><span>C</span><span>I</span><span>E</span><span>N</span><span>C</span><span>E</span></span>
+                    </span>
+                </h2>
             </div>
+
             <div class="lessons-container"></div>
         </div>
         <div class="quarter-section" id="quarter-5">
@@ -336,41 +361,46 @@
         </div>
     </div>
 
-    <footer>
-        <div class="footer-content">
-            <div class="footer-column">
-                <h3 class="edu">Eduktaktika</h3>
-                <p>Making learning fun and engaging through interactive game-based education.</p>
-            </div>
-            <div class="footer-column">
-                <h3>Quick Links</h3>
-                <ul>
-                    <li><a href="homepage.php">Home</a></li>
-                    <li><a href="subject.php">Subject</a></li>
-                    <li><a href="studentlist.php">Student</a></li>
-                    <li><a href="leaderboard.php">Leaderboard</a></li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h3>Support</h3>
-                <ul>
-                    <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="footer-links">
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-youtube"></i></a>
-            </div>
-            <p>© 2023 Eduktaktika. All rights reserved.</p>
-        </div>
-    </footer>
+<footer>
+  <div class="footer-wrap">
+    <div class="footer-col">
+      <h4 class="footer-brand">Eduktaktika</h4>
+      <p>Interactive, game‑based learning for Math, English, and Science.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <ul class="footer-social">
+        <li><a href="homepage.html">Homepage</a></li>
+        <li><a href="studentlist.html">Student</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Subjects</h4>
+      <ul class="footer-links">
+        <li><a href="subject_math.html">Math</a></li>
+        <li><a href="subject_english.html">English</a></li>
+        <li><a href="subject_science.html">Science</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Leaderboards</h4>
+      <ul class="footer-links">
+        <li><a href="leaderboard_math.html">Math</a></li>
+        <li><a href="leaderboard_english.html">English</a></li>
+        <li><a href="leaderboard_science.html">Science</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-social-row">
+      <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+    </div>
+    <p>© 2025 Eduktaktika. All rights reserved.</p>
+  </div>
+</footer>
 
      <script src="../assets/js/Student Side/subject.js"></script>
 
@@ -620,7 +650,6 @@ auth.onAuthStateChanged(async function(user) {
 });
 </script>
 
-<!-- Edit Profile Modal -->
 <div id="editProfileModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
     <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
         <h3 style="margin-top:0;">Edit Profile</h3>
@@ -648,100 +677,259 @@ auth.onAuthStateChanged(async function(user) {
     </div>
 </div>
     
-<script src="../assets/js/Student Side/editProfile.js"></script>
-
-<link rel="stylesheet" href="../CSS/editProfile.css">
+<style>
+    #quiz-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    justify-content: flex-start;
+    align-items: stretch;
+    margin-top: 10px;
+}
+.lesson-item {
+    flex: 1 1 260px;
+    min-width: 220px;
+    max-width: 320px;
+    box-sizing: border-box;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px #0001;
+    padding: 18px 14px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: 8px;
+}
+.lesson-thumbnail {
+    width: 100%;
+    height: 80px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background-size: cover;
+    background-position: center;
+}
+.lesson-title h3 {
+    font-size: 1.15rem;
+    margin: 0 0 6px 0;
+}
+.lesson-title p {
+    font-size: 0.98rem;
+    color: #444;
+    margin: 0 0 10px 0;
+}
+.lesson-badge {
+    background: #ffe600;
+    color: #222;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 18px;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-right: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.lesson-badge:hover {
+    background: #ffd600;
+}
+    #createQuizModal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.35);
+        z-index: 99999;
+        align-items: center;
+        justify-content: center;
+    }
+    #createQuizModal .modal-content {
+        background: #fff;
+        padding: 32px 28px;
+        border-radius: 16px;
+        max-width: 370px;
+        width: 90%;
+        box-shadow: 0 4px 24px #0002;
+        text-align: left;
+        position: relative;
+        animation: modalPop 0.25s;
+    }
+        @keyframes modalPop {
+        0% { transform: scale(0.95); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    #createQuizModal h3 {
+        margin-top: 0;
+        margin-bottom: 18px;
+        font-size: 1.35rem;
+        color: #059981;
+        letter-spacing: 1px;
+    }
+    #createQuizModal label {
+        font-weight: 500;
+        color: #2d3923;
+        font-size: 1rem;
+    }
+    #createQuizModal input, #createQuizModal select, #createQuizModal textarea {
+        width: 100%;
+        padding: 8px 10px;
+        margin-top: 4px;
+        margin-bottom: 12px;
+        border: 1px solid #b2b2b2;
+        border-radius: 6px;
+        font-size: 1rem;
+        background: #f8f8f8;
+        transition: border 0.2s;
+    }
+    #createQuizModal input:focus, #createQuizModal select:focus, #createQuizModal textarea:focus {
+        border: 1.5px solid #059981;
+        outline: none;
+        background: #fff;
+    }
+    #createQuizModal .modal-actions {
+        text-align: right;
+        margin-top: 10px;
+    }
+    #createQuizModal button[type="button"] {
+        background: #eee;
+        color: #333;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 18px;
+        font-size: 1rem;
+        margin-right: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #createQuizModal button[type="button"]:hover {
+        background: #e0e0e0;
+    }
+    #createQuizModal button[type="submit"] {
+        background: #059981;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 22px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #createLessonModal button[type="submit"]:hover {
+        background: #037a65;
+    }
+</style>
 
 <script>
-// Load latest YouTube videos via playlist RSS feed into Quarter 1 (Student) - Science
-async function loadYouTubeVideosStudent() {
+// Load latest YouTube videos via playlist RSS feed into Quarter 1 (Teacher) - English
+async function loadYouTubeVideosTeacher() {
     const wrapper = document.getElementById('youtube-lessons');
     const container = document.querySelector('#youtube-lessons .lessons-container');
     if (!container || !wrapper) return;
-
-    // Configure your playlist ID here or set data-playlist-id on #youtube-lessons
     const playlistId = (wrapper.dataset.playlistId || '').trim();
     if (!playlistId) {
         container.innerHTML = '<div style="color:#888;">Set a YouTube playlist ID to load videos.</div>';
         return;
     }
-
     const feedUrl = `https://www.youtube.com/feeds/videos.xml?playlist_id=${encodeURIComponent(playlistId)}`;
 
-    // CORS proxy for RSS feeds
-    const fetchWithCors = async (url) => {
+    async function fetchWithCors(url) {
         try {
-            const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-            return await response.text();
-        } catch (e) {
-            console.warn('CORS proxy failed, trying direct fetch:', e);
-            return await fetch(url).then(r => r.text());
+            const r = await fetch(url);
+            if (r.ok) return await r.text();
+            throw new Error('HTTP ' + r.status);
+        } catch {
+            try {
+                const rAO = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+                if (rAO.ok) return await rAO.text();
+                throw new Error();
+            } catch {
+                const jinaUrl = 'https://r.jina.ai/http/' + url.replace(/^https?:\/\//i, '');
+                const rJ = await fetch(jinaUrl);
+                if (rJ.ok) return await rJ.text();
+                throw new Error('All fetch attempts failed');
+            }
         }
-    };
+    }
 
     try {
-        console.log('Fetching Science playlist:', playlistId);
         const xmlText = await fetchWithCors(feedUrl);
         const parser = new DOMParser();
         const doc = parser.parseFromString(xmlText, 'text/xml');
         const entries = Array.from(doc.getElementsByTagName('entry'));
-        console.log('Found entries:', entries.length);
-
-        if (!entries.length) {
-            container.innerHTML = '<div>No recent videos found.</div>';
-            return;
-        }
+        container.innerHTML = '';
 
         const YT_NS = 'http://www.youtube.com/xml/schemas/2015';
-        
-        // Science-related keywords to filter content
-        const scienceKeywords = ['science', 'scientific', 'experiment', 'laboratory', 'lab', 'research', 'study', 'investigation', 'observation', 'hypothesis', 'theory', 'law', 'principle', 'concept', 'phenomenon', 'natural', 'nature', 'environment', 'ecosystem', 'biology', 'chemistry', 'physics', 'geology', 'astronomy', 'meteorology', 'zoology', 'botany', 'anatomy', 'physiology', 'genetics', 'evolution', 'molecule', 'atom', 'element', 'compound', 'reaction', 'energy', 'force', 'motion', 'gravity', 'magnetism', 'electricity', 'light', 'sound', 'heat', 'temperature', 'pressure', 'volume', 'mass', 'density', 'matter', 'solid', 'liquid', 'gas', 'plasma', 'state', 'change', 'phase', 'transition', 'melting', 'freezing', 'boiling', 'condensation', 'evaporation', 'sublimation', 'deposition', 'crystal', 'crystallization', 'solution', 'mixture', 'pure', 'substance', 'material', 'property', 'characteristic', 'feature', 'trait', 'attribute', 'quality', 'quantity', 'measurement', 'unit', 'scale', 'metric', 'imperial', 'length', 'width', 'height', 'depth', 'area', 'perimeter', 'circumference', 'radius', 'diameter', 'volume', 'capacity', 'weight', 'mass', 'density', 'speed', 'velocity', 'acceleration', 'deceleration', 'momentum', 'inertia', 'friction', 'resistance', 'conductivity', 'insulation', 'reflection', 'refraction', 'absorption', 'transmission', 'diffraction', 'interference', 'wavelength', 'frequency', 'amplitude', 'oscillation', 'vibration', 'wave', 'particle', 'quantum', 'nuclear', 'radioactive', 'decay', 'fusion', 'fission', 'radiation', 'electromagnetic', 'spectrum', 'visible', 'invisible', 'ultraviolet', 'infrared', 'microwave', 'radio', 'x-ray', 'gamma', 'alpha', 'beta', 'proton', 'neutron', 'electron', 'nucleus', 'orbit', 'shell', 'valence', 'bond', 'ionic', 'covalent', 'metallic', 'hydrogen', 'polar', 'nonpolar', 'acid', 'base', 'neutral', 'ph', 'indicator', 'litmus', 'phenolphthalein', 'bromothymol', 'universal', 'buffer', 'salt', 'oxide', 'hydroxide', 'carbonate', 'sulfate', 'nitrate', 'phosphate', 'chloride', 'fluoride', 'iodide', 'bromide', 'sodium', 'potassium', 'calcium', 'magnesium', 'iron', 'copper', 'zinc', 'aluminum', 'silver', 'gold', 'platinum', 'mercury', 'lead', 'tin', 'nickel', 'cobalt', 'manganese', 'chromium', 'titanium', 'tungsten', 'uranium', 'plutonium', 'radium', 'thorium', 'carbon', 'nitrogen', 'oxygen', 'hydrogen', 'helium', 'neon', 'argon', 'krypton', 'xenon', 'radon', 'fluorine', 'chlorine', 'bromine', 'iodine', 'astatine', 'sulfur', 'phosphorus', 'selenium', 'tellurium', 'polonium', 'lithium', 'beryllium', 'boron', 'silicon', 'germanium', 'arsenic', 'antimony', 'bismuth', 'moscovium', 'livermorium', 'tennessine', 'oganesson', 'periodic', 'table', 'group', 'period', 'family', 'noble', 'gas', 'halogen', 'alkali', 'metal', 'alkaline', 'earth', 'transition', 'metal', 'lanthanide', 'actinide', 'metalloid', 'nonmetal', 'semimetal', 'alloy', 'steel', 'brass', 'bronze', 'pewter', 'solder', 'amalgam', 'ore', 'mineral', 'crystal', 'gem', 'diamond', 'ruby', 'sapphire', 'emerald', 'topaz', 'quartz', 'feldspar', 'mica', 'talc', 'gypsum', 'calcite', 'dolomite', 'limestone', 'marble', 'granite', 'basalt', 'obsidian', 'pumice', 'sandstone', 'shale', 'clay', 'silt', 'sand', 'gravel', 'pebble', 'boulder', 'rock', 'stone', 'mineral', 'crystal', 'gem', 'diamond', 'ruby', 'sapphire', 'emerald', 'topaz', 'quartz', 'feldspar', 'mica', 'talc', 'gypsum', 'calcite', 'dolomite', 'limestone', 'marble', 'granite', 'basalt', 'obsidian', 'pumice', 'sandstone', 'shale', 'clay', 'silt', 'sand', 'gravel', 'pebble', 'boulder', 'rock', 'stone', 'fossil', 'dinosaur', 'prehistoric', 'ancient', 'evolution', 'adaptation', 'mutation', 'selection', 'natural', 'artificial', 'breeding', 'hybrid', 'species', 'genus', 'family', 'order', 'class', 'phylum', 'kingdom', 'domain', 'taxonomy', 'classification', 'nomenclature', 'binomial', 'scientific', 'name', 'common', 'vernacular', 'colloquial', 'slang', 'jargon', 'terminology', 'vocabulary', 'glossary', 'dictionary', 'encyclopedia', 'reference', 'manual', 'handbook', 'guide', 'textbook', 'workbook', 'laboratory', 'manual', 'experiment', 'procedure', 'protocol', 'method', 'technique', 'skill', 'ability', 'competence', 'proficiency', 'expertise', 'knowledge', 'understanding', 'comprehension', 'interpretation', 'analysis', 'synthesis', 'evaluation', 'application', 'practice', 'exercise', 'activity', 'project', 'assignment', 'homework', 'study', 'learning', 'education', 'instruction', 'teaching', 'training', 'coaching', 'mentoring', 'tutoring', 'guidance', 'direction', 'advice', 'suggestion', 'recommendation', 'tip', 'hint', 'clue', 'secret', 'trick', 'technique', 'method', 'approach', 'strategy', 'tactic', 'plan', 'scheme', 'design', 'pattern', 'model', 'example', 'sample', 'specimen', 'instance', 'case', 'situation', 'circumstance', 'condition', 'state', 'status', 'position', 'place', 'location', 'site', 'spot', 'point', 'area', 'region', 'zone', 'territory', 'country', 'nation', 'state', 'province', 'city', 'town', 'village', 'community', 'society', 'culture', 'civilization', 'history', 'tradition', 'custom', 'habit', 'routine', 'practice', 'convention', 'rule', 'law', 'regulation', 'policy', 'procedure', 'process', 'system', 'structure', 'organization', 'institution', 'establishment', 'foundation', 'basis', 'ground', 'reason', 'cause', 'effect', 'consequence', 'result', 'outcome', 'conclusion', 'ending', 'beginning', 'start', 'finish', 'complete', 'finish', 'end', 'stop', 'pause', 'break', 'rest', 'relax', 'enjoy', 'fun', 'pleasure', 'happiness', 'joy', 'delight', 'satisfaction', 'contentment', 'fulfillment', 'achievement', 'success', 'victory', 'triumph', 'win', 'lose', 'fail', 'mistake', 'error', 'fault', 'blame', 'responsibility', 'duty', 'obligation', 'commitment', 'promise', 'pledge', 'vow', 'oath', 'swear', 'curse', 'bless', 'pray', 'wish', 'hope', 'dream', 'fantasy', 'imagination', 'creativity', 'innovation', 'invention', 'discovery', 'exploration', 'adventure', 'journey', 'travel', 'trip', 'voyage', 'excursion', 'tour', 'visit', 'stay', 'remain', 'leave', 'go', 'come', 'arrive', 'depart', 'return', 'back', 'forward', 'ahead', 'behind', 'before', 'after', 'during', 'while', 'when', 'where', 'why', 'how', 'what', 'who', 'which', 'whose', 'whom', 'that', 'this', 'these', 'those', 'here', 'there', 'everywhere', 'nowhere', 'somewhere', 'anywhere', 'everywhere', 'always', 'never', 'sometimes', 'often', 'usually', 'rarely', 'seldom', 'frequently', 'occasionally', 'constantly', 'continuously', 'permanently', 'temporarily', 'briefly', 'quickly', 'slowly', 'fast', 'slow', 'early', 'late', 'soon', 'later', 'now', 'then', 'today', 'yesterday', 'tomorrow', 'tonight', 'morning', 'afternoon', 'evening', 'night', 'day', 'week', 'month', 'year', 'century', 'decade', 'generation', 'age', 'time', 'moment', 'instant', 'second', 'minute', 'hour', 'day', 'week', 'month', 'year', 'decade', 'century', 'millennium', 'eternity', 'forever', 'always', 'never', 'sometimes', 'often', 'usually', 'rarely', 'seldom', 'frequently', 'occasionally', 'constantly', 'continuously', 'permanently', 'temporarily', 'briefly', 'quickly', 'slowly', 'fast', 'slow', 'early', 'late', 'soon', 'later', 'now', 'then', 'today', 'yesterday', 'tomorrow', 'tonight', 'morning', 'afternoon', 'evening', 'night', 'day', 'week', 'month', 'year', 'century', 'decade', 'generation', 'age', 'time', 'moment', 'instant', 'second', 'minute', 'hour', 'day', 'week', 'month', 'year', 'decade', 'century', 'millennium', 'eternity', 'forever'];
-        
+        const scienceKeywords = ['science','biology','chemistry','physics','earth','space','astronomy','geology','meteorology','oceanography','botany','zoology','anatomy','physiology','ecology','environment','nature','experiment','observation','hypothesis','theory','law','principle','concept','phenomenon','matter','energy','force','motion','gravity','magnetism','electricity','light','sound','heat','temperature','pressure','density','volume','mass','weight','atom','molecule','element','compound','mixture','solution','acid','base','salt','reaction','synthesis','decomposition','combustion','oxidation','reduction','photosynthesis','respiration','digestion','circulation','reproduction','evolution','adaptation','mutation','genetics','dna','rna','protein','cell','tissue','organ','system','organism','species','genus','family','order','class','phylum','kingdom','domain','taxonomy','classification','identification','characteristics','features','properties','behavior','habitat','ecosystem','biome','food chain','food web','energy pyramid','carbon cycle','nitrogen cycle','water cycle','pollution','conservation','renewable','non-renewable','fossil fuel','solar','wind','hydroelectric','nuclear','fossil','extinction','endangered','threatened','invasive','native','endemic','biodiversity','sustainability','climate','weather','atmosphere','hydrosphere','lithosphere','biosphere','tectonic','volcano','earthquake','tsunami','hurricane','tornado','flood','drought','erosion','deposition','sedimentation','fossilization','mineral','rock','igneous','sedimentary','metamorphic','crystal','gem','metal','nonmetal','metalloid','periodic table','atomic number','atomic mass','electron','proton','neutron','nucleus','orbit','shell','valence','bond','ionic','covalent','metallic','polar','nonpolar','solubility','conductivity','malleability','ductility','luster','hardness','streak','cleavage','fracture','density','specific gravity','magnetism','fluorescence','phosphorescence','radioactivity','half-life','isotope','ion','cation','anion','ph','indicator','litmus','phenolphthalein','bromothymol blue','universal indicator','titration','neutralization','buffer','salt','precipitate','catalyst','enzyme','substrate','product','reactant','activation energy','endothermic','exothermic','thermodynamics','entropy','enthalpy','gibbs free energy','equilibrium','le chatelier','kinetics','rate','concentration','temperature','pressure','surface area','particle size','collision theory','transition state','intermediate','mechanism','stereochemistry','isomer','constitutional','stereoisomer','enantiomer','diastereomer','meso','racemic','chiral','achiral','optical activity','specific rotation','polarimeter','spectroscopy','ir','nmr','uv-vis','mass spec','chromatography','hplc','gc','tlc','electrophoresis','centrifugation','distillation','filtration','crystallization','sublimation','extraction','purification','synthesis','analysis','qualitative','quantitative','accuracy','precision','error','uncertainty','significant figures','scientific notation','unit conversion','dimensional analysis','stoichiometry','limiting reagent','excess reagent','theoretical yield','actual yield','percent yield','molarity','molality','normality','mole fraction','mass percent','volume percent','ppm','ppb','concentration','dilution','serial dilution','standard curve','calibration','linear regression','correlation','r-squared','standard deviation','confidence interval','t-test','f-test','anova','chi-square','hypothesis testing','null hypothesis','alternative hypothesis','type i error','type ii error','p-value','significance level','alpha','beta','power','effect size','sample size','randomization','replication','control','treatment','placebo','double-blind','single-blind','open-label','crossover','parallel','factorial','blocking','stratification','matching','pairing','covariate','confounding','bias','selection bias','measurement bias','recall bias','reporting bias','publication bias','survivorship bias','healthy user bias','lead-time bias','length-time bias','overdiagnosis bias','verification bias','workup bias','referral bias','spectrum bias','differential misclassification','non-differential misclassification','information bias','confounding bias','selection bias','chance','random error','systematic error','precision','accuracy','validity','reliability','sensitivity','specificity','positive predictive value','negative predictive value','likelihood ratio','odds ratio','relative risk','absolute risk','attributable risk','number needed to treat','number needed to harm','hazard ratio','survival analysis','kaplan-meier','cox regression','log-rank test','cox proportional hazards','time-to-event','censoring','competing risks','frailty','random effects','fixed effects','mixed effects','generalized linear model','logistic regression','poisson regression','negative binomial','gamma regression','beta regression','tobit regression','censored regression','truncated regression','sample selection','endogeneity','instrumental variables','two-stage least squares','generalized method of moments','maximum likelihood','bayesian','markov chain monte carlo','gibbs sampling','metropolis-hastings','importance sampling','rejection sampling','inverse transform','box-muller','acceptance-rejection','composition','alias method','walker algorithm','marsaglia polar','ziggurat','ratio of uniforms','exponential','gamma','beta','dirichlet','multinomial','poisson','negative binomial','geometric','hypergeometric','binomial','bernoulli','uniform','normal','lognormal','chi-square','f-distribution','t-distribution','cauchy','laplace','logistic','weibull','pareto','exponential','gamma','beta','dirichlet','multinomial','poisson','negative binomial','geometric','hypergeometric','binomial','bernoulli','uniform','normal','lognormal','chi-square','f-distribution','t-distribution','cauchy','laplace','logistic','weibull','pareto'];
+
         const filteredEntries = entries.filter(entry => {
             const titleEl = entry.getElementsByTagName('title')[0];
             const title = titleEl ? (titleEl.textContent || '').toLowerCase() : '';
-            console.log('Video title:', title);
-            const matches = scienceKeywords.some(keyword => title.includes(keyword));
-            console.log('Matches Science keywords:', matches);
-            return matches;
+            return scienceKeywords.some(k => title.includes(k));
         });
-        
-        // If no Science-specific videos found, show all videos from playlist
-        console.log('Filtered entries:', filteredEntries.length, 'out of', entries.length);
-        const videosToShow = filteredEntries.length > 0 ? filteredEntries : entries;
-        
-        videosToShow.slice(0, 5).forEach(entry => {
-            const vidEl = entry.getElementsByTagNameNS?.(YT_NS, 'videoId')?.[0]
+
+        // Sort all entries by published date (chronological order - newest first)
+        const sortedEntries = (filteredEntries.length ? filteredEntries : entries).sort((a, b) => {
+            const dateA = new Date(a.getElementsByTagName('published')[0]?.textContent || 0);
+            const dateB = new Date(b.getElementsByTagName('published')[0]?.textContent || 0);
+            return dateB - dateA; // Newest first
+        });
+
+        // Show all videos (remove the .slice(0,5) limit)
+        const videosToShow = sortedEntries;
+
+        videosToShow.forEach(entry => {
+            const vidEl = entry.getElementsByTagNameNS?.(YT_NS,'videoId')?.[0]
                 || entry.getElementsByTagName('yt:videoId')?.[0]
                 || entry.querySelector('yt\\:videoId, videoId');
             const titleEl = entry.getElementsByTagName('title')[0];
+            const publishedEl = entry.getElementsByTagName('published')[0];
             const videoId = vidEl ? (vidEl.textContent || '').trim() : '';
+            if(!videoId) return;
             const title = titleEl ? (titleEl.textContent || 'YouTube Video').trim() : 'YouTube Video';
-            if (!videoId) return;
+            const publishedDate = publishedEl ? new Date(publishedEl.textContent).toLocaleDateString() : '';
+            const watchUrl = `video.html?id=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}`;
 
-            const div = document.createElement('div');
-            div.className = 'lesson-item';
-            div.innerHTML = `
-                <div class="lesson-thumbnail" style="background-color: var(--peach); background-image: url('https://img.youtube.com/vi/${videoId}/mqdefault.jpg'); background-size: cover; background-position: center;"></div>
+            const card = document.createElement('div');
+            card.className = 'lesson-item video-card';
+            card.setAttribute('data-watch-url', watchUrl);
+
+            card.innerHTML = `
+                <div class="video-embed clickable-overlay" style="position:relative;width:100%;padding-top:56.25%;border-radius:10px;overflow:hidden;margin-bottom:12px;background:#000;">
+                    <img src="https://i.ytimg.com/vi/${videoId}/hqdefault.jpg" alt="${title.replace(/"/g,'&quot;')}" 
+                         style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;">
+                    <div class="play-badge" aria-hidden="true">▶</div>
+                </div>
                 <div class="lesson-title">
                     <h3>${title}</h3>
-                    <p>Science video lesson</p>
-                    <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='video.html?id=${videoId}'">Watch</span>
+                    <p style="font-size:0.9rem;color:#666;margin:4px 0;">Published: ${publishedDate}</p>
+                    <button class="lesson-badge watch-btn" type="button">Watch</button>
                 </div>
             `;
-            container.appendChild(div);
+
+            // Click handlers (whole card)
+            card.addEventListener('click', (e) => {
+                // Prevent double if button
+                if (e.target.closest('.watch-btn')) {
+                    window.location.href = watchUrl;
+                    return;
+                }
+                // Ignore text selection drag
+                if (window.getSelection && window.getSelection().toString().length) return;
+                window.location.href = watchUrl;
+            });
+
+            container.appendChild(card);
         });
 
-        if (!container.children.length) {
-            container.innerHTML = '<div>No science-related videos found in the playlist.</div>';
+        if(!container.children.length){
+            container.innerHTML = '<div>No videos found.</div>';
         }
-    } catch (err) {
-        console.error('Error fetching YouTube videos:', err);
-        container.innerHTML = '<div>Failed to load YouTube videos.</div>';
+    } catch(err){
+        console.error(err);
+        container.innerHTML = '<div>Failed to load videos.</div>';
     }
 }
+document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
 
-document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
 
 // --- Inject Assessment Card for Science (One Attempt Only) ---
 (function(){
@@ -949,6 +1137,17 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosStudent);
 <script src="../assets/js/navbar.js"></script>
 
 <script src="../assets/tabDropdown.js"></script>
+
+<script src="../assets/js/header-dynamic-labels.js"></script>
+<script src="../assets/js/student-empty-state.js"></script>
+
+<script src="../assets/js/student-qa-empty-state.js"></script>
+
+<script src="../assets/js/Student Side/student-card-clickable.js"></script>
+</body>
+</html>
+</body>
+</html>
 </div>
 </body>
 </html>

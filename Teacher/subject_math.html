@@ -49,6 +49,37 @@
 .profile-sidebar::-webkit-scrollbar {
     display: none;                 /* Chrome, Safari, Opera */
 }
+
+/* Force horizontal layout for quiz cards with higher specificity */
+.lessons-container #student-quiz-cards,
+#student-quiz-cards {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 20px !important;
+    margin-top: 20px !important;
+}
+
+/* Override the single column rule specifically for quiz cards */
+.lessons-container #student-quiz-cards {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+}
+
+/* Ensure quiz cards maintain horizontal layout on all screen sizes */
+@media (max-width: 700px) {
+    .lessons-container #student-quiz-cards,
+    #student-quiz-cards {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 15px !important;
+    }
+}
+
+@media (max-width: 520px) {
+    .lessons-container #student-quiz-cards,
+    #student-quiz-cards {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+    }
+}
 </style>
 </head>
 
@@ -515,6 +546,17 @@ document.getElementById('createLessonBtn')?.addEventListener('click', () => {
         container.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
         container.style.gap = '20px';
         container.style.marginTop = '20px';
+        
+        // Override any CSS that might force single column layout
+        container.style.setProperty('grid-template-columns', 'repeat(auto-fit, minmax(300px, 1fr))', 'important');
+        container.style.setProperty('gap', '20px', 'important');
+        container.style.setProperty('display', 'grid', 'important');
+        
+        // Force the parent lessons-container to not interfere
+        const parentContainer = container.closest('.lessons-container');
+        if (parentContainer) {
+            parentContainer.style.setProperty('display', 'block', 'important');
+        }
 
         // Create Quiz 1: Time & Time Zones
         const quiz1 = document.createElement('div');
@@ -1124,24 +1166,34 @@ async function loadYouTubeVideosTeacher() {
         container.innerHTML = '';
 
         const YT_NS = 'http://www.youtube.com/xml/schemas/2015';
-        const englishKeywords = ['english','grammar','vocabulary','reading','writing','spelling','phonics','lesson','literature','language'];
+        const mathKeywords = ['math', 'mathematics', 'number', 'addition', 'subtraction', 'multiplication', 'division', 'fraction', 'decimal', 'geometry', 'algebra', 'equation', 'problem', 'solve', 'calculate', 'gmdas', 'clock', 'time', 'measurement', 'sequence', 'operation', 'counting', 'place value', 'rounding', 'percentage', 'ratio', 'proportion', 'angle', 'triangle', 'circle', 'square', 'rectangle', 'area', 'perimeter', 'volume', 'statistics', 'graph', 'chart', 'data', 'pattern', 'logic', 'reasoning'];
 
         const filteredEntries = entries.filter(entry => {
             const titleEl = entry.getElementsByTagName('title')[0];
             const title = titleEl ? (titleEl.textContent || '').toLowerCase() : '';
-            return englishKeywords.some(k => title.includes(k));
+            return mathKeywords.some(k => title.includes(k));
         });
 
-        const videosToShow = (filteredEntries.length ? filteredEntries : entries).slice(0,5);
+        // Sort all entries by published date (chronological order - newest first)
+        const sortedEntries = (filteredEntries.length ? filteredEntries : entries).sort((a, b) => {
+            const dateA = new Date(a.getElementsByTagName('published')[0]?.textContent || 0);
+            const dateB = new Date(b.getElementsByTagName('published')[0]?.textContent || 0);
+            return dateB - dateA; // Newest first
+        });
+
+        // Show all videos (remove the .slice(0,5) limit)
+        const videosToShow = sortedEntries;
 
         videosToShow.forEach(entry => {
             const vidEl = entry.getElementsByTagNameNS?.(YT_NS,'videoId')?.[0]
                 || entry.getElementsByTagName('yt:videoId')?.[0]
                 || entry.querySelector('yt\\:videoId, videoId');
             const titleEl = entry.getElementsByTagName('title')[0];
+            const publishedEl = entry.getElementsByTagName('published')[0];
             const videoId = vidEl ? (vidEl.textContent || '').trim() : '';
             if(!videoId) return;
             const title = titleEl ? (titleEl.textContent || 'YouTube Video').trim() : 'YouTube Video';
+            const publishedDate = publishedEl ? new Date(publishedEl.textContent).toLocaleDateString() : '';
             const watchUrl = `video.html?id=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}`;
 
             const card = document.createElement('div');
@@ -1156,6 +1208,7 @@ async function loadYouTubeVideosTeacher() {
                 </div>
                 <div class="lesson-title">
                     <h3>${title}</h3>
+                    <p style="font-size:0.9rem;color:#666;margin:4px 0;">Published: ${publishedDate}</p>
                     <button class="lesson-badge watch-btn" type="button">Watch</button>
                 </div>
             `;

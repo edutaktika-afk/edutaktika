@@ -1,0 +1,322 @@
+
+/* TOKENS */
+:root {
+  --color-bg:#f6f8fa;
+  --color-surface:#ffffff;
+  --color-surface-alt:#f0f3f7;
+  --color-primary:#2e8b57;
+  --color-primary-hover:#164074;
+  --color-secondary:#ffb400;
+  --color-accent:#ff4d67;
+  --color-accent-alt:#3ac28d;
+  --color-accent-alt2:#7b3ff2;
+  --color-danger:#e54343;
+  --color-text:#0f172a;
+  --color-text-muted:#64748b;
+  --color-border:#e2e8f0;
+  --color-border-strong:#cbd5e1;
+  --shadow-xs:0 1px 2px #00000014;
+  --shadow-sm:0 2px 4px #0000001c;
+  --shadow-md:0 4px 10px #00000024;
+  --shadow-lg:0 8px 24px #00000026;
+  --radius-sm:10px;
+  --radius-md:18px;
+  --radius-lg:28px;
+  --speed-fast:.18s;
+  --speed:.28s;
+  --ease:cubic-bezier(.65,.05,.19,.98);
+
+  /* Legacy mappings (kept so old class names still work) */
+  --c-bg:var(--color-bg);
+  --c-card:var(--color-surface);
+  --c-accent:var(--color-secondary);
+  --c-accent-alt:var(--color-accent);
+  --c-accent-alt2:var(--color-accent-alt2);
+  --c-green:var(--color-primary);
+  --c-text:var(--color-text);
+  --c-shadow:0 4px 14px #0000001a;
+  --c-shadow-hover:0 10px 30px #00000024;
+  --r-lg:var(--radius-lg);
+  --r-md:var(--radius-md);
+  --anim-fast:var(--speed);
+  --c-grad:var(--color-primary); /* flattened */
+  font-family:"Outfit","Poppins",system-ui,sans-serif;
+}
+
+* {box-sizing:border-box;}
+html,body {margin:0;padding:0;}
+body {
+  background:var(--color-bg);
+  color:var(--color-text);
+  font-family:"Outfit","Poppins",system-ui,sans-serif;
+  line-height:1.4;
+  -webkit-font-smoothing:antialiased;
+}
+
+
+.logo-text span:nth-child(odd){animation-duration:3.1s;}
+@keyframes bubbleLetter {
+  0%,100% {transform:translateY(0)}
+  35% {transform:translateY(-9px)}
+  55% {transform:translateY(3px)}
+}
+
+/* SECTION TITLES */
+.section-title {
+  text-align:center;
+  margin:0 auto 28px;
+  max-width:720px;
+  padding:0 1rem;
+  
+}
+.section-title h2 {
+  font-family:"Poppins","Outfit",sans-serif;
+  font-size:clamp(1.9rem,3.1vw,2.5rem);
+  margin:0 0 .4rem;
+  color:var(--color-accent);
+  letter-spacing:.5px;
+  font-weight:600;
+}
+.section-title p {
+    font-family:"Outfit","Poppins",system-ui,sans-serif;
+  max-width:720px;
+  margin:0 auto;
+  font-size:.95rem;
+  color:var(--color-text-muted);
+}
+
+/* HERO */
+.hero-new {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:48px;
+  padding:70px clamp(1rem,4vw,4rem) 60px;
+  background:var(--color-bg);
+  position:relative;
+}
+.hero-msg h1 {
+  font-family:"Poppins","Outfit",sans-serif;
+  font-size:clamp(2.3rem,5.2vw,3.3rem);
+  line-height:1.05;
+  margin:0 0 18px;
+  font-weight:700;
+  color:var(--color-primary);
+}
+.hero-highlight {
+  background:var(--color-surface);
+  padding:18px 20px 20px;
+  border:2px solid var(--color-border);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-sm);
+  font-size:.95rem;
+  line-height:1.45;
+  color:var(--color-text);
+  font-family:"Outfit","Poppins",system-ui,sans-serif; 
+}
+.hero-visual {
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:320px;
+}
+.hero-bubble {
+  width:250px;
+  height:250px;
+  border-radius: 50%;
+    background: #ffd700;
+    box-shadow: inset 20px 20px 49px #d9b700,
+            inset -20px -20px 49px #fff700;
+  animation:slowSpin 22s linear infinite;
+}
+@keyframes slowSpin {
+  0% {transform:rotate(0deg)}
+  100% {transform:rotate(360deg)}
+}
+.hero-icon-pack {
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:18px;
+  padding:34px;
+}
+.hero-icon-pack .icon-tile {
+  width:72px;height:72px;
+  background:var(--color-surface);
+  border:2px solid var(--color-border);
+  border-radius:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.4rem;
+  color:var(--color-primary);
+  box-shadow:0 6px 0 var(--color-border-strong),0 10px 18px #0000001a;
+  animation:floating 6.5s ease-in-out infinite;
+}
+.hero-icon-pack .icon-tile:nth-child(2){animation-delay:.9s;color:var(--color-accent);}
+.hero-icon-pack .icon-tile:nth-child(3){animation-delay:1.6s;color:var(--color-accent-alt2);}
+.hero-icon-pack .icon-tile:nth-child(4){animation-delay:2.3s;color:var(--color-secondary);}
+@keyframes floating {
+  0%,100% {transform:translateY(0)}
+  50% {transform:translateY(-16px)}
+}
+
+/* MISSION / VISION (flip) */
+.mv-grid {
+  max-width:1180px;
+  margin:70px auto 30px;
+  padding:0 1rem;
+  display:grid;
+  gap:34px;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  font-family:"Outfit","Poppins",system-ui,sans-serif; 
+}
+.my-face front, .mv-face back  {
+    font-family:"Outfit","Poppins",system-ui,sans-serif; 
+}
+.mv-card2 {position:relative;perspective:1400px;height:360px;}
+.mv-inner {
+  position:absolute;inset:0;
+  transform-style:preserve-3d;
+  transition:transform .9s var(--ease);
+  cursor:pointer;
+}
+.mv-card2:hover .mv-inner,
+.mv-card2:focus-within .mv-inner {transform:rotateY(180deg);}
+.mv-face {
+  position:absolute;inset:0;
+  backface-visibility:hidden;
+  background:var(--color-surface);
+  border:2px solid var(--color-border);
+  border-radius:var(--radius-md);
+  padding:26px 26px 30px;
+  box-shadow:var(--shadow-sm);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  transition:box-shadow var(--speed-fast);
+}
+.mv-face.front {background:var(--color-surface);}
+.mv-face.back {transform:rotateY(180deg);background:var(--color-surface-alt);}
+.mv-face h3 {
+  font-family:"Poppins","Outfit",sans-serif;
+  font-size:1.55rem;
+  color:var(--color-accent-alt2);
+  margin:0 0 6px;
+  font-weight:600;
+}
+.mv-face p {font-size:.9rem;line-height:1.45;color:var(--color-text);margin:0;}
+.mv-badge {
+  width:66px;height:66px;
+  border-radius:18px;
+  background:var(--color-surface);
+  border:2px solid var(--color-border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.7rem;
+  color:var(--color-accent-alt);
+  box-shadow:0 4px 0 var(--color-border-strong);
+}
+
+/* BENEFITS */
+.benefits-wrapper {
+  max-width:1250px;
+  margin:60px auto 80px;
+  padding:0 1rem;
+}
+.benefit-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:26px;
+  margin-top:28px;
+}
+.benefit-card2 {
+  position:relative;
+  background:var(--color-surface);
+  border:2px solid var(--color-border);
+  border-radius:24px;
+  padding:20px 18px 24px;
+  box-shadow:var(--shadow-sm);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  transition:transform var(--speed-fast), box-shadow var(--speed-fast), border-color var(--speed-fast);
+}
+.benefit-card2:hover {
+  transform:translateY(-8px);
+  box-shadow:var(--shadow-lg);
+  border-color:var(--color-border-strong);
+}
+.benefit-card2:before {content:none;}
+.benefit-icon {
+  width:60px;height:60px;
+  border-radius:18px;
+  background:var(--color-surface-alt);
+  border:2px solid var(--color-border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.7rem;
+  color:var(--color-primary);
+  box-shadow:0 4px 0 var(--color-border-strong);
+}
+.benefit-card2 h4 {
+  font-family:"Poppins","Outfit",sans-serif;
+  font-size:1.05rem;
+  margin:0;
+  color:var(--color-secondary);
+  font-weight:600;
+}
+.benefit-card2 p {
+  font-size:.78rem;
+  line-height:1.4;
+  margin:0;
+  color:var(--color-text-muted);
+  font-family:'Outfit','Poppins',system-ui,sans-serif;
+}
+
+/* GRAPH CARDS */
+.graph-card {
+  background:var(--color-surface);
+  border:2px solid var(--color-border);
+  border-radius:22px;
+  padding:26px 22px 24px;
+  text-align:center;
+  box-shadow:var(--shadow-sm);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  transition:transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+}
+.graph-card:hover {
+  transform:translateY(-6px);
+  box-shadow:var(--shadow-lg);
+}
+.graph-card h3 {
+  margin:0;
+  font-size:1rem;
+  letter-spacing:.5px;
+  font-weight:600;
+  color:var(--color-text);
+  font-family:"Poppins","Outfit",sans-serif;
+}
+
+/* ACCESSIBILITY / ANIMATIONS */
+.scroll-fade {opacity:0;transform:translateY(28px);transition:.9s var(--ease);}
+.scroll-fade.visible {opacity:1;transform:translateY(0);}
+
+@media (max-width:680px){
+  .hero-new {padding:60px 1.2rem 50px;gap:40px;}
+  .hero-visual {min-height:260px;}
+  .hero-bubble {width:210px;height:210px;}
+  .benefit-grid {gap:20px;}
+}
+@media (max-width:460px){
+  .mv-card2 {height:340px;}
+  .mv-face h3 {font-size:1.38rem;}
+  .hero-msg h1 {font-size:2.1rem;}
+}

@@ -27,10 +27,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-<link rel="stylesheet" href="../CSS/fonts.css">
-<!-- ...inside <head> -->
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../CSS/header.css">
     <link rel="stylesheet" href="../CSS/homepage.css">
     <link rel="stylesheet" href="../CSS/footer.css">
@@ -38,7 +35,305 @@
     <link rel="stylesheet" href="../CSS/burger.css">
     <link rel="icon" type="image/png" href="../images/icons/home.png" />
     <title>Home</title>
-    
+    <style>
+
+:root{
+  --c-bg:#fffdf6;
+  --c-grad:linear-gradient(135deg,#ffe59d 0%,#ffd2f4 48%,#c9f4ff 100%);
+  --c-card:#ffffff;
+  --c-shadow:0 6px 18px -6px rgba(0,0,0,.12);
+  --c-shadow-hover:0 10px 26px -6px rgba(0,0,0,.18);
+  --c-accent:#ff8f1f;
+  --c-accent-alt:#ff69b4;
+  --c-accent-alt2:#4faaff;
+  --c-green:#2e8b57;
+  --c-text:#2d3923;
+  --r-lg:28px;
+  --r-md:20px;
+  --anim-fast:.28s;
+  font-family:"Baloo 2","Fredoka","Comic Neue",system-ui,sans-serif;
+  
+}
+body{
+  background:var(--c-bg);
+  color:var(--c-text);
+}
+header{
+  background:var(--c-grad);
+  border-bottom:4px solid #ffe089;
+  position:relative;
+  overflow:hidden;
+}
+header .floating-element{
+  animation:float 7s ease-in-out infinite;
+}
+@keyframes float{
+  0%,100%{ transform:translateY(0) }
+  50%{ transform:translateY(-14px) }
+}
+.logo-text span{
+  font-family:"Chewy","Baloo 2",cursive;
+  font-size:1.65rem;
+  padding:0 .05rem;
+  display:inline-block;
+  animation:bounce 3.4s ease-in-out infinite;
+}
+.logo-text span:nth-child(odd){animation-duration:3.1s;}
+@keyframes bounce{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  30%{transform:translateY(-10px) rotate(-4deg)}
+  55%{transform:translateY(3px)}
+}
+
+.section-title h2{
+  font-family:"Chewy","Fredoka",cursive;
+  font-size:clamp(1.8rem,3.2vw,2.4rem);
+  background:linear-gradient(90deg,#ff69b4,#ffb347,#4faaff);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  letter-spacing:1px;
+
+  margin-bottom:.35rem;
+}
+.section-title p{max-width:700px;margin:0 auto;font-size:.95rem;line-height:1.4}
+
+/* HERO */
+.hero-new{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:42px;
+  padding:70px clamp(1rem,4vw,4rem) 60px;
+  position:relative;
+  background:
+    radial-gradient(circle at 20% 25%,#fff5d3 0%,transparent 60%),
+    radial-gradient(circle at 85% 70%,#ffe3f8 0%,transparent 65%),
+    var(--c-bg);
+}
+.hero-msg h1{
+  font-family:"Chewy","Baloo 2",cursive;
+  font-size:clamp(2.1rem,5vw,3.2rem);
+  line-height:1.05;
+  margin:0 0 16px;
+  color:var(--c-accent);
+  text-shadow:0 3px 0 #fff,0 6px 14px #ff9f0033;
+}
+.hero-highlight{
+  background:#ffffffd9;
+  padding:14px 18px 16px;
+  border:3px solid #ffe089;
+  border-radius:var(--r-lg);
+  box-shadow:var(--c-shadow);
+  backdrop-filter:blur(4px);
+  font-size:.93rem;
+  line-height:1.42;
+}
+.hero-visual{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:320px;
+}
+.hero-bubble{
+  width:260px;
+  height:260px;
+  border-radius:50%;
+  background:var(--c-grad);
+  box-shadow:0 8px 28px -8px #ff8f1f70;
+  position:relative;
+  animation:spin 18s linear infinite;
+}
+@keyframes spin{
+  0%{transform:rotate(0deg)}
+  100%{transform:rotate(360deg)}
+}
+.hero-icon-pack{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  width:100%;
+  padding:34px;
+  gap:18px;
+}
+.hero-icon-pack .icon-tile{
+  width:72px;height:72px;
+  background:#fff;
+  border:3px solid #ffe089;
+  border-radius:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.4rem;
+  color:var(--c-green);
+  box-shadow:0 6px 0 #ffd55e,0 10px 20px -8px #ff9f0044;
+  animation:tileFloat 6.5s ease-in-out infinite;
+}
+.hero-icon-pack .icon-tile:nth-child(2){animation-delay:.9s;color:#ff69b4;}
+.hero-icon-pack .icon-tile:nth-child(3){animation-delay:1.6s;color:#4faaff;}
+.hero-icon-pack .icon-tile:nth-child(4){animation-delay:2.3s;color:#ff8f1f;}
+@keyframes tileFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-18px)}
+}
+
+/* MISSION / VISION (flip cards) */
+.mv-grid{
+  max-width:1180px;
+  margin:70px auto 30px;
+  padding:0 1rem;
+  display:grid;
+  gap:34px;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+}
+.mv-card2{
+  position:relative;
+  perspective:1400px;
+  height:360px;
+}
+.mv-inner{
+  position:absolute;inset:0;
+  transition:transform .9s cubic-bezier(.85,-0.2,.15,1.15);
+  transform-style:preserve-3d;
+  cursor:pointer;
+}
+.mv-card2:hover .mv-inner,
+.mv-card2:focus-within .mv-inner{transform:rotateY(180deg);}
+.mv-face{
+  position:absolute;inset:0;
+  backface-visibility:hidden;
+  background:var(--c-card);
+  border:3px solid #ffe089;
+  border-radius:var(--r-md);
+  padding:26px 26px 30px;
+  box-shadow:var(--c-shadow);
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  gap:12px;
+  transition:box-shadow var(--anim-fast);
+}
+.mv-face.front{
+  background:
+    radial-gradient(circle at 28% 30%,#fff3bd 0%,transparent 60%),
+    radial-gradient(circle at 82% 70%,#ffe4f8 0%,transparent 60%),
+    #fff;
+}
+.mv-face.back{
+  transform:rotateY(180deg);
+  background:
+    radial-gradient(circle at 72% 30%,#d8f7ff 0%,transparent 60%),
+    #fff;
+}
+.mv-face h3{
+  font-family:"Chewy","Baloo 2",cursive;
+  font-size:1.55rem;
+  color:var(--c-accent-alt);
+  margin:0 0 4px;
+}
+.mv-face p{
+  font-size:.88rem;
+  line-height:1.38;
+}
+.mv-badge{
+  width:68px;height:68px;
+  border-radius:16px;
+  background:#fff;
+  border:3px solid #ffe089;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.9rem;
+  color:var(--c-accent-alt2);
+  box-shadow:0 5px 0 #ffd55e;
+}
+
+/* BENEFITS */
+.benefits-wrapper{
+  max-width:1250px;
+  margin:60px auto 80px;
+  padding:0 1rem;
+}
+.benefit-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:26px;
+  margin-top:28px;
+}
+.benefit-card2{
+  position:relative;
+  background:var(--c-card);
+  border:3px solid #ffe089;
+  border-radius:24px;
+  padding:20px 18px 22px;
+  box-shadow:var(--c-shadow);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  transition:transform var(--anim-fast), box-shadow var(--anim-fast);
+  overflow:hidden;
+}
+.benefit-card2:before{
+  content:"";
+  position:absolute;
+  width:130%;height:130%;
+  top:-25%;left:-20%;
+  background:
+    radial-gradient(circle at 25% 30%,#fff5c8 0%,transparent 55%),
+    radial-gradient(circle at 85% 75%,#ffe5f8 0%,transparent 60%),
+    radial-gradient(circle at 55% 10%,#dff8ff 0%,transparent 55%);
+  opacity:.7;
+  pointer-events:none;
+}
+.benefit-card2:hover{
+  transform:translateY(-8px) rotate(-1.5deg);
+  box-shadow:var(--c-shadow-hover);
+}
+.benefit-icon{
+  width:64px;height:64px;
+  border-radius:18px;
+  background:#fff;
+  border:3px solid #ffe089;
+  box-shadow:0 5px 0 #ffd55e;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.8rem;
+  color:var(--c-green);
+}
+.benefit-card2 h4{
+  font-family:"Fredoka","Baloo 2",sans-serif;
+  font-size:1.05rem;
+  margin:2px 0 0;
+  color:var(--c-accent);
+}
+.benefit-card2 p{
+  font-size:.78rem;
+  line-height:1.35;
+  margin:0;
+}
+
+/* SCROLL FADE (upgrade) */
+.scroll-fade{opacity:0;transform:translateY(30px);transition:.9s cubic-bezier(.65,.05,.19,.98);}
+.scroll-fade.visible{opacity:1;transform:translateY(0);}
+
+/* RESPONSIVE */
+@media (max-width:680px){
+  .hero-new{padding:60px 1.2rem 50px;}
+  .hero-visual{min-height:260px;}
+  .hero-bubble{width:210px;height:210px;}
+  .benefit-grid{gap:20px;}
+}
+@media (max-width:460px){
+  .mv-card2{height:340px;}
+  .mv-face h3{font-size:1.35rem;}
+  .hero-msg h1{font-size:2rem;}
+}
+
+    </style>
 </head>
 
 <body>
@@ -192,41 +487,25 @@
     </div>-->
 
     <!-- Overview Section -->
-    <section class="hero scroll-fade">
-        <div class="hero-container">
-            <h1>
-                <div>Welcome to 
-                  <span class="edutaktika-bounce">
-                    <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span><span>!</span>
-                  </span>
-                </div>
-                
-            </h1>
-            <p>
-                EduTaktika is a web-based platform that transforms the way students
-                learn Math, English, and Science through interactive, game-based
-                presentations. Featuring drag-and-drop tools, visual aids, and
-                engaging activities, it makes lessons more dynamic and accessible.
-                Designed for elementary students, EduTaktika helps reduce learning
-                stress and boosts confidence by turning education into a fun, hands-on
-                experience. With a user-friendly interface and real-time feedback, the
-                platform empowers teachers to deliver dynamic lessons that inspire
-                active participation in core subjects.
-            </p>
-        </div>
-        <div class="interactive-elements">
-            <div class="floating-element math1"><i class="fas fa-square-root-alt"></i></div>
-                <div class="floating-element math2"><span>π</span></div>
-                <div class="floating-element math3"><i class="fas fa-divide"></i></div>
-                <div class="floating-element math4"><span>Σ</span></div>
-                <div class="floating-element math5"><i class="fas fa-equals"></i></div>
-                <!-- Add more: -->
-                <div class="floating-element math6"><i class="fas fa-atom"></i></div>
-                <div class="floating-element math8"><i class="fas fa-book"></i></div>
-                
-                <div class="floating-element math9"><i class="fas fa-lightbulb"></i></div>
-        </div>
-    </section>
+    <section class="hero-new scroll-fade">
+  <div class="hero-msg">
+    <h1>Empowering Young Minds</h1>
+    <div class="hero-highlight">
+      EduTaktika turns Math, English, and Science into playful, interactive adventures
+      with draggable tasks, visual aids, and instant feedback—reducing stress and
+      boosting real understanding.
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-bubble"></div>
+    <div class="hero-icon-pack">
+      <div class="icon-tile"><i class="fas fa-calculator"></i></div>
+      <div class="icon-tile"><i class="fas fa-spell-check"></i></div>
+      <div class="icon-tile"><i class="fas fa-atom"></i></div>
+      <div class="icon-tile"><i class="fas fa-lightbulb"></i></div>
+    </div>
+  </div>
+</section>
 
     <!-- Summary Section with Example Graphs -->
     <section class="summary-section scroll-fade" style="padding: 60px 0; background: #f7f9fb; z-index: 0;"> 
@@ -253,173 +532,143 @@
     </section>
 
     <!-- Mission & Vision Section -->
-    <section class="mission-vision scroll-fade" style="z-index: 0;">
-        <div class="section-title">
-            <h2>Mission & Vision</h2>
-            <p class="mv">
-                We are here to provide a nurturing and inclusive environment where
-                young minds can thrive, fostering a love for learning and personal
-                growth.
-            </p>
+    <section class="scroll-fade" aria-labelledby="mvTitle">
+  <div class="section-title" style="text-align:center;margin-top:10px;">
+    <h2 id="mvTitle">Mission & Vision</h2>
+    <p>Nurturing curious, confident learners through playful, meaningful exploration.</p>
+  </div>
+  <div class="mv-grid">
+    <div class="mv-card2" tabindex="0" aria-label="Mission card (flip)">
+      <div class="mv-inner">
+        <div class="mv-face front">
+          <div class="mv-badge"><i class="fas fa-rocket"></i></div>
+          <h3>Mission</h3>
+          <p>Interactive game-based learning that keeps every student engaged while
+             empowering teachers with intuitive tools.</p>
+          <p style="font-size:.78rem;color:#555;">Flip to read more.</p>
         </div>
-        
-        <div class="mv-container">
-            <div class="mv-card mv-mission">
-                <div class="mv-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135771.png" alt="Mission" />
-                </div>
-                <h2 class="mvh2">Our Mission</h2>
-                <p>
-                    At Eduktaktika, our mission is to transform the learning experience
-                    by leveraging interactive, game-based tools that inspire engagement
-                    and foster a love for Math, English, and Science. We are committed
-                    to supporting both students and teachers, creating a dynamic
-                    environment where learning is fun, accessible, and empowering.
-                </p>
-            </div>
-            <div class="mv-card mv-vision">
-                <div class="mv-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135783.png" alt="Vision" />
-                </div>
-                <h2 class="mvh2">Our Vision</h2>
-                <p>
-                    We envision a future where education is not only informative but
-                    also enjoyable, stimulating and building confidence in every
-                    student. Eduktaktika aims to be a catalyst for change in education,
-                    helping students of all backgrounds develop a lifelong passion for
-                    learning.
-                </p>
-            </div>
+        <div class="mv-face back">
+          <h3>Mission+</h3>
+          <p>We reduce learning anxiety, amplify curiosity, and support differentiated
+             pacing—so progress feels rewarding, not stressful.</p>
         </div>
-    </section>
+      </div>
+    </div>
+    <div class="mv-card2" tabindex="0" aria-label="Vision card (flip)">
+      <div class="mv-inner">
+        <div class="mv-face front">
+          <div class="mv-badge" style="color:var(--c-accent-alt);"><i class="fas fa-eye"></i></div>
+          <h3>Vision</h3>
+          <p>A future where foundational subjects feel like creative puzzles—energizing
+             lifelong curiosity.</p>
+          <p style="font-size:.78rem;color:#555;">Flip to read more.</p>
+        </div>
+        <div class="mv-face back">
+          <h3>Vision+</h3>
+          <p>Equitable, joyful learning spaces where every child sees progress and potential
+             through playful discovery.</p>
+        </div>
+      </div>
+    </div>
+    <!--<div class="mv-card2" tabindex="0" aria-label="Values card (flip)">
+      <div class="mv-inner">
+        <div class="mv-face front">
+          <div class="mv-badge" style="color:var(--c-accent);"><i class="fas fa-heart"></i></div>
+          <h3>Values</h3>
+          <p>Creativity, inclusion, transparency, and growth mindset in every interaction.</p>
+          <p style="font-size:.78rem;color:#555;">Flip to read more.</p>
+        </div>
+        <div class="mv-face back">
+          <h3>Values+</h3>
+          <p>We design humane feedback loops; we celebrate small wins; we build safe,
+             positive digital classrooms.</p>
+        </div>
+      </div>
+    </div>-->
+  </div>
+</section>
 
     <!-- Benefits Section -->
-    <section class="benefits scroll-fade" style="z-index: 0;">
-        <div class="section-title">
-            <h2>Our Benefits</h2>
-            <p>
-                With a dedicated team of experienced educators, state-of-the-art
-                facilities, and a comprehensive curriculum, we aim to lay a strong
-                foundation for your child's future.
-            </p>
-        </div>
-        <div class="benefits-grid">
-            <div class="benefit-card">
-                <div class="benefit-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135768.png" alt="Game-based" />
-                </div>
-                
-                <h3>Boosts Student Engagement</h3>
-                <p>
-                    Eduktaktika makes learning fun with interactive games and visual
-                    aids that capture student's attention. It keeps them motivated and
-                    excited about learning.
-                </p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/833/833472.png" alt="Stress Free" />
-                </div>
-                
-                <h3>Reduces Learning Stress</h3>
-                <p>
-                    The platform's hands-on approach helps ease anxiety, allowing
-                    students to learn at their own pace without the fear of making
-                    mistakes.
-                </p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135789.png" alt="Teacher" />
-                </div>
-                <h3>Enhances Teacher Efficiency</h3>
-                <p>
-                    Eduktaktika streamlines lesson planning with easy-to-use tools,
-                    saving teachers time and allowing them to focus on delivering
-                    quality lessons.
-                </p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135773.png" alt="Lightbulb" />
-                </div>
-                <h3>Improves Subject Understanding</h3>
-                <p>
-                    Interactive exercises and visual aids make complex topics in Math,
-                    English, and Science easier to understand and remember.
-                </p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135792.png" alt="Active Learning" />
-                </div>
-                
-                <h3>Promotes Active Learning</h3>
-                <p>
-                    With drag-and-drop features and clickable elements, Eduktaktika
-                    encourages students to engage directly with the material, enhancing
-                    retention.
-                </p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-img">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135766.png" alt="Secure" />
-                </div>
-               
-                <h3>Supports Secure Learning</h3>
-                <p>
-                    The platform offers a secure environment for both teachers and
-                    students, ensuring privacy and smooth access across devices.
-                </p>
-            </div>
-        </div>
-    </section>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-   <script src="../assets/js/Teacher SIde/graph.js"></script>
-
-<footer>
-  <div class="footer-wrap">
-    <div class="footer-col">
-      <h4 class="footer-brand">Eduktaktika</h4>
-      <p>Interactive, game‑based learning for Math, English, and Science.</p>
+    <section class="scroll-fade" aria-labelledby="benefitsTitle">
+  <div class="benefits-wrapper">
+    <div class="section-title" style="text-align:center;">
+      <h2 id="benefitsTitle">Why It Works</h2>
+      <p>Kid‑friendly mechanics + teacher insight = better retention, less pressure.</p>
     </div>
-    <div class="footer-col">
-      <h4>Connect</h4>
-      <ul class="footer-social">
-        <li><a href="homepage.html">Homepage</a></li>
-        <li><a href="studentlist.html">Student</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>Subjects</h4>
-      <ul class="footer-links">
-        <li><a href="subject_math.html">Math</a></li>
-        <li><a href="subject_english.html">English</a></li>
-        <li><a href="subject_science.html">Science</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>Leaderboards</h4>
-      <ul class="footer-links">
-        <li><a href="leaderboard_math.html">Math</a></li>
-        <li><a href="leaderboard_english.html">English</a></li>
-        <li><a href="leaderboard_science.html">Science</a></li>
-      </ul>
+    <div class="benefit-grid">
+      <div class="benefit-card2">
+        <div class="benefit-icon"><i class="fas fa-gamepad"></i></div>
+        <h4>High Engagement</h4>
+        <p>Mini‑games + visual cues sustain focus and intrinsic motivation.</p>
+      </div>
+      <div class="benefit-card2">
+        <div class="benefit-icon" style="color:var(--c-accent-alt);"><i class="fas fa-smile"></i></div>
+        <h4>Less Stress</h4>
+        <p>Gentle pacing + retry loops remove fear of “wrong”.</p>
+      </div>
+      <div class="benefit-card2">
+        <div class="benefit-icon" style="color:var(--c-accent-alt2);"><i class="fas fa-chalkboard-teacher"></i></div>
+        <h4>Teacher Insight</h4>
+        <p>Progress snapshots highlight gaps early.</p>
+      </div>
+      <div class="benefit-card2">
+        <div class="benefit-icon" style="color:var(--c-accent);"><i class="fas fa-lightbulb"></i></div>
+        <h4>Concept Clarity</h4>
+        <p>Drag & drop + visuals reinforce abstract ideas concretely.</p>
+      </div>
+      <div class="benefit-card2">
+        <div class="benefit-icon" style="color:var(--c-accent-alt);"><i class="fas fa-hand-pointer"></i></div>
+        <h4>Active Learning</h4>
+        <p>Direct manipulation builds deeper cognitive links.</p>
+      </div>
+      <div class="benefit-card2">
+        <div class="benefit-icon" style="color:var(--c-accent-alt2);"><i class="fas fa-shield-alt"></i></div>
+        <h4>Safe & Private</h4>
+        <p>Structured roles + Firebase security for protected access.</p>
+      </div>
     </div>
   </div>
-  <div class="footer-bottom">
-    <div class="footer-social-row">
-      <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-      <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-      <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-      <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-    </div>
-    <p>© 2025 Eduktaktika. All rights reserved.</p>
-  </div>
-</footer>
+</section>
+
+   <footer>
+        <div class="footer-content">
+            <div class="footer-column">
+                <h3 class="edu">Eduktaktika</h3>
+                <p>
+                    Making learning fun and engaging through interactive game-based
+                    education.
+                </p>
+            </div>
+            <div class="footer-column" style="margin-left: 90px;">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="homepage.html">Home</a></li>
+                    <li><a href="subject_english.html">Subject English</a></li>
+                    <li><a href="subject_math.html">Subject Math</a></li>
+                    <li><a href="subject_science.html">Subject Science</a></li>
+                    <li><a href="studentlist.html">Student</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3></h3>
+                <ul>
+                    <br>
+                     <li><a href="leaderboard_math.html">Leaderboard Math</a></li>
+                    <li><a href="leaderboard_english.html">Leaderboard English</a></li>
+                    <li><a href="leaderboard_science.html">Leaderboard Science</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p>© 2025 Eduktaktika. All rights reserved.</p>
+        </div>
+    </footer>
 
     <!-- Edit Profile Modal -->
 
@@ -513,6 +762,12 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 
 <script src="../assets/js/navbar.js"></script>
+<script>
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+ if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);}
+}),{threshold:.18});
+document.querySelectorAll('.scroll-fade').forEach(el=>io.observe(el));
+</script>
 </div>
 </body>
 
