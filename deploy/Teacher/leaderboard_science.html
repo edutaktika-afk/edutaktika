@@ -36,14 +36,17 @@
     <meta charset="UTF-8">
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <title>Leaderboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="../CSS/header.css">
     <link rel="stylesheet" href="../CSS/leaderboard.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/dropdown.css">
     <link rel="stylesheet" href="../CSS/burger.css">
     <link rel="icon" type="image/png" href="../images/icons/winner.png" />
-
+    <link rel="stylesheet" href="../CSS/fonts.css">
+<!-- ...inside <head> -->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         /* Add AFTER existing leaderboard table styles */
 @media (max-width: 560px) {
@@ -158,7 +161,7 @@
                         </ul>
                     </li>
                     <li><a href="studentlist.html">Student</a></li>
-                    <li class="dropdown">
+                        <li class="dropdown">
                             <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
                             <ul class="dropdown-content">
                                 <li><a href="leaderboard_math.html">Math</a></li>
@@ -298,6 +301,8 @@
             <div id="pagination" class="pagination" aria-label="Leaderboard pages"></div>
     </div>
     
+
+
     <script>
         const firebaseConfig = {
                 apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
@@ -315,7 +320,7 @@
             const auth = firebase.auth();
        
 
-        // 2. Fetch and display leaderboard (Science subject only - teacher's section)
+        // 2. Fetch and display leaderboard (Math subject only - teacher's section)
     async function loadLeaderboard() {
             // Get current teacher's section and grade level
             const currentUser = firebase.auth().currentUser;
@@ -334,11 +339,11 @@
             // Update title to show teacher's section and grade
             const titleEl = document.querySelector('.leaderboard-title');
             if (titleEl) {
-                titleEl.textContent = `🌟 Science Leaderboard - Grade ${teacherGrade} - Section ${teacherSection} 🌟`;
+                titleEl.textContent = `🌟 Math Leaderboard - Grade ${teacherGrade} - Section ${teacherSection} 🌟`;
             }
             
             // Update page title
-            document.title = `Science Leaderboard - Grade ${teacherGrade} - Section ${teacherSection}`;
+            document.title = `Math Leaderboard - Grade ${teacherGrade} - Section ${teacherSection}`;
             
             // Base student snapshot
         const snapshot = await db.ref('students').once('value');
@@ -349,38 +354,38 @@
             students.push(s);
         });
 
-            // Calculate Science-specific scores
+            // Calculate Math-specific scores
             students.forEach(s => {
-                // Science quiz points - only from Science quizzes
-                let scienceQuizPoints = 0;
+                // Math quiz points - only from math quizzes
+                let mathQuizPoints = 0;
                 if (s.quizzes) {
                     Object.keys(s.quizzes).forEach(quizKey => {
-                        // Only count Science-related quizzes
-                        if (quizKey.includes('science') || quizKey.includes('science-quiz')) {
+                        // Only count math-related quizzes
+                        if (quizKey.includes('math') || quizKey.includes('lesson1') || quizKey.includes('clock-quiz')) {
                             const summary = s.quizzes[quizKey]?.summary;
                             if (summary && typeof summary.best === 'number') {
-                                scienceQuizPoints += summary.best;
+                                mathQuizPoints += summary.best;
                             }
                         }
                     });
                 }
                 
-                // Science assessment points - only from Science assessments
-                let scienceAssessmentPoints = 0;
+                // Math assessment points - only from math assessments
+                let mathAssessmentPoints = 0;
                 if (s.assessments) {
                     Object.keys(s.assessments).forEach(aid => {
-                        // Only count Science-related assessments
-                        if (aid.includes('science') || aid === 'assessment3') {
+                        // Only count math-related assessments
+                        if (aid.includes('math') || aid === 'assessment1') {
                             const summary = s.assessments[aid]?.summary;
                             if (summary && typeof summary.best === 'number') {
-                                scienceAssessmentPoints += summary.best;
+                                mathAssessmentPoints += summary.best;
                             }
                         }
                     });
                 }
                 
-                s.quizPoints = scienceQuizPoints;
-                s.assessmentPoints = scienceAssessmentPoints;
+                s.quizPoints = mathQuizPoints;
+                s.assessmentPoints = mathAssessmentPoints;
                 s.combinedPoints = s.quizPoints + s.assessmentPoints;
             });
 
@@ -421,72 +426,155 @@
         document.getElementById('podium').innerHTML = podiumHtml;
 
             // Leaderboard table rows
-        let tbodyHtml = '';
-        students.forEach((student, idx) => {
-            const avatar = student.avatar ? student.avatar : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent((student.fname||'') + (student.lname||''))}`;
-                let badges = '🏅';
-                if (idx === 0) badges = '🏅🏅🏅';
-                else if (idx === 1) badges = '🏅🏅';
-            tbodyHtml += `
-            <tr${idx === 0 ? ' class="me"' : ''}>
-                <td>${idx + 1}</td>
-                <td>
-                    <span class="player-cell">
-                        <img src="${avatar}" class="avatar-small" alt="${student.fname||''}">
-                        <span class="player-name">${(student.fname||'') + ' ' + (student.lname||'')}</span>
-                            <span class="tooltiptext">${idx === 0 ? 'Top scorer!' : 'Great job!'}</span>
-                    </span>
-                </td>
-                    <td>${student.quizPoints}</td>
-                    <td>${student.assessmentPoints}</td>
-                    <td>${student.combinedPoints}</td>
-                <td>${badges}</td>
-            </tr>`;
-        });
-        document.getElementById('leaderboard-body').innerHTML = tbodyHtml;
+            applyLeaderboardPagination(students,{
+            tbodyId:'leaderboard-body',
+            paginationId:'pagination',
+            rowsPerPage:10
+            });
     }
 
     // loadLeaderboard() is now called after authentication is confirmed
     </script>
 
     <footer>
-        <div class="footer-content">
-            <div class="footer-column">
-                <h3 class="edu">Eduktaktika</h3>
-                <p>
-                    Making learning fun and engaging through interactive game-based
-                    education.
-                </p>
-            </div>
-            <div class="footer-column">
-                <h3>Quick Links</h3>
-                <ul>
-                    <li><a href="homepage.php">Home</a></li>
-                    <li><a href="subjectTeacher.php">Subject</a></li>
-                    <li><a href="studentlistTeacher.php">Student</a></li>
-                    <li><a href="leaderboardTeacher.php">Leaderboard</a></li>
-                </ul>
-            </div>
-            <div class="footer-column">
-                <h3>Support</h3>
-                <ul>
-                    <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <div class="footer-links">
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-youtube"></i></a>
-            </div>
-            <p>© 2023 Eduktaktika. All rights reserved.</p>
-        </div>
-    </footer>
+  <div class="footer-wrap">
+    <div class="footer-col">
+      <h4 class="footer-brand">Eduktaktika</h4>
+      <p>Interactive, game‑based learning for Math, English, and Science.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <ul class="footer-social">
+        <li><a href="homepage.html">Homepage</a></li>
+        <li><a href="studentlist.html">Student</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Subjects</h4>
+      <ul class="footer-links">
+        <li><a href="subject_math.html">Math</a></li>
+        <li><a href="subject_english.html">English</a></li>
+        <li><a href="subject_science.html">Science</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Leaderboards</h4>
+      <ul class="footer-links">
+        <li><a href="leaderboard_math.html">Math</a></li>
+        <li><a href="leaderboard_english.html">English</a></li>
+        <li><a href="leaderboard_science.html">Science</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-social-row">
+      <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+    </div>
+    <p>© 2025 Eduktaktika. All rights reserved.</p>
+  </div>
+</footer>
+
+    <style>
+        nav ul {
+        display: flex;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+    }
+    nav ul li {
+        list-style: none;
+        margin: 0 10px;
+        position: relative;
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+    nav ul li a, nav ul li .dropbtn {
+        display: flex;
+        align-items: center;
+        height: 48px; /* Match your nav height */
+        line-height: 48px;
+        padding: 0 18px;
+        color: #2d3923;
+        text-decoration: none;
+        font-size: 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+    nav ul li .dropdown-content {
+        display: none;
+        position: absolute;
+        background: #fff;
+        min-width: 120px;
+        box-shadow: 0 4px 16px #0002;
+        z-index: 1000;
+        border-radius: 8px;
+        padding: 0;
+        margin: 0;
+        top: 100%;
+        left: 0;
+    }
+    nav ul li .dropdown-content li {
+        list-style: none;
+        border-bottom: 1px solid #eee;
+    }
+    nav ul li .dropdown-content li:last-child {
+        border-bottom: none;
+    }
+    nav ul li .dropdown-content a {
+        color:  18px;
+        color: #2d3923;
+        padding: 10px 20px;
+        display: block;
+        text-decoration: none;
+        border-radius: 0;
+        transition: background 0.2s;
+        height: auto;
+        line-height: normal;
+    }
+    nav ul li .dropdown-content a:hover {
+        background: #f0f0f0;
+    }
+    nav ul li.dropdown:hover .dropdown-content {
+        display: block;
+    }
+    </style>
+
+    <script>
+    // Fetch and display student info in the profile sidebarh
+    firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+            firebase.database().ref('teachers/' + user.uid).once('value').then(function(snapshot) {
+                const data = snapshot.val();
+                if (data) {
+                    document.getElementById('profileName').textContent = (data.fname || '') + ' ' + (data.lname || '');
+                    document.getElementById('profileId').textContent = data.id || user.uid;
+                    document.getElementById('profileFirstName').textContent = data.fname || '';
+                    document.getElementById('profileMiddleName').textContent = data.mname || '';
+                    document.getElementById('profileLastName').textContent = data.lname || '';
+                    document.getElementById('profileGrade').textContent = data.gradelevel || '-';
+                    document.getElementById('profileSection').textContent = data.section || '-';
+                    document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "teacher");
+                }
+                if (data.address) {
+                    document.getElementById('profileAddressStreet').textContent = data.address.street || '-';
+                    document.getElementById('profileAddressBarangay').textContent = data.address.barangay || '-';
+                    document.getElementById('profileAddressCity').textContent = data.address.city || '-';
+                    document.getElementById('profileAddressProvince').textContent = data.address.province || '-';
+                    document.getElementById('profileAddressZip').textContent = data.address.zip || '-';
+                    document.getElementById('profileAddressRegion').textContent = data.address.region || '-';
+                }
+                
+            });
+        }
+    });
+    </script>
+
+<script src="../assets/js/Teacher Side/profile.js"></script>
 
 <script>
 // Ensure logout functionality works
@@ -505,6 +593,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script src="../assets/js/navbar.js"></script>
+<!-- Add to each leaderboard page -->
+<script src="../assets/js/leaderboardPagination.js"></script>
 </div>
 </body>
 </html>

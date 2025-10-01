@@ -1,5 +1,4 @@
-
-    :root {
+:root {
         --primary: #2e8b57;
         --secondary: #ffd700;
          --peach: #ff69b4;
@@ -498,6 +497,36 @@
     .logout-label.active {
         color: var(--secondary); /* Changed */
     }
+
+    nav ul li.dropdown {position:relative;}
+nav ul li.dropdown .dropbtn {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:transparent;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+  padding:8px 15px;
+  border-radius:20px;
+  color:var(--forest-green);
+}
+nav ul li.dropdown .dropbtn:focus-visible {
+  outline:3px solid var(--primary);
+  outline-offset:2px;
+}
+nav ul li.dropdown.open > .dropdown-content {
+  display:block;
+}
+nav ul li .dropdown-content a.active-item {
+  background:var(--secondary);
+  color:#000;
+  font-weight:700;
+}
+nav ul li.dropdown .dropbtn.dynamic-active {
+  background:var(--primary);
+  color:#fff;
+}
 
     @media (max-width: 768px) {
         .header-content {

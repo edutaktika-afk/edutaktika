@@ -50,18 +50,18 @@
       </div>
       <nav>
         <ul>
-          <li><a href="../../Student/homepage.html">Home</a></li>
-          <li><a href="../../Student/subject_math.html">Math</a></li>
-          <li><a href="../../Student/subject_english.html">English</a></li>
-          <li><a href="../../Student/subject_science.html">Science</a></li>
-          <li><a href="../../Student/leaderboard.html">Leaderboard</a></li>
+          <li><a href="#" id="navHome" onclick="return false;" style="pointer-events: none; opacity: 0.6;">Home</a></li>
+          <li><a href="#" id="navMath" onclick="return false;" style="pointer-events: none; opacity: 0.6;">Math</a></li>
+          <li><a href="#" id="navEnglish" onclick="return false;" style="pointer-events: none; opacity: 0.6;">English</a></li>
+          <li><a href="#" id="navScience" onclick="return false;" style="pointer-events: none; opacity: 0.6;">Science</a></li>
+          <li><a href="#" id="navLeaderboard" onclick="return false;" style="pointer-events: none; opacity: 0.6;">Leaderboard</a></li>
         </ul>
       </nav>
     </div>
   </header>
   <main>
   <div class="quiz-container">
-    <a class="back-link" href="../../Student/subject_english.html"><i class="fa fa-arrow-left"></i> Back to English</a>
+    <a class="back-link" id="backLink" href="../../Student/subject_english.html"><i class="fa fa-arrow-left"></i> Back to English</a>
     <h2 style="margin-top:0;text-align:center;">Assessment 1: English Language Skills</h2>
     <div id="quiz">
       <div class="question" id="questionText"></div>
@@ -86,22 +86,22 @@
   </main>
   <!-- Footer -->
   <footer>
-    <div class="footer-content">
-      <div class="footer-column">
-        <h3 class="edu">Edutaktika</h3>
+    <div class="footer-wrap">
+      <div class="footer-col">
+        <h4 class="footer-brand">Edutaktika</h4>
         <p>Making learning fun and engaging through interactive game-based education.</p>
       </div>
-      <div class="footer-column">
-        <h3>Quick Links</h3>
-        <ul>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul class="footer-links">
           <li><a href="../../Student/homepage.html">Home</a></li>
           <li><a href="../../Student/subject_english.html">English</a></li>
           <li><a href="../../Student/leaderboard.html">Leaderboard</a></li>
         </ul>
       </div>
-      <div class="footer-column">
-        <h3>Support</h3>
-        <ul>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul class="footer-links">
           <li><a href="#">Help Center</a></li>
           <li><a href="#">Contact Us</a></li>
           <li><a href="#">Privacy Policy</a></li>
@@ -110,11 +110,11 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <div class="footer-links">
-        <a href="#"><i class="fab fa-facebook"></i></a>
-        <a href="#"><i class="fab fa-twitter"></i></a>
-        <a href="#"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-youtube"></i></a>
+      <div class="footer-social-row">
+        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
       </div>
       <p>© 2025 Edutaktika. All rights reserved.</p>
     </div>
@@ -131,6 +131,116 @@
 
     const ASSESSMENT_KEY = 'assessment1_english';
 
+    // Detect if user is teacher and adjust back link and view
+    let isTeacher = false;
+    auth.onAuthStateChanged(async function(user) {
+        if (user) {
+            const uid = user.uid;
+            // Check if user is a teacher
+            const teacherSnap = await db.ref('teachers/' + uid).once('value');
+            const teacher = teacherSnap.val();
+            
+            if (teacher && teacher.role === "teacher") {
+                isTeacher = true;
+                // User is a teacher, update back link to teacher page
+                const backLink = document.getElementById('backLink');
+                if (backLink) {
+                    backLink.href = '../../Teacher/subject_english.html';
+                    backLink.innerHTML = '<i class="fa fa-arrow-left"></i> Back to English (Teacher)';
+                }
+                
+                // Update navigation links for teachers
+                updateNavigationForTeachers();
+                
+                // Show teacher view with answers
+                showTeacherView();
+            } else {
+                // Enable navigation for students
+                enableNavigationForStudents();
+            }
+        }
+    });
+
+    // Function to update navigation links for teachers
+    function updateNavigationForTeachers() {
+        const navHome = document.getElementById('navHome');
+        const navMath = document.getElementById('navMath');
+        const navEnglish = document.getElementById('navEnglish');
+        const navScience = document.getElementById('navScience');
+        const navLeaderboard = document.getElementById('navLeaderboard');
+        
+        if (navHome) {
+            navHome.href = '../../Teacher/homepage.html';
+            navHome.onclick = null;
+            navHome.style.pointerEvents = 'auto';
+            navHome.style.opacity = '1';
+        }
+        if (navMath) {
+            navMath.href = '../../Teacher/subject_math.html';
+            navMath.onclick = null;
+            navMath.style.pointerEvents = 'auto';
+            navMath.style.opacity = '1';
+        }
+        if (navEnglish) {
+            navEnglish.href = '../../Teacher/subject_english.html';
+            navEnglish.onclick = null;
+            navEnglish.style.pointerEvents = 'auto';
+            navEnglish.style.opacity = '1';
+        }
+        if (navScience) {
+            navScience.href = '../../Teacher/subject_science.html';
+            navScience.onclick = null;
+            navScience.style.pointerEvents = 'auto';
+            navScience.style.opacity = '1';
+        }
+        if (navLeaderboard) {
+            navLeaderboard.href = '../../Teacher/leaderboard.html';
+            navLeaderboard.onclick = null;
+            navLeaderboard.style.pointerEvents = 'auto';
+            navLeaderboard.style.opacity = '1';
+        }
+    }
+
+    // Function to enable navigation for students
+    function enableNavigationForStudents() {
+        const navHome = document.getElementById('navHome');
+        const navMath = document.getElementById('navMath');
+        const navEnglish = document.getElementById('navEnglish');
+        const navScience = document.getElementById('navScience');
+        const navLeaderboard = document.getElementById('navLeaderboard');
+        
+        if (navHome) {
+            navHome.href = '../../Student/homepage.html';
+            navHome.onclick = null;
+            navHome.style.pointerEvents = 'auto';
+            navHome.style.opacity = '1';
+        }
+        if (navMath) {
+            navMath.href = '../../Student/subject_math.html';
+            navMath.onclick = null;
+            navMath.style.pointerEvents = 'auto';
+            navMath.style.opacity = '1';
+        }
+        if (navEnglish) {
+            navEnglish.href = '../../Student/subject_english.html';
+            navEnglish.onclick = null;
+            navEnglish.style.pointerEvents = 'auto';
+            navEnglish.style.opacity = '1';
+        }
+        if (navScience) {
+            navScience.href = '../../Student/subject_science.html';
+            navScience.onclick = null;
+            navScience.style.pointerEvents = 'auto';
+            navScience.style.opacity = '1';
+        }
+        if (navLeaderboard) {
+            navLeaderboard.href = '../../Student/leaderboard.html';
+            navLeaderboard.onclick = null;
+            navLeaderboard.style.pointerEvents = 'auto';
+            navLeaderboard.style.opacity = '1';
+        }
+    }
+
     const quizData = [
       { question: "Which word is a noun?", options: ["run","beautiful","book","quickly"], correct:2 },
       { question: "What is the plural of 'child'?", options: ["childs","children","childes","child"], correct:1 },
@@ -146,6 +256,46 @@
 
     let currentQuestion = 0;
     let score = 0;
+
+    // Teacher view function
+    function showTeacherView() {
+        const quizContainer = document.querySelector('.quiz-container');
+        const title = quizContainer.querySelector('h2');
+        title.textContent = 'Assessment 1: English Language Skills (Teacher View)';
+        
+        // Hide the quiz interface and show answer sheet
+        const quiz = document.getElementById('quiz');
+        quiz.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h3 style="color: #2e8b57;">Answer Sheet</h3>
+                <p style="color: #666;">This view shows all questions with correct answers highlighted</p>
+            </div>
+            <div id="answerSheet"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="window.location.href='../../Teacher/subject_english.html'" style="background: #6d28d9; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                    Back to Teacher Dashboard
+                </button>
+            </div>
+        `;
+        
+        // Display all questions with answers
+        const answerSheet = document.getElementById('answerSheet');
+        quizData.forEach((q, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.style.cssText = 'margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;';
+            questionDiv.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 10px;">Question ${index + 1}: ${q.question}</div>
+                <div style="margin-left: 20px;">
+                    ${q.options.map((option, optIndex) => `
+                        <div style="padding: 5px 0; ${optIndex === q.correct ? 'background: #d4edda; color: #155724; font-weight: bold; padding: 8px; border-radius: 4px;' : ''}">
+                            ${String.fromCharCode(65 + optIndex)}. ${option} ${optIndex === q.correct ? '✓' : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            answerSheet.appendChild(questionDiv);
+        });
+    }
 
     const questionText = document.getElementById('questionText');
     const optionsContainer = document.getElementById('options');
@@ -268,7 +418,10 @@
 
     auth.onAuthStateChanged(u=>{ if(u){ viewAttemptsBtn.style.display='inline-block'; } });
 
-    loadQuestion();
+    // Only load question for students, teachers see answer sheet
+    if (!isTeacher) {
+        loadQuestion();
+    }
   </script>
 </body>
 </html>
