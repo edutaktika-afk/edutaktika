@@ -22,9 +22,9 @@
   },
   "homepage": ".",
   "scripts": {
-  "start": "vite",
-  "dev": "vite",
-  "build": "vite build"
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build"
   },
   "eslintConfig": {
     "extends": "react-app"

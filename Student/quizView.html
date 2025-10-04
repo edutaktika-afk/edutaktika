@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Presentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <link rel="stylesheet" href="../CSS/fonts.css">
+<!-- ...inside <head> -->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+    /* Prevent scrolling and ensure full viewport usage */
+    html, body { 
+        margin: 0; 
+        padding: 0;
+        background: #222; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        min-height: 100vh;
+        max-height: 100vh;
+        overflow: hidden; /* Prevent scrolling */
+        position: fixed;
+        width: 100%;
+        height: 100%;
+    }
+    
+    /* Canvas styling with proper constraints */
+    #presentation-canvas { 
+        width: 1280px; 
+        height: 720px; 
+        max-width: 100vw; 
+        max-height: 90vh; 
+        display: block;
+        object-fit: contain;
+    }
+    
+    /* Back button styling */
+    .back-btn { 
+        position: fixed; 
+        top: 16px; 
+        left: 16px; 
+        background: #fff; 
+        color: #232946; 
+        border: none; 
+        border-radius: 6px; 
+        padding: 8px 18px; 
+        font-weight: 600; 
+        cursor: pointer; 
+        font-size: 1rem;
+        z-index: 100;
+    }
+
+    /* GIF overlay styling */
+    .canvas-gif-overlay {
+        pointer-events: none;
+        z-index: 50;
+        position: absolute;
+    }
+
+    /* Canvas wrapper with no overflow */
+    .presentation-canvas-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 100vw;
+        max-height: 90vh;
+    }
+
+    /* Navigation bar styling */
+    .nav-bar {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        display: flex;
+        gap: 12px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 8px 16px;
+        border-radius: 8px;
+        backdrop-filter: blur(4px);
+    }
+
+    /* Navigation buttons */
+    .nav-btn {
+        padding: 8px 18px;
+        border-radius: 6px;
+        border: none;
+        background: #b39ddb;
+        color: #232946;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+        background: #9575cd;
+        transform: translateY(-1px);
+    }
+
+    .nav-btn:disabled {
+        background: #666;
+        color: #999;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Slide indicator */
+    .slide-indicator {
+        font-size: 1.1em;
+        font-weight: bold;
+        color: white;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+    }
+
+    /* Game iframe styling */
+    #game-iframe {
+        position: absolute;
+        border: none;
+        z-index: 10;
+        pointer-events: auto;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1400px) {
+        #presentation-canvas {
+            width: 90vw;
+            height: calc(90vw * 0.5625); /* 16:9 aspect ratio */
+            max-height: 80vh;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .nav-bar {
+            bottom: 12px;
+            gap: 8px;
+            padding: 6px 12px;
+        }
+        
+        .nav-btn {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .slide-indicator {
+            font-size: 1rem;
+            padding: 0 8px;
+        }
+        
+        .back-btn {
+            top: 12px;
+            left: 12px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Prevent text selection and context menu */
+    * {
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+
+    /* Hide scrollbars completely */
+    ::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    html {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.history.back()">
+        <i class="fas fa-arrow-left"></i> Back
+    </button>
+    
+    <div class="presentation-canvas-wrapper">
+        <canvas id="presentation-canvas"></canvas>
+    </div>
+    <script>    
+// Firebase config
+const firebaseConfig = {
+    apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+    authDomain: "edutaktika.firebaseapp.com",
+    databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+    projectId: "edutaktika",
+    storageBucket: "edutaktika.appspot.com",
+    messagingSenderId: "676848575316",
+    appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+    measurementId: "G-X3GT5TNN87"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// Get URL params
+function getParam(name) {
+    const url = new URL(window.location.href);
+    return url.searchParams.get(name);
+}
+const subject = getParam('subject');
+const quarter = getParam('quarter');
+const name = getParam('name');
+const mode = getParam('mode') || 'student'; // Default to student mode
+
+// Setup Fabric canvas
+const canvas = new fabric.Canvas('presentation-canvas', {
+    backgroundColor: '#fff',
+    width: 1280,
+    height: 720,
+    selection: false
+});
+
+// Make all objects unselectable and not editable for students
+function lockCanvasObjects() {
+    canvas.getObjects().forEach(obj => {
+        obj.selectable = false;
+        obj.evented = false;
+        obj.hasControls = false;
+        obj.hasBorders = false;
+        if (obj.type === 'group' && obj._objects) {
+            obj._objects.forEach(child => {
+                child.selectable = false;
+                child.evented = false;
+                child.hasControls = false;
+                child.hasBorders = false;
+            });
+        }
+    });
+    canvas.selection = false;
+    canvas.discardActiveObject();
+    canvas.renderAll();
+}
+
+let slides = [];
+let currentSlide = 0;
+
+// Create navigation UI for presentation
+const navBar = document.createElement('div');
+navBar.className = 'nav-bar';
+navBar.innerHTML = `
+    <button id="prev-slide-btn" class="nav-btn">
+        <i class="fas fa-chevron-left"></i> Prev
+    </button>
+    <span id="slide-indicator" class="slide-indicator">Slide 1/1</span>
+    <button id="next-slide-btn" class="nav-btn">
+        Next <i class="fas fa-chevron-right"></i>
+    </button>
+`;
+document.body.appendChild(navBar);
+
+// Navigation functions
+function updateNavigationButtons() {
+    const prevBtn = document.getElementById('prev-slide-btn');
+    const nextBtn = document.getElementById('next-slide-btn');
+    
+    // Disable/enable buttons based on current slide
+    prevBtn.disabled = currentSlide === 0;
+    nextBtn.disabled = currentSlide === slides.length - 1;
+}
+
+function updateSlideIndicator() {
+    document.getElementById('slide-indicator').textContent = `Slide ${currentSlide+1}/${slides.length}`;
+    updateNavigationButtons();
+}
+
+function loadSlide(idx) {
+    if (slides[idx]) {
+        canvas.loadFromJSON(slides[idx], function() {
+            canvas.renderAll();
+            overlayGifsOnCanvasPresent(canvas);
+            lockCanvasObjects(); // Lock for student viewing
+            updateSlideIndicator();
+            showGameIframe(slides[currentSlide], document.getElementById('presentation-canvas'));
+        });
+    }
+}
+
+// Show game iframe if exists for the slide
+function showGameIframe(slide, canvasEl) {
+    let existing = document.getElementById('game-iframe');
+    
+    if (!slide.game || !slide.game.url) {
+        if (existing) existing.remove();
+        return;
+    }
+    
+    const wrapper = document.querySelector('.presentation-canvas-wrapper');
+    if (existing) existing.remove();
+
+    const rect = canvasEl.getBoundingClientRect();
+    const iframe = document.createElement('iframe');
+    iframe.id = 'game-iframe';
+    iframe.src = slide.game.url;
+    iframe.style.cssText = `
+        position: absolute;
+        top: ${canvasEl.offsetTop}px;
+        left: ${canvasEl.offsetLeft}px;
+        width: ${rect.width}px;
+        height: ${rect.height}px;
+        border: none;
+        z-index: 10;
+    `;
+    iframe.allow = 'fullscreen';
+    wrapper.style.position = 'relative';
+    wrapper.appendChild(iframe);
+    
+    // CRITICAL: Send custom quiz data to game
+    iframe.onload = function() {
+        setTimeout(() => {
+            if (slide.game && slide.game.data) {
+                let gameData = null;
+                try {
+                    gameData = typeof slide.game.data === 'string' ? JSON.parse(slide.game.data) : slide.game.data;
+                } catch (e) {
+                    console.error('Error parsing game data:', e);
+                }
+                
+                if (gameData) {
+                    console.log('📤 STUDENT: Sending custom quiz data:', gameData);
+                    iframe.contentWindow.postMessage({
+                        type: 'loadQuizGameData',
+                        gameData: gameData,
+                        isStudent: true
+                    }, '*');
+                }
+            }
+        }, 1000);
+    };
+}
+
+// Add message listener for games (add this after line 400):
+window.addEventListener('message', function(event) {
+    if (event.data.type === 'requestQuizGameData' && slides[currentSlide]) {
+        const slide = slides[currentSlide];
+        const iframe = document.getElementById('game-iframe');
+        
+        if (slide.game && slide.game.data && iframe) {
+            let gameData = null;
+            try {
+                gameData = typeof slide.game.data === 'string' ? JSON.parse(slide.game.data) : slide.game.data;
+            } catch (e) {
+                console.error('Error parsing game data:', e);
+            }
+            
+            if (gameData) {
+                console.log('📤 STUDENT: Game requested data, sending:', gameData);
+                iframe.contentWindow.postMessage({
+                    type: 'loadQuizGameData',
+                    gameData: gameData,
+                    isStudent: true
+                }, '*');
+            }
+        }
+    }
+}, false);
+
+// Keep iframe in sync with canvas size
+function syncGameIframeSize() {
+    const iframe = document.getElementById('game-iframe');
+    const canvasEl = document.getElementById('presentation-canvas');
+    if (iframe && canvasEl) {
+        const rect = canvasEl.getBoundingClientRect();
+        iframe.style.width = rect.width + 'px';
+        iframe.style.height = rect.height + 'px';
+        iframe.style.top = canvasEl.offsetTop + 'px';
+        iframe.style.left = canvasEl.offsetLeft + 'px';
+        iframe.style.transform = '';
+    }
+}
+window.addEventListener('resize', syncGameIframeSize);
+
+// Function to list all available quizzes for student
+function listStudentQuizzes() {
+    if (!subject || !quarter) {
+        document.body.insertAdjacentHTML('beforeend', `
+            <div style="color:white;text-align:center;margin-top:40px;padding:20px;background:rgba(255,255,255,0.1);border-radius:15px;">
+                <h3>⚠️ Missing Parameters</h3>
+                <p>Please specify both subject and quarter in the URL.</p>
+                <code style="background:rgba(0,0,0,0.2);padding:8px;border-radius:8px;">
+                    ?subject=subject_math&quarter=1
+                </code>
+            </div>
+        `);
+        return;
+    }
+    
+    firebase.auth().onAuthStateChanged(async function(user) {
+        if (!user) {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div style="color:white;text-align:center;margin-top:40px;">
+                    <h3>🔒 Please Log In</h3>
+                    <p>You need to be logged in to view quizzes.</p>
+                </div>
+            `);
+            return;
+        }
+        
+        const studentUID = user.uid;
+        
+        try {
+            // Check if user is a student
+            const studentSnap = await db.ref('students/' + studentUID).once('value');
+            if (!studentSnap.exists()) {
+                document.body.insertAdjacentHTML('beforeend', `
+                    <div style="color:white;text-align:center;margin-top:40px;">
+                        <h3>❌ Access Denied</h3>
+                        <p>This page is for students only.</p>
+                    </div>
+                `);
+                return;
+            }
+            
+            // Load student's quizzes for this subject and quarter
+            const quizzesSnap = await db.ref(`students/${studentUID}/quizzes/${subject}/${quarter}`).once('value');
+            
+            if (!quizzesSnap.exists()) {
+                document.body.insertAdjacentHTML('beforeend', `
+                    <div style="color:white;text-align:center;margin-top:40px;padding:20px;background:rgba(255,255,255,0.1);border-radius:15px;">
+                        <h3>📚 No Quizzes Available</h3>
+                        <p>No quizzes found for this subject and quarter.</p>
+                        <p><strong>Subject:</strong> ${subject.replace('subject_','').toUpperCase()}</p>
+                        <p><strong>Quarter:</strong> ${quarter}</p>
+                    </div>
+                `);
+                return;
+            }
+            
+            const listDiv = document.createElement('div');
+            listDiv.style = 'margin:40px auto 0 auto;max-width:700px;background:rgba(255,255,255,0.95);border-radius:20px;padding:40px;box-shadow:0 20px 60px rgba(0,0,0,0.1);backdrop-filter:blur(20px);';
+            listDiv.innerHTML = `
+                <h2 style="margin-top:0;color:#333;font-weight:700;font-size:1.8rem;text-align:center;margin-bottom:30px;">
+                    📚 ${subject.replace('subject_','').toUpperCase()} Quizzes - Quarter ${quarter}
+                </h2>
+                <ul id="quiz-list" style="list-style:none;padding:0;margin:0;"></ul>
+            `;
+            document.body.appendChild(listDiv);
+            
+            const ul = document.getElementById('quiz-list');
+            
+            quizzesSnap.forEach(child => {
+                const data = child.val();
+                const li = document.createElement('li');
+                li.style = 'margin-bottom:20px;padding:20px;border-radius:15px;background:linear-gradient(135deg,#f5f7fa,#c3cfe2);transition:all 0.3s ease;border-left:5px solid #667eea;';
+                
+                const isLocked = data.isLocked !== false;
+                const createdDate = data.createdAt ? new Date(data.createdAt).toLocaleDateString() : 'Unknown date';
+                
+                li.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                        <h3 style="margin:0;color:#333;font-size:1.2rem;flex:1;">
+                            📋 ${data.title || child.key}
+                        </h3>
+                        <span style="background:${isLocked ? '#e74c3c' : '#27ae60'};color:white;padding:4px 8px;border-radius:12px;font-size:0.75rem;font-weight:600;">
+                            ${isLocked ? '🔒 LOCKED' : '🔓 UNLOCKED'}
+                        </span>
+                    </div>
+                    <p style="margin:0 0 12px 0;color:#666;font-size:0.95rem;">
+                        ${data.description || 'No description available'}
+                    </p>
+                    <div style="font-size:0.85rem;color:#888;margin-bottom:15px;">
+                        <span style="margin-right:15px;">👨‍🏫 ${data.teacherName || 'Teacher'}</span>
+                        <span style="margin-right:15px;">📅 ${createdDate}</span>
+                        ${data.attempts ? `<span style="margin-right:15px;">🎯 Attempts: ${data.attempts}</span>` : ''}
+                        ${data.bestScore ? `<span>⭐ Best: ${data.bestScore}</span>` : ''}
+                    </div>
+                    ${isLocked ? 
+                        `<button style="margin-top:12px;padding:10px 24px;border-radius:25px;border:none;background:#e74c3c;color:white;font-weight:600;cursor:pointer;transition:all 0.3s ease;" 
+                            onclick="alert('This quiz is locked. Contact your teacher for the password.')">
+                            🔒 Quiz Locked
+                        </button>` :
+                        `<button style="margin-top:12px;padding:10px 24px;border-radius:25px;border:none;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:600;cursor:pointer;transition:all 0.3s ease;" 
+                            onmouseover="this.style.background='linear-gradient(135deg,#764ba2,#667eea)';this.style.transform='translateY(-2px)'" 
+                            onmouseout="this.style.background='linear-gradient(135deg,#667eea,#764ba2)';this.style.transform='translateY(0)'"
+                            onclick="window.location.href='quizView.html?subject=${encodeURIComponent(subject)}&quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(child.key)}&mode=student'">
+                            <i class="fas fa-play-circle"></i> View Quiz
+                        </button>`
+                    }
+                `;
+                ul.appendChild(li);
+            });
+        } catch (error) {
+            console.error('Error loading student quizzes:', error);
+            document.body.insertAdjacentHTML('beforeend', `
+                <div style="color:white;text-align:center;margin-top:40px;">
+                    <h3>⚠️ Error Loading Quizzes</h3>
+                    <p>Unable to load quizzes. Please try again later.</p>
+                </div>
+            `);
+        }
+    });
+}
+
+// Main logic - load specific quiz or show quiz list
+if (!name) {
+    // No specific quiz name provided, show list of available quizzes
+    listStudentQuizzes();
+} else {
+    // Load specific quiz for student
+    firebase.auth().onAuthStateChanged(async function(user) {
+        if (!user || !subject || !quarter || !name) {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div style="color:white;text-align:center;margin-top:40px;">
+                    <h3>⚠️ Quiz Not Found</h3>
+                    <p>Quiz not found or you're not logged in.</p>
+                </div>
+            `);
+            return;
+        }
+        
+        const studentUID = user.uid;
+        
+        try {
+            // Check if user is a student
+            const studentSnap = await db.ref('students/' + studentUID).once('value');
+            if (!studentSnap.exists()) {
+                document.body.insertAdjacentHTML('beforeend', `
+                    <div style="color:white;text-align:center;margin-top:40px;">
+                        <h3>❌ Access Denied</h3>
+                        <p>This page is for students only.</p>
+                    </div>
+                `);
+                return;
+            }
+            
+            // Load quiz from student's collection
+            const quizSnap = await db.ref(`students/${studentUID}/quizzes/${subject}/${quarter}/${name}`).once('value');
+            
+            if (!quizSnap.exists()) {
+                document.body.insertAdjacentHTML('beforeend', `
+                    <div style="color:white;text-align:center;margin-top:40px;">
+                        <h3>📝 Quiz Not Available</h3>
+                        <p>This quiz is not available to you or has been removed.</p>
+                    </div>
+                `);
+                return;
+            }
+            
+            const quizData = quizSnap.val();
+            
+            // Check if quiz is locked
+            if (quizData.isLocked !== false) {
+                document.body.insertAdjacentHTML('beforeend', `
+                    <div style="color:white;text-align:center;margin-top:40px;padding:30px;background:rgba(231,76,60,0.1);border:2px solid #e74c3c;border-radius:15px;max-width:500px;margin-left:auto;margin-right:auto;">
+                        <h3 style="color:#e74c3c;">🔒 Quiz Locked</h3>
+                        <p>This quiz is currently locked.</p>
+                        <p>Please contact your teacher to unlock it.</p>
+                        <button onclick="window.history.back()" style="margin-top:15px;padding:10px 20px;background:#e74c3c;color:white;border:none;border-radius:8px;cursor:pointer;">
+                            ← Go Back
+                        </button>
+                    </div>
+                `);
+                return;
+            }
+            
+            // Load quiz slides
+            if (quizData.slides) {
+                slides = JSON.parse(quizData.slides);
+                currentSlide = 0;
+                loadSlide(currentSlide);
+                updateSlideIndicator();
+                
+                
+            } else {
+                document.body.insertAdjacentHTML('beforeend', `
+                    <div style="color:white;text-align:center;margin-top:40px;">
+                        <h3>⚠️ Invalid Quiz</h3>
+                        <p>This quiz appears to be corrupted or incomplete.</p>
+                    </div>
+                `);
+            }
+        } catch (error) {
+            console.error('Error loading quiz:', error);
+            document.body.insertAdjacentHTML('beforeend', `
+                <div style="color:white;text-align:center;margin-top:40px;">
+                    <h3>⚠️ Error Loading Quiz</h3>
+                    <p>Unable to load quiz. Please try again later.</p>
+                </div>
+            `);
+        }
+    });
+}
+
+// Navigation events
+document.getElementById('next-slide-btn').onclick = function() {
+    if (currentSlide < slides.length-1) {
+        currentSlide++;
+        loadSlide(currentSlide);
+        updateSlideIndicator();
+    }
+};
+
+document.getElementById('prev-slide-btn').onclick = function() {
+    if (currentSlide > 0) {
+        currentSlide--;
+        loadSlide(currentSlide);
+        updateSlideIndicator();
+    }
+};
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+    switch(e.key) {
+        case 'ArrowRight':
+        case ' ': // Spacebar
+            e.preventDefault();
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                loadSlide(currentSlide);
+                updateSlideIndicator();
+            }
+            break;
+        case 'ArrowLeft':
+            e.preventDefault();
+            if (currentSlide > 0) {
+                currentSlide--;
+                loadSlide(currentSlide);
+                updateSlideIndicator();
+            }
+            break;
+        case 'Home':
+            e.preventDefault();
+            currentSlide = 0;
+            loadSlide(currentSlide);
+            updateSlideIndicator();
+            break;
+        case 'End':
+            e.preventDefault();
+            currentSlide = slides.length - 1;
+            loadSlide(currentSlide);
+            updateSlideIndicator();
+            break;
+        case 'Escape':
+            e.preventDefault();
+            window.history.back();
+            break;
+    }
+});
+
+// Prevent context menu and interactions
+document.getElementById('presentation-canvas').addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+document.addEventListener('dragover', function(e) {
+    e.preventDefault();
+});
+
+document.addEventListener('drop', function(e) {
+    e.preventDefault();
+});
+
+// GIF overlay function
+function overlayGifsOnCanvasPresent(canvas) {
+    document.querySelectorAll('.canvas-gif-overlay').forEach(el => el.remove());
+    const wrapper = document.querySelector('.presentation-canvas-wrapper');
+    const canvasEl = document.getElementById('presentation-canvas');
+    if (!wrapper || !canvasEl) return;
+
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const canvasRect = canvasEl.getBoundingClientRect();
+    const offsetLeft = canvasRect.left - wrapperRect.left;
+    const offsetTop = canvasRect.top - wrapperRect.top;
+
+    const scaleX = canvasEl.offsetWidth / canvasEl.width;
+    const scaleY = canvasEl.offsetHeight / canvasEl.height;
+
+    canvas.getObjects().forEach(obj => {
+        if (
+            obj.type === 'image' &&
+            obj._element &&
+            obj._element.src &&
+            (obj._element.src.includes('.gif') || obj._element.src.startsWith('data:image/gif'))
+        ) {
+            const rect = obj.getBoundingRect();
+            const left = rect.left * scaleX + offsetLeft;
+            const top = rect.top * scaleY + offsetTop;
+            const width = rect.width * scaleX;
+            const height = rect.height * scaleY;
+
+            const img = document.createElement('img');
+            img.src = obj._element.src;
+            img.className = 'canvas-gif-overlay';
+            img.style.position = 'absolute';
+            img.style.left = left + 'px';
+            img.style.top = top + 'px';
+            img.style.width = width + 'px';
+            img.style.height = height + 'px';
+            img.style.pointerEvents = 'none';
+            img.style.zIndex = 50;
+            wrapper.appendChild(img);
+        }
+    });
+}
+</script>
+
+
+
+</body>
+</html>

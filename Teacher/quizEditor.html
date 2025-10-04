@@ -2,770 +2,835 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Lesson Editor | Eduktaktaktika</title>
+    <title>Quiz Editor | Edutaktika</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    
     <style>
+        /* CSS Variables */
         :root {
-        --primary: #2e8b57;
-        --secondary: #ffd700;
-        --accent: #ff69b4;
-        --background: #f0f8ff;
-        --card-bg: #ffffff;
-        --text-main: #22223b;
-        --text-light: #9a8c98;
-        --shadow: 0 4px 24px rgba(46, 139, 87, 0.08);
-        --radius: 18px;
-    }
+            --primary: #2e8b57;
+            --secondary: #ffd700;
+            --accent: #ff69b4;
+            --background: #f0f8ff;
+            --card-bg: #ffffff;
+            --text-main: #22223b;
+            --text-light: #9a8c98;
+            --shadow: 0 4px 24px rgba(46, 139, 87, 0.08);
+            --radius: 18px;
+        }
+
+        /* Base Styles */
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             overflow: hidden;
-            background: #f0f1f5;
+            background: var(--background);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
+
         body {
             min-height: 100vh;
-            height: 100vh;
             width: 100vw;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
-            background: var(--background);
-    color: var(--text-main);
         }
+
+        /* Header/Breadcrumbs */
         .breadcrumbs {
             width: 100vw;
             left: 0;
             top: 0;
             position: relative;
             box-sizing: border-box;
-            padding: 11px 24px;
+            padding: 8px 24px;
             color: #888;
-            font-size: 1rem;
+            font-size: 14px;
             display: flex;
             align-items: center;
             justify-content: flex-start;
             gap: 18px;
             background: rgb(255, 255, 255);
-            z-index: 2;
-            margin: 0;
+            z-index: 100;
+            border-bottom: 1px solid #e0e0e0;
         }
+
+        .breadcrumbs .logo {
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
         .right-breadcrumb-btns {
             margin-left: auto;
             margin-right: 20px;
             display: flex;
             gap: 10px;
         }
+
         .right-breadcrumb-btns button {
-            background: #388e3c;
+            background: var(--primary);
             color: #fff;
             border: none;
-            border-radius: 6px;
-            padding: 6px 18px;
+            border-radius: 8px;
+            padding: 8px 16px;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 6px;
-            transition: background 0.15s;
+            transition: all 0.2s ease;
         }
-        .right-breadcrumb-btns button#present-btn {
-            background: #b39ddb;
-        }
+
         .right-breadcrumb-btns button:hover {
-            background: #232946;
+            background: #1e5f3f;
+            transform: translateY(-1px);
         }
+
+        .right-breadcrumb-btns button#present-btn {
+            background: var(--accent);
+        }
+
+        /* Burger Menu */
+        #burger-menu-btn {
+            background: none;
+            border: none;
+            padding: 0 10px 0 0;
+            cursor: pointer;
+            font-size: 1.7rem;
+            color: var(--primary);
+            outline: none;
+        }
+
+        #burger-dropdown {
+            display: none;
+            position: absolute;
+            top: 54px;
+            left: 16px;
+            min-width: 160px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        #burger-dropdown a {
+            display: block;
+            padding: 12px 24px;
+            color: var(--text-main);
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        #burger-dropdown a:hover {
+            background: #f5f5f5;
+        }
+
+        /* Main Layout */
         .editor-layout {
             flex: 1 1 auto;
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 64px);
+            height: calc(100vh - 70px);
             min-height: 0;
-            min-width: 0;
             overflow: hidden;
         }
+
         .main-area {
             display: flex;
             flex: 1 1 auto;
             min-height: 0;
-            min-width: 0;
             overflow: hidden;
         }
+
+        /* Sidebar */
         .sidebar {
-            min-width: 240px;
-            width: 240px;
-            max-width: 320px;
+            min-width: 200px;
+            width: 220px;
+            max-width: 280px;
             height: 100%;
             overflow-y: auto;
-            background: #e5f5ee; border-right: 1px solid #e0e0e0; padding: 24px 12px; display: flex; flex-direction: column; gap: 32px;
-            z-index: 1;
+            background: #e8f5e8;
+            border-right: 1px solid #d0d0d0;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            z-index: 10;
         }
-        .sidebar h4 { margin: 0 0 18px 0; color:rgb(0, 0, 0); font-size: 1.1rem; }
-        .sidebar-group { margin-bottom: 18px; }
-        .sidebar-label { font-size: 1rem; color:rgb(0, 0, 0); margin-bottom: 7px; }
-        .sidebar button, .sidebar input[type="file"] {
-            display: block; width: 100%; margin-bottom: 7px; padding: 7px 0; border: none; border-radius: 6px; background: #fff; color: #232946; cursor: pointer; font-size: 1rem;
-            transition: background 0.15s;
+
+        .sidebar-group {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        .sidebar button:hover { background: #e3f0ff; }
-        .sidebar .shape-btn { font-size: 1.4rem; width: 40px; display: inline-block; margin-right: 6px; }
-       .editor-content {
+
+        .sidebar-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar button {
+            display: block;
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar button:hover {
+            background: #1e5f3f;
+            transform: translateY(-1px);
+        }
+
+        /* Canvas Area */
+        .editor-content {
             flex: 1 1 auto;
             width: 100%;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            gap: 24px;
+            align-items: center;
             min-height: 0;
-            min-width: 0;
             overflow: hidden;
-            background: #f0f1f5;
+            background: var(--background);
+            padding: 20px;
+            box-sizing: border-box;
         }
+
         .canvas-area {
-            padding: 16px;
-            min-height: 0;
-            min-width: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             flex: 1 1 auto;
-            overflow: hidden;
-            margin-left: 20px;
-            margin-bottom: 30px;
+            max-width: 100%;
+            max-height: 100%;
         }
+
         .canvas-wrapper {
-            width: 1280px !important;
-            height: 720px !important;
-            max-width: 1280px !important;
-            max-height: 720px !important;
-            margin: 0 auto;
+            width: 80%;
+            max-width: 800px;
+            aspect-ratio: 16/9;
             background: #fff;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden; /* Ensure games don't overflow */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            max-width: 800px;
+            max-height: 450px;
+            display: block;
+            outline: none;
+            position: relative;
+            z-index: 1; /* Lower z-index than iframe */
+        }
+
+        /* Game Iframe Styles */
+/* Update the Game Iframe Styles to fill the entire canvas */
+#game-iframe {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important; /* Remove the scale and centering transform */
+    width: 100% !important; /* Fill entire canvas width */
+    height: 100% !important; /* Fill entire canvas height */
+    border: none !important;
+    z-index: 10 !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important; /* Cover the entire area */
+    overflow: hidden !important;
+    border-radius: 0 !important; /* Remove border radius to fill corners */
+    box-shadow: none !important; /* Remove shadow for full coverage */
+    -webkit-overflow-scrolling: touch !important;
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+}
+
+#game-iframe::-webkit-scrollbar {
+    display: none !important;
+}
+
+        /* Slide Navigation */
+        .slide-nav {
+            position: fixed;
+            bottom: 0px;
+            left: 59%;
+            transform: translateX(-50%);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: transparent;
+            padding: 8px 24px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            max-width: 80vw;
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border for definition */
+        }
+
+        #slide-preview-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            overflow-x: auto;
+            overflow-y: hidden; /* Prevent vertical scrollbar */
+            max-width: 50vw;
+            padding: 0 8px;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* Internet Explorer 10+ */
+        }
+
+        #slide-preview-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .slide-thumb {
+            width: 60px;
+            height: 40px;
+            background: #fff;
+            border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
             position: relative;
             overflow: hidden;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
         }
-#canvas {
-    width: 1280px !important;
-    height: 720px !important;
-    max-width: 1280px !important;
-    max-height: 720px !important;
-    display: block;
-}
-        .rightbar {
-            width: 240px;
-            min-width: 160px;
-            max-width: 320px;
-            background: #fff;
-            border-left: 1px solid #e0e0e0;
-            padding: 16px 8px;
-            border-radius: 0 18px 18px 0;
-            box-shadow: 0 2px 8px #e0e0e055;
+
+        .slide-thumb.active {
+            border-color: var(--primary);
+            box-shadow: 0 4px 16px rgba(46, 139, 87, 0.2);
+        }
+
+        .slide-thumb:hover {
+            transform: translateY(-2px);
+        }
+
+        #slide-indicator {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        .zoom-controls {
             display: flex;
-            flex-direction: column;
-            gap: 18px;
-            min-height: 0;
-            height: 100%;
-            overflow-y: auto;
+            align-items: center;
+            gap: 8px;
         }
-        .rightbar label { font-weight: 600; color: #232946; margin-bottom: 6px; display: block; }
-        .rightbar .position-btns, .rightbar .layer-btns, .rightbar .text-btns, .rightbar .align-btns {
-            display: flex; gap: 6px; margin-bottom: 10px;
+
+        .zoom-controls label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
         }
-        .rightbar button, .rightbar select, .rightbar input[type="number"] {
-            border: 1px solid #e0e0e0; border-radius: 5px; background: #f4f8ff; padding: 6px 10px; font-size: 1rem; cursor: pointer;
+
+        #canvas-scale {
+            width: 120px;
         }
-        .rightbar button.selected, .rightbar button:focus { background: #e3f0ff; }
-        .rightbar .color-btn { width: 24px; height: 24px; border-radius: 4px; border: none; background: #388e3c; }
-        .undo-redo-bar { display: flex; gap: 12px; margin: 18px 0 0 0; }
-        .undo-redo-bar button { background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 7px 18px; cursor: pointer; font-weight: 600; }
-        .undo-redo-bar button:hover { background: #e3f0ff; }
-        @media (max-width: 1200px) {
-            .sidebar, .rightbar { width: 180px; min-width: 140px; }
+
+        #canvas-scale-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--primary);
+            min-width: 40px;
         }
-        @media (max-width: 900px) {
-            .editor-layout { flex-direction: column; height: auto; }
-            .sidebar, .rightbar {
-                width: 100vw;
-                min-width: 0;
-                max-width: 100vw;
-                position: static;
-                height: auto;
+
+        #reset-zoom-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        #reset-zoom-btn:hover {
+            background: #1e5f3f;
+        }
+
+        /* Game Modal */
+        #game-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #game-modal > div {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 16px 64px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        #game-modal h2 {
+            margin-top: 0;
+            margin-bottom: 24px;
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .game-option {
+            display: block;
+            width: 100%;
+            margin-bottom: 12px;
+            padding: 16px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .game-option:hover {
+            background: #1e5f3f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(46, 139, 87, 0.3);
+        }
+
+        .cancel-button {
+            margin-top: 24px;
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .cancel-button:hover {
+            background: #ff4444;
+            color: white;
+            border-color: #ff4444;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 180px;
+                min-width: 180px;
             }
+            
+            .canvas-wrapper {
+                width: 90%;
+            }
+        }
+
+        @media (max-width: 768px) {
             .main-area {
                 flex-direction: column;
             }
-            .editor-content { flex-direction: column; align-items: stretch; gap: 12px; }
-            .canvas-area { max-width: 100vw; }
-            .canvas { max-width: 98vw; max-height: 40vw; }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+                flex-direction: row;
+                overflow-x: auto;
+                gap: 16px;
+                padding: 16px;
+            }
+            
+            .sidebar-group {
+                min-width: 200px;
+                flex-shrink: 0;
+            }
+            
+            .canvas-wrapper {
+                width: 95%;
+                max-width: none;
+            }
+            
+            .slide-nav {
+                max-width: 95vw;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            #slide-preview-bar {
+                max-width: 70vw;
+            }
+            
+            .zoom-controls {
+                flex-wrap: wrap;
+                gap: 4px;
+            }
         }
-        @media (max-width: 600px) {
-            .canvas { max-width: 100vw; max-height: 56vw; }
-            .sidebar, .rightbar { padding: 8px 2px; }
+
+        @media (max-width: 480px) {
+            .breadcrumbs {
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 8px 16px;
+            }
+            
+            .right-breadcrumb-btns {
+                margin-right: 0;
+                gap: 8px;
+            }
+            
+            .right-breadcrumb-btns button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .slide-nav {
+                padding: 12px 16px;
+                bottom: 10px;
+            }
+            
+            .slide-thumb {
+                width: 60px;
+                height: 38px;
+            }
         }
-        .canvas-gif-overlay {
-            pointer-events: none;
-            z-index: 50;
-            position: absolute;
+
+        /* Animation Keyframes */
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Utility Classes */
+        .fade-in {
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Canvas Scaling */
+        .canvas-wrapper.scaled {
+            transform-origin: center center;
         }
     </style>
+
+    <style>
+/* Enhanced save button with loading state */
+#save-btn.saving {
+    background: #888 !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+}
+
+#save-btn.saving:before {
+    content: '⏳ ';
+    margin-right: 4px;
+}
+
+/* Custom prompt styling (if you want to enhance the browser prompt) */
+.custom-prompt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-prompt {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 16px 64px rgba(0,0,0,0.2);
+}
+
+.custom-prompt h3 {
+    margin-top: 0;
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+.custom-prompt textarea {
+    width: 100%;
+    height: 80px;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.custom-prompt textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.custom-prompt-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    justify-content: flex-end;
+}
+
+.custom-prompt-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.custom-prompt-buttons .save-btn {
+    background: var(--primary);
+    color: white;
+}
+
+.custom-prompt-buttons .save-btn:hover {
+    background: #1e5f3f;
+}
+
+.custom-prompt-buttons .cancel-btn {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.custom-prompt-buttons .cancel-btn:hover {
+    background: #e74c3c;
+    color: white;
+}
+</style>
 </head>
+
 <body>
-        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <!-- Firebase Configuration -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-<script>
-    // Add this before your main script logic
-    const firebaseConfig = {
-        apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
-        authDomain: "edutaktika.firebaseapp.com",
-        databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
-        projectId: "edutaktika",
-        storageBucket: "edutaktika.appspot.com",
-        messagingSenderId: "676848575316",
-        appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
-        measurementId: "G-X3GT5TNN87"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
-</script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+            authDomain: "edutaktika.firebaseapp.com",
+            databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+            projectId: "edutaktika",
+            storageBucket: "edutaktika.appspot.com",
+            messagingSenderId: "676848575316",
+            appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+            measurementId: "G-X3GT5TNN87"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+    </script>
 
-
-
+    <!-- Header/Breadcrumbs -->
     <div class="breadcrumbs">
         <div style="display:flex;align-items:center;gap:12px;">
-            <button id="burger-menu-btn" style="background:none;border:none;padding:0 10px 0 0;cursor:pointer;font-size:1.7rem;color:#232946;outline:none;">
+            <button id="burger-menu-btn" aria-label="Open menu">
                 <i class="fa fa-bars"></i>
             </button>
-            <span class="logo" style="font-weight:bold;font-size:1.2rem;">Eduktaktaktika</span>
+            <span class="logo">Edutaktika</span>
         </div>
-        <span class="right-breadcrumb-btns">
+        
+        <div class="right-breadcrumb-btns">
             <button id="save-btn"><i class="fa fa-save"></i> Save</button>
             <button id="export-btn"><i class="fa fa-download"></i> Export</button>
             <button id="import-btn"><i class="fa fa-upload"></i> Import</button>
             <button id="present-btn"><i class="fa fa-play"></i> Present</button>
-        </span>
-        <div id="burger-dropdown" style="display:none;position:absolute;top:54px;left:16px;min-width:160px;background:#fff;border-radius:8px;box-shadow:0 2px 8px #0002;padding:10px 0;z-index:100;">
-            <a href="#" id="burger-export" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;"><i class="fa fa-download"></i> Export</a>
-            <a href="#" id="burger-import" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;"><i class="fa fa-upload"></i> Import</a>
-            <a href="#" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;">Home</a>
-            <a href="#" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;">My Presentations</a>
-            <a href="#" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;">Settings</a>
+        </div>
+        
+        <div id="burger-dropdown">
+            <a href="#" id="burger-export"><i class="fa fa-download"></i> Export</a>
+            <a href="#" id="burger-import"><i class="fa fa-upload"></i> Import</a>
+            <a href="homepage.html"><i class="fa fa-home"></i> Home</a>
+            <a href="#"><i class="fa fa-presentation-screen"></i> My Quizzes</a>
+            <a href="#"><i class="fa fa-cog"></i> Settings</a>
         </div>
     </div>
 
-    <script>
-    // Burger menu Export/Import logic
-    document.getElementById('burger-export').onclick = function(e) {
-        e.preventDefault();
-        document.getElementById('export-btn').click();
-        document.getElementById('burger-dropdown').style.display = 'none';
-    };
-    document.getElementById('burger-import').onclick = function(e) {
-        e.preventDefault();
-        document.getElementById('import-btn').click();
-        document.getElementById('burger-dropdown').style.display = 'none';
-    };
-    // Burger menu dropdown logic
-    const burgerBtn = document.getElementById('burger-menu-btn');
-    const burgerDropdown = document.getElementById('burger-dropdown');
-    burgerBtn.addEventListener('click', function(e) {
-        burgerDropdown.style.display = burgerDropdown.style.display === 'none' || burgerDropdown.style.display === '' ? 'block' : 'none';
-        e.stopPropagation();
-    });
-    document.addEventListener('click', function(e) {
-        if (burgerDropdown.style.display === 'block' && !burgerDropdown.contains(e.target) && e.target !== burgerBtn) {
-            burgerDropdown.style.display = 'none';
-        }
-    });
-    </script>
-
+    <!-- Main Editor Layout -->
     <div class="editor-layout">
         <div class="main-area">
+            <!-- Sidebar -->
             <aside class="sidebar">
                 <div class="sidebar-group">
-                    <div style="display:flex;align-items:center;justify-content:space-between;">
-                        <h4 class="sidebar-label" style="margin-bottom:0;">Elements</h4>
-                        <p id="see-all-elements-btn" style="font-size:0.95em;cursor:pointer;">See all</p>
-                    </div>
-                    <div class="elements-library-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
-                    <input type="file" id="element-upload" accept="image/*,.json" style="margin-top:10px; display:none;" />
-                    <button id="upload-element-btn" style="display:none;">Upload Element</button>
-                </div>
-                <div class="sidebar-group">
-    <div class="sidebar-label">Games</div>
-    <button id="add-game-btn">Add a Game</button>
-</div>
-                <div class="sidebar-group">
-                    <div class="sidebar-label">Text</div>
-                    <button class="add-headline">Headline</button>
-                    <button class="add-body">Body Text</button>
-                </div>
-                <div class="sidebar-group">
-                    <div class="sidebar-label">Images</div>
-                    <button class="upload-img">Upload</button>
-                    <button class="img-url" style="display: none;">From URL</button>
-                </div>
-                <div class="sidebar-group">
-                    <div class="sidebar-label">Shapes</div>
-                    <button class="shape-btn" data-shape="rect">■</button>
-                    <button class="shape-btn" data-shape="rounded-rect">▭</button>
-                    <button class="shape-btn" data-shape="rounded-square">⬛</button>
-                    <button class="shape-btn" data-shape="circle">●</button>
-                    <button class="shape-btn" data-shape="ellipse">⬭</button>
-                    <button class="shape-btn" data-shape="star">★</button>
-                    <button class="shape-btn" data-shape="triangle">▲</button>
-                    <button class="shape-btn" data-shape="pentagon">⬟</button>
-                    <button class="shape-btn" data-shape="hexagon">⬢</button>
-                    <button class="shape-btn" data-shape="line">/</button>
-                    <button class="shape-btn" data-shape="arrow">➔</button>
-                </div>
-                <div class="sidebar-group">
-                    <div class="sidebar-label">Background</div>
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
-                        <input type="color" class="bg-color-input" title="Background Color" style="width:28px;height:28px;border:none;background:none;padding:0;">
-                        <input type="text" class="bg-color-text" value="#fff" style="width:70px;font-size:1rem;padding:4px 6px;border-radius:4px;border:1px solid #ccc;">
-                    </div>
-                    <button class="bg-url" style="display: none;">From URL</button>
+                    <div class="sidebar-label">Games & Activities</div>
+                    <button id="add-game-btn">
+                        <i class="fa fa-gamepad"></i> Add Game
+                    </button>
                 </div>
             </aside>
+
+            <!-- Canvas Area -->
             <div class="editor-content">
                 <div class="canvas-area">
                     <div class="canvas-wrapper">
                         <canvas id="canvas"></canvas>
                     </div>
                 </div>
-                <aside class="rightbar">
-                    <label>Position</label>
-                    <div class="position-btns">
-                        <button title="Align Left"><i class="fa fa-align-left"></i></button>
-                        <button title="Align Center"><i class="fa fa-align-center"></i></button>
-                        <button title="Align Right"><i class="fa fa-align-right"></i></button>
-                        <button title="Align Top"><i class="fa fa-arrow-up"></i></button>
-                        <button title="Align Middle"><i class="fa fa-arrows-alt-v"></i></button>
-                        <button title="Align Bottom"><i class="fa fa-arrow-down"></i></button>
-                    </div>
-                    
-                    <div class="layer-btns" style="display:none;">
-                        <button title="Send Backward"><i class="fa fa-arrow-down"></i></button>
-                        <button title="Bring Forward"><i class="fa fa-arrow-up"></i></button>
-                        <button title="Delete"><i class="fa fa-trash"></i></button>
-                    </div>
-                    <div class="sidebar-group" id="layers-panel-group">
-                        <div class="sidebar-label">Layers</div>
-                        <ul id="layers-list" style="list-style:none;padding:0;margin:0;max-height:220px;overflow:auto;"></ul>
-                    </div>
-                    <label>Text</label>
-                    <div>
-                        <select class="font-family">
-                            <option>Inter</option>
-                            <option>Arial</option>
-                            <option>Times</option>
-                        </select>
-                        <input type="number" class="font-size" value="24" min="8" max="120" style="width:50px;">
-                    </div>
-                    <div class="text-btns">
-                        <button class="bold-btn"><b>B</b></button>
-                        <button class="italic-btn"><i>I</i></button>
-                        <button class="underline-btn"><u>U</u></button>
-                        <input type="color" class="color-input" title="Text Color" style="width:28px; height:28px; border:none; background:none; padding:0; margin-right:4px; display:none;">
-                        <input type="color" class="shape-color-input" title="Shape Color" style="width:28px; height:28px; border:none; background:none; padding:0; display:none;">
-                    </div>
-                    <div class="align-btns">
-                        <button class="align-left"><i class="fa fa-align-left"></i></button>
-                        <button class="align-center"><i class="fa fa-align-center"></i></button>
-                        <button class="align-right"><i class="fa fa-align-right"></i></button>
-                        <button class="align-justify"><i class="fa fa-align-justify"></i></button>
-                    </div>
-                    <div class="undo-redo-bar" style="margin-top:24px;">
-                        <button id="undo-btn"><i class="fa fa-undo"></i> Undo</button>
-                        <button id="redo-btn"><i class="fa fa-redo"></i> Redo</button>
-                    </div>
-                    
-                </aside>
             </div>
         </div>
     </div>
 
+    <!-- Slide Navigation -->
+    <div class="slide-nav">
+        <div id="slide-preview-bar"></div>
+        <span id="slide-indicator">Slide 1/1</span>
+        <div class="zoom-controls">
+            <label for="canvas-scale">Zoom:</label>
+            <input type="range" id="canvas-scale" min="0.1" max="1" step="0.01" value="0.9">
+            <span id="canvas-scale-value">80%</span>
+            <button id="reset-zoom-btn" title="Reset Zoom">
+                <i class="fa fa-refresh"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Game Selection Modal -->
+    <div id="game-modal">
+        <div class="fade-in">
+            <h2><i class="fa fa-gamepad"></i> Choose a Game</h2>
+            <button class="game-option" data-game="../Games/Quiz/game2.html">
+                <i class="fa fa-puzzle-piece"></i> Fraction Match Game
+            </button>
+            <button class="game-option" data-game="../Games/Quiz/game1.html">
+                <i class="fa fa-drag-left-right"></i> Drag & Drop Math Quiz
+            </button>
+            <button class="cancel-button" onclick="document.getElementById('game-modal').style.display='none'">
+                <i class="fa fa-times"></i> Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
     <script>
+        // Global Variables
+        let slides = [];
+        let currentSlide = 0;
+        let gameUrl = null;
+        let gameSlideIndex = null;
+        let lastDescription = "";
+        let isAutoSaveEnabled = true;
+        let autoSaveInterval = 30000; // 30 seconds
+        let autoSaveTimeout;
+        let lastCanvasState = '';
 
-
-document.getElementById('upload-element-btn').onclick = function() {
-    const input = document.getElementById('element-upload');
-    const file = input.files[0];
-    if (!file) return alert('Choose a file!');
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        // For images, store as dataURL; for JSON, store as is
-        let type = file.type.startsWith('image/') ? 'image' : 'json';
-        let data = e.target.result;
-        if (type === 'json') {
-            try { data = JSON.parse(data); } catch { return alert('Invalid JSON'); }
-        }
-        db.ref('elements').push({
-            type,
-            data,
-            name: file.name,
-            uploaded: Date.now()
-        }, () => alert('Element uploaded!'));
-    };
-    reader.readAsDataURL(file);
-};
-
-    function showElementsLibrary() {
-        const list = document.querySelector('.elements-library-list');
-        list.innerHTML = '';
-        db.ref('elements').orderByChild('uploaded').limitToLast(3).once('value', snap => {
-            snap.forEach(child => {
-                const el = child.val();
-                const btn = document.createElement('div');
-                btn.style = 'width:60px;height:54px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
-                if (el.type === 'image') {
-                    btn.innerHTML = `<img src="${el.data}" style="max-width:60px;max-height:54px;">`;
-                } else if (el.type === 'json') {
-                    btn.innerHTML = `<span style="font-size:2rem;">🧩</span>`;
-                }
-                btn.title = el.name;
-                btn.onclick = function() {
-                    if (el.type === 'image') {
-                        fabric.Image.fromURL(el.data, function(img) {
-                            img.set({ left: 100, top: 100, scaleX: 0.5, scaleY: 0.5 });
-                            canvas.add(img);
-                            canvas.setActiveObject(img);
-                            canvas.requestRenderAll();
-                        });
-                    } else if (el.type === 'json') {
-                        fabric.util.enlivenObjects([el.data], function(objects) {
-                            if (objects[0]) {
-                                objects[0].set({ left: 100, top: 100 });
-                                canvas.add(objects[0]);
-                                canvas.setActiveObject(objects[0]);
-                                canvas.requestRenderAll();
-                            }
-                        });
-                    }
-                };
-                list.appendChild(btn);
-            });
+        // Initialize Fabric.js Canvas
+        const canvas = new fabric.Canvas('canvas', {
+            backgroundColor: '#fff',
+            width: 800,
+            height: 450
         });
-    }
-    showElementsLibrary();
 
-    // See All Elements Modal (shows all images from 'elements' node)
-    function showAllElementsModal() {
-        db.ref('elements').orderByChild('uploaded').once('value', snap => {
-            const elements = [];
-            snap.forEach(child => {
-                const val = child.val();
-                // Only include images
-                if (val.type === 'image') {
-                    elements.push({ key: child.key, ...val });
-                }
-            });
-            elements.reverse(); // Show most recent first
-            // Modal HTML
-            let modal = document.getElementById('allElementsModal');
-            if (!modal) {
-                modal = document.createElement('div');
-                modal.id = 'allElementsModal';
-                modal.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;display:flex;align-items:center;justify-content:center;';
-                modal.innerHTML = `
-                    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:600px;width:96vw;max-height:90vh;overflow:auto;box-shadow:0 4px 24px #0002;position:relative;">
-                        <h3 style="margin-top:0;margin-bottom:18px;">All Images</h3>
-                        <div id="allElementsList" style="display:flex;flex-wrap:wrap;gap:12px;"></div>
-                        <button id="closeAllElementsModal" style="position:absolute;top:10px;right:18px;background:#eee;color:#232946;border:none;padding:6px 18px;border-radius:8px;cursor:pointer;">Close</button>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-                document.getElementById('closeAllElementsModal').onclick = function() {
-                    modal.style.display = 'none';
-                };
+        // Utility Functions
+        function getParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+
+        // Burger Menu Functionality
+        const burgerBtn = document.getElementById('burger-menu-btn');
+        const burgerDropdown = document.getElementById('burger-dropdown');
+
+        burgerBtn.addEventListener('click', function(e) {
+            const isVisible = burgerDropdown.style.display === 'block';
+            burgerDropdown.style.display = isVisible ? 'none' : 'block';
+            e.stopPropagation();
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!burgerDropdown.contains(e.target) && e.target !== burgerBtn) {
+                burgerDropdown.style.display = 'none';
             }
-            // Render images in the modal
-            const listDiv = modal.querySelector('#allElementsList');
-            listDiv.innerHTML = '';
-            elements.forEach(el => {
-                const btn = document.createElement('div');
-                btn.style = 'width:60px;height:54px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
-                btn.innerHTML = `<img src="${el.data}" style="max-width:60px;max-height:54px;">`;
-                btn.title = el.name;
-                btn.onclick = function() {
-                    fabric.Image.fromURL(el.data, function(img) {
-                        img.set({ left: 100, top: 100, scaleX: 0.5, scaleY: 0.5 });
-                        canvas.add(img);
-                        canvas.setActiveObject(img);
-                        canvas.requestRenderAll();
-                    });
-                    modal.style.display = 'none';
-                };
-                listDiv.appendChild(btn);
-            });
-            modal.style.display = 'flex';
         });
-    }
-    document.getElementById('see-all-elements-btn').onclick = showAllElementsModal;
-    
-</script>
-    
-    <script>
-   
-// Helper to get URL parameters
-function getParam(name) {
-    const url = new URL(window.location.href);
-    return url.searchParams.get(name);
-}
 
-
-// Initialize Fabric.js canvas
-const canvas = new fabric.Canvas('canvas', {
-    backgroundColor: '#fff',
-    width: 1280,
-    height: 720
-});
-
-function addDraggableGifOverlay(gifUrl, left = 100, top = 100, width = 200, height = 200) {
-    const wrapper = document.querySelector('.canvas-wrapper');
-    const img = document.createElement('img');
-    img.src = gifUrl;
-    img.className = 'canvas-gif-overlay';
-    img.style.position = 'absolute';
-    img.style.left = left + 'px';
-    img.style.top = top + 'px';
-    img.style.width = width + 'px';
-    img.style.height = height + 'px';
-    img.style.zIndex = 50;
-    img.style.cursor = 'move';
-    img.style.pointerEvents = 'auto';
-
-    // Drag logic
-    let dragging = false, offsetX = 0, offsetY = 0;
-    img.addEventListener('mousedown', function(e) {
-        dragging = true;
-        offsetX = e.clientX - img.offsetLeft;
-        offsetY = e.clientY - img.offsetTop;
-        img.style.opacity = '0.7';
-        e.preventDefault();
-    });
-    document.addEventListener('mousemove', function(e) {
-        if (dragging) {
-            img.style.left = (e.clientX - offsetX) + 'px';
-            img.style.top = (e.clientY - offsetY) + 'px';
-        }
-    });
-    document.addEventListener('mouseup', function() {
-        if (dragging) {
-            dragging = false;
-            img.style.opacity = '1';
-        }
-    });
-
-    // Simple resize handle (bottom-right corner)
-    const handle = document.createElement('div');
-    handle.style.position = 'absolute';
-    handle.style.right = '0';
-    handle.style.bottom = '0';
-    handle.style.width = '16px';
-    handle.style.height = '16px';
-    handle.style.background = '#b39ddb';
-    handle.style.cursor = 'nwse-resize';
-    handle.style.zIndex = '51';
-    img.appendChild(handle);
-
-    let resizing = false, startX = 0, startY = 0, startW = 0, startH = 0;
-    handle.addEventListener('mousedown', function(e) {
-        resizing = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        startW = img.offsetWidth;
-        startH = img.offsetHeight;
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    document.addEventListener('mousemove', function(e) {
-        if (resizing) {
-            img.style.width = (startW + (e.clientX - startX)) + 'px';
-            img.style.height = (startH + (e.clientY - startY)) + 'px';
-        }
-    });
-    document.addEventListener('mouseup', function() {
-        if (resizing) {
-            resizing = false;
-        }
-    });
-
-    wrapper.appendChild(img);
-}
-
-function overlayGifsOnCanvas() {
-    document.querySelectorAll('.canvas-gif-overlay').forEach(el => el.remove());
-    const wrapper = document.querySelector('.canvas-wrapper');
-    if (!wrapper) return;
-
-    canvas.getObjects().forEach(obj => {
-        if (
-            obj.type === 'image' &&
-            obj._element &&
-            obj._element.src &&
-            (obj._element.src.includes('.gif') || obj._element.src.startsWith('data:image/gif'))
-        ) {
-            const rect = obj.getBoundingRect();
-            const left = rect.left;
-            const top = rect.top;
-            const width = rect.width;
-            const height = rect.height;
-
-            // Make static image transparent but interactive
-            obj.opacity = 0;
-            // obj.visible = false; // REMOVE THIS LINE
-
-            // Add animated overlay
-            const img = document.createElement('img');
-            img.src = obj._element.src;
-            img.className = 'canvas-gif-overlay';
-            img.style.position = 'absolute';
-            img.style.left = left + 'px';
-            img.style.top = top + 'px';
-            img.style.width = width + 'px';
-            img.style.height = height + 'px';
-            img.style.pointerEvents = 'none';
-            img.style.zIndex = 50;
-            wrapper.appendChild(img);
-
-            canvas.requestRenderAll();
-        }
-    });
-}
-canvas.on('object:added', overlayGifsOnCanvas);
-canvas.on('object:modified', overlayGifsOnCanvas);
-canvas.on('object:removed', overlayGifsOnCanvas);
-canvas.on('after:render', overlayGifsOnCanvas);
-
-
-
-
-// Layer Logic
-function updateLayersPanel() {
-    const list = document.getElementById('layers-list');
-    if (!list) return;
-    list.innerHTML = '';
-    // Get all objects in reverse order (top-most first)
-    const objects = canvas.getObjects().slice().reverse();
-    objects.forEach((obj, idx) => {
-        const li = document.createElement('li');
-        li.style = 'padding:6px 8px;cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:1px solid #eee;font-size:1em;';
-        // Show a simple icon for type
-        let icon = '';
-        if (obj.type === 'i-text') icon = '🅣';
-        else if (obj.type === 'image') icon = obj._element && obj._element.src && obj._element.src.endsWith('.gif') ? '🖼️ (GIF)' : '🖼️';
-        else if (obj.type === 'rect') icon = '▭';
-        else if (obj.type === 'circle') icon = '◯';
-        else if (obj.type === 'polygon') icon = '⬟';
-        else if (obj.type === 'triangle') icon = '▲';
-        else if (obj.type === 'ellipse') icon = '⬭';
-        else if (obj.type === 'line') icon = '／';
-        else icon = '🔲';
-
-        li.innerHTML = `<span>${icon}</span> <span style="flex:1;">${obj.type.charAt(0).toUpperCase() + obj.type.slice(1)}</span>`;
-
-        // Highlight if selected
-        if (canvas.getActiveObject() === obj) {
-            li.style.background = '#e3f0ff';
-            li.style.fontWeight = 'bold';
-        }
-
-        // Click to select
-        li.onclick = () => {
-            canvas.setActiveObject(obj);
-            canvas.requestRenderAll();
-            updateLayersPanel();
+        // Burger menu actions
+        document.getElementById('burger-export').onclick = function(e) {
+            e.preventDefault();
+            document.getElementById('export-btn').click();
+            burgerDropdown.style.display = 'none';
         };
 
-        // Add delete button
-        const delBtn = document.createElement('button');
-        delBtn.textContent = '🗑️';
-        delBtn.style = 'margin-left:8px;border:none;background:none;cursor:pointer;font-size:1em;';
-        delBtn.onclick = (e) => {
-            e.stopPropagation();
-            canvas.remove(obj);
-            updateLayersPanel();
+        document.getElementById('burger-import').onclick = function(e) {
+            e.preventDefault();
+            document.getElementById('import-btn').click();
+            burgerDropdown.style.display = 'none';
         };
-        li.appendChild(delBtn);
 
-        // Move up/down buttons
-        const upBtn = document.createElement('button');
-        upBtn.textContent = '↑';
-        upBtn.style = 'margin-left:4px;border:none;background:none;cursor:pointer;font-size:1em;';
-        upBtn.onclick = (e) => {
-            e.stopPropagation();
-            canvas.bringForward(obj);
-            updateLayersPanel();
-        };
-        li.appendChild(upBtn);
+        // Canvas Scaling
+        const scaleInput = document.getElementById('canvas-scale');
+        const scaleValue = document.getElementById('canvas-scale-value');
+        const canvasWrapper = document.querySelector('.canvas-wrapper');
 
-        const downBtn = document.createElement('button');
-        downBtn.textContent = '↓';
-        downBtn.style = 'margin-left:2px;border:none;background:none;cursor:pointer;font-size:1em;';
-        downBtn.onclick = (e) => {
-            e.stopPropagation();
-            canvas.sendBackwards(obj);
-            updateLayersPanel();
-        };
-        li.appendChild(downBtn);
-
-        list.appendChild(li);
-    });
-}
-
-// Update panel on canvas changes
-canvas.on('object:added', updateLayersPanel);
-canvas.on('object:removed', updateLayersPanel);
-canvas.on('object:modified', updateLayersPanel);
-canvas.on('selection:created', updateLayersPanel);
-canvas.on('selection:updated', updateLayersPanel);
-canvas.on('selection:cleared', updateLayersPanel);
-
-// Initial call
-updateLayersPanel();
-
-
-document.addEventListener('mousedown', function(e) {
-    const canvasWrapper = document.querySelector('.canvas-wrapper');
-    const rightbar = document.querySelector('.rightbar');
-    // Only unselect if click is outside both the canvas and the rightbar
-    if (
-        !canvasWrapper.contains(e.target) &&
-        !(rightbar && rightbar.contains(e.target))
-    ) {
-        if (canvas.getActiveObject()) {
-            canvas.discardActiveObject();
-            canvas.requestRenderAll();
-            updateLayersPanel && updateLayersPanel();
+        function updateCanvasScale() {
+            const scale = parseFloat(scaleInput.value);
+            canvasWrapper.style.transform = `scale(${scale})`;
+            canvasWrapper.classList.add('scaled');
+            scaleValue.textContent = Math.round(scale * 100) + '%';
         }
-    }
-});
 
+        scaleInput.addEventListener('input', updateCanvasScale);
+        document.getElementById('reset-zoom-btn').onclick = function() {
+            scaleInput.value = 0.8;
+            updateCanvasScale();
+        };
 
-canvas.on('selection:created', updateFontSizeInput);
-canvas.on('selection:updated', updateFontSizeInput);
+        // Initialize scale
+        updateCanvasScale();
 
-function updateFontSizeInput() {
-    const obj = canvas.getActiveObject();
-    const fontSizeInput = document.querySelector('.font-size');
-    if (obj && obj.type === 'i-text' && fontSizeInput) {
-        // Get canvas zoom (from scale slider)
-        const zoom = parseFloat(document.getElementById('canvas-scale').value) || 1;
-        // Show the "visual" font size (fontSize * scaleY * zoom)
-        const visualFontSize = Math.round(obj.fontSize * obj.scaleY * zoom);
-        fontSizeInput.value = visualFontSize;
-        fontSizeInput.title = `Actual: ${obj.fontSize} × scaleY: ${obj.scaleY} × zoom: ${zoom}`;
-    }
-}
-
-        // Responsive canvas
+        // Responsive Canvas
         function resizeCanvas() {
             const wrapper = document.querySelector('.canvas-wrapper');
             const rect = wrapper.getBoundingClientRect();
@@ -774,1194 +839,1493 @@ function updateFontSizeInput() {
             canvas.calcOffset && canvas.calcOffset();
             canvas.renderAll();
         }
+
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
-        // Add text
-        function addText(type) {
-            const fontSizeInput = document.querySelector('.font-size');
-            let fontSize = type === 'headline' ? 36 : 24;
-            if (fontSizeInput && fontSizeInput.value) {
-                fontSize = parseInt(fontSizeInput.value);
-            }
-            const text = new fabric.IText(type === 'headline' ? 'Headline' : 'Body Text', {
-                left: 100,
-                top: 100,
-                fontSize: fontSize,
-                fontFamily: 'Inter',
-                fill: '#232946',
-                fontWeight: type === 'headline' ? 'bold' : 'normal',
-                underline: false,
-                scaleX: 1,
-                scaleY: 1
-            });
-            canvas.add(text).setActiveObject(text);
-        }
-        // Add shape
-        function addShape(shape) {
-            let obj;
-            switch(shape) {
-                case 'rect':
-                    obj = new fabric.Rect({ left: 150, top: 150, width: 120, height: 80, fill: '#b39ddb', rx: 0, ry: 0 });
-                    break;
-                case 'rounded-rect':
-                    obj = new fabric.Rect({ left: 180, top: 180, width: 140, height: 80, fill: '#b39ddb', rx: 20, ry: 20 });
-                    break;
-                case 'rounded-square':
-                    obj = new fabric.Rect({ left: 210, top: 210, width: 90, height: 90, fill: '#b39ddb', rx: 20, ry: 20 });
-                    break;
-                case 'circle':
-                    obj = new fabric.Circle({ left: 200, top: 200, radius: 50, fill: '#b39ddb' });
-                    break;
-                case 'ellipse':
-                    obj = new fabric.Ellipse({ left: 220, top: 220, rx: 60, ry: 40, fill: '#b39ddb' });
-                    break;
-                case 'star':
-                    obj = new fabric.Polygon([
-                        {x:50,y:0},{x:61,y:35},{x:98,y:35},{x:68,y:57},{x:79,y:91},{x:50,y:70},{x:21,y:91},{x:32,y:57},{x:2,y:35},{x:39,y:35}
-                    ], { left: 250, top: 200, fill: '#b39ddb', scaleX:0.7, scaleY:0.7 });
-                    break;
-                case 'triangle':
-                    obj = new fabric.Triangle({ left: 300, top: 200, width: 100, height: 100, fill: '#b39ddb' });
-                    break;
-                case 'pentagon':
-                    obj = new fabric.Polygon([
-                        {x:50,y:0},{x:98,y:36},{x:79,y:91},{x:21,y:91},{x:2,y:36}
-                    ], { left: 350, top: 200, fill: '#b39ddb', scaleX:1, scaleY:1 });
-                    break;
-                case 'hexagon':
-                    obj = new fabric.Polygon([
-                        {x:50,y:0},{x:98,y:25},{x:98,y:75},{x:50,y:100},{x:2,y:75},{x:2,y:25}
-                    ], { left: 400, top: 200, fill: '#b39ddb', scaleX:1, scaleY:1 });
-                    break;
-                case 'line':
-                    obj = new fabric.Line([100, 100, 250, 100], { left: 100, top: 100, stroke: '#b39ddb', strokeWidth: 5 });
-                    break;
-                case 'arrow':
-                    // Arrow as a line with a triangle head
-                    const line = new fabric.Line([100, 100, 220, 100], { stroke: '#b39ddb', strokeWidth: 5, selectable: false });
-                    const arrowHead = new fabric.Triangle({ left: 220, top: 95, width: 20, height: 20, angle: 90, fill: '#b39ddb', selectable: false });
-                    obj = new fabric.Group([line, arrowHead], { left: 100, top: 100 });
-                    break;
-            }
-            if(obj) canvas.add(obj).setActiveObject(obj);
-        }
-        // Add image
-        function addImage(url) {
-            fabric.Image.fromURL(url, function(img) {
-                img.set({ left: 100, top: 100, scaleX: 0.5, scaleY: 0.5 }); 
-                canvas.add(img).setActiveObject(img);
-            });
-        }
-        // Upload image
-        document.querySelector('.upload-img').onclick = function() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    addImage(e.target.result);
-                };
-                reader.readAsDataURL(file);
-            };
-            input.click();
-        };
-        // Image from URL
-        document.querySelector('.img-url').onclick = function() {
-            const url = prompt('Enter image URL:');
-            if (url) addImage(url);
-        };
-        // Add text events
-        document.querySelector('.add-headline').onclick = () => addText('headline');
-        document.querySelector('.add-body').onclick = () => addText('body');
-        // Add shape events
-        document.querySelectorAll('.shape-btn').forEach(btn => {
-            btn.onclick = () => addShape(btn.dataset.shape);
-        });
-        // Background color controls
-        const bgColorInput = document.querySelector('.bg-color-input');
-        const bgColorText = document.querySelector('.bg-color-text');
-        // Sync color input and text
-        function setBgColor(color) {
-            canvas.setBackgroundColor(color, canvas.renderAll.bind(canvas));
-            // Try to get the hex value for the color
-            let hex = color;
-            try {
-                hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(color)).toHex();
-            } catch (e) {
-                // fallback: try to use the color as is
-                hex = color;
-            }
-            bgColorInput.value = hex;
-            bgColorText.value = color;
-            // Also update the color picker background to match
-            bgColorInput.style.background = hex;
-        }
-        bgColorInput.addEventListener('input', function() {
-            setBgColor(this.value);
-        });
-        bgColorText.addEventListener('change', function() {
-            setBgColor(this.value);
-        });
-        // Keep color input in sync with background changes (e.g. on import)
-        function syncBgColorInputs() {
-            let color = canvas.backgroundColor || '#fff';
-            let hex = color;
-            try {
-                hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(color)).toHex();
-            } catch (e) {
-                hex = color;
-            }
-            bgColorInput.value = hex;
-            bgColorText.value = color;
-            // Also update the color picker background to match
-            bgColorInput.style.background = hex;
-        }
-        // Initialize with current background color
-        syncBgColorInputs();
-        // Also update on background change (e.g. after import)
-        canvas.on('background:changed', syncBgColorInputs);
-        // Patch Fabric.js setBackgroundColor to fire event
-        const origSetBackgroundColor = canvas.setBackgroundColor;
-        canvas.setBackgroundColor = function(color, callback) {
-            origSetBackgroundColor.call(this, color, callback);
-            this.fire('background:changed');
-        };
-        // Background from URL
-        document.querySelector('.bg-url').onclick = function() {
-            const url = prompt('Enter background image URL:');
-            if (url) {
-                fabric.Image.fromURL(url, function(img) {
-                    canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
-                        scaleX: canvas.width / img.width,
-                        scaleY: canvas.height / img.height
-                    });
-                });
-            }
-        };
-        // Position controls
-        document.querySelector('.position-btns').onclick = function(e) {
-            const btn = e.target.closest('button');
-            if (!btn) return;
-            const obj = canvas.getActiveObject();
-            if (!obj) return;
-            switch(btn.title) {
-                case 'Align Left': obj.set({ left: 0 }); break;
-                case 'Align Center': obj.set({ left: (canvas.width - obj.getScaledWidth())/2 }); break;
-                case 'Align Right': obj.set({ left: canvas.width - obj.getScaledWidth() }); break;
-                case 'Align Top': obj.set({ top: 0 }); break;
-                case 'Align Middle': obj.set({ top: (canvas.height - obj.getScaledHeight())/2 }); break;
-                case 'Align Bottom': obj.set({ top: canvas.height - obj.getScaledHeight() }); break;
-            }
-            canvas.renderAll();
-        };
-        // Layer controls
-        document.querySelector('.layer-btns').onclick = function(e) {
-            const btn = e.target.closest('button');
-            if (!btn) return;
-            const activeObjects = canvas.getActiveObjects();
-            if (!activeObjects || activeObjects.length === 0) return;
-            switch(btn.title) {
-                case 'Bring Forward':
-                    // Only bring forward the top-most selected object
-                    canvas.bringForward(activeObjects[activeObjects.length - 1]);
-                    break;
-                case 'Send Backward':
-                    // Only send backward the bottom-most selected object
-                    canvas.sendBackwards(activeObjects[0]);
-                    break;
-                case 'Delete':
-                    // Remove all selected objects
-                    activeObjects.forEach(obj => canvas.remove(obj));
-                    break;
-            }
-            // Keep the object selected after layer change (if not deleted)
-            canvas.discardActiveObject();
-            // If objects remain, reselect the first one
-            const remaining = canvas.getObjects().filter(obj => activeObjects.includes(obj));
-            if (remaining.length > 0) {
-                canvas.setActiveObject(remaining[0]);
-            }
-            canvas.renderAll();
-        };
-        // Text controls
-        document.querySelector('.font-family').onchange = function() {
-            const obj = canvas.getActiveObject();
-            if (obj && obj.type === 'i-text') {
-                obj.set({ fontFamily: this.value });
-                canvas.renderAll();
-            }
-        };
-        document.querySelector('.font-size').onchange = function() {
-            const obj = canvas.getActiveObject();
-            if (obj && obj.type === 'i-text') {
-                obj.set({ fontSize: parseInt(this.value), scaleY: 1 });
-                canvas.renderAll();
-            }
-        };
-        document.querySelector('.bold-btn').onclick = function() {
-            const obj = canvas.getActiveObject();
-            if (obj && obj.type === 'i-text') {
-                obj.set({ fontWeight: obj.fontWeight === 'bold' ? 'normal' : 'bold' });
-                canvas.renderAll();
-            }
-        };
-        document.querySelector('.italic-btn').onclick = function() {
-            const obj = canvas.getActiveObject();
-            if (obj && obj.type === 'i-text') {
-                obj.set({ fontStyle: obj.fontStyle === 'italic' ? 'normal' : 'italic' });
-                canvas.renderAll();
-            }
-        };
-        document.querySelector('.underline-btn').onclick = function() {
-            const obj = canvas.getActiveObject();
-            if (obj && obj.type === 'i-text') {
-                obj.set({ underline: !obj.underline });
-                canvas.renderAll();
-            }
-        };
-        const colorInput = document.querySelector('.color-input');
-        const shapeColorInput = document.querySelector('.shape-color-input');
 
-        // Show/hide color pickers based on selection
-        function updateColorPickers() {
-            const active = canvas.getActiveObject();
-            const activeGroup = canvas.getActiveObjects && canvas.getActiveObjects();
-            colorInput.style.display = 'none';
-            shapeColorInput.style.display = 'none';
-            // Multi-selection
-            if (activeGroup && activeGroup.length > 1) {
-                // If all selected are text, show text color picker; if all are shapes, show shape color picker; if mixed, show both
-                let allText = activeGroup.every(obj => obj.type === 'i-text');
-                let allShapes = activeGroup.every(obj => ['rect','circle','polygon','triangle','ellipse'].includes(obj.type));
-                let allLines = activeGroup.every(obj => obj.type === 'line');
-                let allArrows = activeGroup.every(obj => obj.type === 'group' && obj._objects && obj._objects.length === 2 && obj._objects[0].type === 'line' && obj._objects[1].type === 'triangle');
-                if (allText) {
-                    colorInput.style.display = '';
-                    let hex = activeGroup[0].fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(activeGroup[0].fill)).toHex() : '#232946';
-                    colorInput.value = hex;
-                    colorInput.style.background = hex;
-                } else if (allShapes) {
-                    shapeColorInput.style.display = '';
-                    let hex = activeGroup[0].fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(activeGroup[0].fill)).toHex() : '#b39ddb';
-                    shapeColorInput.value = hex;
-                    shapeColorInput.style.background = hex;
-                } else if (allLines || allArrows) {
-                    shapeColorInput.style.display = '';
-                    let hex = allLines ? (activeGroup[0].stroke || '#b39ddb') : (activeGroup[0]._objects[0].stroke || '#b39ddb');
-                    try { hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(hex)).toHex(); } catch(e){}
-                    shapeColorInput.value = hex;
-                    shapeColorInput.style.background = hex;
-                } else {
-                    // Mixed selection: show shape color picker
-                    shapeColorInput.style.display = '';
-                    shapeColorInput.value = '#b39ddb';
-                    shapeColorInput.style.background = '#b39ddb';
-                }
-                return;
-            }
-            if (active) {
-                if (active.type === 'i-text') {
-                    colorInput.style.display = '';
-                    let hex = active.fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(active.fill)).toHex() : '#232946';
-                    colorInput.value = hex;
-                    colorInput.style.background = hex;
-                } else if (['rect','circle','polygon','triangle','ellipse'].includes(active.type)) {
-                    shapeColorInput.style.display = '';
-                    let hex = active.fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(active.fill)).toHex() : '#b39ddb';
-                    shapeColorInput.value = hex;
-                    shapeColorInput.style.background = hex;
-                } else if (active.type === 'line') {
-                    shapeColorInput.style.display = '';
-                    let hex = active.stroke || '#b39ddb';
-                    try { hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(hex)).toHex(); } catch(e){}
-                    shapeColorInput.value = hex;
-                    shapeColorInput.style.background = hex;
-                } else if (active.type === 'group' && active._objects && active._objects.length === 2 && active._objects[0].type === 'line' && active._objects[1].type === 'triangle') {
-                    // Arrow group
-                    shapeColorInput.style.display = '';
-                    let hex = active._objects[0].stroke || '#b39ddb';
-                    try { hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(hex)).toHex(); } catch(e){}
-                    shapeColorInput.value = hex;
-                    shapeColorInput.style.background = hex;
-                } else if (active.type === 'group') {
-                    // Generic group: use fill or stroke of first child
-                    shapeColorInput.style.display = '';
-                    const first = active._objects && active._objects[0];
-                    let hex = '#b39ddb';
-                    if (first && first.fill) {
-                        hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(first.fill)).toHex();
-                    } else if (first && first.stroke) {
-                        hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(first.stroke)).toHex();
-                    }
-                    shapeColorInput.value = hex;
-                    shapeColorInput.style.background = hex;
-                }
-            }
-        }
-        canvas.on('selection:created', updateColorPickers);
-        canvas.on('selection:updated', updateColorPickers);
-        canvas.on('selection:cleared', updateColorPickers);
-        // Also update on object modified (color change)
-        canvas.on('object:modified', updateColorPickers);
-
-        // Text color (color input)
-        colorInput.addEventListener('input', function() {
-            const obj = canvas.getActiveObject();
-            if (obj && obj.type === 'i-text') {
-                obj.set({ fill: this.value });
-                canvas.renderAll();
-                // Update color swatch
-                colorInput.style.background = this.value;
-            }
-        });
-        // Shape color (color input)
-        shapeColorInput.addEventListener('input', function() {
-            const activeGroup = canvas.getActiveObjects && canvas.getActiveObjects();
-            if (activeGroup && activeGroup.length > 1) {
-                activeGroup.forEach(obj => {
-                    if (['rect','circle','polygon','triangle','ellipse'].includes(obj.type)) {
-                        obj.set({ fill: this.value });
-                    } else if (obj.type === 'line') {
-                        obj.set({ stroke: this.value });
-                    } else if (obj.type === 'group' && obj._objects && obj._objects.length === 2 && obj._objects[0].type === 'line' && obj._objects[1].type === 'triangle') {
-                        obj._objects[0].set({ stroke: this.value });
-                        obj._objects[1].set({ fill: this.value });
-                    }
-                });
-                canvas.renderAll();
-                shapeColorInput.style.background = this.value;
-                return;
-            }
-            const obj = canvas.getActiveObject();
-            if (obj) {
-                if (['rect','circle','polygon','triangle','ellipse'].includes(obj.type)) {
-                    obj.set({ fill: this.value });
-                } else if (obj.type === 'line') {
-                    obj.set({ stroke: this.value });
-                } else if (obj.type === 'group' && obj._objects && obj._objects.length === 2 && obj._objects[0].type === 'line' && obj._objects[1].type === 'triangle') {
-                    obj._objects[0].set({ stroke: this.value });
-                    obj._objects[1].set({ fill: this.value });
-                } else if (obj.type === 'group' && obj._objects) {
-                    obj._objects.forEach(child => {
-                        if ('fill' in child) child.set({ fill: this.value });
-                        if ('stroke' in child && child.type === 'line') child.set({ stroke: this.value });
-                    });
-                }
-                canvas.renderAll();
-                shapeColorInput.style.background = this.value;
-            }
-        });
-        // Initialize color pickers on load
-        updateColorPickers();
-        // Text align
-        document.querySelector('.align-btns').onclick = function(e) {
-            const btn = e.target.closest('button');
-            if (!btn) return;
-            const obj = canvas.getActiveObject();
-            if (obj && obj.type === 'i-text') {
-                if (btn.classList.contains('align-left')) obj.set({ textAlign: 'left' });
-                if (btn.classList.contains('align-center')) obj.set({ textAlign: 'center' });
-                if (btn.classList.contains('align-right')) obj.set({ textAlign: 'right' });
-                if (btn.classList.contains('align-justify')) obj.set({ textAlign: 'justify' });
-                canvas.renderAll();
-                // Visually indicate selected align button
-                document.querySelectorAll('.align-btns button').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-            }
-        };
-        // Undo/Redo
-        let state = [], mods = 0;
-        function saveState() {
-            mods = 0;
-            state.push(JSON.stringify(canvas));
-        }
-        canvas.on('object:added', saveState);
-        canvas.on('object:modified', saveState);
-        canvas.on('object:removed', saveState);
-        document.getElementById('undo-btn').onclick = function() {
-            if (state.length > 1) {
-                state.pop();
-                canvas.loadFromJSON(state[state.length-1], canvas.renderAll.bind(canvas));
-            }
-        };
-        document.getElementById('redo-btn').onclick = function() {
-            // redo next time
-            alert('Redo not implemented.');
-        };
-        // Copy/Paste
-        let clipboard = null;
-        document.addEventListener('keydown', function(e) {
-            // Ctrl+C or Cmd+C
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
-                const activeGroup = canvas.getActiveObjects && canvas.getActiveObjects();
-                if (activeGroup && activeGroup.length > 1) {
-                    // Multi-selection: create an activeSelection and clone it
-                    const sel = new fabric.ActiveSelection(activeGroup, { canvas: canvas });
-                    sel.clone(function(cloned) {
-                        clipboard = cloned;
-                    });
-                } else {
-                    const active = canvas.getActiveObject();
-                    if (active) {
-                        active.clone(function(cloned) {
-                            clipboard = cloned;
-                        });
-                    }
-                }
-            }
-            // Ctrl+V or Cmd+V
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
-                if (clipboard) {
-                    clipboard.clone(function(clonedObj) {
-                        canvas.discardActiveObject();
-                        clonedObj.set({ left: (clonedObj.left || 0) + 30, top: (clonedObj.top || 0) + 30, evented: true });
-                        if (clonedObj.type === 'activeSelection') {
-                            // activeSelection needs to be ungrouped and added
-                            clonedObj.canvas = canvas;
-                            clonedObj.forEachObject(function(obj) {
-                                canvas.add(obj);
-                            });
-                            clonedObj.setCoords();
-                        } else {
-                            canvas.add(clonedObj);
-                        }
-                        canvas.setActiveObject(clonedObj);
-                        canvas.requestRenderAll();
-                    });
-                }
-            }
-        });
-
-// Save
-// ...existing code...
-
-// Store the last description globally
-let lastDescription = "";
-
-// Save
-document.getElementById('save-btn').onclick = async function() {
-    let quarter = getParam('quarter');
-    let name = getParam('name');
-    let subject = getParam('subject');
-    if (!name) {
-        name = prompt('Enter a Name for this quiz:', 'MyQuiz');
-        if (!name) return;
-        name = name.trim();
-        if (!name) return alert('Name cannot be empty.');
-    }
-    if (!quarter) {
-        quarter = prompt('Which quarter do you want to save this in? (1, 2, 3, or 4)', '1');
-        if (!quarter || !['1','2','3','4'].includes(quarter.trim())) return alert('Invalid quarter.');
-        quarter = quarter.trim();
-    }
-    if (!subject) {
-        subject = prompt('Enter subject (e.g. subject_math, subject_english, subject_science):', 'subject_math');
-        if (!subject) return alert('Subject is required.');
-        subject = subject.trim();
-    }
-    // Pre-fill prompt with lastDescription
-    let description = prompt('Enter a description for this quiz (optional):', lastDescription);
-    if (description !== null) description = description.trim();
-    if (description) lastDescription = description; // Update global
-
-    saveCurrentSlide(); // Make sure current slide is saved
-    const slidesJson = JSON.stringify(slides);
-
-    const user = firebase.auth().currentUser;
-    if (user) {
-        const teacherUID = user.uid;
-        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
-        const teacher = teacherSnap.val();
-        if (teacher && teacher.section) {
-            const section = teacher.section;
-            db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).set({
-                slides: slidesJson,
-                savedAt: new Date().toISOString(),
-                title: name,
-                quarter: quarter,
-                description: lastDescription, // Always use lastDescription
-                subject: subject
-            }, function(error) {
-                if (error) {
-                    alert('Error saving quiz: ' + error.message);
-                } else {
-                    alert('Quiz saved as "' + name + '" in Quarter ' + quarter + '!');
-                }
-            });
-        }
-    }
-};
-
-
-
-
-        // Present
-        document.getElementById('present-btn').onclick = function() {
-            window.open('present.html', '_blank');
-        };
-        // Export as JSON file
-        document.getElementById('export-btn').onclick = function() {
-            const json = JSON.stringify(canvas.toJSON(['selectable', 'evented', 'editable', 'lockMovementX', 'lockMovementY', 'lockScalingX', 'lockScalingY', 'lockRotation', 'hasControls', 'hasBorders', 'clipPath', 'data']));
-            const blob = new Blob([json], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = (prompt('Enter filename for export:', 'presentation') || 'presentation') + '.json';
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
-        };
-
-        // Import from JSON file
-        document.getElementById('import-btn').onclick = function() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json,application/json';
-            input.onchange = function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    try {
-                        const json = evt.target.result;
-                        canvas.loadFromJSON(json, function() {
-                            canvas.renderAll();
-                            alert('Presentation loaded! You can now save it.');
-                        });
-                    } catch (err) {
-                        alert('Invalid JSON file.');
-                    }
-                };
-                reader.readAsText(file);
-            };
-            input.click();
-        };
-    </script>
-
-<script>
-
-    // Initialize with one slide
-    function initSlides() {
-        if (slides.length === 0) {
-            slides.push(canvas.toJSON());
-            currentSlide = 0;
-            loadSlide(currentSlide); // <-- ensure canvas is synced
-        }
-        updateSlideIndicator();
-    }
-
-// Helper to get URL parameters
-function getParam(name) {
-    const url = new URL(window.location.href);
-    return url.searchParams.get(name);
-}
-
-const subject = getParam('subject');
-const quarter = getParam('quarter');
-const name = getParam('name');
-
-firebase.auth().onAuthStateChanged(async function(user) {
-    if (!user) return;
-    const teacherUID = user.uid;
-    const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
-    const teacher = teacherSnap.val();
-    const section = teacher && teacher.section ? teacher.section : null;
-    if (!section) return;
-
-    db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name)
-      .once('value', function(snapshot) {
-        if (snapshot.exists()) {
-            const data = snapshot.val();
-            if (data.slides) {
-                slides = JSON.parse(data.slides);
-                currentSlide = 0;
-                loadSlide(currentSlide);
-                updateSlidePreviewBar();
-                updateSlideIndicator();
-            } else {
-                // No slides in DB, initialize with a blank slide
-                slides = [canvas.toJSON()];
-                currentSlide = 0;
-                loadSlide(currentSlide);
-                updateSlidePreviewBar();
-                updateSlideIndicator();
-            }
-        } else {
-            // No quiz found, initialize with a blank slide
-            slides = [canvas.toJSON()];
-            currentSlide = 0;
-            loadSlide(currentSlide);
-            updateSlidePreviewBar();
-            updateSlideIndicator();
-        }
-    });
-});
-
-// Slides logic
-let slides = [];
-let currentSlide = 0;
-
-// Ensure at least one blank slide exists on first load
-window.addEventListener('DOMContentLoaded', function() {
-    if (!slides || slides.length === 0) {
-        slides = [canvas.toJSON()];
-        currentSlide = 0;
-        loadSlide(currentSlide);
-        updateSlidePreviewBar();
-        updateSlideIndicator();
-    }
-});
-// Create slide navigation UI
-const navBar = document.createElement('div');
-navBar.style = 'position:fixed; padding: 15px; width: 70%; justify-content: center; align-items: center; bottom:14px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:12px;';
-navBar.innerHTML = `
-    <div id="slide-preview-bar" style="
-        display:flex;
-        gap:10px;
-        align-items:center;
-        overflow-x:auto;
-        max-width: 60vw;
-        flex: 1 1 auto;
-        padding: 0 10px 0 0;
-    "></div>
-    <span id="slide-indicator" style="font-size:1.1em;font-weight:bold;margin-left:12px;">Slide 1/1</span>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-        <label for="canvas-scale" style="margin-left:8px;">Zoom:</label>
-        <input type="range" id="canvas-scale" min="0.1" max="1" step="0.01" value="0.8" style="width:120px;vertical-align:middle;">
-        <span id="canvas-scale-value" style="font-size:1em;">80%</span>
-        <button id="reset-zoom-btn" title="Reset Zoom" style="background:none;border:none;cursor:pointer;font-size:1.3em;vertical-align:middle;">
-            <i class="fa fa-rotate-right"></i>
-        </button>
-    </div>
-`;
-document.body.appendChild(navBar);
-
-const scaleInput = document.getElementById('canvas-scale');
-const scaleValue = document.getElementById('canvas-scale-value');
-const canvasWrapper = document.querySelector('.canvas-wrapper');
-
-// Set initial zoom to 80%
-scaleInput.value = 0.8;
-
-function updateCanvasScale() {
-    const scale = parseFloat(scaleInput.value);
-    canvasWrapper.style.transform = `scale(${scale})`;
-    canvasWrapper.style.transformOrigin = 'center center';
-    scaleValue.textContent = Math.round(scale * 100) + '%';
-    updateFontSizeInput();
-}
-
-scaleInput.addEventListener('input', updateCanvasScale);
-
-// Call on load and after window resize
-window.addEventListener('resize', updateCanvasScale);
-updateCanvasScale();
-
-document.getElementById('reset-zoom-btn').onclick = function() {
-    scaleInput.value = 0.8;
-    updateCanvasScale();
-};
-
-
-function updateSlidePreviewBar() {
-    const bar = document.getElementById('slide-preview-bar');
-    bar.innerHTML = '';
-    slides.forEach((slide, idx) => {
-        const thumb = document.createElement('div');
-        thumb.draggable = true; // Enable drag
-        thumb.style = `
-            width: 70px; height: 44px; background: #fff; border-radius: 6px; box-shadow: 0 2px 8px #0001;
-            border: ${idx === currentSlide ? '2px solid var(--primary)' : '1px solid #ccc'};
-            display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative;
-            overflow: hidden; margin-right:4px;
-        `;
-
-        // Drag events for reordering
-        thumb.ondragstart = (e) => {
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', idx);
-            thumb.style.opacity = '0.5';
-        };
-        thumb.ondragend = () => {
-            thumb.style.opacity = '1';
-        };
-        thumb.ondragover = (e) => {
-            e.preventDefault();
-            thumb.style.borderColor = 'var(--accent)';
-        };
-        thumb.ondragleave = () => {
-            thumb.style.borderColor = idx === currentSlide ? 'var(--primary)' : '#ccc';
-        };
-        thumb.ondrop = (e) => {
-            e.preventDefault();
-            const fromIdx = Number(e.dataTransfer.getData('text/plain'));
-            if (fromIdx !== idx) {
-                const moved = slides.splice(fromIdx, 1)[0];
-                slides.splice(idx, 0, moved);
-                if (currentSlide === fromIdx) currentSlide = idx;
-                else if (currentSlide > fromIdx && currentSlide <= idx) currentSlide--;
-                else if (currentSlide < fromIdx && currentSlide >= idx) currentSlide++;
-                loadSlide(currentSlide);
-                updateSlideIndicator();
-            }
-        };
-
-        // Render a mini canvas for preview
-        const canvasEl = document.createElement('canvas');
-        canvasEl.width = 70;
-        canvasEl.height = 44;
-        thumb.appendChild(canvasEl);
-
-        const previewCanvas = new fabric.StaticCanvas(canvasEl, { backgroundColor: '#fff', width: 70, height: 44 });
-        previewCanvas.loadFromJSON(slide, function() {
-            const scale = Math.min(70 / 1280, 44 / 720);
-            previewCanvas.setZoom(scale);
-            previewCanvas.renderAll();
-        });
-
-        // Slide number indicator
-        const num = document.createElement('span');
-        num.textContent = idx + 1;
-        num.style = 'position:absolute;top:2px;right:6px;font-size:0.85em;color:#2e8b57;font-weight:bold;';
-        thumb.appendChild(num);
-
-        // Delete button (hidden by default)
-        const delBtn = document.createElement('button');
-
-        delBtn.innerHTML = '<i class="fa fa-trash"></i>';
-        delBtn.title = 'Delete Slide';
-        delBtn.style = `
-            display:none; position:absolute; top:4px; left:4px; width:22px; height:22px; border:none; background:rgba(255,60,60,0.9);
-            color:#fff; border-radius:50%; align-items:center; justify-content:center; cursor:pointer; z-index:2; font-size:1em;
-        `;
-        delBtn.onclick = (e) => {
-            e.stopPropagation();
-            delBtn.style.display = 'none';
-            copyBtn.style.display = 'none';
-            if (slides.length > 1) {
-                slides.splice(idx, 1);
-                if (currentSlide >= slides.length) currentSlide = slides.length-1;
-                loadSlide(currentSlide);
-                updateSlideIndicator();
-            } else {
-                canvas.clear();
-                slides[0] = canvas.toJSON();
-                updateSlideIndicator();
-            }
-        };
-        thumb.appendChild(delBtn);
-
-        // Copy button (hidden by default)
-        const copyBtn = document.createElement('button');
-        copyBtn.innerHTML = '<i class="fa fa-copy"></i>';
-        copyBtn.title = 'Copy Slide';
-        copyBtn.style = `
-            display:none; position:absolute; top:4px; right:0; margin-right:4px; width:22px; height:22px; border:none; background:rgba(60,60,255,0.9);
-            color:#fff; border-radius:50%; align-items:center; justify-content:center; cursor:pointer; z-index:2; font-size:1em;
-        `;
-        copyBtn.onclick = (e) => {
-            e.stopPropagation();
-            delBtn.style.display = 'none';
-            copyBtn.style.display = 'none';
-            // Deep clone the slide JSON
-            const clone = JSON.parse(JSON.stringify(slides[idx]));
-            slides.splice(idx + 1, 0, clone);
-            currentSlide = idx + 1;
-            loadSlide(currentSlide);
-            updateSlideIndicator();
-        };
-        thumb.appendChild(copyBtn);
-
-        // Show buttons on right-click
-        thumb.oncontextmenu = function(e) {
-            e.preventDefault();
-            // Hide all delete/copy buttons first (not the plus button)
-            document.querySelectorAll('#slide-preview-bar .slide-action-btn').forEach(btn => btn.style.display = 'none');
-            delBtn.style.display = 'flex';
-            copyBtn.style.display = 'flex';
-        };
-
-        // Hide buttons when clicking elsewhere
-        document.addEventListener('click', function hideBtns(ev) {
-            if (!thumb.contains(ev.target)) {
-                delBtn.style.display = 'none';
-                copyBtn.style.display = 'none';
-                document.removeEventListener('click', hideBtns);
-            }
-        });
-        // Click to jump to slide
-        thumb.onclick = function(e) {
-            if (e.target === delBtn || e.target === copyBtn) return;
-            saveCurrentSlide();
-            currentSlide = idx;
-            loadSlide(currentSlide);
-            updateSlideIndicator();
-            updateSlidePreviewBar();
-        };
-
-        bar.appendChild(thumb);
-    });
-
-    // Add "+" button for new slide (not draggable)
-    const addBtn = document.createElement('button');
-    addBtn.innerHTML = '<i class="fa fa-plus"></i>';
-    addBtn.title = 'Add Slide';
-    addBtn.style = `
-        width: 44px; height: 44px; border-radius: 50%; border: none; background: #b39ddb; color: #fff;
-        font-size: 1.5em; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-left:6px;
-        box-shadow: 0 2px 8px #0001;
-    `;
-    addBtn.onclick = function() {
-        saveCurrentSlide();
-        const blankCanvas = new fabric.Canvas('canvas', { backgroundColor: '#fff', width: canvas.width, height: canvas.height });
-        slides.splice(currentSlide+1, 0, blankCanvas.toJSON());
-        currentSlide++;
-        loadSlide(currentSlide);
-        updateSlideIndicator();
-    };
-    bar.appendChild(addBtn);
-}
-
-
-
-// Slide indicator
-function updateSlideIndicator() {
-    document.getElementById('slide-indicator').textContent = `Slide ${currentSlide+1}/${slides.length}`;
-    updateSlidePreviewBar();
-}
-function saveCurrentSlide() {
-    // Save the canvas JSON for the current slide
-    let slideJson = canvas.toJSON();
-    // If a game is attached to this slide, save its info
-    if (typeof gameUrl !== 'undefined' && gameUrl && currentSlide === gameSlideIndex) {
-        slideJson.game = { url: gameUrl };
-    } else {
-        // Remove game info if not present
-        if (slideJson.game) delete slideJson.game;
-    }
-    slides[currentSlide] = slideJson;
-}
-function loadSlide(idx) {
-    if (slides[idx]) {
-        canvas.loadFromJSON(slides[idx], function() {
-            canvas.renderAll();
-            updateSlideIndicator();
-            showGameIframe(); 
-            // Restore game info if present
-            if (slides[idx].game) {
-                gameUrl = slides[idx].game.url;
-                gameSlideIndex = idx;
-            } else {
-                gameUrl = null;
-                gameSlideIndex = null;
-            }
-            showGameIframe();
-        });
-    }
-}
-
-// Add slide
-document.getElementById('add-slide-btn').onclick = function() {
-    saveCurrentSlide();
-    // Create a blank canvas JSON with white background
-    const blankCanvas = new fabric.Canvas('canvas', { backgroundColor: '#fff', width: canvas.width, height: canvas.height });
-    slides.splice(currentSlide+1, 0, blankCanvas.toJSON());
-    currentSlide++;
-    loadSlide(currentSlide);
-    updateSlideIndicator();
-};
-// Next slide
-document.getElementById('next-slide-btn').onclick = function() {
-    saveCurrentSlide();
-    if (currentSlide < slides.length-1) {
-        currentSlide++;
-        loadSlide(currentSlide);
-        updateSlideIndicator();
-    }
-};
-// Prev slide
-document.getElementById('prev-slide-btn').onclick = function() {
-    saveCurrentSlide();
-    if (currentSlide > 0) {
-        currentSlide--;
-        loadSlide(currentSlide);
-        updateSlideIndicator();
-    }
-};
-// Delete slide
-document.getElementById('delete-slide-btn').onclick = function() {
-    if (slides.length > 1) {
-        slides.splice(currentSlide, 1);
-        if (currentSlide >= slides.length) currentSlide = slides.length-1;
-        loadSlide(currentSlide);
-        updateSlideIndicator();
-    } else {
-        canvas.clear();
-        slides[0] = canvas.toJSON();
-        updateSlideIndicator();
-    }
-};
-
-</script>
-
-    <div id="game-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:99999; align-items:center; justify-content:center;">
-        <div style="background:#fff; padding:32px 28px; border-radius:14px; max-width:800px; width:96vw; box-shadow:0 4px 24px #0002; position:relative;">
-            <h2 style="margin-top:0;margin-bottom:18px;">Choose a Game</h2>
-            <button class="game-option" data-game="../Games/assessment/lesson1.html" style="margin-bottom:10px;">Game 1: Time & World Time Zones</button>
-            <button class="game-option" data-game="../Games/assessment/lesson2.html">Game 2: GMDAS </button>
-            <button class="game-option" data-game="../Games/assessment/lesson3.html">Game 3: Fraction Match</button>
-            <button class="game-option" data-game="../Games/assessment/lesson4.html">Game 4: Fraction Match</button>
-            <!-- Add more games here as needed -->  
-            <button class="cancel-button" onclick="document.getElementById('game-modal').style.display='none'">Cancel</button>
-        </div>
-    </div>
-    <style>
-        #game-modal {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .game-option {
-           --bg: #000;
-            --hover-bg: #ff90e8;
-            --hover-text: #000;
-            color: #fff;
-            cursor: pointer;
-            border: 1px solid var(--bg);
-            border-radius: 4px;
-            padding: 0.8em 2em;
-            background: var(--bg);
-            transition: 0.2s; 
-        }
-        .game-option:hover {
-            color: var(--hover-text);
-            transform: translate(-0.25rem, -0.25rem);
-            background: var(--hover-bg);
-            box-shadow: 0.25rem 0.25rem var(--bg);
-        }
-        .game-option:active {
-            transform: translate(0);
-            box-shadow: none;
-        }
-        
-        .cancel-button {
-            display: block;
-            padding: 12px 25px;
-            background-color: var(--white);
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-            border: 2px solid var(--sun-yellow);
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-            border: 1px solid #2b2929;
-        }
-
-        .cancel-button:hover {
-            background-color:#ff3030;
-            color: white;
-        }
-
-        .cancel-button.active {
-            background-color: #2e8b57;
-            color: var(--white);
-            border-color: var(--forest-green);
-        }
-    </style>
-    
-    <script>
-        // Show game modal
-        document.getElementById('add-game-btn').onclick = function() {
-            document.getElementById('game-modal').style.display = 'flex';
-        };
-        // Game option click handler
-        document.querySelectorAll('.game-option').forEach(btn => {
-        btn.onclick = function() {
-            // Save current slide before adding new
-            saveCurrentSlide();
-            // Create a blank slide
-            const blankCanvas = new fabric.Canvas('canvas', { backgroundColor: '#fff', width: canvas.width, height: canvas.height });
-            const newSlide = blankCanvas.toJSON();
-            // Attach the selected game to the new slide
-            newSlide.game = { url: this.dataset.game };
-            // Insert the new slide after the current one
-            slides.splice(currentSlide + 1, 0, newSlide);
-            // Move to the new slide
-            currentSlide++;
-            gameUrl = this.dataset.game;
-            gameSlideIndex = currentSlide;
-            loadSlide(currentSlide);
-            updateSlideIndicator();
-            document.getElementById('game-modal').style.display = 'none';
-        };
-        });
-        // Hide modal on click outside
-        document.getElementById('game-modal').onclick = function(e) {
-            if (e.target === this) {
-                this.style.display = 'none';
-            }
-        };
-
-        // Keep iframe size in sync with canvas on resize
-        function syncGameIframeSize() {
-            const iframe = document.getElementById('game-iframe');
-            const canvasEl = document.getElementById('canvas');
-            if (iframe && canvasEl) {
-                iframe.style.width = canvasEl.width + 'px';
-                iframe.style.height = canvasEl.height + 'px';
-                iframe.style.left = '50%';
-                iframe.style.transform = 'translateX(-50%)';
-            }
-        }
-        window.addEventListener('resize', syncGameIframeSize);
-        // Also call after canvas resize
-        if (typeof resizeCanvas === 'function') {
-            const origResizeCanvas = resizeCanvas;
-            window.resizeCanvas = function() {
-                origResizeCanvas();
-                syncGameIframeSize();
-            };
-        }
-    </script>
-    <script>
-       // Update showGameIframe and syncGameIframeSize to ensure the game iframe is always exactly inside the canvas and matches its size
-
+// Replace the showGameIframe function (around line 560) with this corrected version:
 function showGameIframe() {
+    console.log('showGameIframe called for slide:', currentSlide);
+    console.log('Current slide data:', slides[currentSlide]);
+    
     const wrapper = document.querySelector('.canvas-wrapper');
-    const canvasEl = document.getElementById('canvas');
     let existing = document.getElementById('game-iframe');
+    
     // Remove if not on a game slide
     if (!slides[currentSlide] || !slides[currentSlide].game) {
+        console.log('No game on current slide, removing iframe');
         if (existing) existing.remove();
         return;
     }
+    
+    console.log('Game found on slide, creating/updating iframe');
+    
     // Show if on a game slide
     if (!existing) {
+        console.log('Creating new iframe');
+        
         const iframe = document.createElement('iframe');
         iframe.id = 'game-iframe';
-        iframe.src = slides[currentSlide].game.url;
-        iframe.style.position = 'absolute';
-        iframe.style.top = '0';
-        iframe.style.left = '0';
-        iframe.style.width = canvasEl.width + 'px';
-        iframe.style.height = canvasEl.height + 'px';
-        iframe.style.border = 'none';
-        iframe.style.zIndex = '10';
+        
+        // Add edit mode parameter to game URL for quiz-specific editing
+        let gameUrl = slides[currentSlide].game.url;
+        const separator = gameUrl.includes('?') ? '&' : '?';
+        const quizId = getQuizId();
+        gameUrl += separator + `edit=true&mode=quiz&quizId=${encodeURIComponent(quizId)}`;
+        
+        console.log('Game URL:', gameUrl);
+        
+        iframe.src = gameUrl;
+        iframe.style.cssText = `
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            border: none !important;
+            z-index: 10 !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            overflow: hidden !important;
+            object-fit: cover !important;
+            border-radius: 0 !important;
+            background: white !important;
+        `;
+        iframe.scrolling = 'no';
         iframe.allow = 'fullscreen';
+
+        // Listen for game data updates from iframe
+        if (!window.gameMessageListenerAdded) {
+            window.addEventListener('message', handleGameMessage, false);
+            window.gameMessageListenerAdded = true;
+        }
+
+        // Ensure wrapper is properly configured
         wrapper.style.position = 'relative';
+        wrapper.style.overflow = 'hidden';
+        
+        // Hide canvas when game is active
+        const canvas = document.getElementById('canvas');
+        if (canvas) {
+            canvas.style.display = 'none';
+        }
+        
         wrapper.appendChild(iframe);
+        
+        console.log('Iframe created and added to wrapper');
+        
+        // FIXED: Load existing game data if available with better timing
+        iframe.onload = function() {
+            console.log('Iframe loaded, checking for existing game data');
+            
+            // Give the game time to initialize
+            setTimeout(() => {
+                if (slides[currentSlide].game.data) {
+                    console.log('Sending existing game data to iframe:', slides[currentSlide].game.data);
+                    
+                    // Parse game data if it's a string
+                    let gameData = slides[currentSlide].game.data;
+                    if (typeof gameData === 'string') {
+                        try {
+                            gameData = JSON.parse(gameData);
+                        } catch (e) {
+                            console.error('Error parsing game data:', e);
+                        }
+                    }
+                    
+                    iframe.contentWindow.postMessage({
+                        type: 'loadQuizGameData',
+                        gameData: gameData,
+                        quizId: getQuizId(),
+                        isEditMode: true
+                    }, '*');
+                } else {
+                    console.log('No existing game data found');
+                    // Send request for game to load in edit mode
+                    iframe.contentWindow.postMessage({
+                        type: 'requestQuizGameData',
+                        quizId: getQuizId()
+                    }, '*');
+                }
+            }, 1000); // Increased delay to ensure game is fully loaded
+        };
     } else {
-        existing.src = slides[currentSlide].game.url;
-        existing.style.display = '';
+        console.log('Updating existing iframe');
+        
+        // Update existing iframe with edit parameters
+        let gameUrl = slides[currentSlide].game.url;
+        const separator = gameUrl.includes('?') ? '&' : '?';
+        const quizId = getQuizId();
+        gameUrl += separator + `edit=true&mode=quiz&quizId=${encodeURIComponent(quizId)}`;
+        
+        existing.src = gameUrl;
+        existing.style.display = 'block';
+        
+        // Hide canvas when game is active
+        const canvas = document.getElementById('canvas');
+        if (canvas) {
+            canvas.style.display = 'none';
+        }
+        
+        // Send existing game data after a delay
+        setTimeout(() => {
+            if (slides[currentSlide].game.data) {
+                let gameData = slides[currentSlide].game.data;
+                if (typeof gameData === 'string') {
+                    try {
+                        gameData = JSON.parse(gameData);
+                    } catch (e) {
+                        console.error('Error parsing game data:', e);
+                    }
+                }
+                
+                existing.contentWindow.postMessage({
+                    type: 'loadQuizGameData',
+                    gameData: gameData,
+                    quizId: getQuizId(),
+                    isEditMode: true
+                }, '*');
+            }
+        }, 500);
     }
-    // Always update size
-    syncGameIframeSize();
+}
+        
+// FIXED: Enhanced message handler to properly capture and save game data
+function handleGameMessage(event) {
+    console.log('📨 Quiz Editor received message:', event.data);
+    
+    const data = event.data;
+    
+    if (data.type === 'saveQuizGameData' || data.type === 'gameDataUpdate') {
+        console.log('💾 SAVING quiz-specific game data:', data.gameData);
+        
+        // Update the current slide's game data
+        if (slides[currentSlide] && slides[currentSlide].game) {
+            // CRITICAL: Store the ACTUAL game data (values, questions, etc.)
+            slides[currentSlide].game.data = data.gameData;
+            slides[currentSlide].game.lastModified = new Date().toISOString();
+            slides[currentSlide].game.quizId = getQuizId();
+            slides[currentSlide].game.isQuizSpecific = true;
+            slides[currentSlide].game.customized = true;
+            
+            console.log('✅ Game data saved to slide:', {
+                slideIndex: currentSlide,
+                hasData: !!slides[currentSlide].game.data,
+                dataPreview: typeof slides[currentSlide].game.data === 'object' ? 
+                            JSON.stringify(slides[currentSlide].game.data).substring(0, 100) + '...' :
+                            slides[currentSlide].game.data
+            });
+            
+            // Force immediate save to ensure data persistence
+            saveCurrentSlide();
+            triggerImmediateAutoSave();
+            showAutoSaveIndicator('🎮 Game edits saved!');
+        }
+    } else if (data.type === 'requestQuizGameData') {
+        console.log('🔄 Game requesting existing data for slide:', currentSlide);
+        
+        const iframe = document.getElementById('game-iframe');
+        if (iframe && slides[currentSlide] && slides[currentSlide].game) {
+            let gameData = slides[currentSlide].game.data;
+            
+            // Don't parse if it's already an object
+            if (typeof gameData === 'string' && gameData) {
+                try {
+                    gameData = JSON.parse(gameData);
+                } catch (e) {
+                    console.error('Error parsing game data:', e);
+                    gameData = null;
+                }
+            }
+            
+            console.log('📤 Sending existing data to game:', gameData);
+            
+            iframe.contentWindow.postMessage({
+                type: 'loadQuizGameData',
+                gameData: gameData,
+                quizId: getQuizId(),
+                isEditMode: true
+            }, '*');
+        } else {
+            console.log('❌ No existing game data found');
+            
+            // Send empty data to let game know it can start fresh
+            iframe.contentWindow.postMessage({
+                type: 'loadQuizGameData',
+                gameData: null,
+                quizId: getQuizId(),
+                isEditMode: true
+            }, '*');
+        }
+    } else if (data.type === 'currentGameData') {
+        // Handle response from requestCurrentGameData
+        console.log('📥 Received current game data from game:', data.gameData);
+        
+        if (slides[currentSlide] && slides[currentSlide].game) {
+            slides[currentSlide].game.data = data.gameData;
+            slides[currentSlide].game.lastModified = new Date().toISOString();
+            slides[currentSlide].game.customized = true;
+            
+            console.log('✅ Current game state captured and saved');
+            
+            saveCurrentSlide();
+            triggerImmediateAutoSave();
+            showAutoSaveIndicator('🎮 Current game state saved');
+        }
+    }
 }
 
-function syncGameIframeSize() {
-    const iframe = document.getElementById('game-iframe');
-    const canvasEl = document.getElementById('canvas');
-    if (iframe && canvasEl) {
-        iframe.style.width = canvasEl.width + 'px';
-        iframe.style.height = canvasEl.height + 'px';
-        iframe.style.top = '0';
-        iframe.style.left = '0';
+
+        // Generate unique quiz ID for this editing session
+        function getQuizId() {
+            const subject = getParam('subject') || 'general';
+            const quarter = getParam('quarter') || 'auto';
+            const name = getParam('name') || 'untitled';
+            const user = firebase.auth().currentUser;
+            const userId = user ? user.uid : 'anonymous';
+            
+            return `${userId}_${subject}_${quarter}_${name}`;
+        }
+
+        // Add Game Button Functionality
+        document.getElementById('add-game-btn').addEventListener('click', function() {
+            document.getElementById('game-modal').style.display = 'flex';
+        });
+
+        // Enhanced game option selection with quiz-specific data structure
+        document.querySelectorAll('.game-option').forEach(btn => {
+            btn.onclick = function() {
+                console.log('Game option clicked:', this.dataset.game); // Debug log
+                
+                saveCurrentSlide();
+                
+                const selectedGameUrl = this.dataset.game; // Use different variable name
+                const quizId = getQuizId();
+                
+                // Create game object with quiz-specific data structure
+                const gameData = {
+                    url: selectedGameUrl,
+                    type: getGameType(selectedGameUrl),
+                    quizId: quizId,
+                    createdAt: new Date().toISOString(),
+                    lastModified: new Date().toISOString(),
+                    data: null, // Will store quiz-specific customizations
+                    isQuizSpecific: true
+                };
+                
+                const currentSlideData = slides[currentSlide] || canvas.toJSON();
+                currentSlideData.game = gameData;
+                
+                slides[currentSlide] = currentSlideData;
+                
+                // Update global game variables
+                gameUrl = selectedGameUrl; // Fix: assign to global variable
+                gameSlideIndex = currentSlide;
+                
+                console.log('Game data created:', gameData); // Debug log
+                console.log('Current slide updated:', slides[currentSlide]); // Debug log
+                
+                // Immediately show the game iframe
+                showGameIframe();
+                updateSlideIndicator();
+                renderSlidePreviews(); // Update previews to show game icon
+                
+                document.getElementById('game-modal').style.display = 'none';
+                showAutoSaveIndicator('Game embedded - ready for quiz-specific editing');
+            };
+        });
+
+        // Helper function to determine game type
+        function getGameType(url) {
+            if (url.includes('game1.html')) return 'multiple-choice-quiz';
+            if (url.includes('game2.html')) return 'drag-drop-quiz';
+            return 'unknown';
+        }
+
+        // Slide Management Functions
+function saveCurrentSlide() {
+    if (currentSlide < slides.length) {
+        const slideData = canvas.toJSON();
+        
+        // Preserve existing game data if it exists
+        if (slides[currentSlide] && slides[currentSlide].game) {
+            slideData.game = slides[currentSlide].game;
+        }
+        
+        slides[currentSlide] = slideData;
     }
 }
-window.addEventListener('resize', syncGameIframeSize);
-// Also call after canvas resize
-if (typeof resizeCanvas === 'function') {
-    const origResizeCanvas = resizeCanvas;
-    window.resizeCanvas = function() {
-        origResizeCanvas();
-        syncGameIframeSize();
+
+function loadSlide(index) {
+    console.log('Loading slide:', index); // Debug log
+    
+    if (index >= 0 && index < slides.length && slides[index]) {
+        canvas.loadFromJSON(slides[index], function() {
+            canvas.renderAll();
+            
+            // Show/hide canvas and game based on slide content
+            const canvasElement = document.getElementById('canvas');
+            const hasGame = slides[index].game;
+            
+            if (hasGame) {
+                console.log('Slide has game, hiding canvas and showing game'); // Debug log
+                canvasElement.style.display = 'none';
+                showGameIframe();
+            } else {
+                console.log('Slide has no game, showing canvas'); // Debug log
+                canvasElement.style.display = 'block';
+                // Remove any existing game iframe
+                const existing = document.getElementById('game-iframe');
+                if (existing) existing.remove();
+            }
+        });
+    } else {
+        // Create new slide
+        console.log('Creating new slide'); // Debug log
+        canvas.clear();
+        canvas.backgroundColor = '#fff';
+        canvas.renderAll();
+        
+        if (!slides[index]) {
+            slides[index] = canvas.toJSON();
+        }
+        
+        // Show canvas for new slide
+        const canvasElement = document.getElementById('canvas');
+        canvasElement.style.display = 'block';
+        
+        // Remove any existing game iframe
+        const existing = document.getElementById('game-iframe');
+        if (existing) existing.remove();
+    }
+    
+    currentSlide = index;
+    updateSlideIndicator();
+}
+
+function addSlide() {
+    saveCurrentSlide();
+    const newIndex = slides.length;
+    slides.push(canvas.toJSON());
+    loadSlide(newIndex);
+    updateSlideIndicator();
+    renderSlidePreviews();
+}
+
+function deleteSlide(index) {
+    if (slides.length <= 1) {
+        alert('Cannot delete the last slide.');
+        return;
+    }
+    
+    slides.splice(index, 1);
+    
+    if (currentSlide >= slides.length) {
+        currentSlide = slides.length - 1;
+    }
+    
+    loadSlide(currentSlide);
+    renderSlidePreviews();
+}
+
+function updateSlideIndicator() {
+    const indicator = document.getElementById('slide-indicator');
+    if (indicator) {
+        indicator.textContent = `Slide ${currentSlide + 1}/${Math.max(slides.length, 1)}`;
+    }
+}
+
+function renderSlidePreviews() {
+    const previewBar = document.getElementById('slide-preview-bar');
+    if (!previewBar) return;
+    
+    previewBar.innerHTML = '';
+    
+    // Add button
+    const addBtn = document.createElement('button');
+    addBtn.innerHTML = '<i class="fa fa-plus"></i>';
+    addBtn.style.cssText = `
+        width: 40px;
+        height: 40px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+        margin-right: 8px;
+    `;
+    addBtn.onclick = addSlide;
+    addBtn.title = 'Add New Slide';
+    previewBar.appendChild(addBtn);
+    
+    // Slide thumbnails
+    slides.forEach((slide, index) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'slide-thumb';
+        if (index === currentSlide) {
+            thumb.classList.add('active');
+        }
+        
+        // Add game indicator if slide has a game
+        if (slide.game) {
+            const gameIcon = document.createElement('i');
+            gameIcon.className = 'fa fa-gamepad';
+            gameIcon.style.cssText = `
+                position: absolute;
+                top: 2px;
+                right: 2px;
+                color: var(--primary);
+                font-size: 12px;
+                background: white;
+                border-radius: 50%;
+                width: 16px;
+                height: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            thumb.appendChild(gameIcon);
+        }
+        
+        const slideNumber = document.createElement('span');
+        slideNumber.textContent = index + 1;
+        slideNumber.style.cssText = `
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+        `;
+        thumb.appendChild(slideNumber);
+        
+        thumb.onclick = () => {
+            saveCurrentSlide();
+            loadSlide(index);
+        };
+        
+        // Delete button (on right-click or long press)
+        thumb.oncontextmenu = (e) => {
+            e.preventDefault();
+            if (confirm(`Delete slide ${index + 1}?`)) {
+                deleteSlide(index);
+            }
+        };
+        
+        previewBar.appendChild(thumb);
+    });
+}
+
+// Auto-save trigger function (enhanced)
+function triggerImmediateAutoSave() {
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+        saveCurrentSlide(); // Ensure current slide is saved before auto-save
+        autoSaveCanvas();
+    }, 1000); // Save after 1 second delay
+}
+
+// Enhanced auto-save that captures everything
+async function autoSaveCanvas() {
+    if (!isAutoSaveEnabled) return;
+    
+    try {
+        // Always save current slide first
+        saveCurrentSlide();
+        
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            // Save to localStorage if not logged in
+            localStorage.setItem('quiz-autosave-slides', JSON.stringify(slides));
+            localStorage.setItem('quiz-autosave-timestamp', new Date().toISOString());
+            showAutoSaveIndicator('Auto-saved locally');
+            return;
+        }
+        
+        console.log('Auto-saving to Firebase...'); // Debug log
+        
+        const teacherUID = user.uid;
+        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+        const teacher = teacherSnap.val();
+        const section = teacher && teacher.section ? teacher.section : null;
+        const gradeLevel = teacher && teacher.gradelevel ? teacher.gradelevel : null;
+        
+        if (!section || !gradeLevel) {
+            // Save locally if teacher profile incomplete
+            localStorage.setItem('quiz-autosave-slides', JSON.stringify(slides));
+            showAutoSaveIndicator('Auto-saved locally (profile incomplete)');
+            return;
+        }
+
+        let quarter = getParam('quarter') || 'auto';
+        let name = getParam('name') || 'AutoSaved_' + new Date().toISOString().slice(0,19).replace(/:/g,'-');
+        let subject = getParam('subject') || 'general';
+
+        // Process slides with all content including game data
+        const processedSlides = slides.map(slide => {
+            const processedSlide = { ...slide };
+            
+            // Include game data if present
+            if (slide.game) {
+                processedSlide.game = {
+                    ...slide.game,
+                    data: typeof slide.game.data === 'string' ? 
+                          slide.game.data : JSON.stringify(slide.game.data || null),
+                    isQuizSpecific: true,
+                    autoSaved: true,
+                    lastAutoSave: new Date().toISOString()
+                };
+            }
+            
+            return processedSlide;
+        });
+        
+        const currentCanvasState = JSON.stringify(processedSlides);
+        
+        // Only save if there are actual changes
+        if (currentCanvasState === lastCanvasState) {
+            console.log('No changes detected, skipping auto-save');
+            return;
+        }
+
+        let existingDescription = lastDescription || '';
+        
+        // Try to get existing description
+        try {
+            const existingQuizSnap = await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).once('value');
+            if (existingQuizSnap.exists()) {
+                const existingQuiz = existingQuizSnap.val();
+                existingDescription = existingQuiz.description || lastDescription || '';
+            }
+        } catch (error) {
+            console.log('Could not fetch existing description:', error);
+        }
+        
+        const teacherName = `${teacher.firstname || ''} ${teacher.lastname || ''}`.trim();
+        const quizPassword = Math.floor(100000 + Math.random() * 900000).toString();
+        const now = new Date().toISOString();
+
+        // Comprehensive auto-save data
+        const teacherAutoSaveData = {
+            slides: currentCanvasState,
+            savedAt: now,
+            title: name,
+            quarter: quarter,
+            subject: subject,
+            description: existingDescription,
+            autoSaved: true,
+            section: section,
+            gradeLevel: gradeLevel,
+            createdBy: teacherUID,
+            teacherName: teacherName,
+            password: quizPassword,
+            isLocked: true,
+            hasPassword: true,
+            // Game tracking
+            hasCustomGames: processedSlides.some(slide => slide.game && slide.game.data),
+            gameCount: processedSlides.filter(slide => slide.game).length,
+            customGameCount: processedSlides.filter(slide => slide.game && slide.game.data).length,
+            // Canvas content tracking
+            totalSlides: processedSlides.length,
+            hasContent: processedSlides.some(slide => slide.objects && slide.objects.length > 0),
+            lastModified: now,
+            quizId: getQuizId(),
+            version: '1.0'
+        };
+
+        // Save to teacher's collection
+        await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).set(teacherAutoSaveData);
+
+        // Update students with complete quiz data
+        const studentsSnap = await db.ref('students').once('value');
+        const studentUpdatePromises = [];
+        let studentsUpdated = 0;
+
+        if (studentsSnap.exists()) {
+            studentsSnap.forEach(studentSnap => {
+                const student = studentSnap.val();
+                const studentUID = studentSnap.key;
+                
+                const studentSection = (student.section || '').toString().trim().toLowerCase();
+                const teacherSectionLower = (section || '').toString().trim().toLowerCase();
+                const studentGrade = (student.gradelevel || '').toString().trim();
+                const teacherGrade = (gradeLevel || '').toString().trim();
+                
+                if (studentSection === teacherSectionLower && studentGrade === teacherGrade) {
+                    studentsUpdated++;
+                    
+                    const studentAutoSaveData = {
+                        title: name,
+                        description: existingDescription,
+                        quarter: quarter,
+                        section: section,
+                        gradeLevel: gradeLevel,
+                        createdBy: teacherUID,
+                        teacherName: teacherName,
+                        password: quizPassword,
+                        isLocked: true,
+                        slides: currentCanvasState, // Complete slide data including games
+                        assignedBy: teacherUID,
+                        assignedAt: now,
+                        status: 'available',
+                        attempts: 0,
+                        bestScore: 0,
+                        lastAttemptAt: null,
+                        hasCustomGames: teacherAutoSaveData.hasCustomGames,
+                        gameCount: teacherAutoSaveData.gameCount,
+                        customGameCount: teacherAutoSaveData.customGameCount,
+                        totalSlides: teacherAutoSaveData.totalSlides,
+                        quizId: teacherAutoSaveData.quizId,
+                        lastUpdated: now
+                    };
+                    
+                    studentUpdatePromises.push(
+                        db.ref(`students/${studentUID}/quizzes/${subject}/${quarter}/${name}`).set(studentAutoSaveData)
+                    );
+                }
+            });
+        }
+
+        await Promise.all(studentUpdatePromises);
+        
+        // Update last saved state
+        lastCanvasState = currentCanvasState;
+        
+        // Also save to localStorage as backup
+        localStorage.setItem('quiz-autosave-slides', JSON.stringify(processedSlides));
+        localStorage.setItem('quiz-autosave-timestamp', now);
+        
+        const gameInfo = teacherAutoSaveData.customGameCount > 0 ? 
+            ` (${teacherAutoSaveData.customGameCount} customized games)` : '';
+        
+        showAutoSaveIndicator(`Auto-saved: ${studentsUpdated} students updated${gameInfo}`);
+        console.log('Auto-save completed successfully');
+        
+    } catch (error) {
+        console.error('Auto-save failed:', error);
+        // Fallback to localStorage
+        try {
+            saveCurrentSlide();
+            localStorage.setItem('quiz-autosave-slides', JSON.stringify(slides));
+            localStorage.setItem('quiz-autosave-timestamp', new Date().toISOString());
+            showAutoSaveIndicator('Auto-saved locally (Firebase error)', true);
+        } catch (localError) {
+            console.error('Local auto-save also failed:', localError);
+            showAutoSaveIndicator('Auto-save Failed', true);
+        }
+    }
+}
+
+// Enhanced canvas event listeners for comprehensive auto-save
+function setupCanvasAutoSave() {
+    // Canvas object events
+    canvas.on('object:added', triggerImmediateAutoSave);
+    canvas.on('object:removed', triggerImmediateAutoSave);
+    canvas.on('object:modified', triggerImmediateAutoSave);
+    canvas.on('object:moving', debounce(triggerImmediateAutoSave, 2000));
+    canvas.on('object:scaling', debounce(triggerImmediateAutoSave, 2000));
+    canvas.on('object:rotating', debounce(triggerImmediateAutoSave, 2000));
+    canvas.on('text:changed', debounce(triggerImmediateAutoSave, 1000));
+    
+    // Background changes
+    canvas.on('after:render', debounce(triggerImmediateAutoSave, 3000));
+    
+    // Selection changes (less frequent)
+    canvas.on('selection:created', debounce(triggerImmediateAutoSave, 5000));
+    canvas.on('selection:updated', debounce(triggerImmediateAutoSave, 5000));
+    canvas.on('selection:cleared', debounce(triggerImmediateAutoSave, 5000));
+}
+
+// Debounce utility function to prevent excessive auto-saves
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
     };
 }
-   
-if (scaleInput) scaleInput.addEventListener('input', overlayGifsOnCanvas);
-window.addEventListener('resize', overlayGifsOnCanvas);
 
-
-
-// Helper: Save slides to Firebase (auto-save)
-async function autoSaveSlides() {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-    const teacherUID = user.uid;
-    const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
-    const teacher = teacherSnap.val();
-    const section = teacher && teacher.section ? teacher.section : null;
-    if (!section) return;
-
-    let quarter = getParam('quarter');
-    let name = getParam('name');
-    let subject = getParam('subject');
-    if (!quarter || !name || !subject) return;
-
-    saveCurrentSlide(); // Always save the current slide state
-    const slidesJson = JSON.stringify(slides);
-
-    await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).update({
-        slides: slidesJson,
-        savedAt: new Date().toISOString(),
-        title: name,
-        quarter: quarter,
-        subject: subject,
-        description: lastDescription // Always use lastDescription
+// Enhanced initialization
+function initializeEditor() {
+    // Load from localStorage backup if available
+    const backupSlides = localStorage.getItem('quiz-autosave-slides');
+    if (backupSlides && slides.length === 0) {
+        try {
+            const parsedSlides = JSON.parse(backupSlides);
+            if (parsedSlides && parsedSlides.length > 0) {
+                slides = parsedSlides;
+                showAutoSaveIndicator('Restored from local backup');
+            }
+        } catch (error) {
+            console.error('Error loading backup slides:', error);
+        }
+    }
+    
+    // Create initial slide if none exist
+    if (slides.length === 0) {
+        slides.push(canvas.toJSON());
+    }
+    
+    loadSlide(0);
+    renderSlidePreviews();
+    updateSlideIndicator();
+    
+    // Setup comprehensive auto-save
+    setupCanvasAutoSave();
+    
+    // Periodic auto-save every 30 seconds
+    setInterval(() => {
+        if (isAutoSaveEnabled) {
+            triggerImmediateAutoSave();
+        }
+    }, autoSaveInterval);
+    
+    // Auto-save on page unload
+    window.addEventListener('beforeunload', (e) => {
+        saveCurrentSlide();
+        localStorage.setItem('quiz-autosave-slides', JSON.stringify(slides));
+        localStorage.setItem('quiz-autosave-timestamp', new Date().toISOString());
     });
 }
 
-// --- Auto-save on every canvas change ---
-['object:added', 'object:modified', 'object:removed', 'background:changed'].forEach(evt => {
-    canvas.on(evt, () => {
-        autoSaveSlides();
-    });
-});
-
-// --- Auto-save when slide is changed ---
-function autoSaveAndLoadSlide(idx) {
-    autoSaveSlides();
-    loadSlide(idx);
-}
-function autoSaveAndAddSlide() {
-    autoSaveSlides();
-    const blankCanvas = new fabric.Canvas('canvas', { backgroundColor: '#fff', width: canvas.width, height: canvas.height });
-    slides.splice(currentSlide+1, 0, blankCanvas.toJSON());
-    currentSlide++;
-    loadSlide(currentSlide);
-    updateSlideIndicator();
+// Manual save trigger for testing
+function forceSave() {
+    console.log('Force saving...');
+    triggerImmediateAutoSave();
 }
 
-// Replace your slide navigation/add logic to use autoSaveAndLoadSlide/autoSaveAndAddSlide:
-document.getElementById('next-slide-btn').onclick = function() {
-    if (currentSlide < slides.length-1) {
-        autoSaveAndLoadSlide(currentSlide + 1);
-        updateSlideIndicator();
+// Add keyboard shortcut for manual save (Ctrl+S)
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        forceSave();
+        showAutoSaveIndicator('Manual save triggered');
     }
-};
-document.getElementById('prev-slide-btn').onclick = function() {
-    if (currentSlide > 0) {
-        autoSaveAndLoadSlide(currentSlide - 1);
-        updateSlideIndicator();
-    }
-};
-document.getElementById('add-slide-btn').onclick = function() {
-    autoSaveAndAddSlide();
-    updateSlideIndicator();
-};
-
-// --- Auto-save on open (first load) ---
-firebase.auth().onAuthStateChanged(async function(user) {
-    // ...your existing load logic...
-    // After loading slides:
-    autoSaveSlides();
 });
-   </script>
+
+// Update the existing DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', function() {
+    initializeEditor();
+});
+
+
+// Fix the modal display issue
+document.getElementById('add-game-btn').addEventListener('click', function() {
+    console.log('Add game button clicked'); // Debug log
+    const modal = document.getElementById('game-modal');
+    modal.style.display = 'flex';
+    console.log('Modal display set to flex'); // Debug log
+});
+
+// Add a close modal function for the cancel button
+function closeGameModal() {
+    document.getElementById('game-modal').style.display = 'none';
+}
+
+// Make sure the cancel button works
+document.querySelector('.cancel-button').onclick = closeGameModal;
+
+// Also close modal when clicking outside
+document.getElementById('game-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeGameModal();
+    }
+});
+
+// Enhanced auto-save that includes quiz-specific game data
+async function autoSaveCanvas() {
+    if (!isAutoSaveEnabled) return;
+    
+    try {
+        const user = firebase.auth().currentUser;
+        if (!user) return;
+        
+        console.log('Auto-saving...'); // Debug log
+        
+        const teacherUID = user.uid;
+        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+        const teacher = teacherSnap.val();
+        const section = teacher && teacher.section ? teacher.section : null;
+        const gradeLevel = teacher && teacher.gradelevel ? teacher.gradelevel : null;
+        
+        if (!section || !gradeLevel) return;
+
+        let quarter = getParam('quarter') || 'auto';
+        let name = getParam('name') || 'AutoSaved_' + new Date().toISOString().slice(0,19).replace(/:/g,'-');
+        let subject = getParam('subject') || 'general';
+
+        saveCurrentSlide();
+        
+        // Process slides with quiz-specific game data for auto-save
+        const processedSlides = slides.map(slide => {
+            if (slide.game && slide.game.data) {
+                return {
+                    ...slide,
+                    game: {
+                        ...slide.game,
+                        data: typeof slide.game.data === 'string' ? 
+                              slide.game.data : JSON.stringify(slide.game.data),
+                        isQuizSpecific: true,
+                        autoSaved: true
+                    }
+                };
+            }
+            return slide;
+        });
+        
+        const currentCanvasState = JSON.stringify(processedSlides);
+        
+        if (currentCanvasState === lastCanvasState) return;
+
+        let existingDescription = lastDescription || '';
+        
+        try {
+            const existingQuizSnap = await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).once('value');
+            if (existingQuizSnap.exists()) {
+                const existingQuiz = existingQuizSnap.val();
+                existingDescription = existingQuiz.description || lastDescription || '';
+            }
+        } catch (error) {
+            console.log('Could not fetch existing description');
+        }
+        
+        const teacherName = `${teacher.firstname || ''} ${teacher.lastname || ''}`.trim();
+        const quizPassword = Math.floor(100000 + Math.random() * 900000).toString();
+        const now = new Date().toISOString();
+
+        // Enhanced auto-save data with quiz-specific game information
+        const teacherAutoSaveData = {
+            slides: currentCanvasState,
+            savedAt: now,
+            title: name,
+            quarter: quarter,
+            subject: subject,
+            description: existingDescription,
+            autoSaved: true,
+            section: section,
+            gradeLevel: gradeLevel,
+            createdBy: teacherUID,
+            teacherName: teacherName,
+            password: quizPassword,
+            isLocked: true,
+            hasPassword: true,
+            hasCustomGames: processedSlides.some(slide => slide.game && slide.game.data),
+            gameCount: processedSlides.filter(slide => slide.game).length,
+            customGameCount: processedSlides.filter(slide => slide.game && slide.game.data).length,
+            quizId: getQuizId()
+        };
+
+        await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).set(teacherAutoSaveData);
+
+        // Update students with quiz-specific game data
+        const studentsSnap = await db.ref('students').once('value');
+        const studentUpdatePromises = [];
+
+        if (studentsSnap.exists()) {
+            studentsSnap.forEach(studentSnap => {
+                const student = studentSnap.val();
+                const studentUID = studentSnap.key;
+                
+                const studentSection = (student.section || '').toString().trim().toLowerCase();
+                const teacherSectionLower = (section || '').toString().trim().toLowerCase();
+                const studentGrade = (student.gradelevel || '').toString().trim();
+                const teacherGrade = (gradeLevel || '').toString().trim();
+                
+                if (studentSection === teacherSectionLower && studentGrade === teacherGrade) {
+                    const studentAutoSaveData = {
+                        title: name,
+                        description: existingDescription,
+                        quarter: quarter,
+                        section: section,
+                        gradeLevel: gradeLevel,
+                        createdBy: teacherUID,
+                        teacherName: teacherName,
+                        password: quizPassword,
+                        isLocked: true,
+                        slides: currentCanvasState, // Include quiz-specific game data
+                        assignedBy: teacherUID,
+                        assignedAt: now,
+                        status: 'available',
+                        attempts: 0,
+                        bestScore: 0,
+                        lastAttemptAt: null,
+                        hasCustomGames: teacherAutoSaveData.hasCustomGames,
+                        gameCount: teacherAutoSaveData.gameCount,
+                        customGameCount: teacherAutoSaveData.customGameCount,
+                        quizId: teacherAutoSaveData.quizId
+                    };
+                    
+                    studentUpdatePromises.push(
+                        db.ref(`students/${studentUID}/quizzes/${subject}/${quarter}/${name}`).set(studentAutoSaveData)
+                    );
+                }
+            });
+        }
+
+        await Promise.all(studentUpdatePromises);
+        
+        lastCanvasState = currentCanvasState;
+        showAutoSaveIndicator('Auto-saved with quiz customizations');
+        
+    } catch (error) {
+        console.error('Auto-save failed:', error);
+        showAutoSaveIndicator('Auto-save Failed', true);
+    }
+}
+
 
     
+    </script>]
+
+<script>
+    // Add this function for auto-save visual feedback
+function showAutoSaveIndicator(message, isError = false) {
+    // Create or update auto-save indicator
+    let indicator = document.getElementById('auto-save-indicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'auto-save-indicator';
+        indicator.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        `;
+        document.body.appendChild(indicator);
+    }
+    
+    indicator.textContent = message;
+    indicator.style.background = isError ? '#e74c3c' : 'var(--primary)';
+    indicator.style.opacity = '1';
+    indicator.style.transform = 'translateY(0) translateX(0)';
+    
+    // Fade out after 4 seconds
+    setTimeout(() => {
+        indicator.style.opacity = '0';
+        indicator.style.transform = 'translateY(-20px) translateX(10px)';
+    }, 4000);
+}
+</script>
+
+<script>
+    // Add this enhanced function to properly handle quiz-specific game data saving
+function saveQuizSpecificGameData() {
+    // Get the current game iframe if it exists
+    const gameIframe = document.getElementById('game-iframe');
+    if (!gameIframe || !slides[currentSlide] || !slides[currentSlide].game) {
+        return;
+    }
+
+    // Request current game data from the iframe
+    gameIframe.contentWindow.postMessage({
+        type: 'requestCurrentGameData',
+        quizId: getQuizId()
+    }, '*');
+}
+
+// Enhanced message handler to properly capture and save game data
+function handleGameMessage(event) {
+    console.log('📨 Quiz Editor received message:', event.data);
+    
+    const data = event.data;
+    
+    // Handle when game sends updated data (when user edits questions)
+    if (data.type === 'saveQuizGameData' || data.type === 'gameDataUpdate') {
+        console.log('💾 SAVING game data from iframe:', data.gameData);
+        
+        // Update the current slide's game data
+        if (slides[currentSlide] && slides[currentSlide].game) {
+            // Store the complete game data
+            slides[currentSlide].game.data = JSON.stringify(data.gameData);
+            slides[currentSlide].game.lastModified = new Date().toISOString();
+            slides[currentSlide].game.quizId = getQuizId();
+            slides[currentSlide].game.isQuizSpecific = true;
+            slides[currentSlide].game.customized = true;
+            slides[currentSlide].game.hasEditedQuestions = true;
+            
+            console.log('✅ Game data saved to canvas slide');
+            
+            // Force immediate save to ensure data persistence
+            saveCurrentSlide();
+            triggerImmediateAutoSave();
+            showAutoSaveIndicator('🎮 Game questions updated!');
+        }
+    }
+    
+    // Handle when game requests existing data (on load)
+    else if (data.type === 'requestQuizGameData') {
+        console.log('🔄 Game requesting existing quiz data');
+        
+        const iframe = document.getElementById('game-iframe');
+        if (iframe && slides[currentSlide] && slides[currentSlide].game && slides[currentSlide].game.data) {
+            let gameData = slides[currentSlide].game.data;
+            
+            // Parse if it's a string
+            if (typeof gameData === 'string') {
+                try {
+                    gameData = JSON.parse(gameData);
+                } catch (e) {
+                    console.error('Error parsing stored game data:', e);
+                    gameData = null;
+                }
+            }
+            
+            console.log('📤 Sending existing game data to iframe:', gameData);
+            
+            iframe.contentWindow.postMessage({
+                type: 'loadQuizGameData',
+                gameData: gameData,
+                quizId: getQuizId(),
+                isEditMode: true
+            }, '*');
+        } else {
+            console.log('❌ No existing game data, sending null');
+            iframe.contentWindow.postMessage({
+                type: 'loadQuizGameData',
+                gameData: null,
+                quizId: getQuizId(),
+                isEditMode: true
+            }, '*');
+        }
+    }
+    
+    // Handle response when we request current game data
+    else if (data.type === 'currentGameData') {
+        console.log('📥 Received current game data from iframe:', data.gameData);
+        
+        if (slides[currentSlide] && slides[currentSlide].game) {
+            // Store the current game state
+            slides[currentSlide].game.data = JSON.stringify(data.gameData);
+            slides[currentSlide].game.lastModified = new Date().toISOString();
+            slides[currentSlide].game.customized = true;
+            
+            console.log('✅ Current game state captured and saved');
+            
+            saveCurrentSlide();
+            triggerImmediateAutoSave();
+            showAutoSaveIndicator('🎮 Current game state saved');
+        }
+    }
+}
+
+// FIXED: Enhanced save function that properly captures and saves game data
+document.getElementById('save-btn').onclick = async function() {
+    console.log('💾 SAVE CLICKED - Capturing all game data...');
+    
+    const saveBtn = this;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '⏳ Saving...';
+    
+    try {
+        // STEP 1: If there's an active game, request its current data first
+        const gameIframe = document.getElementById('game-iframe');
+        if (gameIframe && slides[currentSlide] && slides[currentSlide].game) {
+            console.log('📨 Requesting final game state before save...');
+            
+            // Request current game state and wait for response
+            await new Promise((resolve) => {
+                let responseReceived = false;
+                
+                const messageHandler = (event) => {
+                    if (!responseReceived && 
+                        (event.data.type === 'saveQuizGameData' || 
+                         event.data.type === 'currentGameData')) {
+                        console.log('✅ Received final game data:', event.data.gameData);
+                        
+                        // Update the slide with the latest data
+                        if (slides[currentSlide] && slides[currentSlide].game) {
+                            slides[currentSlide].game.data = JSON.stringify(event.data.gameData);
+                            slides[currentSlide].game.lastModified = new Date().toISOString();
+                            slides[currentSlide].game.customized = true;
+                        }
+                        
+                        responseReceived = true;
+                        window.removeEventListener('message', messageHandler);
+                        resolve();
+                    }
+                };
+                
+                window.addEventListener('message', messageHandler);
+                
+                // Request the data
+                gameIframe.contentWindow.postMessage({
+                    type: 'requestCurrentGameData',
+                    quizId: getQuizId(),
+                    finalSave: true
+                }, '*');
+                
+                // Timeout after 3 seconds
+                setTimeout(() => {
+                    if (!responseReceived) {
+                        console.log('⏰ Timeout waiting for game data, proceeding with save');
+                        window.removeEventListener('message', messageHandler);
+                        resolve();
+                    }
+                }, 3000);
+            });
+        }
+        
+        // Continue with existing save logic...
+        let quarter = getParam('quarter');
+        let name = getParam('name');
+        let subject = getParam('subject');
+        
+        if (!name) {
+            name = prompt('Enter a Name for this quiz:', 'MyQuiz');
+            if (!name) return;
+            name = name.trim();
+            if (!name) return alert('Name cannot be empty.');
+        }
+        
+        if (!quarter) {
+            quarter = prompt('Which quarter? (1, 2, 3, or 4)', '1');
+            if (!quarter || !['1','2','3','4'].includes(quarter.trim())) {
+                return alert('Invalid quarter.');
+            }
+            quarter = quarter.trim();
+        }
+        
+        if (!subject) {
+            subject = prompt('Enter subject:', 'subject_math');
+            if (!subject) return alert('Subject is required.');
+            subject = subject.trim();
+        }
+
+        let description = prompt('Enter quiz description (optional):', lastDescription || '');
+        if (description === null) return;
+        description = description.trim();
+        lastDescription = description;
+
+        // Save current slide with all captured data
+        saveCurrentSlide();
+        
+        // Process slides ensuring game data is properly serialized
+        const processedSlides = slides.map((slide, index) => {
+            if (slide.game && slide.game.data) {
+                return {
+                    ...slide,
+                    game: {
+                        ...slide.game,
+                        data: typeof slide.game.data === 'string' ? slide.game.data : JSON.stringify(slide.game.data),
+                        savedAt: new Date().toISOString(),
+                        isQuizSpecific: true,
+                        customized: true
+                    }
+                };
+            }
+            return slide;
+        });
+        
+        const slidesJson = JSON.stringify(processedSlides);
+
+        // Continue with Firebase save
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            alert('Please log in to save quiz.');
+            return;
+        }
+
+        const teacherUID = user.uid;
+        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+        const teacher = teacherSnap.val();
+        
+        if (!teacher || !teacher.section || !teacher.gradelevel) {
+            alert('Your section and grade level must be set. Please update your profile.');
+            return;
+        }
+        
+        const section = teacher.section;
+        const gradeLevel = teacher.gradelevel;
+        const teacherName = `${teacher.firstname || ''} ${teacher.lastname || ''}`.trim();
+        const quizPassword = Math.floor(100000 + Math.random() * 900000).toString();
+        const now = new Date().toISOString();
+
+        const teacherQuizData = {
+            slides: slidesJson,
+            savedAt: now,
+            title: name,
+            quarter: quarter,
+            description: description,
+            subject: subject,
+            section: section,
+            gradeLevel: gradeLevel,
+            createdBy: teacherUID,
+            teacherName: teacherName,
+            password: quizPassword,
+            isLocked: true,
+            hasPassword: true,
+            hasCustomGames: processedSlides.some(slide => slide.game && slide.game.data),
+            gameCount: processedSlides.filter(slide => slide.game).length,
+            customGameCount: processedSlides.filter(slide => slide.game && slide.game.data).length,
+            quizId: getQuizId()
+        };
+
+        // Save to teacher's collection
+        await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).set(teacherQuizData);
+
+        // Update all students in the same section and grade
+        const studentsSnap = await db.ref('students').once('value');
+        const studentUpdatePromises = [];
+        let studentsUpdated = 0;
+
+        if (studentsSnap.exists()) {
+            studentsSnap.forEach(studentSnap => {
+                const student = studentSnap.val();
+                const studentUID = studentSnap.key;
+                
+                const studentSection = (student.section || '').toString().trim().toLowerCase();
+                const teacherSectionLower = (section || '').toString().trim().toLowerCase();
+                const studentGrade = (student.gradelevel || '').toString().trim();
+                const teacherGrade = (gradeLevel || '').toString().trim();
+                
+                if (studentSection === teacherSectionLower && studentGrade === teacherGrade) {
+                    studentsUpdated++;
+                    
+                    const studentQuizData = {
+                        ...teacherQuizData,
+                        assignedBy: teacherUID,
+                        assignedAt: now,
+                        status: 'available',
+                        attempts: 0,
+                        bestScore: 0,
+                        lastAttemptAt: null,
+                        studentUID: studentUID
+                    };
+                    
+                    studentUpdatePromises.push(
+                        db.ref(`students/${studentUID}/quizzes/${subject}/${quarter}/${name}`).set(studentQuizData)
+                    );
+                }
+            });
+        }
+
+        await Promise.all(studentUpdatePromises);
+
+        const customGamesCount = teacherQuizData.customGameCount;
+        const successMessage = `✅ Quiz saved successfully!\n\n` +
+            `📝 Quiz: "${name}"\n` +
+            `🔐 Password: ${quizPassword}\n` +
+            `🎮 Customized games: ${customGamesCount}\n` +
+            `👥 Students updated: ${studentsUpdated}\n\n` +
+            `Your edited questions will now appear when students take the quiz!`;
+        
+        alert(successMessage);
+        
+    } catch (error) {
+        console.error('❌ Save error:', error);
+        alert('Error saving quiz: ' + error.message);
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fa fa-save"></i> Save';
+    }
+};
+
+async function autoSaveCanvas() {
+    if (!isAutoSaveEnabled) return;
+    
+    try {
+        // Always save current slide first
+        saveCurrentSlide();
+        
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            // Save to localStorage if not logged in
+            localStorage.setItem('quiz-autosave-slides', JSON.stringify(slides));
+            localStorage.setItem('quiz-autosave-timestamp', new Date().toISOString());
+            showAutoSaveIndicator('Auto-saved locally');
+            return;
+        }
+        
+        console.log('Auto-saving to Firebase...'); // Debug log
+        
+        const teacherUID = user.uid;
+        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+        const teacher = teacherSnap.val();
+        const section = teacher && teacher.section ? teacher.section : null;
+        const gradeLevel = teacher && teacher.gradelevel ? teacher.gradelevel : null;
+        
+        if (!section || !gradeLevel) {
+            // Save locally if teacher profile incomplete
+            localStorage.setItem('quiz-autosave-slides', JSON.stringify(slides));
+            showAutoSaveIndicator('Auto-saved locally (profile incomplete)');
+            return;
+        }
+
+        let quarter = getParam('quarter') || 'auto';
+        let name = getParam('name') || 'AutoSaved_' + new Date().toISOString().slice(0,19).replace(/:/g,'-');
+        let subject = getParam('subject') || 'general';
+
+        // Process slides with all content including game data
+        const processedSlides = slides.map((slide, index) => {
+            const processedSlide = { ...slide };
+            
+            // Include game data if present
+            if (slide.game) {
+                processedSlide.game = {
+                    ...slide.game,
+                    data: typeof slide.game.data === 'string' ? 
+                          slide.game.data : JSON.stringify(slide.game.data || null),
+                    isQuizSpecific: true,
+                    autoSaved: true,
+                    lastAutoSave: new Date().toISOString()
+                };
+            }
+            
+            return processedSlide;
+        });
+        
+        const currentCanvasState = JSON.stringify(processedSlides);
+        
+        // Only save if there are actual changes
+        if (currentCanvasState === lastCanvasState) {
+            console.log('No changes detected, skipping auto-save');
+            return;
+        }
+
+        let existingDescription = lastDescription || '';
+        
+        // Try to get existing description
+        try {
+            const existingQuizSnap = await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).once('value');
+            if (existingQuizSnap.exists()) {
+                const existingQuiz = existingQuizSnap.val();
+                existingDescription = existingQuiz.description || lastDescription || '';
+            }
+        } catch (error) {
+            console.log('Could not fetch existing description:', error);
+        }
+        
+        const teacherName = `${teacher.firstname || ''} ${teacher.lastname || ''}`.trim();
+        const quizPassword = Math.floor(100000 + Math.random() * 900000).toString();
+        const now = new Date().toISOString();
+
+        // Comprehensive auto-save data
+        const teacherAutoSaveData = {
+            slides: currentCanvasState,
+            savedAt: now,
+            title: name,
+            quarter: quarter,
+            subject: subject,
+            description: existingDescription,
+            autoSaved: true,
+            section: section,
+            gradeLevel: gradeLevel,
+            createdBy: teacherUID,
+            teacherName: teacherName,
+            password: quizPassword,
+            isLocked: true,
+            hasPassword: true,
+            // Game tracking
+            hasCustomGames: processedSlides.some(slide => slide.game && slide.game.data),
+            gameCount: processedSlides.filter(slide => slide.game).length,
+            customGameCount: processedSlides.filter(slide => slide.game && slide.game.data).length,
+            // Canvas content tracking
+            totalSlides: processedSlides.length,
+            hasContent: processedSlides.some(slide => slide.objects && slide.objects.length > 0),
+            lastModified: now,
+            quizId: getQuizId(),
+            version: '1.0'
+        };
+
+        // Save to teacher's collection
+        await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).set(teacherAutoSaveData);
+
+        // Update students with complete quiz data
+        const studentsSnap = await db.ref('students').once('value');
+        const studentUpdatePromises = [];
+        let studentsUpdated = 0;
+
+        if (studentsSnap.exists()) {
+            studentsSnap.forEach(studentSnap => {
+                const student = studentSnap.val();
+                const studentUID = studentSnap.key;
+                
+                const studentSection = (student.section || '').toString().trim().toLowerCase();
+                const teacherSectionLower = (section || '').toString().trim().toLowerCase();
+                const studentGrade = (student.gradelevel || '').toString().trim();
+                const teacherGrade = (gradeLevel || '').toString().trim();
+                
+                if (studentSection === teacherSectionLower && studentGrade === teacherGrade) {
+                    studentsUpdated++;
+                    
+                    const studentAutoSaveData = {
+                        title: name,
+                        description: existingDescription,
+                        quarter: quarter,
+                        section: section,
+                        gradeLevel: gradeLevel,
+                        createdBy: teacherUID,
+                        teacherName: teacherName,
+                        password: quizPassword,
+                        isLocked: true,
+                        slides: currentCanvasState, // Complete slide data including games
+                        assignedBy: teacherUID,
+                        assignedAt: now,
+                        status: 'available',
+                        attempts: 0,
+                        bestScore: 0,
+                        lastAttemptAt: null,
+                        hasCustomGames: teacherAutoSaveData.hasCustomGames,
+                        gameCount: teacherAutoSaveData.gameCount,
+                        customGameCount: teacherAutoSaveData.customGameCount,
+                        totalSlides: teacherAutoSaveData.totalSlides,
+                        quizId: teacherAutoSaveData.quizId,
+                        lastUpdated: now
+                    };
+                    
+                    studentUpdatePromises.push(
+                        db.ref(`students/${studentUID}/quizzes/${subject}/${quarter}/${name}`).set(studentAutoSaveData)
+                    );
+                }
+            });
+        }
+
+        await Promise.all(studentUpdatePromises);
+        
+        // Update last saved state
+        lastCanvasState = currentCanvasState;
+        
+        // Also save to localStorage as backup
+        localStorage.setItem('quiz-autosave-slides', JSON.stringify(processedSlides));
+        localStorage.setItem('quiz-autosave-timestamp', now);
+        
+        const gameInfo = teacherAutoSaveData.customGameCount > 0 ? 
+            ` (${teacherAutoSaveData.customGameCount} customized games)` : '';
+        
+        showAutoSaveIndicator(`Auto-saved: ${studentsUpdated} students updated${gameInfo}`);
+        console.log('Auto-save completed successfully');
+        
+    } catch (error) {
+        console.error('Auto-save failed:', error);
+        // Fallback to localStorage
+        try {
+            saveCurrentSlide();
+            localStorage.setItem('quiz-autosave-slides', JSON.stringify(slides));
+            localStorage.setItem('quiz-autosave-timestamp', new Date().toISOString());
+            showAutoSaveIndicator('Auto-saved locally (Firebase error)', true);
+        } catch (localError) {
+            console.error('Local auto-save also failed:', localError);
+            showAutoSaveIndicator('Auto-save Failed', true);
+        }
+    }
+}
+
+</script>
+
 
 </body>
 </html>

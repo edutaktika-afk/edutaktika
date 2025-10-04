@@ -235,9 +235,22 @@
             <button id="createLessonBtn" style="background:#388e3c;color:#fff;border:none;border-radius:6px;padding:10px 28px;font-size:1.1rem;font-weight:600;cursor:pointer;">
                 <i class="fa fa-plus"></i> Create Lesson
             </button>
+            <button id="createQuizBtn" style="background:#ffe600;color:#000;border:none;border-radius:6px;padding:10px 28px;font-size:1.1rem;font-weight:600;cursor:pointer;margin-left: auto;">
+                <i class="fa fa-plus"></i> Create Quiz
+            </button>
         </div>
 
                <script>
+
+                // Create Lesson button: go to Editor.html (new lesson)
+document.getElementById('createLessonBtn').onclick = function() {
+    window.location.href = 'Editor.html';
+};
+
+// Quiz Section button: go to quiz section page (replace with your quiz page)
+document.getElementById('createQuizBtn').onclick = function() {
+    window.location.href = 'quizEditor.html';
+};
                (function(){
                    const btn = document.getElementById('createLessonBtn');
                    if(!btn) return;
@@ -289,39 +302,7 @@
                 
             </div>
 
-            <!-- YouTube Lessons (auto-fetched) -->
-            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FvX8con4ltjXkQQTOySuXMD" style="margin-top: 20px;">
-                <div class="quarter-title" style="align-items:center; gap:10px;">
-                    <i class="fab fa-youtube"></i>
-                    <h3 style="margin:0;">Video Lessons</h3>
-                </div>
-                <div class="lessons-container">
-                    <div>Loading YouTube lessons…</div>
-                </div>
-            </div>
-
-            <!-- <div class="progress-container">
-                <div class="progress-title">Quarter Progress</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 65%"></div>
-                </div>
-                <div class="progress-stats">
-                    <span>65% Complete</span>
-                    <span>2/3 Lessons Finished</span>
-                </div>
-            </div>
-
-            <div class="badges-container">
-                <div class="badges-title">Earned Badges</div>
-                <div class="badges-list">
-                    <div class="badge" data-tooltip="Time Master">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="badge" data-tooltip="Shape Explorer">
-                        <i class="fas fa-shapes"></i>
-                    </div>
-                </div>
-            </div> -->
+           
         </div>
 
         <!-- Quarter 2 -->
@@ -422,28 +403,7 @@
                 
             </div>
 
-            <!-- <div class="progress-container">
-                <div class="progress-title">Quarter Progress</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 65%"></div>
-                </div>
-                <div class="progress-stats">
-                    <span>65% Complete</span>
-                    <span>2/3 Lessons Finished</span>
-                </div>
-            </div>
-
-            <div class="badges-container">
-                <div class="badges-title">Earned Badges</div>
-                <div class="badges-list">
-                    <div class="badge" data-tooltip="Time Master">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="badge" data-tooltip="Shape Explorer">
-                        <i class="fas fa-shapes"></i>
-                    </div>
-                </div>
-            </div> -->
+            
         </div>
 
         <!-- Quizzes -->
@@ -463,9 +423,9 @@
                     </select>
                 </div>
             </div>
-            <div class="lessons-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            <div class="lessons-container">
                 <div id="quiz-list"></div>
-                <div id="student-quiz-cards"></div>
+                
             </div>
         </div>
 
@@ -625,36 +585,6 @@
   </div>
 </footer>
 
-        <!-- Edit Profile Modal -->
-
-<link rel="stylesheet" href="../CSS/editProfile.css">
-
-<div id="editProfileModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
-    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
-        <h3 style="margin-top:0;">Edit Profile</h3>
-        <form id="editProfileForm">
-            <label>First Name:<br>
-                <input type="text" id="edit_fname" required>
-            </label><br><br>
-            <label>Middle Name:<br>
-                <input type="text" id="edit_mname">
-            </label><br><br>
-            <label>Last Name:<br>
-                <input type="text" id="edit_lname" required>
-            </label><br><br>
-            <label>Grade Level:<br>
-                <input type="text" id="edit_gradelevel">
-            </label><br><br>
-            <label>Section:<br>
-                <input type="text" id="edit_section">
-            </label><br><br>
-            <div style="text-align:right;">
-                <button type="button" onclick="closeEditProfileModal()" style="margin-right:10px;">Cancel</button>
-                <button type="submit">Save</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <script src="../assets/js/Teacher Side/editProfile.js"></script>
 <script>
@@ -704,9 +634,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
     }
 });
 
-// Remove the old global loader and its call!
-// function loadPresentationsByQuarter(quarter) { ... }
-// ['1','2','3','4','5'].forEach(loadPresentationsByQuarter);
+
 
 function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
     const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(name)}&subject=${encodeURIComponent(subject)}`;
@@ -805,7 +733,7 @@ function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
     }
 </style>
 
-<!-- Add this near the end of your body, before </body> -->
+
 <div id="createLessonModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
     <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
         <h3 style="margin-top:0;">Create New Lesson</h3>
@@ -832,6 +760,7 @@ function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
         </form>
     </div>
 </div>
+
 
 <script>
     // Place this script after your modal HTML
@@ -1339,8 +1268,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
 <script src="../assets/js/navbar.js"></script>
 <script src="../assets/tabDropdown.js"></script>
 <script src="../assets/js/header-dynamic-labels.js"></script>
-<!-- Add before closing </body> if not already included -->
-<!-- Empty quarter placeholder styles & logic -->
+
 <style>
     .empty-quarter-msg {
         box-sizing: border-box;
@@ -1440,6 +1368,393 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
 })();
 </script>
     </div>
+
+
+<!-- Replace the existing createQuizModal with this updated version -->
+<div id="createQuizModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
+        <h3 style="margin-top:0;color:#ffe600;font-size:1.35rem;letter-spacing:1px;">Create New Quiz</h3>
+        <form id="createQuizForm">
+            <label>Quarter:<br>
+                <select id="quiz_quarter" required>
+                    <option value="">Select Quarter</option>
+                    <option value="1">Quarter 1</option>
+                    <option value="2">Quarter 2</option>
+                    <option value="3">Quarter 3</option>
+                    <option value="4">Quarter 4</option>
+                </select>
+            </label><br><br>
+            <label>Title:<br>
+                <input type="text" id="quiz_title" required>
+            </label><br><br>
+            <label>Description:<br>
+                <textarea id="quiz_desc" rows="2"></textarea>
+            </label><br><br>
+            <div style="text-align:right;">
+                <button type="button" onclick="closeCreateQuizModal()" style="margin-right:10px;">Cancel</button>
+                <button type="submit">Create</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Add this script after the existing createLessonModal script
+
+// Show modal on Create Quiz click
+document.getElementById('createQuizBtn').onclick = function() {
+    document.getElementById('createQuizModal').style.display = 'flex';
+};
+
+// Hide modal function
+function closeCreateQuizModal() {
+    document.getElementById('createQuizModal').style.display = 'none';
+}
+
+// Updated quiz creation form submission - saves only to student's quizzes collection
+document.getElementById('createQuizForm').onsubmit = async function(e) {
+    e.preventDefault();
+    
+    const quarter = document.getElementById('quiz_quarter').value;
+    const title = document.getElementById('quiz_title').value.trim();
+    const description = document.getElementById('quiz_desc').value.trim();
+
+    if (!quarter || !title) {
+        alert('Quarter and Title are required!');
+        return;
+    }
+
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        alert('Please log in to create a quiz.');
+        return;
+    }
+
+    const teacherUID = user.uid;
+
+    try {
+        // Get teacher's section and grade level from database
+        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+        const teacher = teacherSnap.val();
+        
+        if (!teacher || !teacher.section || !teacher.gradelevel) {
+            alert("Your section and grade level must be set. Please update your profile.");
+            return;
+        }
+        
+        const section = teacher.section;
+        const gradeLevel = teacher.gradelevel;
+        const teacherName = `${teacher.firstname || ''} ${teacher.lastname || ''}`.trim();
+
+        console.log('Creating quiz for:', { section, gradeLevel, teacherName, teacherUID });
+
+        // Generate a simple 6-digit password for the quiz
+        const quizPassword = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Create comprehensive quiz data
+        const quizData = {
+            title: title,
+            description: description,
+            quarter: quarter,
+            section: section,
+            gradeLevel: gradeLevel,
+            createdAt: new Date().toISOString(),
+            savedAt: new Date().toISOString(),
+            createdBy: teacherUID,
+            teacherName: teacherName,
+            password: quizPassword,
+            isLocked: true, // Initially locked
+            hasPassword: true,
+            subject: subjectPage,
+            slides: JSON.stringify([{
+                version: "5.2.4",
+                objects: [],
+                backgroundColor: "#fff"
+            }])
+        };
+
+        // 1. Save to teacher's own quiz collection (for teacher management)
+        await db.ref(`teachers/${teacherUID}/sections/${section}/quizzes/${subjectPage}/${quarter}/${title}`).set(quizData);
+
+        // 2. Find ALL students with matching section and grade level and save quiz to their quizzes collection ONLY
+        const studentsSnap = await db.ref('students').once('value');
+        const studentSavePromises = [];
+        let studentsFound = 0;
+        
+        if (studentsSnap.exists()) {
+            studentsSnap.forEach(studentSnap => {
+                const student = studentSnap.val();
+                const studentUID = studentSnap.key;
+                
+                // Flexible matching - handle different data types and case sensitivity
+                const studentSection = (student.section || '').toString().trim().toLowerCase();
+                const teacherSectionLower = (section || '').toString().trim().toLowerCase();
+                const studentGrade = (student.gradelevel || '').toString().trim();
+                const teacherGrade = (gradeLevel || '').toString().trim();
+                
+                console.log(`Checking student ${studentUID}:`, {
+                    studentName: `${student.firstname} ${student.lastname}`,
+                    studentSection,
+                    teacherSectionLower,
+                    studentGrade,
+                    teacherGrade,
+                    sectionMatch: studentSection === teacherSectionLower,
+                    gradeMatch: studentGrade === teacherGrade
+                });
+                
+                // Check if student is in the same section and grade level
+                if (studentSection === teacherSectionLower && studentGrade === teacherGrade) {
+                    studentsFound++;
+                    console.log(`✓ Found matching student: ${studentUID} (${student.firstname} ${student.lastname})`);
+                    
+                    // Save complete quiz data to student's quizzes collection (same structure as teacher)
+                    const studentQuizData = {
+                        title: title,
+                        description: description,
+                        quarter: quarter,
+                        section: section,
+                        gradeLevel: gradeLevel,
+                        createdAt: new Date().toISOString(),
+                        savedAt: new Date().toISOString(),
+                        createdBy: teacherUID,
+                        teacherName: teacherName,
+                        password: quizPassword,
+                        isLocked: true,
+                        hasPassword: true,
+                        subject: subjectPage,
+                        slides: JSON.stringify([{
+                            version: "5.2.4",
+                            objects: [],
+                            backgroundColor: "#fff"
+                        }]),
+                        // Student-specific fields
+                        assignedBy: teacherUID,
+                        assignedAt: new Date().toISOString(),
+                        status: 'available',
+                        attempts: 0,
+                        bestScore: 0,
+                        lastAttemptAt: null
+                    };
+                    
+                    // Save to student's quizzes collection (same path structure as teachers)
+                    studentSavePromises.push(
+                        db.ref(`students/${studentUID}/quizzes/${subjectPage}/${quarter}/${title}`).set(studentQuizData)
+                    );
+                }
+            });
+        }
+
+        // Wait for all student data to be saved
+        await Promise.all(studentSavePromises);
+
+        console.log(`Quiz saved to ${studentsFound} students' quizzes collection`);
+
+        // Clear form
+        document.getElementById('quiz_quarter').value = '';
+        document.getElementById('quiz_title').value = '';
+        document.getElementById('quiz_desc').value = '';
+        
+        closeCreateQuizModal();
+        
+        // Show detailed success message with password
+        alert(`Quiz created successfully!\n\n🔐 Quiz Password: ${quizPassword}\n\n✅ Quiz "${title}" assigned to ${studentsFound} student${studentsFound !== 1 ? 's' : ''} in:\n- Section: ${section}\n- Grade Level: ${gradeLevel}\n- Subject: Math\n- Quarter: ${quarter}\n\nShare this password with your students to unlock the quiz.`);
+        
+        // Redirect to quiz editor with parameters
+        const params = new URLSearchParams({
+            quarter: quarter,
+            name: title,
+            subject: subjectPage
+        });
+        
+        window.location.href = 'quizEditor.html?' + params.toString();
+        
+    } catch (error) {
+        console.error('Error creating quiz:', error);
+        alert('Error creating quiz: ' + error.message);
+    }
+};
+
+
+// Close modal when clicking outside
+document.getElementById('createQuizModal').onclick = function(e) {
+    if (e.target === this) {
+        closeCreateQuizModal();
+    }
+};
+</script>
+
+<style>
+    /* Add this CSS for the quiz modal to match the lesson modal */
+#createQuizModal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.35);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+}
+#createQuizModal .modal-content,
+#createQuizModal > div {
+    background: #fff;
+    padding: 32px 28px;
+    border-radius: 16px;
+    max-width: 370px;
+    width: 90%;
+    box-shadow: 0 4px 24px #0002;
+    text-align: left;
+    position: relative;
+    animation: modalPop 0.25s;
+}
+#createQuizModal h3 {
+    margin-top: 0;
+    margin-bottom: 18px;
+    font-size: 1.35rem;
+    color: #ffe600; /* Yellow for quiz modal */
+    letter-spacing: 1px;
+}
+#createQuizModal label {
+    font-weight: 500;
+    color: #2d3923;
+    font-size: 1rem;
+}
+#createQuizModal input, #createQuizModal select, #createQuizModal textarea {
+    width: 100%;
+    padding: 8px 10px;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    border: 1px solid #b2b2b2;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: #f8f8f8;
+    transition: border 0.2s;
+}
+#createQuizModal input:focus, #createQuizModal select:focus, #createQuizModal textarea:focus {
+    border: 1.5px solid #ffe600; /* Yellow focus border */
+    outline: none;
+    background: #fff;
+}
+#createQuizModal .modal-actions,
+#createQuizModal > div > div:last-child {
+    text-align: right;
+    margin-top: 10px;
+}
+#createQuizModal button[type="button"] {
+    background: #eee;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-size: 1rem;
+    margin-right: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+#createQuizModal button[type="button"]:hover {
+    background: #e0e0e0;
+}
+#createQuizModal button[type="submit"] {
+    background: #ffe600; /* Yellow submit button */
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 22px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+#createQuizModal button[type="submit"]:hover {
+    background: #ffd600;
+}
+</style>
+
+<!-- Quiz Management Modal for Teachers -->
+<div id="quizManagementModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:32px 28px;border-radius:16px;max-width:500px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;max-height:80vh;overflow-y:auto;">
+        <h3 style="margin-top:0;color:#ffe600;font-size:1.35rem;letter-spacing:1px;">Quiz Management</h3>
+        <div id="quizManagementContent">
+            <!-- Quiz management content will be loaded here -->
+        </div>
+        <div style="text-align:right;margin-top:20px;">
+            <button type="button" onclick="closeQuizManagementModal()" style="background:#eee;color:#333;border:none;border-radius:6px;padding:8px 18px;font-size:1rem;cursor:pointer;">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Quiz Management modal script
+function openQuizManagementModal() {
+    document.getElementById('quizManagementModal').style.display = 'flex';
+}
+
+function closeQuizManagementModal() {
+    document.getElementById('quizManagementModal').style.display = 'none';
+}
+
+// Load quiz management content (quizzes for the teacher's section)
+async function loadQuizManagementContent() {
+    const container = document.getElementById('quizManagementContent');
+    container.innerHTML = '<div style="color:#888;">Loading quizzes...</div>';
+
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        container.innerHTML = "<div>Please log in to manage your quizzes.</div>";
+        return;
+    }
+
+    const teacherUID = user.uid;
+
+    // Get teacher's section
+    const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+    const teacher = teacherSnap.val();
+    if (!teacher || !teacher.section) {
+        container.innerHTML = "<div>No section found for this teacher.</div>";
+        return;
+    }
+    const section = teacher.section;
+
+    // Load quizzes from teacher's section
+    const snap = await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subjectPage).once('value');
+    if (!snap.exists()) {
+        container.innerHTML = "<div>No quizzes found.</div>";
+        return;
+    }
+    let quizzes = [];
+    snap.forEach(child => {
+        const data = child.val();
+        quizzes.push({
+            title: data.title || child.key,
+            description: data.description || '',
+            quarter: data.quarter || '',
+            savedAt: data.savedAt || ""
+        });
+    });
+     // Sort quizzes by savedAt (old to new)
+    quizzes.sort((a, b) => new Date(a.savedAt) - new Date(b.savedAt));
+    container.innerHTML = quizzes.map(quiz => `
+        <div class="lesson-item" data-quiz="${quiz.title}">
+            <div class="lesson-thumbnail" style="background-color: #ffdd01"></div>
+            <div class="lesson-title">
+                <h3>${quiz.title}</h3>
+                <p>${quiz.description}</p>
+                <div style="font-size:0.9rem;color:#666;margin:4px 0;">Quarter: ${quiz.quarter}</div>
+                <button class="lesson-badge" onclick="viewQuiz('${quiz.quarter}','${quiz.title}','view','${subjectPage}')" style="cursor:pointer;">View</button>
+                <button class="lesson-badge" onclick="viewQuiz('${quiz.quarter}','${quiz.title}','edit','${subjectPage}')" style="cursor:pointer;">Edit</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Open modal and load content on button click
+document.getElementById('someButtonId').onclick = function() {
+    openQuizManagementModal();
+    loadQuizManagementContent();
+};
+</script>
+
+<script src="../assets/js/quizManagemant.js"></script>
+
 </body>
 
 </html>

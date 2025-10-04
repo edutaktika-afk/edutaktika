@@ -13,29 +13,190 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body { margin:0; background:#222; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; }
+    /* Prevent scrolling and ensure full viewport usage */
+    html, body { 
+        margin: 0; 
+        padding: 0;
+        background: #222; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        min-height: 100vh;
+        max-height: 100vh;
+        overflow: hidden; /* Prevent scrolling */
+        position: fixed;
+        width: 100%;
+        height: 100%;
+    }
+    
+    /* Canvas styling with proper constraints */
+    #presentation-canvas { 
+        width: 1280px; 
+        height: 720px; 
+        max-width: 100vw; 
+        max-height: 90vh; 
+        display: block;
+        object-fit: contain;
+    }
+    
+    /* Back button styling */
+    .back-btn { 
+        position: fixed; 
+        top: 16px; 
+        left: 16px; 
+        background: #fff; 
+        color: #232946; 
+        border: none; 
+        border-radius: 6px; 
+        padding: 8px 18px; 
+        font-weight: 600; 
+        cursor: pointer; 
+        font-size: 1rem;
+        z-index: 100;
+    }
+
+    /* GIF overlay styling */
+    .canvas-gif-overlay {
+        pointer-events: none;
+        z-index: 50;
+        position: absolute;
+    }
+
+    /* Canvas wrapper with no overflow */
+    .presentation-canvas-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 100vw;
+        max-height: 90vh;
+    }
+
+    /* Navigation bar styling */
+    .nav-bar {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        display: flex;
+        gap: 12px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 8px 16px;
+        border-radius: 8px;
+        backdrop-filter: blur(4px);
+    }
+
+    /* Navigation buttons */
+    .nav-btn {
+        padding: 8px 18px;
+        border-radius: 6px;
+        border: none;
+        background: #b39ddb;
+        color: #232946;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+        background: #9575cd;
+        transform: translateY(-1px);
+    }
+
+    .nav-btn:disabled {
+        background: #666;
+        color: #999;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Slide indicator */
+    .slide-indicator {
+        font-size: 1.1em;
+        font-weight: bold;
+        color: white;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+    }
+
+    /* Game iframe styling */
+    #game-iframe {
+        position: absolute;
+        border: none;
+        z-index: 10;
+        pointer-events: auto;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1400px) {
+        #presentation-canvas {
+            width: 90vw;
+            height: calc(90vw * 0.5625); /* 16:9 aspect ratio */
+            max-height: 80vh;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .nav-bar {
+            bottom: 12px;
+            gap: 8px;
+            padding: 6px 12px;
+        }
         
-        #presentation-canvas { width:1280px; height:720px; max-width:100vw; max-height:90vh; display:block; }
-        .back-btn { position:fixed; top:16px; left:16px; background:#fff; color:#232946; border:none; border-radius:6px; padding:8px 18px; font-weight:600; cursor:pointer; font-size:1rem; }
-
-        .canvas-gif-overlay {
-            pointer-events: none;
-            z-index: 50;
-            position: absolute;
+        .nav-btn {
+            padding: 6px 12px;
+            font-size: 0.9rem;
         }
-
-        .presentation-canvas-wrapper {
-            position: relative;
-            overflow: hidden;
+        
+        .slide-indicator {
+            font-size: 1rem;
+            padding: 0 8px;
         }
+        
+        .back-btn {
+            top: 12px;
+            left: 12px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Prevent text selection and context menu */
+    * {
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+
+    /* Hide scrollbars completely */
+    ::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+
+    html {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
     </style>
+    
 </head>
 <body>
-  
+    <button class="back-btn" onclick="window.history.back()">
+        <i class="fas fa-arrow-left"></i> Back
+    </button>
+    
     <div class="presentation-canvas-wrapper">
         <canvas id="presentation-canvas"></canvas>
     </div>
-    <script>    
+
+<script>    
     // Firebase config
     const firebaseConfig = {
         apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
@@ -91,19 +252,34 @@
     let slides = [];
     let currentSlide = 0;
 
-    // Create navigation UI for presentation
-    const navBar = document.createElement('div');
-    navBar.style = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:12px;';
-    navBar.innerHTML = `
-        <button id="prev-slide-btn" style="padding:8px 18px;border-radius:6px;border:none;background:#b39ddb;color:#232946;font-weight:600;cursor:pointer;">Prev Slide</button>
-        <span id="slide-indicator" style="font-size:1.1em;font-weight:bold; color:white;">Slide 1/1</span>
-        <button id="next-slide-btn" style="padding:8px 18px;border-radius:6px;border:none;background:#b39ddb;color:#232946;font-weight:600;cursor:pointer;">Next Slide</button>
-    `;
-    document.body.appendChild(navBar);
+    // Create navigation UI for presentation - Enhanced version
+const navBar = document.createElement('div');
+navBar.className = 'nav-bar';
+navBar.innerHTML = `
+    <button id="prev-slide-btn" class="nav-btn">
+        <i class="fas fa-chevron-left"></i> Prev
+    </button>
+    <span id="slide-indicator" class="slide-indicator">Slide 1/1</span>
+    <button id="next-slide-btn" class="nav-btn">
+        Next <i class="fas fa-chevron-right"></i>
+    </button>
+`;
+document.body.appendChild(navBar);
 
-    function updateSlideIndicator() {
-        document.getElementById('slide-indicator').textContent = `Slide ${currentSlide+1}/${slides.length}`;
-    }
+    // Enhanced navigation events with disabled states
+function updateNavigationButtons() {
+    const prevBtn = document.getElementById('prev-slide-btn');
+    const nextBtn = document.getElementById('next-slide-btn');
+    
+    // Disable/enable buttons based on current slide
+    prevBtn.disabled = currentSlide === 0;
+    nextBtn.disabled = currentSlide === slides.length - 1;
+}
+
+function updateSlideIndicator() {
+    document.getElementById('slide-indicator').textContent = `Slide ${currentSlide+1}/${slides.length}`;
+    updateNavigationButtons();
+}
     function loadSlide(idx) {
         if (slides[idx]) {
             canvas.loadFromJSON(slides[idx], function() {
@@ -117,119 +293,379 @@
     }
 
     // Show game iframe if exists for the slide
+// Replace the showGameIframe function with this enhanced version:
 function showGameIframe(slide, canvasEl) {
     let existing = document.getElementById('game-iframe');
+    
     // Remove if no game
     if (!slide.game || !slide.game.url) {
         if (existing) existing.remove();
         return;
     }
+    
+    console.log('🎮 Creating game iframe for slide:', currentSlide);
+    console.log('🔍 Game data available:', !!(slide.game && slide.game.parsedData));
+    
     const wrapper = document.querySelector('.presentation-canvas-wrapper');
-    // Always remove old iframe and create a new one for the current slide
+    
+    // Always remove and recreate for clean state
     if (existing) existing.remove();
 
     const rect = canvasEl.getBoundingClientRect();
     const iframe = document.createElement('iframe');
     iframe.id = 'game-iframe';
-    iframe.src = slide.game.url;
-    iframe.style.position = 'absolute';
-    iframe.style.top = canvasEl.offsetTop + 'px';
-    iframe.style.left = canvasEl.offsetLeft + 'px';
-    iframe.style.width = rect.width + 'px';
-    iframe.style.height = rect.height + 'px';
-    iframe.style.border = 'none';
-    iframe.style.zIndex = '10';
+    
+    // Use enhanced viewUrl
+    iframe.src = slide.game.viewUrl || slide.game.url;
+    
+    console.log('🎮 Loading game with URL:', iframe.src);
+    
+    iframe.style.cssText = `
+        position: absolute;
+        top: ${canvasEl.offsetTop}px;
+        left: ${canvasEl.offsetLeft}px;
+        width: ${rect.width}px;
+        height: ${rect.height}px;
+        border: none;
+        z-index: 10;
+    `;
     iframe.allow = 'fullscreen';
+    iframe.scrolling = 'no';
+    
     wrapper.style.position = 'relative';
     wrapper.appendChild(iframe);
+    
+    // Enhanced iframe load handler
+    iframe.onload = function() {
+        console.log('🎮 Game iframe loaded, preparing to send data...');
+        
+        // Multiple attempts to send data with delays
+        const sendDataAttempts = [500, 1000, 1500, 2000];
+        
+        sendDataAttempts.forEach((delay, index) => {
+            setTimeout(() => {
+                if (slide.game && slide.game.parsedData) {
+                    console.log(`📤 Attempt ${index + 1}: Sending custom quiz data:`, slide.game.parsedData);
+                    
+                    iframe.contentWindow.postMessage({
+                        type: 'loadQuizGameData',
+                        gameData: slide.game.parsedData,
+                        quizId: getParam('name') || 'unknown',
+                        isViewMode: true,
+                        slideIndex: currentSlide,
+                        hasCustomData: true,
+                        attempt: index + 1
+                    }, '*');
+                } else {
+                    console.log(`📤 Attempt ${index + 1}: No custom data, sending default message`);
+                    console.log('🔍 SENDING THIS DATA TO GAME:', slide.game.parsedData);
+                    iframe.contentWindow.postMessage({
+                        type: 'loadQuizGameData',
+                        gameData: null,
+                        quizId: getParam('name') || 'unknown',
+                        isViewMode: true,
+                        slideIndex: currentSlide,
+                        hasCustomData: false,
+                        attempt: index + 1
+                    }, '*');
+                }
+            }, delay);
+        });
+    };
 }
 
-    // Add this function to keep the iframe in sync with the canvas size
-    function syncGameIframeSize() {
+
+
+    // Add this missing function before the firebase.auth().onAuthStateChanged section:
+
+function handleGameMessage(event) {
+    console.log('📨 QuizView received message:', event.data);
+    
+    const data = event.data;
+    
+    // Handle game requests for quiz data
+    if (data.type === 'requestQuizGameData') {
+        console.log('🔄 Game requesting quiz data for slide:', currentSlide);
+        
+        const currentSlideData = slides[currentSlide];
         const iframe = document.getElementById('game-iframe');
-        const canvasEl = document.getElementById('presentation-canvas');
-        if (iframe && canvasEl) {
-            const rect = canvasEl.getBoundingClientRect();
-            iframe.style.width = rect.width + 'px';
-            iframe.style.height = rect.height + 'px';
-            iframe.style.top = canvasEl.offsetTop + 'px';
-            iframe.style.left = canvasEl.offsetLeft + 'px';
-            iframe.style.transform = '';
-        }
-    }
-    window.addEventListener('resize', syncGameIframeSize);
-
-    // Function to list all presentations for the selected subject and quarter
-    function listPresentations() {
-        if (!subject || !quarter) {
-            document.body.insertAdjacentHTML('beforeend', `<div style="color:white;text-align:center;margin-top:40px;">Please specify both subject and quarter in the URL.<br>Example: <code>?subject=subject_math&quarter=1</code></div>`);
-            return;
-        }
-        db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter).once('value', function(snapshot) {
-            if (!snapshot.exists()) {
-                document.body.insertAdjacentHTML('beforeend', `<div style="color:white;text-align:center;margin-top:40px;">No quizzes found for this subject and quarter.</div>`);
-                return;
+        
+        if (currentSlideData && currentSlideData.game && iframe) {
+            let gameData = null;
+            
+            // Try to get parsed data first, then raw data
+            if (currentSlideData.game.parsedData) {
+                gameData = currentSlideData.game.parsedData;
+            } else if (currentSlideData.game.data) {
+                try {
+                    gameData = typeof currentSlideData.game.data === 'string' 
+                        ? JSON.parse(currentSlideData.game.data) 
+                        : currentSlideData.game.data;
+                } catch (e) {
+                    console.error('Error parsing game data:', e);
+                    gameData = null;
+                }
             }
-            const listDiv = document.createElement('div');
-            listDiv.style = 'margin:40px auto 0 auto;max-width:600px;background:#fff;border-radius:12px;padding:32px;box-shadow:0 4px 24px #0002;';
-            listDiv.innerHTML = `<h2 style="margin-top:0;">Quizzes for ${subject.replace('subject_','').toUpperCase()} - Quarter ${quarter}</h2><ul id="quiz-list" style="list-style:none;padding:0;"></ul>`;
-            document.body.appendChild(listDiv);
-            const ul = document.getElementById('quiz-list');
-            snapshot.forEach(child => {
-                const data = child.val();
-                const li = document.createElement('li');
-                li.style = 'margin-bottom:18px;padding:12px 0;border-bottom:1px solid #eee;';
-                li.innerHTML = `
-                    <strong>${data.title || child.key}</strong>
-                    <div style="font-size:0.95em;color:#444;">${data.description || ''}</div>
-                    <button style="margin-top:6px;padding:6px 18px;border-radius:6px;border:none;background:#b39ddb;color:#232946;font-weight:600;cursor:pointer;"
-                        onclick="window.location.href='quizView.html?subject=${encodeURIComponent(subject)}&quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(child.key)}'">
-                        View Quiz
-                    </button>
-                `;
-                ul.appendChild(li);
-            });
-        });
-    }
-
-    // If no name param, show all presentations for the subject and quarter
-    if (!name) {
-        listPresentations();
-    } else {
-       firebase.auth().onAuthStateChanged(async function(user) {
-        if (!user || !subject || !quarter || !name) {
-            document.body.insertAdjacentHTML('beforeend', `<div style="color:white;text-align:center;margin-top:40px;">Presentation not found or not logged in.</div>`);
-            return;
+            
+            console.log('📤 Sending game data to iframe:', gameData);
+            
+            iframe.contentWindow.postMessage({
+                type: 'loadQuizGameData',
+                gameData: gameData,
+                quizId: getParam('name') || 'unknown',
+                isViewMode: true,
+                slideIndex: currentSlide,
+                hasCustomData: !!gameData
+            }, '*');
+        } else {
+            console.log('❌ No game data found for current slide');
+            
+            if (iframe) {
+                iframe.contentWindow.postMessage({
+                    type: 'loadQuizGameData',
+                    gameData: null,
+                    quizId: getParam('name') || 'unknown',
+                    isViewMode: true,
+                    slideIndex: currentSlide,
+                    hasCustomData: false
+                }, '*');
+            }
         }
-        const teacherUID = user.uid;
+    }
+    
+    // Handle game ready notifications
+    else if (data.type === 'gameReady') {
+        console.log('🎮 Game is ready on slide', currentSlide);
+        
+        // Immediately send data when game is ready
+        const currentSlideData = slides[currentSlide];
+        const iframe = document.getElementById('game-iframe');
+        
+        if (currentSlideData && currentSlideData.game && iframe) {
+            let gameData = currentSlideData.game.parsedData || null;
+            
+            if (!gameData && currentSlideData.game.data) {
+                try {
+                    gameData = typeof currentSlideData.game.data === 'string' 
+                        ? JSON.parse(currentSlideData.game.data) 
+                        : currentSlideData.game.data;
+                } catch (e) {
+                    console.error('Error parsing game data on ready:', e);
+                }
+            }
+            
+            if (gameData) {
+                console.log('📤 Sending data to ready game:', gameData);
+                
+                iframe.contentWindow.postMessage({
+                    type: 'loadQuizGameData',
+                    gameData: gameData,
+                    quizId: getParam('name') || 'unknown',
+                    isViewMode: true,
+                    slideIndex: currentSlide,
+                    hasCustomData: true
+                }, '*');
+            }
+        }
+    }
+    
+    // Log other message types for debugging
+    else {
+        console.log('📨 Unhandled message type:', data.type);
+    }
+}
+
+// Replace the entire firebase.auth().onAuthStateChanged section with this enhanced version:
+firebase.auth().onAuthStateChanged(async function(user) {
+    if (!user || !subject || !quarter || !name) {
+        document.body.insertAdjacentHTML('beforeend', `
+            <div style="color:white;text-align:center;margin-top:40px;">
+                <h3>⚠️ Access Required</h3>
+                <p>Please log in and provide all required parameters.</p>
+                <p style="font-size:0.8rem;color:#ccc;">Need: subject, quarter, name</p>
+            </div>
+        `);
+        return;
+    }
+    
+    const teacherUID = user.uid;
+    
+    try {
+        console.log('🔍 Loading quiz:', { teacherUID, subject, quarter, name });
+        
         const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
         const teacher = teacherSnap.val();
         const section = teacher && teacher.section ? teacher.section : null;
+        
         if (!section) {
-            document.body.insertAdjacentHTML('beforeend', `<div style="color:white;text-align:center;margin-top:40px;">No section found for this teacher.</div>`);
+            document.body.insertAdjacentHTML('beforeend', `
+                <div style="color:white;text-align:center;margin-top:40px;">
+                    <h3>❌ Section Required</h3>
+                    <p>Please set your section in your teacher profile.</p>
+                </div>
+            `);
             return;
         }
-        db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).once('value', function(snapshot) {
-            if (snapshot.exists() && snapshot.val().slides) {
-                slides = JSON.parse(snapshot.val().slides);
+
+        // Load quiz from teacher's collection
+        const quizPath = `teachers/${teacherUID}/sections/${section}/quizzes/${subject}/${quarter}/${name}`;
+        console.log('📍 Quiz path:', quizPath);
+        
+        const snapshot = await db.ref(quizPath).once('value');
+        
+        if (!snapshot.exists()) {
+            console.log('❌ Quiz not found at path:', quizPath);
+            document.body.insertAdjacentHTML('beforeend', `
+                <div style="color:white;text-align:center;margin-top:40px;">
+                    <h3>📝 Quiz Not Found</h3>
+                    <p>The quiz "${name}" was not found.</p>
+                    <p style="font-size:0.8rem;color:#ccc;">Path: ${quizPath}</p>
+                </div>
+            `);
+            return;
+        }
+
+        const quizData = snapshot.val();
+        console.log('✅ Quiz data loaded:', {
+            title: quizData.title,
+            hasSlides: !!quizData.slides,
+            hasCustomGames: quizData.hasCustomGames,
+            gameCount: quizData.gameCount,
+            customGameCount: quizData.customGameCount,
+            version: quizData.version
+        });
+
+        if (quizData.slides) {
+            try {
+                slides = JSON.parse(quizData.slides);
+                console.log('📄 Parsed slides:', slides.length);
+                
+                // Enhanced game data processing
+                slides = slides.map((slide, index) => {
+                    if (slide.game) {
+                        console.log(`🎮 Processing game on slide ${index}:`, {
+                            url: slide.game.url,
+                            hasData: !!slide.game.data,
+                            dataType: typeof slide.game.data,
+                            isCustomized: slide.game.customized
+                        });
+                        
+                        // Process game data
+                        if (slide.game.data) {
+                            try {
+                                if (typeof slide.game.data === 'string') {
+                                    slide.game.parsedData = JSON.parse(slide.game.data);
+                                    console.log(`✅ Parsed game data for slide ${index}:`, 
+                                        Object.keys(slide.game.parsedData || {}));
+                                } else {
+                                    slide.game.parsedData = slide.game.data;
+                                    console.log(`✅ Used object data for slide ${index}:`, 
+                                        Object.keys(slide.game.parsedData || {}));
+                                }
+                                
+                                // Validate that we have actual question data
+                                const hasQuestions = slide.game.parsedData && 
+                                    (slide.game.parsedData.questions || 
+                                     slide.game.parsedData.items || 
+                                     Object.keys(slide.game.parsedData).length > 0);
+                                
+                                console.log(`🔍 Slide ${index} has questions:`, hasQuestions);
+                                
+                            } catch (e) {
+                                console.error(`❌ Error parsing game data for slide ${index}:`, e);
+                                slide.game.parsedData = null;
+                            }
+                        }
+                        
+                        // Build enhanced view URL
+                        if (slide.game.url) {
+                            const gameUrl = new URL(slide.game.url, window.location.origin);
+                            gameUrl.searchParams.set('mode', 'quiz');
+                            gameUrl.searchParams.set('view', 'true'); // Important: indicates viewing mode
+                            gameUrl.searchParams.set('quizId', quizData.quizId || name);
+                            gameUrl.searchParams.set('slideIndex', index.toString());
+                            gameUrl.searchParams.set('hasCustomData', slide.game.data ? 'true' : 'false');
+                            gameUrl.searchParams.set('isViewMode', 'true');
+                            
+                            // Add timestamp to prevent caching issues
+                            gameUrl.searchParams.set('t', Date.now().toString());
+                            
+                            slide.game.viewUrl = gameUrl.toString();
+                            console.log(`🔗 Enhanced URL for slide ${index}:`, slide.game.viewUrl);
+                        }
+                    }
+                    return slide;
+                });
+                
                 currentSlide = 0;
                 loadSlide(currentSlide);
                 updateSlideIndicator();
-            } else if (snapshot.exists() && snapshot.val().json) {
-                canvas.loadFromJSON(snapshot.val().json, function() {
-                    canvas.renderAll();
-                    slides = [canvas.toJSON()];
-                    currentSlide = 0;
-                    updateSlideIndicator();
-                });
-            } else {
                 
+                // Setup message listener BEFORE loading any games
+                window.addEventListener('message', handleGameMessage, false);
+                console.log('📡 Message listener setup complete');
+                
+                console.log('🎉 Quiz loaded successfully!');
+                
+                // Summary
+                const gameSlides = slides.filter(slide => slide.game);
+                const customGameSlides = slides.filter(slide => slide.game && slide.game.parsedData);
+                
+                console.log('📊 Quiz Summary:', {
+                    totalSlides: slides.length,
+                    gameSlides: gameSlides.length,
+                    customGameSlides: customGameSlides.length
+                });
+                
+                if (customGameSlides.length > 0) {
+                    console.log('🎮 Slides with custom game data:', 
+                        customGameSlides.map(slide => slides.indexOf(slide)));
+                }
+                
+            } catch (parseError) {
+                console.error('❌ Error parsing slides:', parseError);
+                document.body.insertAdjacentHTML('beforeend', `
+                    <div style="color:white;text-align:center;margin-top:40px;">
+                        <h3>⚠️ Quiz Data Error</h3>
+                        <p>Unable to parse quiz data. The quiz may be corrupted.</p>
+                        <p style="font-size:0.8rem;color:#ccc;">Error: ${parseError.message}</p>
+                    </div>
+                `);
             }
-        });
-    });
+        } else if (quizData.json) {
+            // Legacy support
+            console.log('📄 Loading legacy quiz...');
+            canvas.loadFromJSON(quizData.json, function() {
+                canvas.renderAll();
+                slides = [canvas.toJSON()];
+                currentSlide = 0;
+                updateSlideIndicator();
+                lockCanvasObjects();
+            });
+        } else {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div style="color:white;text-align:center;margin-top:40px;">
+                    <h3>⚠️ Invalid Quiz Format</h3>
+                    <p>This quiz appears to be missing slide data.</p>
+                </div>
+            `);
+        }
+    } catch (error) {
+        console.error('❌ Error loading quiz:', error);
+        document.body.insertAdjacentHTML('beforeend', `
+            <div style="color:white;text-align:center;margin-top:40px;">
+                <h3>⚠️ Error Loading Quiz</h3>
+                <p>Unable to load quiz data.</p>
+                <p style="font-size:0.8rem;color:#ccc;">Error: ${error.message}</p>
+                <button onclick="window.location.reload()" style="padding:8px 16px;background:#b39ddb;border:none;border-radius:6px;color:#232946;font-weight:600;cursor:pointer;margin-top:12px;">
+                    Retry
+                </button>
+            </div>
+        `);
     }
+});
 
-    // Navigation events
+// Navigation events
     document.getElementById('next-slide-btn').onclick = function() {
         if (currentSlide < slides.length-1) {
             currentSlide++;
@@ -244,6 +680,61 @@ function showGameIframe(slide, canvasEl) {
             updateSlideIndicator();
         }
     };
+
+    // Add keyboard navigation
+document.addEventListener('keydown', function(e) {
+    switch(e.key) {
+        case 'ArrowRight':
+        case ' ': // Spacebar
+            e.preventDefault();
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                loadSlide(currentSlide);
+                updateSlideIndicator();
+            }
+            break;
+        case 'ArrowLeft':
+            e.preventDefault();
+            if (currentSlide > 0) {
+                currentSlide--;
+                loadSlide(currentSlide);
+                updateSlideIndicator();
+            }
+            break;
+        case 'Home':
+            e.preventDefault();
+            currentSlide = 0;
+            loadSlide(currentSlide);
+            updateSlideIndicator();
+            break;
+        case 'End':
+            e.preventDefault();
+            currentSlide = slides.length - 1;
+            loadSlide(currentSlide);
+            updateSlideIndicator();
+            break;
+        case 'Escape':
+            e.preventDefault();
+            // Go back to previous page
+            window.history.back();
+            break;
+    }
+});
+
+    // Prevent context menu on canvas
+document.getElementById('presentation-canvas').addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+    // Prevent drag and drop
+document.addEventListener('dragover', function(e) {
+    e.preventDefault();
+});
+
+document.addEventListener('drop', function(e) {
+    e.preventDefault();
+});
 
     function overlayGifsOnCanvasPresent(canvas) {
         document.querySelectorAll('.canvas-gif-overlay').forEach(el => el.remove());
@@ -288,6 +779,7 @@ function showGameIframe(slide, canvasEl) {
             }
         });
     }
-    </script>
+</script>
+
 </body>
 </html>

@@ -1,0 +1,82 @@
+
+/* Fix quiz container to use full width and horizontal layout */
+#quizzesContainer {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Override lessons-container styling for quiz section */
+#quarter-5 .lessons-container {
+    width: 100% !important;
+    max-width: none !important;
+    display: block !important;
+}
+
+/* Ensure quiz grid uses full width */
+#quizzesContainer > div[style*="grid"] {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 20px !important;
+    width: 100% !important;
+    margin: 20px 0 !important;
+}
+
+/* Student quiz items horizontal layout */
+.student-quiz-item {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border-left: 4px solid #ffe600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 300px;
+    max-width: none;
+}
+
+.student-quiz-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+}
+
+/* Fix quiz container parent width issue */
+#quarter-5 {
+    width: 100% !important;
+}
+
+#quarter-5 .quarter-title {
+    width: 100% !important;
+}
+
+/* Responsive design for quiz layout */
+@media (max-width: 1200px) {
+    #quizzesContainer > div[style*="grid"] {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 18px !important;
+    }
+}
+
+@media (max-width: 900px) {
+    #quizzesContainer > div[style*="grid"] {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+        gap: 16px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #quizzesContainer > div[style*="grid"] {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+        gap: 15px !important;
+    }
+}
+
+@media (max-width: 600px) {
+    #quizzesContainer > div[style*="grid"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+}
