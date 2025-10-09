@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Matching Pairs Quiz</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{
+  --bg:#f1f6fb;
+  --card:#ffffff;
+  --accent:#2563eb;
+  --accent-alt:#1d56cc;
+  --danger:#d94848;
+  --muted:#5b6b7c;
+  --line:#d3e0eb;
+}
+*{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
+html,body,#embedRoot{display:flex;margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--bg);}
+body{display:flex;align-items:center;justify-content:center;}
+#embedRoot{display:flex;align-items:center;justify-content:center;position:relative;}
+.quiz-scale{
+  transform-origin:50% 50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  will-change:transform;
+}
+.quiz-wrap{
+  width:960px;max-width:960px;
+  background:var(--card);
+  padding:48px 56px 60px;
+  border-radius:40px;
+  box-shadow:0 34px 110px -34px rgba(20,45,70,.35);
+  display:flex;flex-direction:column;gap:34px;position:relative;
+}
+h1{margin:0;font-size:2.2rem;color:#11384f;text-align:center;font-weight:700}
+#questionText{font-size:1.05rem;font-weight:600;letter-spacing:.5px;color:#29516a;text-align:center;margin:0}
+.board{display:flex;gap:40px;justify-content:center;flex-wrap:wrap}
+.col{flex:1 1 300px;min-width:260px;display:flex;flex-direction:column;gap:14px}
+.col h3{margin:0;font-size:.75rem;letter-spacing:.9px;text-transform:uppercase;font-weight:700;color:#4a6375}
+.list, .matches{
+  border:1px solid #d7e3ed;
+  background:#fbfdff;
+  border-radius:22px;
+  padding:18px 20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-height:220px;
+  position:relative;
+}
+.list.empty:before{
+  content:'All used';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:600;color:#7e91a1;pointer-events:none;
+}
+.item{
+  background:#fff;
+  border:2px solid #d3dde6;
+  padding:12px 14px;
+  border-radius:14px;
+  font-size:.95rem;
+  font-weight:600;
+  color:#123a52;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  position:relative;
+  transition:.18s;
+}
+.item:hover{border-color:#b9cedc;background:#f5faff}
+.item.selected{border-color:var(--accent);background:#eef5ff;box-shadow:0 0 0 3px #e1efff}
+.pair-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  background:#fff;
+  border:1px solid #d7e3ed;
+  padding:10px 12px;
+  border-radius:14px;
+  font-size:.85rem;
+  font-weight:600;
+  color:#10384f;
+  position:relative;
+}
+.pair-row span{flex:1 1 50%;text-align:center}
+.connector{
+  position:absolute;
+  left:50%;top:0;bottom:0;
+  width:2px;
+  background:linear-gradient(#dbe7ef,#bed2e0);
+  transform:translateX(-50%);
+  opacity:.5;
+}
+.controls{
+  display:flex;justify-content:center;gap:18px;flex-wrap:wrap;
+  min-height:64px;position:relative;
+}
+button{cursor:pointer;font-weight:600;font-size:1rem}
+#nextBtn,#finishBtn{
+  background:var(--accent);color:#fff;border:0;
+  padding:15px 34px;border-radius:22px;
+  box-shadow:0 10px 30px -10px rgba(37,99,235,.45);
+  font-weight:600;font-size:1rem;transition:.22s;
+  visibility:hidden;opacity:0;transform:translateY(6px);pointer-events:none;
+}
+#nextBtn.active,#finishBtn.active{visibility:visible;opacity:1;transform:translateY(0);pointer-events:auto}
+#nextBtn:hover,#finishBtn:hover{background:var(--accent-alt)}
+#editOpen{
+  position:absolute;top:18px;right:18px;
+  background:#fff;border:1px solid #c6d5e1;color:#174369;
+  padding:8px 18px;font-size:.75rem;border-radius:16px;
+}
+#editOpen:hover{background:#f1f8fc}
+#progress{height:12px;width:100%;background:#e5edf3;border-radius:10px;overflow:hidden}
+#bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#5a8fff)}
+/* Final modal */
+.modal{position:fixed;inset:0;background:rgba(15,35,55,.55);display:none;align-items:center;justify-content:center;padding:34px;z-index:400}
+.modal-card{
+  background:#fff;width:min(560px,94%);padding:56px 60px 62px;
+  border-radius:40px;text-align:center;
+  box-shadow:0 40px 110px -34px rgba(15,35,55,.55);
+  display:flex;flex-direction:column;gap:32px
+}
+.modal-card h2{margin:0;font-size:2.3rem;color:#153a55}
+.primary{background:var(--accent);color:#fff;border:0;padding:14px 36px;font-size:1.05rem;border-radius:22px;font-weight:600;cursor:pointer}
+.primary:hover{background:var(--accent-alt)}
+/* Editor */
+#editorModal{position:fixed;inset:0;background:rgba(10,25,45,.55);display:none;align-items:center;justify-content:center;padding:32px;z-index:450}
+#editorCard{
+  background:#fff;width:min(1180px,96%);max-height:92vh;overflow:auto;
+  border-radius:40px;padding:50px 58px 60px;
+  display:flex;flex-direction:column;gap:40px;
+  box-shadow:0 44px 140px -40px rgba(10,30,60,.6)
+}
+.editor-flex{display:flex;gap:44px;flex-wrap:wrap}
+.col-edit{flex:1 1 460px;min-width:360px;display:flex;flex-direction:column;gap:18px}
+label.small{font-size:.6rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#3f627a}
+textarea,input[type=text]{width:100%;border:1px solid #c2d4e1;border-radius:16px;padding:14px 16px;font-size:.9rem;font-family:inherit;resize:vertical}
+.q-list{border:1px solid #d5e2ec;border-radius:28px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;max-height:520px;overflow:auto}
+.qrow{padding:14px 16px;border:1px solid #d9e5ef;border-radius:18px;background:#f6fbfe;display:flex;flex-direction:column;gap:8px;position:relative}
+.qrow.active{outline:2px solid var(--accent);background:#eef6ff}
+.qrow button{align-self:flex-start;background:#fff;border:1px solid #c5d5e3;font-size:.65rem;padding:6px 12px;border-radius:10px}
+.qrow button:hover{background:#e8f2fa}
+.inline{display:flex;gap:6px;flex-wrap:wrap}
+.pair-edit-row{display:flex;gap:10px;align-items:center}
+.pair-edit-row input[type=text]{flex:1;padding:10px 12px;border:1px solid #c9d6e2;border-radius:12px;font-size:.8rem}
+.pair-edit-row button{background:#ff5e5e;color:#fff;border:0;padding:6px 12px;font-size:.65rem;border-radius:10px;cursor:pointer}
+.addBtn{background:var(--accent);color:#fff;border:0;padding:10px 18px;font-size:.7rem;font-weight:600;border-radius:12px;cursor:pointer}
+.addBtn:hover{background:var(--accent-alt)}
+.editor-actions{display:flex;gap:14px;flex-wrap:wrap}
+.editor-actions button{background:var(--accent);color:#fff;border:0;padding:14px 24px;font-weight:600;border-radius:18px;font-size:.85rem;cursor:pointer}
+.editor-actions button.secondary{background:#e4edf4;color:#18425f}
+.editor-actions button.secondary:hover{background:#d7e7f2}
+.status{font-size:.75rem;min-height:20px;font-weight:600}
+.notice{font-size:.7rem;color:#5d7484;font-weight:500;line-height:1.35}
+::-webkit-scrollbar{width:0;height:0}
+@media (max-width:720px){
+  .quiz-wrap{width:640px}
+  h1{font-size:1.75rem}
+}
+
+/* ==== FULL CANVAS WIDTH OVERRIDES ==== */
+html,body,#embedRoot,.quiz-scale,.quiz-wrap{
+  width:100%;
+  height:100%;
+}
+
+.quiz-scale{
+  transform:none !important; /* stop scaling */
+  display:flex;
+  align-items:stretch;
+  justify-content:center;
+}
+
+.quiz-wrap{
+  width:100% !important;
+  max-width:none !important;
+  height:100% !important;
+  padding:32px clamp(16px,3vw,56px) clamp(24px,4vh,60px);
+  border-radius:0 !important;
+  box-shadow:none !important;
+  overflow:hidden;
+  gap:28px;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Let the board fill remaining vertical space & scroll internally if needed */
+.board{
+  flex:1 1 auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:28px;
+  min-height:0;
+  overflow:hidden;
+}
+.col{min-height:0; display:flex; flex-direction:column;}
+.list,.matches{
+  flex:1 1 auto;
+  min-height:0;
+  overflow:auto;
+}
+
+/* Keep footer controls at bottom */
+.controls{flex:0 0 auto;}
+
+/* Small screens tweaks */
+@media (max-width:640px){
+  .quiz-wrap{padding:20px 16px 28px;}
+  h1{font-size:1.6rem;}
+  .board{gap:18px;}
+  .item,.pair-row{font-size:.85rem;padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+<div id="embedRoot">
+  <div class="quiz-scale">
+    <div class="quiz-wrap">
+      <button id="editOpen">Edit</button>
+      <h1>Matching Pairs</h1>
+      <div id="progress"><div id="bar"></div></div>
+      <div id="questionText"></div>
+
+      <div class="board">
+        <div class="col">
+          <h3>Left Items</h3>
+          <div class="list" id="leftList"></div>
+        </div>
+        <div class="col">
+          <h3>Right Items</h3>
+            <div class="list" id="rightList"></div>
+        </div>
+        <div class="col">
+          <h3>Your Matches</h3>
+          <div class="matches" id="matchesBox"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="nextBtn">Next</button>
+        <button id="finishBtn">Finish</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Final Modal -->
+<div class="modal" id="finalModal" aria-hidden="true">
+  <div class="modal-card">
+    <h2>Thank You!</h2>
+    <p id="finalMsg" style="margin:0;font-size:1.05rem;color:#42596b">Your matches have been saved.</p>
+    <button class="primary" id="restartBtn">Play Again</button>
+  </div>
+</div>
+
+<!-- Editor Modal -->
+<div id="editorModal" aria-hidden="true">
+  <div id="editorCard">
+    <h2 style="margin:0 0 -6px;font-size:1.9rem;color:#153b56">Edit Matching Sets</h2>
+    <p class="notice">Each question contains several left/right pairs. Students only match; no correctness feedback is shown. Order of right items is shuffled automatically.</p>
+    <div class="editor-flex">
+      <div class="col-edit">
+        <label class="small">Question List</label>
+        <div class="q-list" id="qList"></div>
+        <button id="addQuestion" class="addBtn" style="margin-top:6px">Add Question</button>
+      </div>
+      <div class="col-edit">
+        <label class="small">Prompt (optional)</label>
+        <textarea id="editPrompt" rows="3" placeholder="Example: Match the countries with their capitals."></textarea>
+        <label class="small">Pairs</label>
+        <div id="pairsBox" style="display:flex;flex-direction:column;gap:10px"></div>
+        <button id="addPair" class="addBtn" type="button">Add Pair</button>
+        <div class="editor-actions">
+          <button id="saveQuestion" type="button">Save Question</button>
+          <button id="closeEditor" type="button" class="secondary">Close</button>
+          <button id="deleteQuestion" type="button" class="secondary" style="background:#ffe9e9;color:#c03636">Delete</button>
+        </div>
+        <div class="status" id="editStatus"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========= DATA & STATE ========= */
+const LS_KEY='match_pairs_v1';
+let questions=[
+  {
+    prompt:'Match the animals to their habitats.',
+    pairs:[
+      {left:'Camel', right:'Desert'},
+      {left:'Penguin', right:'Antarctica'},
+      {left:'Frog', right:'Pond'},
+      {left:'Eagle', right:'Mountains'}
+    ]
+  },
+  {
+    prompt:'Match each country to its capital.',
+    pairs:[
+      {left:'France', right:'Paris'},
+      {left:'Japan', right:'Tokyo'},
+      {left:'Brazil', right:'Brasilia'}
+    ]
+  }
+];
+try{
+  const saved=JSON.parse(localStorage.getItem(LS_KEY)||'null');
+  if(Array.isArray(saved) && saved.every(q=>q && Array.isArray(q.pairs))){
+    questions=saved;
+  }
+}catch(e){}
+let current=0;
+let userMatches=questions.map(q=>[]); // array of {left,right}
+let selectedLeft=null; // DOM element
+let selectedLeftText='';
+
+/* ========= ELEMENTS ========= */
+const questionText=qs('#questionText');
+const leftList=qs('#leftList');
+const rightList=qs('#rightList');
+const matchesBox=qs('#matchesBox');
+const nextBtn=qs('#nextBtn');
+const finishBtn=qs('#finishBtn');
+const bar=qs('#bar');
+
+function qs(s){return document.querySelector(s);}
+
+/* ========= RENDER ========= */
+function renderQuestion(){
+  const q=questions[current];
+  if(!q) return;
+  questionText.textContent = q.prompt || ('Matching Set '+(current+1)+' of '+questions.length);
+  leftList.innerHTML='';
+  rightList.innerHTML='';
+  matchesBox.innerHTML='';
+
+  selectedLeft=null; selectedLeftText='';
+
+  // Build left list (original order), excluding already matched
+  const matchedLefts = new Set(userMatches[current].map(p=>p.left));
+  q.pairs.forEach(p=>{
+    if(matchedLefts.has(p.left)) return;
+    const btn=createItem(p.left,'left');
+    leftList.appendChild(btn);
+  });
+  if(!leftList.children.length) leftList.classList.add('empty'); else leftList.classList.remove('empty');
+
+  // Build right list (shuffle each render) excluding already matched rights
+  const matchedRights = new Set(userMatches[current].map(p=>p.right));
+  const rightPool=q.pairs.filter(p=>!matchedRights.has(p.right)).map(p=>p.right);
+  shuffle(rightPool).forEach(r=>{
+    const btn=createItem(r,'right');
+    rightList.appendChild(btn);
+  });
+  if(!rightList.children.length) rightList.classList.add('empty'); else rightList.classList.remove('empty');
+
+  // Existing matches
+  userMatches[current].forEach(pair=>{
+    matchesBox.appendChild(renderPairRow(pair));
+  });
+
+  updateNav();
+  updateBar();
+  if(window.__quizFit) setTimeout(window.__quizFit,0);
+}
+function createItem(text,side){
+  const el=document.createElement('div');
+  el.className='item';
+  el.textContent=text;
+  el.dataset.side=side;
+  el.addEventListener('click',()=>onItemClick(el));
+  return el;
+}
+function onItemClick(el){
+  if(el.dataset.side==='left'){
+    // toggle selection
+    if(selectedLeft===el){
+      el.classList.remove('selected'); selectedLeft=null; selectedLeftText='';
+    } else {
+      if(selectedLeft) selectedLeft.classList.remove('selected');
+      selectedLeft=el;
+      selectedLeftText=el.textContent;
+      el.classList.add('selected');
+    }
+  } else { // right item
+    if(!selectedLeft) return;
+    const leftVal=selectedLeftText;
+    const rightVal=el.textContent;
+    // record
+    userMatches[current].push({left:leftVal, right:rightVal});
+    // remove both from lists
+    selectedLeft.remove();
+    el.remove();
+    selectedLeft=null; selectedLeftText='';
+    renderMatchesOnly(); // rebuild matches area
+    // If there are still unmatched items, keep right list as-is (remaining buttons)
+    if(!leftList.children.length) leftList.classList.add('empty');
+    if(!rightList.children.length) rightList.classList.add('empty');
+    updateNav();
+  }
+}
+function renderMatchesOnly(){
+  matchesBox.innerHTML='';
+  userMatches[current].forEach(pair=>{
+    matchesBox.appendChild(renderPairRow(pair));
+  });
+}
+function renderPairRow(pair){
+  const row=document.createElement('div');
+  row.className='pair-row';
+  row.innerHTML=`<span>${escapeHtml(pair.left)}</span><div class="connector"></div><span>${escapeHtml(pair.right)}</span>`;
+  // Allow undo
+  row.addEventListener('click',()=>{
+    // remove from matches
+    const idx=userMatches[current].findIndex(p=>p.left===pair.left && p.right===pair.right);
+    if(idx>-1){
+      userMatches[current].splice(idx,1);
+      // return items to lists
+      leftList.classList.remove('empty');
+      rightList.classList.remove('empty');
+      leftList.appendChild(createItem(pair.left,'left'));
+      rightList.appendChild(createItem(pair.right,'right'));
+      renderMatchesOnly();
+      updateNav();
+    }
+  });
+  return row;
+}
+function allMatched(){
+  const total=questions[current].pairs.length;
+  return userMatches[current].length===total;
+}
+function updateNav(){
+  nextBtn.classList.remove('active');
+  finishBtn.classList.remove('active');
+  if(!allMatched()) return;
+  const last=current===questions.length-1;
+  if(last) finishBtn.classList.add('active'); else nextBtn.classList.add('active');
+}
+function updateBar(){
+  const pct=((current)/Math.max(questions.length-1,1))*100;
+  bar.style.width=pct+'%';
+}
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+/* ========= NAV EVENTS ========= */
+nextBtn.addEventListener('click',()=>{
+  if(!allMatched()) return;
+  current++; renderQuestion();
+});
+finishBtn.addEventListener('click',()=>{
+  if(!allMatched()) return;
+  finishQuiz();
+});
+
+/* ========= FINAL MODAL ========= */
+const finalModal=qs('#finalModal');
+const finalMsg=qs('#finalMsg');
+qs('#restartBtn').addEventListener('click',()=>{
+  closeFinal();
+  current=0;
+  userMatches=questions.map(q=>[]);
+  renderQuestion();
+});
+function finishQuiz(){
+  // lock lists
+  leftList.querySelectorAll('.item').forEach(i=>i.style.pointerEvents='none');
+  rightList.querySelectorAll('.item').forEach(i=>i.style.pointerEvents='none');
+  openFinal();
+}
+function openFinal(){
+  finalMsg.textContent='You completed '+questions.length+' matching set'+(questions.length===1?'':'s')+'.';
+  finalModal.style.display='flex';
+  finalModal.setAttribute('aria-hidden','false');
+  if(window.__quizFit) setTimeout(window.__quizFit,0);
+}
+function closeFinal(){
+  finalModal.style.display='none';
+  finalModal.setAttribute('aria-hidden','true');
+}
+
+/* ========= EDITOR ========= */
+const editorModal=qs('#editorModal');
+const qList=qs('#qList');
+const editPrompt=qs('#editPrompt');
+const pairsBox=qs('#pairsBox');
+const editStatus=qs('#editStatus');
+const addQuestionBtn=qs('#addQuestion');
+const addPairBtn=qs('#addPair');
+const saveQuestionBtn=qs('#saveQuestion');
+const deleteQuestionBtn=qs('#deleteQuestion');
+const closeEditorBtn=qs('#closeEditor');
+let editingIndex=0;
+
+qs('#editOpen').addEventListener('click',openEditor);
+closeEditorBtn.addEventListener('click',closeEditor);
+addQuestionBtn.addEventListener('click',addQuestion);
+addPairBtn.addEventListener('click',()=>addPairRow('',''));
+saveQuestionBtn.addEventListener('click',saveEditingQuestion);
+deleteQuestionBtn.addEventListener('click',deleteEditingQuestion);
+
+function openEditor(){
+  buildQList();
+  loadEditingQuestion(editingIndex);
+  editStatus.textContent='';
+  editorModal.style.display='flex';
+  editorModal.setAttribute('aria-hidden','false');
+  if(window.__quizFit) setTimeout(window.__quizFit,0);
+}
+function closeEditor(){
+  editorModal.style.display='none';
+  editorModal.setAttribute('aria-hidden','true');
+  if(window.__quizFit) setTimeout(window.__quizFit,0);
+}
+function buildQList(){
+  qList.innerHTML='';
+  questions.forEach((q,i)=>{
+    const r=document.createElement('div');
+    r.className='qrow'+(i===editingIndex?' active':'');
+    r.innerHTML='<div style="font-size:.8rem;font-weight:600;color:#38546a">'+(i+1)+'. '+escapeHtml((q.prompt||'Untitled').slice(0,70))+'</div><div class="inline"></div>';
+    const btn=document.createElement('button');
+    btn.textContent='Edit';
+    btn.addEventListener('click',()=>{editingIndex=i;buildQList();loadEditingQuestion(i);});
+    r.querySelector('.inline').appendChild(btn);
+    qList.appendChild(r);
+  });
+}
+function loadEditingQuestion(i){
+  const q=questions[i]; if(!q) return;
+  editPrompt.value=q.prompt||'';
+  pairsBox.innerHTML='';
+  q.pairs.forEach(p=>addPairRow(p.left,p.right));
+  if(!q.pairs.length) addPairRow('','');
+}
+function addPairRow(left='',right=''){
+  const row=document.createElement('div');
+  row.className='pair-edit-row';
+  row.innerHTML=`
+    <input type="text" placeholder="Left" value="${escapeHtml(left)}">
+    <input type="text" placeholder="Right" value="${escapeHtml(right)}">
+    <button type="button">&times;</button>
+  `;
+  row.querySelector('button').addEventListener('click',()=>row.remove());
+  pairsBox.appendChild(row);
+}
+function saveEditingQuestion(){
+  const prompt=editPrompt.value.trim();
+  const rows=[...pairsBox.querySelectorAll('.pair-edit-row')];
+  const pairs=[];
+  rows.forEach(r=>{
+    const l=r.querySelectorAll('input')[0].value.trim();
+    const rt=r.querySelectorAll('input')[1].value.trim();
+    if(l && rt) pairs.push({left:l,right:rt});
+  });
+  if(!pairs.length){ status('Add at least one complete pair',true); return; }
+  questions[editingIndex]={prompt, pairs};
+  persist();
+  status('Saved');
+  buildQList();
+  current=0;
+  userMatches=questions.map(q=>[]);
+  renderQuestion();
+  if(window.__quizFit) setTimeout(window.__quizFit,0);
+}
+function deleteEditingQuestion(){
+  if(!questions.length) return;
+  if(!confirm('Delete this set?')) return;
+  questions.splice(editingIndex,1);
+  if(!questions.length){
+    questions.push({prompt:'Sample set',pairs:[{left:'Sun',right:'Star'}]});
+  }
+  editingIndex=Math.min(editingIndex,questions.length-1);
+  persist();
+  buildQList();
+  loadEditingQuestion(editingIndex);
+  current=0;
+  userMatches=questions.map(q=>[]);
+  renderQuestion();
+  if(window.__quizFit) setTimeout(window.__quizFit,0);
+}
+function addQuestion(){
+  questions.push({prompt:'New matching set',pairs:[{left:'Left',right:'Right'}]});
+  editingIndex=questions.length-1;
+  persist();
+  buildQList();
+  loadEditingQuestion(editingIndex);
+  if(window.__quizFit) setTimeout(window.__quizFit,0);
+}
+function status(msg,err){
+  editStatus.textContent=msg;
+  editStatus.style.color= err? 'var(--danger)':'var(--accent)';
+}
+function persist(){
+  localStorage.setItem(LS_KEY, JSON.stringify(questions));
+}
+
+/* ========= UTIL ========= */
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ========= SCALING (FIT) ========= */
+(function(){
+  const root=document.getElementById('embedRoot');
+  const scaleWrap=document.querySelector('.quiz-scale');
+  const quiz=document.querySelector('.quiz-wrap');
+  if(!root||!scaleWrap||!quiz) return;
+  function naturalHeight(){
+    const prev=scaleWrap.style.transform;
+    scaleWrap.style.transform='none';
+    const h=quiz.offsetHeight;
+    scaleWrap.style.transform=prev;
+    return h;
+  }
+  function fit(){
+    const w=quiz.offsetWidth;
+    const h=naturalHeight();
+    const rw=root.clientWidth;
+    const rh=root.clientHeight;
+    const scale=Math.min(rw/w, rh/h, 1);
+    scaleWrap.style.transform=`scale(${scale})`;
+  }
+  new ResizeObserver(fit).observe(root);
+  window.addEventListener('orientationchange',fit);
+  window.addEventListener('load',fit);
+  window.__quizFit=fit;
+  setTimeout(fit,60);
+})();
+
+/* ========= INIT ========= */
+renderQuestion();
+</script>
+</body>
+</html>

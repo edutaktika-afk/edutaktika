@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sort the Animals by Habitat</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <style>
+    :root{
+      --design-w:1000;
+      --design-h:640;
+      --accent:#1976d2;
+    }
+    html,body{
+      height:100%;width:100%;margin:0;padding:0;
+      overflow:hidden; /* no page scrollbars */
+      font-family:system-ui,Segoe UI,Arial,sans-serif;
+      background:#ffffff;
+    }
+    /* Outer canvas fit */
+    #game-root{
+      width:100%;height:100%;
+      display:flex;align-items:center;justify-content:center;
+      overflow:hidden;
+    }
+    /* Inner “design size” panel that we scale */
+    #game-inner{
+      width:100%;height:100%;
+      max-width:1400px;
+      max-height:100%;
+      padding:24px clamp(16px,2vw,36px);
+      box-sizing:border-box;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      overflow:hidden;
+      position:relative;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+    }
+    header h2{
+      margin:0;
+      font-size:28px;
+      font-weight:700;
+      color:#153c57;
+    }
+    #modify-game-btn{
+      background:#fff;
+      border:1px solid rgba(0,60,110,.15);
+      padding:10px 18px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:15px;
+      color:#134a78;
+      box-shadow:0 4px 14px rgba(10,40,70,.08);
+      transition:.18s;
+    }
+    #modify-game-btn:hover{background:#f0f8ff}
+    .board{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:22px;
+      min-height:0;
+      overflow:hidden;
+    }
+    /* Remove old column styles */
+    .left-col,.right-col{display:none!important}
+    /* Habitats area: flexible row that wraps */
+    .game-area{
+      flex:0 0 auto;
+      display:flex;
+      flex-wrap:wrap;
+      gap:24px;
+      justify-content:center;
+      align-items:flex-start;
+      padding:4px;
+      min-height:180px;
+      max-height:50%;
+      overflow:auto;
+      scrollbar-width:none;
+    }
+    .game-area::-webkit-scrollbar{display:none}
+    .habitat{
+      flex:1 1 clamp(220px,26%,320px);
+      min-width:220px;
+      max-width:340px;
+      min-height:170px;
+      background:#fff;
+      border-radius:16px;
+      box-shadow:0 4px 20px -4px rgba(15,50,90,0.15);
+      padding:18px 18px 16px;
+      box-sizing:border-box;
+      position:relative;
+      border:2px solid transparent;
+      transition:.2s;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .habitat-title{
+      font-size:18px;
+      font-weight:700;
+      text-align:center;
+      color:#123c56;
+      margin:0 0 4px;
+    }
+    .habitat.droppable{border-color:#90caf9;}
+    .habitat.correct{background:#e0f6e2;border-color:#2d9141;}
+    .habitat.incorrect{background:#ffe4e4;border-color:#d93a3a;}
+    /* Animals tray */
+    #animals-tray{
+      flex:1 1 auto;
+      width:100%;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-content:flex-start;
+      padding:14px 16px 10px;
+      background:#ffffff;
+      border:1px solid rgba(0,70,140,.12);
+      border-radius:16px;
+      min-height:120px;
+      max-height:33%;
+      overflow:auto;
+      box-shadow:0 4px 20px -6px rgba(25,55,90,.1);
+    }
+    #animals-tray::-webkit-scrollbar{width:8px}
+    #animals-tray::-webkit-scrollbar-thumb{background:#c7d8e5;border-radius:6px}
+    .animal{
+      background:#ffe082;
+      border-radius:10px;
+      padding:8px 12px 8px 10px;
+      cursor:grab;
+      font-size:14px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:600;
+      box-shadow:0 3px 10px -2px rgba(15,40,60,.25);
+      user-select:none;
+    }
+    .animal img{
+      width:38px;height:38px;object-fit:cover;border-radius:8px;flex-shrink:0;
+    }
+    .score{
+      font-size:16px;
+      font-weight:600;
+      text-align:center;
+      color:#184562;
+      padding:6px 0;
+    }
+    #play-again-btn{
+      display:none;
+      background:var(--accent);
+      color:#fff;
+      border:0;
+      padding:10px 22px;
+      font-size:15px;
+      font-weight:600;
+      border-radius:10px;
+      cursor:pointer;
+      box-shadow:0 6px 16px -4px rgba(20,70,130,.4);
+      margin:0 auto;
+    }
+    #play-again-btn:hover{background:#0f63bd}
+    /* Modal */
+    #modify-modal{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(10,30,55,.55);
+      z-index:400;
+      align-items:center;
+      justify-content:center;
+      padding:30px;
+    }
+    #modify-card{
+      width:min(960px,96%);
+      max-height:92vh;
+      overflow:auto;
+      background:#fff;
+      border-radius:20px;
+      padding:34px 38px 40px;
+      box-shadow:0 28px 70px -16px rgba(10,30,55,.55);
+      box-sizing:border-box;
+      display:flex;
+      flex-direction:column;
+      gap:26px;
+    }
+    #animal-list{max-height:50vh;overflow:auto;border:1px solid #e8eef3;border-radius:14px;padding:14px;background:#f9fcfe;}
+    .animal-mod{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      align-items:center;
+      padding:10px 4px 12px;
+      border-bottom:1px solid #e7edf3;
+      font-size:14px;
+    }
+    .animal-mod:last-child{border-bottom:none}
+    .animal-mod img{width:54px;height:54px;border-radius:10px;object-fit:cover}
+    .animal-mod input[type=text]{padding:8px 10px;border:1px solid #d2dee8;border-radius:8px;font-size:14px}
+    .animal-mod select{padding:8px 10px;border:1px solid #d2dee8;border-radius:8px;font-size:14px}
+    .animal-mod button.remove{
+      background:#e74c3c;
+      color:#fff;
+      border:0;
+      padding:8px 12px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:13px;
+    }
+    .modal-actions{display:flex;justify-content:flex-end;gap:14px}
+    .primary-btn{
+      background:var(--accent);color:#fff;border:0;padding:12px 28px;font-size:15px;font-weight:600;border-radius:10px;cursor:pointer;
+    }
+    .secondary-btn{
+      background:#edf4fa;color:#163d57;border:0;padding:12px 24px;font-size:15px;font-weight:600;border-radius:10px;cursor:pointer;
+    }
+    /* Responsive shrink (habitats wrap) */
+    @media (max-width:860px){
+      #game-inner{padding:20px 22px;}
+      .board{flex-direction:column;}
+      .right-col{width:100%;flex-direction:row;flex-wrap:wrap;}
+      #animals-tray{flex:1 1 100%;}
+    }
+    /* === Responsive layout rewrite === */
+    @media (max-width:780px){
+      .habitat{flex:1 1 calc(50% - 24px);}
+    }
+    @media (max-width:520px){
+      .habitat{flex:1 1 100%;}
+      header h2{font-size:22px;}
+      .animal{padding:6px 8px;font-size:13px}
+      .animal img{width:30px;height:30px}
+    }
+
+    /* Ensure no page scroll; internal areas scroll if overflow */
+    html,body{overflow:hidden}
+
+    /* Student mode: remove immediate feedback colors */
+    .habitat.correct,.habitat.incorrect{background:#fff;border-color:transparent;}
+  </style>
+</head>
+<body>
+
+    <div id="game-root">
+      <div id="game-inner">
+        <header>
+          <h2>Sort the Animals by Habitat</h2>
+          <button id="modify-game-btn">Modify</button>
+        </header>
+
+        <div class="board">
+          <div id="game-area" class="game-area"></div>
+          <div id="animals-tray" class="tray"></div>
+          <div class="score" id="score" style="display:none"></div> <!-- hidden for students -->
+          <button id="play-again-btn" style="display:none">Play Again</button> <!-- keep for future teacher use -->
+          <button id="submit-btn" style="display:none;
+            background:var(--accent);color:#fff;border:0;
+            padding:12px 26px;font-size:15px;font-weight:600;
+            border-radius:12px;cursor:pointer;box-shadow:0 6px 18px -5px rgba(30,80,140,.4);">
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+  <!-- Modify Modal -->
+  <div id="modify-modal" aria-hidden="true">
+    <div id="modify-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 style="margin:0;font-size:22px">Modify Animals</h3>
+        <button id="close-modal" class="secondary-btn" style="padding:8px 18px">Close</button>
+      </div>
+      <div id="animal-list"></div>
+      <div class="modal-actions">
+        <button id="save-modifications" class="primary-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thank You Modal -->
+  <div id="thank-modal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+   background:rgba(15,35,55,.55);z-index:500;backdrop-filter:blur(3px);">
+    <div style="background:#fff;width:min(420px,92%);padding:34px 40px 38px;border-radius:22px;
+    text-align:center;font-family:inherit;box-shadow:0 26px 72px -20px rgba(10,30,60,.45);">
+      <h3 style="margin:0 0 14px;font-size:26px;color:#16354a;">Thank you!</h3>
+      <p style="margin:0 0 26px;font-size:15px;color:#4a5e71;" id="thank-msg">
+        Your answers have been submitted.
+      </p>
+      <button id="close-thank"
+        style="background:var(--accent);color:#fff;border:0;padding:10px 24px;
+        font-size:14px;font-weight:600;border-radius:10px;cursor:pointer;">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* --- Data --- */
+    const animals = [
+      { name: "Lion", habitat: "Forest", img: "https://upload.wikimedia.org/wikipedia/commons/7/73/Lion_waiting_in_Namibia.jpg" },
+      { name: "Camel", habitat: "Desert", img: "https://files.worldwildlife.org/wwfcmsprod/images/camel/blog_photo_section/5np6j2xwbl_camelenews_1050.jpg" },
+      { name: "Dolphin", habitat: "Ocean", img: "https://upload.wikimedia.org/wikipedia/commons/6/6e/Dolphin_in_the_water.jpg" },
+      { name: "Fox", habitat: "Forest", img: "https://upload.wikimedia.org/wikipedia/commons/1/16/Fox_-_British_Wildlife_Centre_%282%29.jpg" },
+      { name: "Octopus", habitat: "Ocean", img: "https://upload.wikimedia.org/wikipedia/commons/6/6b/Octopus2.jpg" },
+      { name: "Lizard", habitat: "Desert", img: "https://upload.wikimedia.org/wikipedia/commons/7/7e/Lizard_in_the_desert.jpg" }
+    ];
+    let habitats = [
+      { key: "Forest", name: "Forest" },
+      { key: "Ocean", name: "Ocean" },
+      { key: "Desert", name: "Desert" }
+    ];
+
+    let correct = 0;
+    let placements = {}; // name -> habitat placed
+    let submitted = false;
+
+    function startGame(){
+      submitted = false;
+      placements = {};
+      document.getElementById('submit-btn').style.display='none';
+
+      const area = document.getElementById('game-area');
+      area.innerHTML='';
+      habitats.forEach(h=>{
+        const d=document.createElement('div');
+        d.className='habitat droppable';
+        d.dataset.habitat=h.key;
+        d.innerHTML=`<div class="habitat-title">${h.name}</div><div class="items"></div>`;
+        area.appendChild(d);
+      });
+
+      const tray=document.getElementById('animals-tray');
+      tray.innerHTML='';
+      const shuffled=[...animals].sort(()=>Math.random()-0.5);
+      shuffled.forEach(a=>{
+        const el=document.createElement('div');
+        el.className='animal';
+        el.draggable=true;
+        el.dataset.habitat=a.habitat;
+        el.dataset.name=a.name;
+        el.innerHTML=`<img src="${a.img}" alt="${a.name}"><span>${a.name}</span>`;
+        tray.appendChild(el);
+      });
+
+      bindDrag();
+    }
+
+    function bindDrag(){
+      document.querySelectorAll('.animal').forEach(a=>{
+        a.addEventListener('dragstart',e=>{
+          if(submitted) { e.preventDefault(); return; }
+          e.dataTransfer.setData('text/plain', JSON.stringify({name:a.dataset.name, habitat:a.dataset.habitat}));
+        });
+      });
+      document.querySelectorAll('.habitat').forEach(h=>{
+        h.addEventListener('dragover',e=>{
+          if(submitted) return;
+          e.preventDefault();
+          h.classList.add('droppable');
+        });
+        h.addEventListener('dragleave',()=>h.classList.remove('droppable'));
+        h.addEventListener('drop',e=>{
+          if(submitted) return;
+          e.preventDefault();
+          h.classList.remove('droppable');
+          let raw=e.dataTransfer.getData('text/plain');
+          if(!raw) return;
+          let data;
+          try{ data=JSON.parse(raw); }catch(_){ return; }
+          const tile=document.querySelector(`.animal[data-name="${CSS.escape(data.name)}"]`);
+          if(!tile || tile.draggable===false) return;
+          // Record placement (no correctness check displayed)
+          placements[data.name]=h.dataset.habitat;
+          tile.draggable=false;
+          tile.style.opacity='.55';
+          const items=h.querySelector('.items');
+          const row=document.createElement('div');
+          row.style.display='flex';
+          row.style.alignItems='center';
+          row.style.gap='6px';
+          row.innerHTML=`<img src="${tile.querySelector('img').src}" style="width:30px;height:30px;border-radius:6px;object-fit:cover">
+          <span style="font-size:13px;font-weight:600">${data.name}</span>`;
+          items.appendChild(row);
+          checkAllPlaced();
+        });
+      });
+    }
+
+    function checkAllPlaced(){
+      const placedCount = Object.keys(placements).length;
+      if(placedCount === animals.length && !submitted){
+        const submitBtn=document.getElementById('submit-btn');
+        submitBtn.style.display='inline-block';
+      }
+    }
+
+    // Submission
+    document.getElementById('submit-btn').addEventListener('click',()=>{
+      if(submitted) return;
+      submitted = true;
+      // Lock remaining draggable tiles
+      document.querySelectorAll('.animal[draggable="true"]').forEach(a=>{
+        a.draggable=false; a.style.opacity='.55';
+      });
+      // Persist answers (optional)
+      try{
+        localStorage.setItem('animalSort_lastSubmission', JSON.stringify({
+          timestamp:Date.now(),
+          answers:placements
+        }));
+      }catch(e){}
+      openThankModal();
+    });
+
+    // ---- Modal ---- //
+    const modal=document.getElementById('modify-modal');
+    const list=document.getElementById('animal-list');
+    document.getElementById('modify-game-btn').addEventListener('click',openModal);
+    document.getElementById('close-modal').addEventListener('click',()=>modal.style.display='none');
+    document.getElementById('save-modifications').addEventListener('click',saveMods);
+
+    function openModal(){
+      list.innerHTML='';
+      // habitats edit
+      const wrap=document.createElement('div');
+      wrap.style.display='flex';
+      wrap.style.flexWrap='wrap';
+      wrap.style.gap='14px';
+      habitats.forEach((h,i)=>{
+        const inp=document.createElement('input');
+        inp.type='text';
+        inp.value=h.name;
+        inp.style.padding='10px';
+        inp.style.border='1px solid #d4dde5';
+        inp.style.borderRadius='8px';
+        inp.dataset.hIndex=i;
+        wrap.appendChild(inp);
+      });
+      list.appendChild(wrap);
+
+      // animals
+      animals.forEach((a,i)=>{
+        const row=document.createElement('div');
+        row.className='animal-mod';
+        row.innerHTML=`
+          <img id="preview${i}" src="${a.img}">
+          <input id="name${i}" type="text" value="${a.name}">
+          <select id="habitat${i}">
+            ${habitats.map(h=>`<option value="${h.key}" ${a.habitat===h.key?'selected':''}>${h.name}</option>`).join('')}
+          </select>
+          <input id="img${i}" type="file" accept="image/*" style="flex:1">
+          <button class="remove">Remove</button>
+        `;
+        list.appendChild(row);
+        const file=row.querySelector(`#img${i}`);
+        const prev=row.querySelector(`#preview${i}`);
+        file.addEventListener('change',e=>{
+          const f=e.target.files[0];
+          if(!f) return;
+          const rd=new FileReader();
+          rd.onload=ev=>prev.src=ev.target.result;
+          rd.readAsDataURL(f);
+        });
+        row.querySelector('.remove').addEventListener('click',()=>{
+          if(confirm('Remove '+a.name+'?')){
+            animals.splice(i,1);
+            openModal();
+            startGame();
+          }
+        });
+      });
+
+      modal.style.display='flex';
+      modal.setAttribute('aria-hidden','false');
+    }
+
+    function saveMods(){
+      // habitats
+      [...list.querySelectorAll('input[data-h-index]')].forEach(inp=>{
+        const idx=+inp.dataset.hIndex;
+        habitats[idx].name=inp.value.trim()||habitats[idx].name;
+      });
+      // animals
+      animals.forEach((a,i)=>{
+        a.name=document.getElementById('name'+i).value.trim()||a.name;
+        a.habitat=document.getElementById('habitat'+i).value;
+        a.img=document.getElementById('preview'+i).src;
+      });
+      localStorage.setItem('animalSortAnimals', JSON.stringify(animals));
+      localStorage.setItem('animalSortHabitats', JSON.stringify(habitats));
+      modal.style.display='none';
+      startGame();
+    }
+
+    // LocalStorage load
+    try{
+      const a=JSON.parse(localStorage.getItem('animalSortAnimals')||'null');
+      const h=JSON.parse(localStorage.getItem('animalSortHabitats')||'null');
+      if(Array.isArray(a)&&a.length) { animals.splice(0,animals.length,...a); }
+      if(Array.isArray(h)&&h.length) { habitats=h; }
+    }catch(e){}
+
+    // Disable Play Again for students (left hidden). Teacher could manually call startGame() if needed.
+    // Initial load
+    startGame();
+
+    // Thank you modal logic
+    const thankModal = document.getElementById('thank-modal');
+    const thankMsg = document.getElementById('thank-msg');
+    const closeThank = document.getElementById('close-thank');
+
+    function openThankModal(){
+      if(!thankModal) return;
+      thankMsg.textContent = 'Your answers have been submitted. Thank you!';
+      thankModal.style.display='flex';
+      thankModal.setAttribute('aria-hidden','false');
+      closeThank.focus();
+    }
+    function closeThankModal(){
+      if(!thankModal) return;
+      thankModal.style.display='none';
+      thankModal.setAttribute('aria-hidden','true');
+    }
+    if(closeThank){
+      closeThank.addEventListener('click',closeThankModal);
+      thankModal.addEventListener('click',e=>{ if(e.target===thankModal) closeThankModal(); });
+      document.addEventListener('keydown',e=>{
+        if(e.key==='Escape' && thankModal.style.display==='flex') closeThankModal();
+      });
+    }
+
+    /* ---- Responsive scale to canvas ---- */
+    // Optional: center content vertically if habitats grow
+    function refreshLayout(){
+      // Nothing heavy; placeholder for future adjustments
+    }
+    window.addEventListener('resize',refreshLayout);
+    refreshLayout();
+
+    // New code changes
+    const finishBtn = qs('#finishBtn');
+
+    function updateFinishVisibility(){
+      if(!finishBtn) return;
+      const currentQ = questions[currentIndex];
+      const thisAnswered = (userAnswers[currentQ.id]||[]).length>0;
+      const allPrevAnswered = questions.slice(0,currentIndex+1)
+            .every(q=> (userAnswers[q.id]||[]).length>0);
+      if(currentIndex === questions.length-1 && thisAnswered && allPrevAnswered){
+        finishBtn.style.display='inline-block';
+      } else {
+        finishBtn.style.display='none';
+      }
+    }
+
+    playBtn.addEventListener('click', ()=>{
+      // ...existing reset code...
+      if(finishBtn){ finishBtn.style.display='none'; finishBtn.disabled=false; }
+    });
+  </script>
+</body>
+</html>
