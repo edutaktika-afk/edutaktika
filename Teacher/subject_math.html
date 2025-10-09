@@ -91,7 +91,7 @@
     <span></span>
     <span></span>
 </button>
-   <header>
+    <header>
         <div class="floating-elements">
             <div class="floating-element"></div>
             <div class="floating-element"></div>
@@ -111,19 +111,23 @@
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown subject-dropdown">
-      <button id="navSubjectBtn" class="dropbtn" type="button" aria-haspopup="listbox" aria-expanded="false">
-        <span id="navSubjectLabel">Subject</span>
-        <i class="fa fa-caret-down" aria-hidden="true" style="margin-left:6px;font-size:.75rem;"></i>
-      </button>
-      <ul id="navSubjectMenu" class="dropdown-content" role="listbox" aria-labelledby="navSubjectBtn">
-        <li><a href="subject_math.html" data-subject="Math" role="option">Math</a></li>
-        <li><a href="subject_english.html" data-subject="English" role="option">English</a></li>
-        <li><a href="subject_science.html" data-subject="Science" role="option">Science</a></li>
-      </ul>
-    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="subject_math.html">Math</a></li>
+                            <li><a href="subject_english.html">English</a></li>
+                            <li><a href="subject_science.html">Science</a></li>
+                        </ul>
+                        </li>
                     <li><a href="studentlist.html">Student</a></li>
                     <li><a href="grading.html">Grading</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Assessments <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="assessment-builder.html">Create Assessment</a></li>
+                            <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                        </ul>
+                    </li>
                     <li class="dropdown">
                             <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
                             <ul class="dropdown-content">
