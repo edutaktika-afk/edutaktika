@@ -475,8 +475,13 @@ document.getElementById('registerForm').onsubmit = async function(e) {
             const userCredential = await auth.createUserWithEmailAndPassword(email, password);
             const user = userCredential.user;
             const uid = user.uid;
-            // Save user data in Realtime Database under "admins"
-            await db.ref('admins/' + uid).set(userData);
+            // Save user data in Realtime Database under "admins" with admin role
+            const adminData = {
+                ...userData,
+                role: "admin",
+                createdAt: new Date().toISOString()
+            };
+            await db.ref('admins/' + uid).set(adminData);
 
             // Send verification email
             try {
@@ -509,10 +514,10 @@ document.getElementById('loginForm').onsubmit = async function(e) {
         // Check if user is an admin in Realtime Database
         const snapshot = await db.ref('admins/' + uid).once('value');
         const admin = snapshot.val();
-        if (admin) {
+        if (admin && admin.role === "admin") {
             window.location.href = "homepage.html";
         } else {
-            showCustomModal('No admin record found. Please contact support.');
+            showCustomModal('No admin record found or insufficient permissions. Please contact support.');
             await auth.signOut();
         }
     } catch (error) {

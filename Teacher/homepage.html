@@ -80,8 +80,16 @@
                             <li><a href="subject_english.html">English</a></li>
                             <li><a href="subject_science.html">Science</a></li>
                         </ul>
-                    </li>
+                        </li>
                     <li><a href="studentlist.html">Student</a></li>
+                    <li><a href="grading.html">Grading</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Assessments <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="assessment-builder.html">Create Assessment</a></li>
+                            <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                        </ul>
+                    </li>
                     <li class="dropdown">
                             <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
                             <ul class="dropdown-content">
@@ -228,8 +236,56 @@
         </div>
     </section>
 
+    <!-- Assessment Tools Section -->
+    <section class="assessment-section scroll-fade" style="padding: 60px 0; background: #f7f9fb; z-index: 0;"> 
+        <div class="section-title">
+            <h2>Assessment Tools</h2>
+            <p>
+                Create and manage interactive assessments for your students.
+            </p>
+        </div>
+        <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:36px;padding:0 16px;">
+            <div class="assessment-card" style="background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(79,140,255,0.08);padding:28px 22px;text-align:center;box-shadow: 0 4px 24px var(--accent, #ff69b4, 0.13);">
+                <div style="font-size:48px;color:#2e8b57;margin-bottom:20px;">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <h3 style="color:#3f4d34;margin-bottom:15px;">Create Assessment</h3>
+                <p style="color:#6c757d;margin-bottom:20px;">
+                    Build interactive assessments with multiple question types, time limits, and automatic grading.
+                </p>
+                <a href="assessment-builder.html" style="background:linear-gradient(135deg, #2e8b57 0%, #3cb371 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;transition:all 0.3s ease;">
+                    <i class="fas fa-plus"></i> Create New
+                </a>
+            </div>
+            <div class="assessment-card" style="background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(79,140,255,0.08);padding:28px 22px;text-align:center;box-shadow: 0 4px 24px var(--accent, #ff69b4, 0.13);">
+                <div style="font-size:48px;color:#2e8b57;margin-bottom:20px;">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h3 style="color:#3f4d34;margin-bottom:15px;">Manage Assessments</h3>
+                <p style="color:#6c757d;margin-bottom:20px;">
+                    View analytics, monitor student attempts, and manage your assessment library.
+                </p>
+                <a href="assessment-manager.html" style="background:linear-gradient(135deg, #2e8b57 0%, #3cb371 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;transition:all 0.3s ease;">
+                    <i class="fas fa-cog"></i> Manage
+                </a>
+            </div>
+            <div class="assessment-card" style="background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(79,140,255,0.08);padding:28px 22px;text-align:center;box-shadow: 0 4px 24px var(--accent, #ff69b4, 0.13);">
+                <div style="font-size:48px;color:#2e8b57;margin-bottom:20px;">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3 style="color:#3f4d34;margin-bottom:15px;">Analytics & Reports</h3>
+                <p style="color:#6c757d;margin-bottom:20px;">
+                    Track student performance, identify learning gaps, and generate detailed reports.
+                </p>
+                <a href="assessment-manager.html#analytics" style="background:linear-gradient(135deg, #2e8b57 0%, #3cb371 100%);color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;transition:all 0.3s ease;">
+                    <i class="fas fa-chart-line"></i> View Analytics
+                </a>
+            </div>
+        </div>
+    </section>
+
     <!-- Summary Section with Example Graphs -->
-    <section class="summary-section scroll-fade" style="padding: 60px 0; background: #f7f9fb; z-index: 0;"> 
+    <section class="summary-section scroll-fade" style="padding: 60px 0; background: #fff; z-index: 0;"> 
         <div class="section-title">
             <h2>Student Progress Summary</h2>
             <p>

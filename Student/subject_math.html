@@ -672,44 +672,157 @@ auth.onAuthStateChanged(async function(user) {
 <script src="../assets/js/Student Side/editProfile.js"></script>
 <link rel="stylesheet" href="../CSS/editProfile.css">
 <script>
-// --- Inject Assessment Card & Score ---
+// --- Load Teacher-Created Assessments ---
 (function(){
     const container = document.getElementById('assessmentsContainer');
     if(!container) return;
 
-    // Create Assessment 1 card
-    const card = document.createElement('div');
-    card.className = 'lesson-item';
-    card.innerHTML = `
-        <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;">A1</div>
-        <div class="lesson-title">
-            <h3>Assessment 1: Everyday Math</h3>
-            <p>10-item real‑life math skills check.</p>
-            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam.html'">Start</span>
-            <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
-        </div>`;
-    container.appendChild(card);
+    // Load assessments from Firebase
+    function loadAssessments() {
+        // Clear existing content
+        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Loading assessments...</div>';
+        
+        // Load published assessments for Math subject
+        firebase.database().ref('assessments').orderByChild('subject').equalTo('math').once('value')
+            .then(snapshot => {
+                console.log('Assessment snapshot (math):', snapshot.val());
+                const assessments = [];
+                snapshot.forEach(childSnapshot => {
+                    const assessment = childSnapshot.val();
+                    console.log('Assessment found (math):', assessment);
+                    if (assessment.status === 'published') {
+                        assessments.push({
+                            id: childSnapshot.key,
+                            ...assessment
+                        });
+                    }
+                });
 
-    // Fetch last score if user logged in
-    firebase.auth().onAuthStateChanged(function(user){
-        if(!user) return;
-        const uid = user.uid;
-        firebase.database().ref('assessmentScores/assessment1/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
-            if(!snap.exists()) return;
-            let val; snap.forEach(c=> val = c.val ? c.val() : c); // handle object or direct
-            const dataObj = (typeof val === 'object') ? val : null;
-            const scoreEl = document.getElementById('a1LastScore');
-            if(scoreEl && dataObj) {
-                scoreEl.textContent = `Last Score: ${dataObj.score}/${dataObj.total} (${dataObj.percentage}%)`;
-            } else if(scoreEl && !dataObj){
-                // If stored as direct leaf (score object)
-                const raw = snap.val();
-                if(raw && raw.score !== undefined) {
-                    scoreEl.textContent = `Last Score: ${raw.score}/${raw.total} (${raw.percentage}%)`;
+                console.log('Published assessments (math):', assessments);
+
+                // If no math assessments found, try loading all assessments as fallback
+                if (assessments.length === 0) {
+                    console.log('No math assessments found, trying all assessments...');
+                    return firebase.database().ref('assessments').once('value');
+                } else {
+                    displayAssessments(assessments);
                 }
+            })
+            .then(snapshot => {
+                // This will only run if the fallback was triggered
+                if (snapshot) {
+                    console.log('All assessments snapshot:', snapshot.val());
+                    const allAssessments = [];
+                    snapshot.forEach(childSnapshot => {
+                        const assessment = childSnapshot.val();
+                        console.log('Assessment found (all):', assessment);
+                        if (assessment.status === 'published') {
+                            allAssessments.push({
+                                id: childSnapshot.key,
+                                ...assessment
+                            });
+                        }
+                    });
+
+                    console.log('All published assessments:', allAssessments);
+                    displayAssessments(allAssessments);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading assessments:', error);
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #dc3545;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px;"></i>
+                        <p>Error loading assessments.</p>
+                        <p style="font-size: 0.9rem; margin-top: 8px;">Please try refreshing the page.</p>
+                        <p style="font-size: 0.8rem; margin-top: 8px; color: #999;">Error: ${error.message}</p>
+                    </div>
+                `;
+            });
+
+        function displayAssessments(assessments) {
+            if (assessments.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-clipboard-list" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                        <p>No assessments available yet.</p>
+                        <p style="font-size: 0.9rem; margin-top: 8px;">Your teacher will publish assessments here.</p>
+                        <p style="font-size: 0.8rem; margin-top: 8px; color: #999;">Debug: Check console for assessment data</p>
+                    </div>
+                `;
+                return;
             }
+
+            // Display assessments
+            container.innerHTML = '';
+            assessments.forEach((assessment, index) => {
+                const card = document.createElement('div');
+                card.className = 'lesson-item';
+                card.innerHTML = `
+                    <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;">A${index + 1}</div>
+                    <div class="lesson-title">
+                        <h3>${assessment.title}</h3>
+                        <p>${assessment.description || 'Math assessment'}</p>
+                        <span class="lesson-badge" style="cursor:pointer;" onclick="startAssessment('${assessment.id}')">Start</span>
+                        <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="score-${assessment.id}">Last Score: -</div>
+                        <div style="margin-top:4px;font-size:0.8rem;color:#888;">${assessment.questions ? assessment.questions.length : 0} questions • ${assessment.timeLimit || 60} minutes</div>
+                    </div>`;
+                container.appendChild(card);
+                
+                // Load student's scores for this assessment
+                loadStudentScores(assessment.id);
+            });
+        }
+    }
+
+    // Load student's scores for a specific assessment
+    function loadStudentScores(assessmentId) {
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (!user) return;
+            
+            const uid = user.uid;
+            firebase.database().ref('assessmentAttempts').orderByChild('assessmentId').equalTo(assessmentId).once('value')
+                .then(snapshot => {
+                    const attempts = [];
+                    snapshot.forEach(childSnapshot => {
+                        const attempt = childSnapshot.val();
+                        if (attempt.studentId === uid) {
+                            attempts.push(attempt);
+                        }
+                    });
+
+                    if (attempts.length > 0) {
+                        // Sort by timestamp to get latest
+                        attempts.sort((a, b) => b.timestamp - a.timestamp);
+                        const latestAttempt = attempts[0];
+                        const bestScore = Math.max(...attempts.map(a => a.percentage));
+                        
+                        const scoreElement = document.getElementById(`score-${assessmentId}`);
+                        if (scoreElement) {
+                            scoreElement.innerHTML = `
+                                Last Score: ${Math.round(latestAttempt.percentage)}%<br>
+                                Best Score: ${Math.round(bestScore)}%
+                            `;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading scores:', error);
+                });
         });
-    });
+    }
+
+    // Start assessment function
+    window.startAssessment = function(assessmentId) {
+        // Store assessment ID for the taker
+        sessionStorage.setItem('currentAssessmentId', assessmentId);
+        // Navigate to assessment taker
+        window.location.href = 'assessment-taker.html';
+    };
+
+    // Load assessments when page loads
+    loadAssessments();
+
 })();
 
 
@@ -734,48 +847,6 @@ auth.onAuthStateChanged(async function(user) {
     });
 })();
 
-// Extend existing assessment UI scoring display
-(function(){
-  const assessCard = document.querySelector('#assessmentsContainer .lesson-item');
-  if(!assessCard) return;
-  // Append placeholders
-  const scoreDiv = assessCard.querySelector('#a1LastScore');
-  if(scoreDiv){
-    scoreDiv.insertAdjacentHTML('afterend', `<div id="a1BestScore" style="font-size:0.9rem;color:#444;">Best Score: -</div><button id="viewAttemptsFromSubject" style="margin-top:6px;padding:4px 10px;font-size:0.75rem;border:none;background:#6d28d9;color:#fff;border-radius:6px;cursor:pointer;">View Attempts</button>`);
-  }
-
-
-
-  // Fetch summary + leaderboard
-  firebase.auth().onAuthStateChanged(user => {
-    if(!user) return;
-    const uid = user.uid;
-    // User summary
-    firebase.database().ref('assessmentSummaries/assessment1/' + uid).once('value', snap => {
-      if(snap.exists()){
-        const s = snap.val();
-        const lastEl = document.getElementById('a1LastScore');
-        const bestEl = document.getElementById('a1BestScore');
-        if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
-        if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts} attempt${s.attempts>1?'s':''}`;
-      }
-    });
-    // Leaderboard (pull all summaries once)
-    firebase.database().ref('assessmentSummaries/assessment1').once('value', snap => {
-      const lbEl = document.getElementById('a1Leaderboard');
-      if(!snap.exists()){ lbEl.textContent = 'No scores yet.'; return; }
-      const arr = [];
-      snap.forEach(child => { const v = child.val(); arr.push({ uid: child.key, best: v.best, bestPct: v.bestPercentage, last: v.last, attempts: v.attempts || 1 }); });
-      arr.sort((a,b)=> b.best - a.best || a.attempts - b.attempts);
-      const top = arr.slice(0,10);
-      lbEl.innerHTML = top.map((r,i)=> `<div style='display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;'><span>#${i+1}</span><span>${r.uid.substring(0,6)}</span><span>${r.best}</span><span>${r.bestPct}%</span><span>${r.attempts}x</span></div>`).join('');
-    });
-  });
-
-  // Attempts modal reuse via hidden iframe open (we'll just navigate to assessment and let user click view attempts). Simpler: open assessment in new tab.
-  const btn = document.getElementById('viewAttemptsFromSubject');
-  if(btn){ btn.addEventListener('click', ()=> { window.location.href = '../Games/Assessment/Assexam.html'; }); }
-})();
 </script>
     </div>
 

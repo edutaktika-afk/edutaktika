@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Manager - Edutaktika</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../CSS/header.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/dropdown.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(46, 139, 87, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: #6c757d;
+            color: white;
+        }
+
+        .tab-btn.active {
+            background: #2e8b57;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .content-header h2 {
+            color: #2e8b57;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 12px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            border-color: #2e8b57;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-published {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-closed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .actions .btn {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .stat-icon.primary {
+            background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%);
+        }
+
+        .stat-icon.success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .stat-icon.warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        }
+
+        .stat-icon.danger {
+            background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2e8b57;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: #2e8b57;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .close-btn:hover {
+            color: #dc3545;
+        }
+
+        .attempt-details {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .attempt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .attempt-score {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2e8b57;
+        }
+
+        .attempt-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .question-review {
+            margin-top: 20px;
+        }
+
+        .question-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .question-answer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .answer-correct {
+            color: #28a745;
+        }
+
+        .answer-incorrect {
+            color: #dc3545;
+        }
+
+        .answer-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .answer-icon.correct {
+            background: #28a745;
+        }
+
+        .answer-icon.incorrect {
+            background: #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Site Header -->
+    <header>
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                <div class="logo-text"><span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span></div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="homepage.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="subject_math.html">Math</a></li>
+                            <li><a href="subject_english.html">English</a></li>
+                            <li><a href="subject_science.html">Science</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="studentlist.html">Student</a></li>
+                    <li><a href="grading.html">Grading</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Assessments <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="assessment-builder.html">Create Assessment</a></li>
+                            <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="leaderboard_math.html">Math</a></li>
+                            <li><a href="leaderboard_english.html">English</a></li>
+                            <li><a href="leaderboard_science.html">Science</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-clipboard-list"></i> Assessment Manager</h1>
+            <p>Manage and monitor your assessments</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('assessments')">
+                <i class="fas fa-list"></i> My Assessments
+            </button>
+            <button class="tab-btn" onclick="showTab('analytics')">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </button>
+            <button class="tab-btn" onclick="showTab('attempts')">
+                <i class="fas fa-users"></i> Student Attempts
+            </button>
+        </div>
+
+        <!-- Assessments Tab -->
+        <div id="assessmentsTab" class="tab-content active">
+            <div class="content-card">
+                <div class="content-header">
+                    <h2><i class="fas fa-list"></i> My Assessments</h2>
+                    <a href="assessment-builder.html" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create New Assessment
+                    </a>
+                </div>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Subject</label>
+                        <select id="subjectFilter" onchange="filterAssessments()">
+                            <option value="">All Subjects</option>
+                            <option value="Math">Mathematics</option>
+                            <option value="English">English</option>
+                            <option value="Science">Science</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Grade Level</label>
+                        <select id="gradeFilter" onchange="filterAssessments()">
+                            <option value="">All Grades</option>
+                            <option value="Grade 5">Grade 5</option>
+                            <option value="Grade 6">Grade 6</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select id="statusFilter" onchange="filterAssessments()">
+                            <option value="">All Status</option>
+                            <option value="draft">Draft</option>
+                            <option value="published">Published</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Search</label>
+                        <input type="text" id="searchFilter" placeholder="Search assessments..." onkeyup="filterAssessments()">
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="assessmentsTable">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Subject</th>
+                                <th>Grade</th>
+                                <th>Questions</th>
+                                <th>Time Limit</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assessmentsTableBody">
+                            <!-- Assessments will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analyticsTab" class="tab-content">
+            <div class="content-card">
+                <div class="content-header">
+                    <h2><i class="fas fa-chart-bar"></i> Assessment Analytics</h2>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <div class="stat-value" id="totalAssessments">0</div>
+                        <div class="stat-label">Total Assessments</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-value" id="totalAttempts">0</div>
+                        <div class="stat-label">Total Attempts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-value" id="averageScore">0%</div>
+                        <div class="stat-label">Average Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon danger">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-value" id="averageTime">0m</div>
+                        <div class="stat-label">Average Time</div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="analyticsTable">
+                        <thead>
+                            <tr>
+                                <th>Assessment</th>
+                                <th>Attempts</th>
+                                <th>Average Score</th>
+                                <th>Pass Rate</th>
+                                <th>Average Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analyticsTableBody">
+                            <!-- Analytics will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attempts Tab -->
+        <div id="attemptsTab" class="tab-content">
+            <div class="content-card">
+                <div class="content-header">
+                    <h2><i class="fas fa-users"></i> Student Attempts</h2>
+                </div>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Assessment</label>
+                        <select id="attemptAssessmentFilter" onchange="filterAttempts()">
+                            <option value="">All Assessments</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select id="attemptStatusFilter" onchange="filterAttempts()">
+                            <option value="">All Results</option>
+                            <option value="passed">Passed</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date Range</label>
+                        <input type="date" id="dateFromFilter" onchange="filterAttempts()">
+                    </div>
+                    <div class="filter-group">
+                        <label>To</label>
+                        <input type="date" id="dateToFilter" onchange="filterAttempts()">
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="attemptsTable">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Assessment</th>
+                                <th>Score</th>
+                                <th>Percentage</th>
+                                <th>Status</th>
+                                <th>Time Taken</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attemptsTableBody">
+                            <!-- Attempts will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attempt Details Modal -->
+    <div id="attemptModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-eye"></i> Attempt Details</h3>
+                <button class="close-btn" onclick="closeAttemptModal()">&times;</button>
+            </div>
+            <div id="attemptModalContent">
+                <!-- Attempt details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+            authDomain: "edutaktika.firebaseapp.com",
+            databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+            projectId: "edutaktika",
+            storageBucket: "edutaktika.appspot.com",
+            messagingSenderId: "676848575316",
+            appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+            measurementId: "G-X3GT5TNN87"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        // Global variables
+        let assessments = [];
+        let attempts = [];
+        let students = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            auth.onAuthStateChanged(function(user) {
+                if (!user) {
+                    window.location.href = 'logreg.html';
+                } else {
+                    loadData();
+                }
+            });
+        });
+
+        // Load all data
+        function loadData() {
+            loadAssessments();
+            loadAttempts();
+            loadStudents();
+        }
+
+        // Load assessments
+        function loadAssessments() {
+            db.ref('assessments').orderByChild('createdBy').equalTo(auth.currentUser.uid).once('value')
+                .then(snapshot => {
+                    assessments = [];
+                    snapshot.forEach(child => {
+                        assessments.push({ ...child.val(), id: child.key });
+                    });
+                    renderAssessments();
+                    updateAnalytics();
+                })
+                .catch(error => {
+                    console.error('Error loading assessments:', error);
+                });
+        }
+
+        // Load attempts
+        function loadAttempts() {
+            db.ref('attempts').once('value')
+                .then(snapshot => {
+                    attempts = [];
+                    snapshot.forEach(child => {
+                        attempts.push({ ...child.val(), id: child.key });
+                    });
+                    renderAttempts();
+                    updateAnalytics();
+                })
+                .catch(error => {
+                    console.error('Error loading attempts:', error);
+                });
+        }
+
+        // Load students
+        function loadStudents() {
+            db.ref('students').once('value')
+                .then(snapshot => {
+                    students = [];
+                    snapshot.forEach(child => {
+                        students.push({ ...child.val(), uid: child.key });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading students:', error);
+                });
+        }
+
+        // Show tab
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Render assessments
+        function renderAssessments() {
+            const tbody = document.getElementById('assessmentsTableBody');
+            tbody.innerHTML = '';
+
+            if (assessments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #6c757d;">No assessments found. <a href="assessment-builder.html">Create your first assessment</a></td></tr>';
+                return;
+            }
+
+            assessments.forEach(assessment => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <strong>${assessment.title}</strong>
+                        <br><small style="color: #6c757d;">${assessment.description}</small>
+                    </td>
+                    <td>${assessment.subject}</td>
+                    <td>${assessment.gradeLevel}</td>
+                    <td>${assessment.questions.length}</td>
+                    <td>${assessment.timeLimit} min</td>
+                    <td><span class="status-badge status-${assessment.status || 'draft'}">${(assessment.status || 'draft').toUpperCase()}</span></td>
+                    <td>${new Date(assessment.createdAt).toLocaleDateString()}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-primary" onclick="editAssessment('${assessment.id}')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-success" onclick="publishAssessment('${assessment.id}')" title="Publish">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-warning" onclick="viewAttempts('${assessment.id}')" title="View Attempts">
+                                <i class="fas fa-users"></i>
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteAssessment('${assessment.id}')" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Render attempts
+        function renderAttempts() {
+            const tbody = document.getElementById('attemptsTableBody');
+            tbody.innerHTML = '';
+
+            if (attempts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #6c757d;">No attempts found.</td></tr>';
+                return;
+            }
+
+            attempts.forEach(attempt => {
+                const student = students.find(s => s.uid === attempt.studentId);
+                const assessment = assessments.find(a => a.id === attempt.assessmentId);
+                
+                if (!student || !assessment) return;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <strong>${student.fname} ${student.lname}</strong>
+                        <br><small style="color: #6c757d;">${student.email}</small>
+                    </td>
+                    <td>${assessment.title}</td>
+                    <td>${attempt.score}/${attempt.totalPoints}</td>
+                    <td>${attempt.percentage}%</td>
+                    <td><span class="status-badge ${attempt.passed ? 'status-published' : 'status-closed'}">${attempt.passed ? 'PASSED' : 'FAILED'}</span></td>
+                    <td>${Math.floor(attempt.timeTaken / 60)}:${(attempt.timeTaken % 60).toString().padStart(2, '0')}</td>
+                    <td>${new Date(attempt.submittedAt).toLocaleDateString()}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-primary" onclick="viewAttemptDetails('${attempt.id}')" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Update analytics
+        function updateAnalytics() {
+            // Update stats
+            document.getElementById('totalAssessments').textContent = assessments.length;
+            document.getElementById('totalAttempts').textContent = attempts.length;
+
+            if (attempts.length > 0) {
+                const averageScore = attempts.reduce((sum, attempt) => sum + attempt.percentage, 0) / attempts.length;
+                document.getElementById('averageScore').textContent = Math.round(averageScore) + '%';
+
+                const averageTime = attempts.reduce((sum, attempt) => sum + attempt.timeTaken, 0) / attempts.length;
+                document.getElementById('averageTime').textContent = Math.round(averageTime / 60) + 'm';
+            }
+
+            // Update analytics table
+            const tbody = document.getElementById('analyticsTableBody');
+            tbody.innerHTML = '';
+
+            assessments.forEach(assessment => {
+                const assessmentAttempts = attempts.filter(a => a.assessmentId === assessment.id);
+                const averageScore = assessmentAttempts.length > 0 ? 
+                    assessmentAttempts.reduce((sum, attempt) => sum + attempt.percentage, 0) / assessmentAttempts.length : 0;
+                const passRate = assessmentAttempts.length > 0 ? 
+                    (assessmentAttempts.filter(a => a.passed).length / assessmentAttempts.length) * 100 : 0;
+                const averageTime = assessmentAttempts.length > 0 ? 
+                    assessmentAttempts.reduce((sum, attempt) => sum + attempt.timeTaken, 0) / assessmentAttempts.length : 0;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${assessment.title}</strong></td>
+                    <td>${assessmentAttempts.length}</td>
+                    <td>${Math.round(averageScore)}%</td>
+                    <td>${Math.round(passRate)}%</td>
+                    <td>${Math.round(averageTime / 60)}m</td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-primary" onclick="viewAttempts('${assessment.id}')">
+                                <i class="fas fa-users"></i> View Attempts
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Filter assessments
+        function filterAssessments() {
+            const subjectFilter = document.getElementById('subjectFilter').value;
+            const gradeFilter = document.getElementById('gradeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+
+            const filteredAssessments = assessments.filter(assessment => {
+                const matchesSubject = !subjectFilter || assessment.subject === subjectFilter;
+                const matchesGrade = !gradeFilter || assessment.gradeLevel === gradeFilter;
+                const matchesStatus = !statusFilter || (assessment.status || 'draft') === statusFilter;
+                const matchesSearch = !searchFilter || 
+                    assessment.title.toLowerCase().includes(searchFilter) ||
+                    assessment.description.toLowerCase().includes(searchFilter);
+
+                return matchesSubject && matchesGrade && matchesStatus && matchesSearch;
+            });
+
+            // Re-render with filtered data
+            const originalAssessments = assessments;
+            assessments = filteredAssessments;
+            renderAssessments();
+            assessments = originalAssessments;
+        }
+
+        // Filter attempts
+        function filterAttempts() {
+            // Implementation for filtering attempts
+            // Similar to filterAssessments but for attempts
+        }
+
+        // Edit assessment
+        function editAssessment(assessmentId) {
+            window.location.href = `assessment-builder.html?id=${assessmentId}`;
+        }
+
+        // Publish assessment
+        function publishAssessment(assessmentId) {
+            if (confirm('Are you sure you want to publish this assessment?')) {
+                db.ref('assessments/' + assessmentId).update({ status: 'published' })
+                    .then(() => {
+                        alert('Assessment published successfully!');
+                        loadAssessments();
+                    })
+                    .catch(error => {
+                        console.error('Error publishing assessment:', error);
+                        alert('Error publishing assessment');
+                    });
+            }
+        }
+
+        // View attempts for specific assessment
+        function viewAttempts(assessmentId) {
+            // Filter attempts by assessment ID
+            const assessmentAttempts = attempts.filter(a => a.assessmentId === assessmentId);
+            
+            if (assessmentAttempts.length === 0) {
+                alert('No attempts found for this assessment');
+                return;
+            }
+
+            // Show attempts tab and filter
+            showTab('attempts');
+            document.getElementById('attemptAssessmentFilter').value = assessmentId;
+            filterAttempts();
+        }
+
+        // Delete assessment
+        function deleteAssessment(assessmentId) {
+            if (confirm('Are you sure you want to delete this assessment? This action cannot be undone.')) {
+                db.ref('assessments/' + assessmentId).remove()
+                    .then(() => {
+                        alert('Assessment deleted successfully!');
+                        loadAssessments();
+                    })
+                    .catch(error => {
+                        console.error('Error deleting assessment:', error);
+                        alert('Error deleting assessment');
+                    });
+            }
+        }
+
+        // View attempt details
+        function viewAttemptDetails(attemptId) {
+            const attempt = attempts.find(a => a.id === attemptId);
+            const assessment = assessments.find(a => a.id === attempt.assessmentId);
+            const student = students.find(s => s.uid === attempt.studentId);
+
+            if (!attempt || !assessment || !student) {
+                alert('Attempt details not found');
+                return;
+            }
+
+            let questionsHtml = '';
+            assessment.questions.forEach((question, index) => {
+                const userAnswer = attempt.answers[index];
+                const isCorrect = question.type === 'multiple-choice' || question.type === 'true-false' ? 
+                    userAnswer === question.correctAnswer : userAnswer && userAnswer.trim();
+
+                questionsHtml += `
+                    <div class="question-item">
+                        <div class="question-text">Q${index + 1}: ${question.text}</div>
+                        <div class="question-answer">
+                            <div class="answer-icon ${isCorrect ? 'correct' : 'incorrect'}">
+                                <i class="fas fa-${isCorrect ? 'check' : 'times'}"></i>
+                            </div>
+                            <span class="${isCorrect ? 'answer-correct' : 'answer-incorrect'}">
+                                ${question.type === 'multiple-choice' || question.type === 'true-false' ? 
+                                    (question.options[userAnswer] || 'No answer') : 
+                                    (userAnswer || 'No answer')}
+                            </span>
+                        </div>
+                        ${question.type === 'multiple-choice' || question.type === 'true-false' ? `
+                            <div style="margin-top: 10px; font-size: 12px; color: #6c757d;">
+                                Correct Answer: ${question.options[question.correctAnswer]}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            document.getElementById('attemptModalContent').innerHTML = `
+                <div class="attempt-details">
+                    <div class="attempt-header">
+                        <div>
+                            <strong>${student.fname} ${student.lname}</strong>
+                            <br><small>${student.email}</small>
+                        </div>
+                        <div class="attempt-score">${attempt.score}/${attempt.totalPoints} (${attempt.percentage}%)</div>
+                    </div>
+                    <div class="attempt-meta">
+                        <div><strong>Assessment:</strong> ${assessment.title}</div>
+                        <div><strong>Status:</strong> ${attempt.passed ? 'Passed' : 'Failed'}</div>
+                        <div><strong>Time Taken:</strong> ${Math.floor(attempt.timeTaken / 60)}:${(attempt.timeTaken % 60).toString().padStart(2, '0')}</div>
+                        <div><strong>Submitted:</strong> ${new Date(attempt.submittedAt).toLocaleString()}</div>
+                    </div>
+                </div>
+                <div class="question-review">
+                    <h4>Question Review</h4>
+                    ${questionsHtml}
+                </div>
+            `;
+
+            document.getElementById('attemptModal').style.display = 'flex';
+        }
+
+        // Close attempt modal
+        function closeAttemptModal() {
+            document.getElementById('attemptModal').style.display = 'none';
+        }
+
+        // Logout function
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = 'logreg.html';
+            });
+        }
+    </script>
+
+    <!-- Site Footer -->
+    <footer>
+        <div class="footer-wrap">
+            <div class="footer-col">
+                <h4 class="footer-brand">Edutaktika</h4>
+                <p>Empowering education through technology</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="homepage.html">Home</a></li>
+                    <li><a href="subject_math.html">Mathematics</a></li>
+                    <li><a href="subject_english.html">English</a></li>
+                    <li><a href="subject_science.html">Science</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Edutaktika. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
