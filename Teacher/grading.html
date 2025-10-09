@@ -1219,35 +1219,44 @@
         <!-- Overlay for profile sidebar -->
         <div class="sidebar-overlay" id="profileSidebarOverlay"></div>
 
-        <header>
-            <div class="floating-elements">
-                <div class="floating-element"></div>
-                <div class="floating-element"></div>
-                <div class="floating-element"></div>
-                <div class="floating-element"></div>
-            </div>
-            <div class="header-content">
-                <div class="logo">
-                    <div class="logo-icon">
-                        <i class="fas fa-graduation-cap"></i>
-                    </div>
-                    <div class="logo-text">
-                        <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
-                    </div>
+    <header>
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
                 </div>
-                <nav>
-                    <ul>
-                        <li><a href="homepage.html">Home</a></li>
-                        <li class="dropdown">
-                            <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                            <ul class="dropdown-content">
-                                <li><a href="subject_math.html">Math</a></li>
-                                <li><a href="subject_english.html">English</a></li>
-                                <li><a href="subject_science.html">Science</a></li>
-                            </ul>
+                <!-- Replace your logo-text div with this for per-letter bounce -->
+                <div class="logo-text">
+                    <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="homepage.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="subject_math.html">Math</a></li>
+                            <li><a href="subject_english.html">English</a></li>
+                            <li><a href="subject_science.html">Science</a></li>
+                        </ul>
                         </li>
-                        <li><a href="studentlist.html">Student</a></li>
-                        <li class="dropdown">
+                    <li><a href="studentlist.html">Student</a></li>
+                    <li><a href="grading.html">Grading</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Assessments <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="assessment-builder.html">Create Assessment</a></li>
+                            <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
                             <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
                             <ul class="dropdown-content">
                                 <li><a href="leaderboard_math.html">Math</a></li>
@@ -1255,14 +1264,13 @@
                                 <li><a href="leaderboard_science.html">Science</a></li>
                             </ul>
                         </li>
-                        <li><a href="grading.html" style="background-color: var(--primary); color: white;">Grading</a></li>
-                        <li>
-                            <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </header>
+                    <li>
+                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
         <!-- Profile Sidebar (Dynamic with Firebase) -->
         <div id="profileSidebar" class="profile-sidebar">
@@ -1406,24 +1414,20 @@
             <div class="grading-controls">
                 <div class="filter-controls">
                     <select id="subjectFilter" class="filter-select">
-                        <option value="">All Subjects</option>
+                        <option value="">Select Subject</option>
                         <option value="math">Math</option>
                         <option value="english">English</option>
                         <option value="science">Science</option>
                     </select>
                     <select id="quarterFilter" class="filter-select">
-                        <option value="">All Quarters</option>
+                        <option value="">Select Quarter</option>
                         <option value="1">Quarter 1</option>
                         <option value="2">Quarter 2</option>
                         <option value="3">Quarter 3</option>
                         <option value="4">Quarter 4</option>
                     </select>
                     <select id="gradeLevelFilter" class="filter-select">
-                        <option value="">All Grade Levels</option>
-                        <option value="1">Grade 1</option>
-                        <option value="2">Grade 2</option>
-                        <option value="3">Grade 3</option>
-                        <option value="4">Grade 4</option>
+                        <option value="">Select Grade Level</option>
                         <option value="5">Grade 5</option>
                         <option value="6">Grade 6</option>
                     </select>
