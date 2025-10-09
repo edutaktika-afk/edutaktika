@@ -2,489 +2,1121 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Math Drag & Drop Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop Math Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-      :root {
-    --primary: #2e8b57;
-    --secondary: #ffd700;
-    --peach: #ff69b4;
-    --forest-green: #3f4d34;
-    --sun-yellow: #ffd700;
-    --white: #ffffff;
-} 
-        body {
-            font-family: 'Comic Neue', Arial, sans-serif;
-            background: rgb(177, 177, 177);
+        * {
             margin: 0;
             padding: 0;
-            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2e8b57;
+            --secondary: #ffd700;
+            --accent: #ff69b4;
+            --text: #2d3923;
+            --white: #ffffff;
+            --light-green: #e9ffe9;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Baloo 2', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, #228b22 100%);
+            width: 100vw;
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
+            color: var(--text);
         }
-        #start-screen {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgb(177, 177, 177); color: #fff; z-index: 100000;
-            display: flex; align-items: center; justify-content: center;
-        }
-        #start-screen > div {
-            background: #fff; color: #000000;
-            padding: 48px 40px; border-radius: 18px;
-            box-shadow: 0 4px 24px #0002;
-            text-align: center;
-            max-width: 400px;
-        }
-        #start-btn {
-            padding: 16px 48px;
-            border-radius: 10px;
-            background: #1769ff;
-            color: #fff;
-            border: none;
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-top: 28px;
-            cursor: pointer;
-            box-shadow: 0 2px 8px #0001;
-        }
-        #modal-instructions {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgb(177, 177, 177); z-index: 99999;
-            display: flex; align-items: center; justify-content: center;
-        }
-        #modal-instructions > div {
-            background: #fff; padding: 40px 32px; border-radius: 14px;
-            max-width: 420px; width: 96vw; box-shadow: 0 4px 24px #0002;
-            position: relative;
-        }
-        .game-container {
-            max-width: 700px;
-            width: 100%;
-            margin: 0 auto;
-            background: #fff;
+
+        .quiz-container {
+            background: var(--white);
             border-radius: 16px;
-            box-shadow: 0 4px 24px #0001;
-            padding: 32px;
-            text-align: center;
-            position: relative;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-        }
-        .question {
-            font-size: 2.3rem;
-            margin-bottom: 24px;
-            font-weight: bold;
-        }
-        .answers {
+            box-shadow: 0 8px 32px var(--shadow);
+            padding: 20px;
+            width: calc(100vw - 20px);
+            height: calc(100vh - 20px);
+            max-width: 780px;
+            max-height: 430px;
             display: flex;
-            gap: 18px;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .quiz-title {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        /* Score only visible to teachers */
+        .score {
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .student-info {
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .question-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 0;
+        }
+
+        .question {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            font-weight: 600;
+            color: var(--text);
+            text-align: center;
+            padding: 12px;
+            background: var(--light-green);
+            border-radius: 12px;
+            border: 2px solid var(--primary);
+        }
+
+        .drag-drop-area {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: start;
             justify-content: center;
+            flex: 1;
+            padding: 15px;
+            max-width: 100%;
         }
+
+        .draggable-items {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            justify-self: end;
+        }
+
+        .draggable-label {
+            font-weight: 600;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            color: var(--primary);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        #draggableContainer {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            justify-items: center;
+            align-items: center;
+            min-width: 160px;
+        }
+
         .draggable {
-            background: #e3f2fd;
-            color: #1769ff;
-            border-radius: 8px;
-            padding: 16px 28px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: grab;
-            border: 2px solid #1769ff;
-            transition: background 0.2s, color 0.2s;
-        }
-        .draggable.dragging {
-            opacity: 0.6;
-        }
-        .dropzone {
-            background: #fffde7;
-            border: 2px dashed #fbc02d;
+            background: var(--secondary);
+            color: var(--text);
+            border: 2px solid var(--primary);
             border-radius: 10px;
+            padding: 10px 15px;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-weight: 600;
+            cursor: grab;
+            user-select: none;
+            transition: all 0.3s ease;
+            min-width: 70px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 2px 8px var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+        }
+
+        .draggable:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px var(--shadow);
+            background: #fff700;
+        }
+
+        .draggable.dragging {
+            opacity: 0.8;
+            cursor: grabbing;
+            background: var(--accent);
+            color: var(--white);
+            transform: rotate(5deg) scale(1.05);
+        }
+
+        .drag-drop-area::after {
+            content: '→';
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            color: var(--primary);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            align-self: center;
+            justify-self: center;
+            width: 40px;
+            height: 40px;
+            background: var(--light-green);
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .drop-zones {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            justify-self: start;
+        }
+
+        .drop-zone-label {
+            font-weight: 600;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            color: var(--primary);
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        #dropZoneContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .drop-zone {
+            border: 3px dashed var(--primary);
+            border-radius: 12px;
+            background: var(--light-green);
             min-height: 60px;
             min-width: 120px;
+            width: 140px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            color: #fbc02d;
-            font-weight: bold;
-            margin-bottom: 24px;
-        }
-        #feedback {
-            font-size: 1.1rem;
-            margin-bottom: 18px;
-            min-height: 24px;
-        }
-        #next-btn {
-            padding: 10px 32px;
-            border-radius: 8px;
-            background: #1769ff;
-            color: #fff;
-            border: none;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 18px;
-            display: none;
-        }
-        #congrats-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.35);
-            z-index: 99999;
-            align-items: center;
-            justify-content: center;
-        }
-        #congrats-modal > div {
-            background: #fff;
-            padding: 48px 40px;
-            border-radius: 18px;
-            max-width: 420px;
-            width: 96vw;
-            box-shadow: 0 4px 24px #0002;
-            text-align: center;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            font-weight: 600;
+            color: var(--primary);
+            transition: all 0.3s ease;
             position: relative;
+            box-shadow: 0 2px 8px rgba(46, 139, 87, 0.1);
         }
-        #final-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.35);
-            z-index: 100000;
-            align-items: center;
-            justify-content: center;
+
+        .drop-zone.drag-over {
+            background: var(--secondary);
+            border-color: var(--accent);
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(255, 105, 180, 0.3);
+            animation: wiggle 0.3s ease-in-out;
         }
-        #final-modal > div {
-            background: #fff;
-            padding: 48px 40px;
-            border-radius: 18px;
-            max-width: 420px;
-            width: 96vw;
-            box-shadow: 0 4px 24px #0002;
-            text-align: center;
-            position: relative;
+
+        @keyframes wiggle {
+            0%, 100% { transform: scale(1.05) rotate(0deg); }
+            25% { transform: scale(1.05) rotate(-2deg); }
+            75% { transform: scale(1.05) rotate(2deg); }
         }
-        /* Edit button and modal styles */
-        #edit-game-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            background: #ff9800;
-            color: #fff;
-            font-size: 1rem;
+
+        .drop-zone.filled {
+            background: var(--secondary);
+            border: 3px solid var(--primary);
+            color: var(--text);
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 2px 8px #0001;
+            box-shadow: 0 4px 12px rgba(46, 139, 87, 0.2);
         }
-        #edit-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 100001;
-            align-items: center;
-            justify-content: center;
+
+        .drop-zone.filled:hover {
+            background: #fff700;
+            transform: translateY(-2px);
         }
-        #edit-modal > div {
-            background: #fff;
-            padding: 40px 32px;
-            border-radius: 14px;
-            max-width: 500px;
-            width: 96vw;
-            box-shadow: 0 4px 24px #0002;
-            position: relative;
-        }
-        #edit-questions-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 24px;
-        }
-        .edit-question-item {
+
+        .controls {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            border: 1px solid #ddd;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
             border-radius: 8px;
-            margin-bottom: 12px;
-        }
-        .edit-question-item input {
-            border: 1px solid #1769ff;
-            border-radius: 4px;
-            padding: 8px;
-            font-size: 1rem;
-            width: calc(100% - 24px);
-            margin-right: 12px;
-        }
-        .edit-question-item button {
             padding: 8px 16px;
-            border-radius: 4px;
-            background: #1769ff;
-            color: #fff;
-            border: none;
-            font-size: 1rem;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .btn:hover {
+            background: #1e5f3f;
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+            font-weight: 600;
+            margin-top: 10px;
+            min-height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Hide feedback from students */
+        .student-mode .feedback {
+            display: none;
+        }
+
+        .feedback.correct {
+            color: var(--primary);
+        }
+
+        .feedback.incorrect {
+            color: #e74c3c;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Student mode styles - hide score and modify UI */
+        .student-mode .score {
+            display: none;
+        }
+
+        .student-mode .controls {
+            justify-content: space-between;
+        }
+
+        .student-mode #resetBtn {
+            display: none;
+        }
+
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 8px 32px var(--shadow);
+        }
+
+        .modal h2 {
+            color: var(--primary);
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
+            margin-bottom: 15px;
+        }
+
+        .modal p {
+            font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+
+        /* Student completion message */
+        .student-completion {
+            background: var(--light-green);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* Teacher Mode Styles */
+        .teacher-mode {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+        }
+
+        .teacher-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            z-index: 1001;
+        }
+
+        .edit-btn {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .edit-btn:hover {
+            background: #357abd;
+        }
+
+        /* Edit Modal */
+        .edit-modal {
+            max-width: 600px;
+            width: 95%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .question-edit {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+
+        .question-edit input,
+        .question-edit textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .option-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 5px 0;
+        }
+
+        .option-input input[type="text"] {
+            flex: 1;
+        }
+
+        .option-input input[type="radio"] {
+            width: auto;
+        }
+
+        .remove-question {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+        }
+
+        .add-question {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .drag-drop-area {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .drag-drop-area::after {
+                content: '↓';
+                order: 2;
+            }
+            
+            .draggable-items {
+                order: 1;
+                justify-self: center;
+            }
+            
+            .drop-zones {
+                order: 3;
+                justify-self: center;
+            }
+            
+            #draggableContainer {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #draggableContainer {
+                grid-template-columns: 1fr;
+                gap: 8px;
+                max-width: 200px;
+            }
+            
+            .draggable {
+                min-width: 150px;
+            }
+            
+            .drop-zone {
+                min-width: 150px;
+                width: 160px;
+            }
+        }
+
+        @media (max-height: 500px) {
+            .drag-drop-area {
+                padding: 8px;
+                gap: 10px;
+            }
+            
+            .draggable {
+                padding: 8px 12px;
+                min-height: 36px;
+            }
+            
+            .drop-zone {
+                min-height: 45px;
+            }
+            
+            .drag-drop-area::after {
+                width: 30px;
+                height: 30px;
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Start Screen -->
-    <div id="start-screen">
-        <div>
-            <h1 style="margin-bottom:18px;">Math Drag & Drop Game</h1>
-            <p style="font-size:1.1rem;">Test your math skills!<br>Drag the correct answer to solve each problem.</p>
-            <button id="start-btn">Start</button>
+    <div class="quiz-container">
+        <div class="quiz-header">
+            <h1 class="quiz-title">Math Drag & Drop Quiz</h1>
+            <!-- Teacher view: shows score -->
+            <div class="score" id="teacherScore">Score: <span id="score">0</span>/<span id="total">0</span></div>
+            <!-- Student view: shows question progress -->
+            <div class="student-info" id="studentInfo">Question <span id="currentQ">1</span> of <span id="totalQ">0</span></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+
+        <div class="question-area">
+            <div class="question" id="question">Loading question...</div>
+            
+            <div class="drag-drop-area">
+                <div class="draggable-items">
+                    <div class="draggable-label">Drag from here:</div>
+                    <div id="draggableContainer"></div>
+                </div>
+                
+                <div class="drop-zones">
+                    <div class="drop-zone-label">Drop here:</div>
+                    <div id="dropZoneContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="checkBtn" disabled>Submit Answer</button>
+            <button class="btn" id="nextBtn" style="display: none;">Next Question</button>
+            <button class="btn" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+        
+        <!-- Student completion message (replaces modal for students) -->
+        <div class="student-completion" id="studentCompletion" style="display: none;">
+            <h3>Quiz Completed!</h3>
+            <p>Thank you for completing the quiz. Your answers have been submitted.</p>
         </div>
     </div>
-    <!-- Instructions Modal -->
-    <div id="modal-instructions" style="display:none;">
-        <div>
-            <h2>How to Play</h2>
-            <p>
-                Solve each math problem by dragging the correct answer into the yellow box.<br>
-                Try to get them all right!
-            </p>
-            <ul>
-                <li>Read the math question.</li>
-                <li>Drag the correct answer into the drop zone.</li>
-                <li>Click "Next" to move to the next question.</li>
-            </ul>
-            <button id="close-instructions" style="padding:12px 36px; border-radius:8px; background:#1769ff; color:#fff; border:none; font-size:20px; font-weight:bold; cursor: pointer;">Start Game</button>
+
+    <!-- Teacher Panel (only visible in teacher mode) -->
+    <div class="teacher-panel" id="teacherPanel" style="display: none;">
+        <button class="edit-btn" onclick="openEditModal()">Edit Quiz</button>
+        <button class="edit-btn" onclick="saveQuiz()">Save Quiz</button>
+        <div style="font-size: 12px; color: #666;">Teacher Mode</div>
+    </div>
+
+    <!-- Completion Modal (only for teachers) -->
+    <div class="modal" id="completionModal">
+        <div class="modal-content">
+            <h2>Quiz Complete!</h2>
+            <p id="finalScore">Final score: 0/0</p>
+            <button class="btn" onclick="restartQuiz()">Review Again</button>
+            <button class="btn" onclick="window.close()" style="background: #ccc; color: #333;">Close</button>
         </div>
     </div>
-    <div class="game-container" style="display:none;">
-        <div class="question" id="question" style="padding-bottom:15px; padding-top:15px;"></div>
-        <div class="answers" id="answers" style="padding-bottom:15px;"></div>
-        <div class="dropzone" id="dropzone">Drop answer here</div>
-        <div id="feedback"></div>
-        <button id="next-btn">Next</button>
-    </div>
-    <!-- Congratulations Modal for each level -->
-    <div id="congrats-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:99999; align-items:center; justify-content:center;">
-        <div style="background:#fff; padding:48px 40px; border-radius:18px; max-width:420px; width:96vw; box-shadow:0 4px 24px #0002; text-align:center; position:relative;">
-            <h2 style="font-size:2.2rem; color:#1769ff; margin-bottom:24px;">🎉 Congratulations! 🎉</h2>
-            <p style="font-size:1.3rem; margin-bottom:32px;">You got it right!</p>
-            <button id="next-level-btn" style="padding:18px 48px; border-radius:12px; background:#1769ff; color:#fff; border:none; font-size:2rem; font-weight:bold; margin-top:24px; cursor:pointer;">Next Level</button>
-        </div>
-    </div>
-    <!-- Final Congratulations Modal -->
-    <div id="final-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:100000; align-items:center; justify-content:center;">
-        <div style="background:#fff; padding:48px 40px; border-radius:18px; max-width:420px; width:96vw; box-shadow:0 4px 24px #0002; text-align:center; position:relative;">
-            <h2 style="font-size:2.2rem; color:#1769ff; margin-bottom:24px;">🏆 All Levels Complete!</h2>
-            <p id="final-score" style="font-size:1.3rem; margin-bottom:32px;"></p>
-            <button id="play-again-btn" style="padding:18px 48px; border-radius:12px; background:#1769ff; color:#fff; border:none; font-size:2rem; font-weight:bold; margin-top:24px; cursor:pointer;">Play Again</button>
-        </div>
-    </div>
-    <!-- Add Edit button and Edit modal -->
-    <button id="edit-game-btn" style="position: absolute; top: 20px; right: 20px; z-index: 1000;">Edit Game</button>
-    <div id="edit-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:100001; align-items:center; justify-content:center;">
-        <div style="background:#fff; padding:40px 32px; border-radius:14px; max-width:500px; width:96vw; box-shadow:0 4px 24px #0002; position:relative;">
-            <h3 style="margin-top:0; margin-bottom:24px;">Edit Math Questions</h3>
-            <div id="edit-questions-list"></div>
-            <button id="add-question-btn" style="margin-top:18px; padding:8px 24px; border-radius:6px; background:#1769ff; color:#fff; border:none; font-size:16px; cursor: pointer;">Add Question</button>
-            <div style="text-align:right; margin-top:24px;">
-                <button id="save-edit-btn" style="padding:8px 24px; border-radius:6px; background:#1769ff; color:#fff; border:none; margin-right:12px; font-size:16px; cursor: pointer;">Save</button>
-                <button id="close-edit-btn" style="padding:8px 24px; border-radius:6px; background:#eee; color:#333; border:none; font-size:16px; cursor: pointer;">Close</button>
+
+    <!-- Edit Modal (only for teachers) -->
+    <div class="modal" id="editModal">
+        <div class="modal-content edit-modal">
+            <h2>Edit Quiz Questions</h2>
+            <div id="questionsContainer"></div>
+            <button class="add-question" onclick="addNewQuestion()">Add Question</button>
+            <div style="margin-top: 20px;">
+                <button class="btn" onclick="saveQuizChanges()">Save Changes</button>
+                <button class="btn" onclick="closeEditModal()" style="background: #ccc; color: #333;">Cancel</button>
             </div>
         </div>
     </div>
+
     <script>
-        // Load questions from localStorage if available
-        let editableQuestions = [
-            { q: "5 + 3 =", answers: [6, 8, 9], correct: 8 },
-            { q: "12 - 7 =", answers: [5, 4, 6], correct: 5 },
-            { q: "6 × 2 =", answers: [12, 8, 10], correct: 12 },
-            { q: "15 ÷ 3 =", answers: [5, 6, 4], correct: 5 },
-            { q: "9 + 6 =", answers: [14, 15, 16], correct: 15 }
+class DragDropQuiz {
+    constructor() {
+        // Default questions that can be edited by teachers
+        this.questions = [
+            {
+                question: "Solve: 12 + 8 = ?",
+                draggables: ["15", "20", "25", "18"],
+                correctAnswer: "20"
+            },
+            {
+                question: "What is 15 - 7?",
+                draggables: ["6", "8", "9", "12"],
+                correctAnswer: "8"
+            },
+            {
+                question: "Calculate: 6 × 4 = ?",
+                draggables: ["20", "24", "28", "22"],
+                correctAnswer: "24"
+            },
+            {
+                question: "What is 36 ÷ 6?",
+                draggables: ["5", "6", "7", "8"],
+                correctAnswer: "6"
+            },
+            {
+                question: "Solve: 25 + 15 = ?",
+                draggables: ["35", "40", "45", "30"],
+                correctAnswer: "40"
+            }
         ];
-        if (localStorage.getItem('mathDragQuestions')) {
-            editableQuestions = JSON.parse(localStorage.getItem('mathDragQuestions'));
+
+        this.currentQuestion = 0;
+        this.score = 0;
+        this.selectedAnswer = null;
+        this.answers = []; // Store all student answers
+        this.isTeacherMode = this.checkTeacherMode();
+        this.quizCompleted = false;
+
+        this.init();
+    }
+
+    checkTeacherMode() {
+        // Check URL parameters for teacher mode
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('mode') === 'teacher';
+    }
+
+    init() {
+        // Load saved quiz if exists
+        this.loadSavedQuiz();
+        
+        // Set appropriate mode
+        if (this.isTeacherMode) {
+            document.getElementById('teacherPanel').style.display = 'block';
+            document.body.classList.add('teacher-mode');
+            document.getElementById('studentInfo').style.display = 'none';
+        } else {
+            document.body.classList.add('student-mode');
+            document.getElementById('teacherScore').style.display = 'none';
+            // Only disable some dev tools for students, not drag functionality
+            this.disableDevToolsForStudents();
         }
-        const questions = editableQuestions;
-        let current = 0;
-        let score = 0;
 
-        // Start screen logic
-        document.getElementById('start-btn').onclick = function() {
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('modal-instructions').style.display = 'flex';
-        };
+        this.updateProgress();
+        this.loadQuestion();
+        this.setupEventListeners();
+        
+        document.getElementById('total').textContent = this.questions.length;
+        document.getElementById('totalQ').textContent = this.questions.length;
+    }
 
-        // Modal logic
-        document.getElementById('close-instructions').onclick = function() {
-            document.getElementById('modal-instructions').style.display = 'none';
-            document.querySelector('.game-container').style.display = '';
-            loadQuestion();
-        };
+    disableDevToolsForStudents() {
+        // Disable right-click context menu
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        
+        // Disable common dev tool shortcuts
+        document.addEventListener('keydown', e => {
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+                (e.ctrlKey && e.shiftKey && e.key === 'C') || 
+                (e.ctrlKey && e.key === 'U') ||
+                (e.ctrlKey && e.shiftKey && e.key === 'J')) {
+                e.preventDefault();
+                return false;
+            }
+        });
 
-        function loadQuestion() {
-            const q = questions[current];
-            document.getElementById('question').textContent = q.q;
-            document.getElementById('feedback').textContent = '';
-            document.getElementById('next-btn').style.display = 'none';
-            // Answers
-            const answersDiv = document.getElementById('answers');
-            answersDiv.innerHTML = '';
-            q.answers.forEach(ans => {
-                const btn = document.createElement('div');
-                btn.className = 'draggable';
-                btn.textContent = ans;
-                btn.draggable = true;
-                btn.ondragstart = function(e) {
-                    btn.classList.add('dragging');
-                    e.dataTransfer.setData('text/plain', ans);
-                };
-                btn.ondragend = function() {
-                    btn.classList.remove('dragging');
-                };
-                answersDiv.appendChild(btn);
+        // REMOVED: Don't prevent text selection and drag start globally
+        // This was breaking the drag and drop functionality
+    }
+
+    loadSavedQuiz() {
+        const saved = localStorage.getItem('customQuizQuestions');
+        if (saved) {
+            try {
+                this.questions = JSON.parse(saved);
+            } catch (e) {
+                console.error('Error loading saved quiz:', e);
+            }
+        }
+    }
+
+    setupEventListeners() {
+        document.getElementById('checkBtn').addEventListener('click', () => this.checkAnswer());
+        document.getElementById('nextBtn').addEventListener('click', () => this.nextQuestion());
+        document.getElementById('resetBtn').addEventListener('click', () => this.resetQuestion());
+    }
+
+    loadQuestion() {
+        if (this.quizCompleted) return;
+
+        const question = this.questions[this.currentQuestion];
+        document.getElementById('question').textContent = question.question;
+        document.getElementById('currentQ').textContent = this.currentQuestion + 1;
+        
+        this.createDraggables(question.draggables);
+        this.createDropZone();
+        this.resetUI();
+    }
+
+    createDraggables(items) {
+        const container = document.getElementById('draggableContainer');
+        container.innerHTML = '';
+        
+        // Always shuffle items for students, keep order for teachers
+        const itemsToShow = this.isTeacherMode ? items : [...items].sort(() => Math.random() - 0.5);
+        
+        itemsToShow.forEach(item => {
+            const draggable = document.createElement('div');
+            draggable.className = 'draggable';
+            draggable.draggable = true; // Enable HTML5 dragging
+            draggable.textContent = item;
+            draggable.dataset.value = item;
+            
+            // Add drag event listeners
+            draggable.addEventListener('dragstart', (e) => {
+                console.log('Drag started:', item); // Debug log
+                draggable.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', item);
+                e.dataTransfer.effectAllowed = 'move';
             });
-            // Dropzone
-            const dropzone = document.getElementById('dropzone');
-            dropzone.textContent = "Drop answer here";
-            dropzone.style.color = "#fbc02d";
-            dropzone.ondragover = function(e) {
-                e.preventDefault();
-                dropzone.style.background = "#fff9c4";
-            };
-            dropzone.ondragleave = function() {
-                dropzone.style.background = "#fffde7";
-            };
-            dropzone.ondrop = function(e) {
-                e.preventDefault();
-                dropzone.style.background = "#fffde7";
-                const dropped = e.dataTransfer.getData('text/plain');
-                dropzone.textContent = dropped;
-                checkAnswer(Number(dropped));
-            };
-        }
+            
+            draggable.addEventListener('dragend', (e) => {
+                console.log('Drag ended:', item); // Debug log
+                draggable.classList.remove('dragging');
+            });
 
-        function checkAnswer(ans) {
-            const q = questions[current];
-            if (ans === q.correct) {
-                score++; // Increment score only for correct answer
-                document.getElementById('feedback').textContent = "";
-                // If last question, show final modal
-                if (current === questions.length - 1) {
-                    showFinalModal();
-                } else {
-                    showCongratsModal();
-                }
+            // Add touch support for mobile
+            draggable.addEventListener('touchstart', (e) => {
+                draggable.classList.add('dragging');
+            });
+
+            draggable.addEventListener('touchend', (e) => {
+                draggable.classList.remove('dragging');
+            });
+            
+            container.appendChild(draggable);
+        });
+    }
+
+    createDropZone() {
+        const container = document.getElementById('dropZoneContainer');
+        container.innerHTML = '';
+        
+        const dropZone = document.createElement('div');
+        dropZone.className = 'drop-zone';
+        dropZone.textContent = 'Drop answer here';
+        
+        // Enhanced drop zone event listeners
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault(); // This is crucial for allowing drops
+            e.dataTransfer.dropEffect = 'move';
+            dropZone.classList.add('drag-over');
+            console.log('Drag over drop zone'); // Debug log
+        });
+        
+        dropZone.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        
+        dropZone.addEventListener('dragleave', (e) => {
+            // Only remove highlight if we're actually leaving the drop zone
+            if (!dropZone.contains(e.relatedTarget)) {
+                dropZone.classList.remove('drag-over');
+            }
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            console.log('Item dropped'); // Debug log
+            const value = e.dataTransfer.getData('text/plain');
+            if (value) {
+                this.handleDrop(dropZone, value);
+            }
+            dropZone.classList.remove('drag-over');
+        });
+        
+        container.appendChild(dropZone);
+    }
+
+    handleDrop(dropZone, value) {
+        console.log('Handling drop:', value); // Debug log
+        
+        // Remove the dragged item from draggables
+        const draggables = document.querySelectorAll('.draggable');
+        draggables.forEach(d => {
+            if (d.dataset.value === value) {
+                d.remove();
+            }
+        });
+        
+        // Clear previous answer in drop zone
+        if (this.selectedAnswer) {
+            this.returnToChoices(this.selectedAnswer);
+        }
+        
+        // Add new answer to drop zone
+        dropZone.textContent = value;
+        dropZone.classList.add('filled');
+        dropZone.dataset.value = value;
+        this.selectedAnswer = value;
+        
+        // Enable check button
+        document.getElementById('checkBtn').disabled = false;
+        
+        // Make drop zone clickable to return item
+        dropZone.onclick = () => this.returnToChoices(value);
+    }
+
+    returnToChoices(value) {
+        // Remove from drop zone
+        const dropZone = document.querySelector('.drop-zone');
+        dropZone.textContent = 'Drop answer here';
+        dropZone.classList.remove('filled');
+        dropZone.dataset.value = '';
+        dropZone.onclick = null;
+        
+        // Add back to choices
+        const container = document.getElementById('draggableContainer');
+        const draggable = document.createElement('div');
+        draggable.className = 'draggable';
+        draggable.draggable = true;
+        draggable.textContent = value;
+        draggable.dataset.value = value;
+        
+        draggable.addEventListener('dragstart', (e) => {
+            draggable.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', value);
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        
+        draggable.addEventListener('dragend', () => {
+            draggable.classList.remove('dragging');
+        });
+        
+        container.appendChild(draggable);
+        
+        this.selectedAnswer = null;
+        document.getElementById('checkBtn').disabled = true;
+    }
+
+    checkAnswer() {
+        if (this.quizCompleted) return;
+
+        const question = this.questions[this.currentQuestion];
+        const feedback = document.getElementById('feedback');
+        
+        // Store the answer
+        this.answers.push({
+            question: question.question,
+            selectedAnswer: this.selectedAnswer,
+            correctAnswer: question.correctAnswer,
+            isCorrect: this.selectedAnswer === question.correctAnswer
+        });
+
+        if (this.isTeacherMode) {
+            // Teacher mode: show feedback and score
+            if (this.selectedAnswer === question.correctAnswer) {
+                this.score++;
+                feedback.textContent = 'Correct! Well done!';
+                feedback.className = 'feedback correct';
+                document.getElementById('score').textContent = this.score;
             } else {
-                document.getElementById('feedback').textContent = "❌ Try again!";
-                document.getElementById('next-btn').style.display = '';
+                feedback.textContent = `Incorrect. The correct answer is ${question.correctAnswer}.`;
+                feedback.className = 'feedback incorrect';
+            }
+        } else {
+            // Student mode: just show submitted message
+            feedback.textContent = 'Answer submitted.';
+            feedback.className = 'feedback';
+            feedback.style.color = '#666';
+            
+            // Count correct answers silently
+            if (this.selectedAnswer === question.correctAnswer) {
+                this.score++;
             }
         }
+        
+        document.getElementById('checkBtn').style.display = 'none';
+        document.getElementById('nextBtn').style.display = 'inline-block';
+    }
 
-        function showCongratsModal() {
-            document.getElementById('congrats-modal').style.display = 'flex';
+    nextQuestion() {
+        this.currentQuestion++;
+        
+        if (this.currentQuestion >= this.questions.length) {
+            this.showCompletion();
+        } else {
+            this.updateProgress();
+            this.loadQuestion();
         }
+    }
 
-        document.getElementById('next-btn').onclick = function() {
-            current++;
-            if (current < questions.length) {
-                loadQuestion();
-            } else {
-                showFinalModal();
-            }
-        };
+    resetQuestion() {
+        if (this.quizCompleted) return;
+        this.selectedAnswer = null;
+        this.loadQuestion();
+    }
 
-        document.getElementById('next-level-btn').onclick = function() {
-            document.getElementById('congrats-modal').style.display = 'none';
-            current++;
-            loadQuestion();
-        };
+    resetUI() {
+        document.getElementById('feedback').textContent = '';
+        document.getElementById('feedback').className = 'feedback';
+        document.getElementById('checkBtn').style.display = 'inline-block';
+        document.getElementById('checkBtn').disabled = true;
+        document.getElementById('nextBtn').style.display = 'none';
+    }
 
-        function showFinalModal() {
-            document.getElementById('final-score').textContent = `Your score: ${score} / ${questions.length}`;
-            document.getElementById('final-modal').style.display = 'flex';
+    updateProgress() {
+        const progress = (this.currentQuestion / this.questions.length) * 100;
+        document.getElementById('progress').style.width = progress + '%';
+    }
+
+    showCompletion() {
+        this.quizCompleted = true;
+        
+        if (this.isTeacherMode) {
+            // Teacher mode: show detailed results in modal
+            const modal = document.getElementById('completionModal');
+            const finalScore = document.getElementById('finalScore');
+            const percentage = Math.round((this.score / this.questions.length) * 100);
+            
+            finalScore.textContent = `Final score: ${this.score}/${this.questions.length} (${percentage}%)`;
+            modal.style.display = 'flex';
+        } else {
+            // Student mode: show simple completion message
+            document.querySelector('.question-area').style.display = 'none';
+            document.querySelector('.controls').style.display = 'none';
+            document.getElementById('studentCompletion').style.display = 'block';
+            
+            // Store results (could be sent to server here)
+            this.saveStudentResults();
         }
+    }
 
-        document.getElementById('play-again-btn').onclick = function() {
-            document.getElementById('final-modal').style.display = 'none';
-            current = 0;
-            score = 0;
-            document.querySelector('.game-container').style.display = '';
-            loadQuestion();
+    saveStudentResults() {
+        const results = {
+            completedAt: new Date().toISOString(),
+            totalQuestions: this.questions.length,
+            answers: this.answers,
+            score: this.score // This would be sent to teacher only
         };
+        
+        // In a real application, you would send this to a server
+        console.log('Student results:', results);
+        
+        // For demo purposes, save to localStorage with timestamp
+        const studentResults = JSON.parse(localStorage.getItem('studentResults') || '[]');
+        studentResults.push(results);
+        localStorage.setItem('studentResults', JSON.stringify(studentResults));
+    }
 
-        // Edit game logic
-        document.getElementById('edit-game-btn').onclick = function() {
-            showEditModal();
-        };
+    // Teacher-only methods
+    updateQuestions(newQuestions) {
+        this.questions = newQuestions;
+        this.currentQuestion = 0;
+        this.score = 0;
+        this.answers = [];
+        this.quizCompleted = false;
+        
+        document.getElementById('score').textContent = '0';
+        document.getElementById('total').textContent = this.questions.length;
+        document.getElementById('totalQ').textContent = this.questions.length;
+        
+        // Show question area and controls again
+        document.querySelector('.question-area').style.display = 'flex';
+        document.querySelector('.controls').style.display = 'flex';
+        document.getElementById('studentCompletion').style.display = 'none';
+        
+        this.updateProgress();
+        this.loadQuestion();
+    }
+}
 
-        function showEditModal() {
-            document.getElementById('edit-modal').style.display = 'flex';
-            const list = document.getElementById('edit-questions-list');
-            list.innerHTML = '';
-            editableQuestions.forEach((q, idx) => {
-                list.innerHTML += `
-                    <div style="margin-bottom:18px; border-bottom:1px solid #eee; padding-bottom:8px;">
-                        <label>Question: <input type="text" class="edit-q" data-idx="${idx}" value="${q.q}" style="width:70%;"></label><br>
-                        <label>Answers (comma separated): <input type="text" class="edit-answers" data-idx="${idx}" value="${q.answers.join(', ')}" style="width:70%;"></label><br>
-                        <label>Correct Answer: <input type="number" class="edit-correct" data-idx="${idx}" value="${q.correct}" style="width:70%;"></label>
-                        <button class="remove-question-btn" data-idx="${idx}" style="margin-left:10px; color:#e57373; background:none; border:none; font-size:1rem; cursor:pointer;">Remove</button>
+// Global quiz instance
+let quiz;
+
+// Teacher-only functions
+function openEditModal() {
+    if (!quiz.isTeacherMode) return;
+    
+    const modal = document.getElementById('editModal');
+    const container = document.getElementById('questionsContainer');
+    container.innerHTML = '';
+    
+    quiz.questions.forEach((q, index) => {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'question-edit';
+        questionDiv.innerHTML = `
+            <button class="remove-question" onclick="removeQuestion(${index})">Remove</button>
+            <h4>Question ${index + 1}</h4>
+            <input type="text" placeholder="Question text" value="${q.question}" onchange="updateQuestion(${index}, 'question', this.value)">
+            <div style="margin: 10px 0;">
+                <label style="font-weight: bold;">Answer Options:</label>
+                ${q.draggables.map((option, optIndex) => `
+                    <div class="option-input">
+                        <input type="text" value="${option}" onchange="updateOption(${index}, ${optIndex}, this.value)">
+                        <input type="radio" name="correct_${index}" ${option === q.correctAnswer ? 'checked' : ''} onchange="updateCorrectAnswer(${index}, '${option}')">
+                        <label>Correct</label>
                     </div>
-                `;
-            });
-            // Remove logic
-            list.querySelectorAll('.remove-question-btn').forEach(btn => {
-                btn.onclick = function() {
-                    const idx = Number(btn.dataset.idx);
-                    editableQuestions.splice(idx, 1);
-                    showEditModal();
-                };
-            });
-        }
+                `).join('')}
+            </div>
+        `;
+        container.appendChild(questionDiv);
+    });
+    
+    modal.style.display = 'flex';
+}
 
-        // Add question
-        document.getElementById('add-question-btn').onclick = function() {
-            editableQuestions.push({ q: "New Question", answers: [0,0,0], correct: 0 });
-            showEditModal();
-        };
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
 
-        // Save edits
-        document.getElementById('save-edit-btn').onclick = function() {
-            document.querySelectorAll('.edit-q').forEach(input => {
-                const idx = input.dataset.idx;
-                editableQuestions[idx].q = input.value.trim();
-            });
-            document.querySelectorAll('.edit-answers').forEach(input => {
-                const idx = input.dataset.idx;
-                editableQuestions[idx].answers = input.value.split(',').map(a => Number(a.trim()));
-            });
-            document.querySelectorAll('.edit-correct').forEach(input => {
-                const idx = input.dataset.idx;
-                editableQuestions[idx].correct = Number(input.value.trim());
-            });
-            localStorage.setItem('mathDragQuestions', JSON.stringify(editableQuestions)); // Save to localStorage
-            document.getElementById('edit-modal').style.display = 'none';
-            // Reset game with new questions
-            current = 0;
-            score = 0;
-            document.querySelector('.game-container').style.display = '';
-            loadQuestion();
-        };
+function addNewQuestion() {
+    const newQuestion = {
+        question: "New Question",
+        draggables: ["Option 1", "Option 2", "Option 3", "Option 4"],
+        correctAnswer: "Option 1"
+    };
+    quiz.questions.push(newQuestion);
+    openEditModal(); // Refresh the modal
+}
 
-        // Close modal
-        document.getElementById('close-edit-btn').onclick = function() {
-            document.getElementById('edit-modal').style.display = 'none';
-        };
+function removeQuestion(index) {
+    if (quiz.questions.length > 1) {
+        quiz.questions.splice(index, 1);
+        openEditModal(); // Refresh the modal
+    } else {
+        alert('You must have at least one question.');
+    }
+}
+
+function updateQuestion(index, field, value) {
+    quiz.questions[index][field] = value;
+}
+
+function updateOption(questionIndex, optionIndex, value) {
+    const oldValue = quiz.questions[questionIndex].draggables[optionIndex];
+    quiz.questions[questionIndex].draggables[optionIndex] = value;
+    
+    // Update correct answer if it was the old value
+    if (quiz.questions[questionIndex].correctAnswer === oldValue) {
+        quiz.questions[questionIndex].correctAnswer = value;
+    }
+}
+
+function updateCorrectAnswer(questionIndex, value) {
+    quiz.questions[questionIndex].correctAnswer = value;
+}
+
+function saveQuizChanges() {
+    localStorage.setItem('customQuizQuestions', JSON.stringify(quiz.questions));
+    quiz.updateQuestions(quiz.questions);
+    closeEditModal();
+    alert('Quiz saved successfully!');
+}
+
+function saveQuiz() {
+    localStorage.setItem('customQuizQuestions', JSON.stringify(quiz.questions));
+    alert('Quiz saved successfully!');
+}
+
+function restartQuiz() {
+    document.getElementById('completionModal').style.display = 'none';
+    quiz = new DragDropQuiz();
+}
+
+// Initialize the quiz when page loads
+window.addEventListener('load', () => {
+    quiz = new DragDropQuiz();
+});
     </script>
 </body>
 </html>

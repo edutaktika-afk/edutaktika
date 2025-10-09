@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Multiple Choice Quiz</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{
+  --primary:#2563eb;
+  --bg:#f1f6fb;
+  --card:#ffffff;
+  --accent:#2563eb;
+  --muted:#5b6b7c;
+  --danger:#d94848;
+}
+*{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px}
+.quiz-wrap{width:560px;max-width:560px;}
+h1{margin:0;font-size:1.85rem;color:#12344d;font-weight:700;text-align:center}
+#questionText{font-size:1.15rem;line-height:1.35;font-weight:600;color:#14384f;min-height:64px;text-align:center;margin:0 0 -4px}
+.options{display:flex;flex-direction:column;gap:14px}
+.option{border:2px solid #d8e4ee;background:#fff;border-radius:14px;padding:14px 16px;font-size:.98rem;font-weight:500;line-height:1.3;color:#14384f;cursor:pointer;display:flex;gap:10px;align-items:flex-start;transition:.18s}
+.option:hover{border-color:#b9cedc;background:#f4f9fc}
+.option[selected="true"]{border-color:var(--accent);background:#f0f6ff}
+.badge{background:#e8eef4;color:#365266;font-weight:600;font-size:.7rem;padding:4px 8px;border-radius:20px;letter-spacing:.5px}
+.controls{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+button{cursor:pointer;font-weight:600}
+#nextBtn,#finishBtn{display:none;background:var(--accent);color:#fff;border:0;padding:12px 26px;font-size:1rem;border-radius:14px;box-shadow:0 6px 18px -6px rgba(30,80,140,.35);transition:.2s}
+#nextBtn:hover,#finishBtn:hover{background:#1d56cc}
+#editOpen{position:absolute;top:14px;right:14px;background:#fff;border:1px solid #c6d5e1;color:#174369;padding:6px 14px;font-size:.75rem;border-radius:10px}
+#editOpen:hover{background:#f2f8fc}
+#progress{height:8px;width:100%;background:#e3edf4;border-radius:6px;overflow:hidden}
+#bar{height:100%;width:0;background:linear-gradient(90deg,#2563eb,#4f8dfd)}
+/* Final modal */
+.modal{position:fixed;inset:0;background:rgba(15,35,55,.55);display:none;align-items:center;justify-content:center;padding:28px;z-index:400}
+.modal-card{background:#fff;width:min(480px,94%);padding:42px 46px 48px;border-radius:26px;text-align:center;box-shadow:0 30px 80px -24px rgba(15,35,55,.55);display:flex;flex-direction:column;gap:26px}
+.modal-card h2{margin:0;font-size:2rem;color:#153a55}
+.primary{background:var(--accent);color:#fff;border:0;padding:12px 30px;font-size:1rem;border-radius:14px}
+.primary:hover{background:#1d56cc}
+/* Editor */
+#editorModal{position:fixed;inset:0;background:rgba(10,25,45,.55);display:none;align-items:center;justify-content:center;padding:26px;z-index:450}
+#editorCard{background:#fff;width:min(860px,96%);max-height:92vh;overflow:auto;border-radius:24px;padding:34px 38px 40px;display:flex;flex-direction:column;gap:26px;box-shadow:0 32px 86px -28px rgba(10,30,60,.6)}
+.editor-flex{display:flex;gap:28px;flex-wrap:wrap}
+.col{flex:1 1 320px;display:flex;flex-direction:column;gap:14px;min-width:300px}
+.q-list{border:1px solid #d5e2ec;border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;max-height:420px;overflow:auto}
+.qrow{padding:10px 12px;border:1px solid #d9e5ef;border-radius:12px;background:#f6fbfe;display:flex;flex-direction:column;gap:6px}
+.qrow.active{outline:2px solid var(--accent);background:#eef6ff}
+.qrow button{align-self:flex-start;background:#fff;border:1px solid #c5d5e3;font-size:.7rem;padding:4px 8px;border-radius:8px;margin-right:4px}
+.qrow button:hover{background:#e8f2fa}
+.inline{display:flex;gap:6px;flex-wrap:wrap}
+label.small{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:#476074}
+textarea,input[type=text]{width:100%;border:1px solid #c2d4e1;border-radius:12px;padding:10px 12px;font-size:.9rem;font-family:inherit;resize:vertical}
+.choice-row{display:flex;gap:8px;align-items:center}
+.choice-row input[type=text]{flex:1;padding:8px 10px;border:1px solid #c9d6e2;border-radius:10px}
+.choice-row input[type=radio]{accent-color:var(--accent)}
+.choice-row button{background:#ff5e5e;color:#fff;border:0;padding:6px 10px;font-size:.7rem;border-radius:8px;cursor:pointer}
+.addChoiceBtn{background:#2563eb;color:#fff;border:0;padding:8px 14px;font-size:.75rem;font-weight:600;border-radius:10px}
+.addChoiceBtn:hover{background:#1d56cc}
+.editor-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.editor-actions button{background:#2563eb;color:#fff;border:0;padding:10px 18px;font-weight:600;border-radius:12px;font-size:.85rem}
+.editor-actions button.secondary{background:#e4edf4;color:#18425f}
+.editor-actions button.secondary:hover{background:#d7e7f2}
+.status{font-size:.75rem;min-height:18px;font-weight:600}
+.hidden{display:none!important}
+html,body,#embedRoot{height:100%;width:100%;margin:0;padding:0;overflow:hidden}
+body{padding:0 !important;display:flex;align-items:center;justify-content:center;}
+#embedRoot{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  background:var(--bg);
+}
+.quiz-scale{
+  transform-origin:top left;
+  will-change:transform;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+}
+/* Optional: allow modals to overlay full canvas irrespective of scale */
+.modal, #editorModal{pointer-events:auto}
+
+/* Prevent accidental page scroll in iframes */
+::-webkit-scrollbar{width:0;height:0}
+</style>
+</head>
+<body>
+  <div id="embedRoot">
+    <div class="quiz-scale">
+      <div class="quiz-wrap">
+        <button id="editOpen">Edit</button>
+        <h1>Multiple Choice Quiz</h1>
+        <div id="progress"><div id="bar"></div></div>
+        <div id="questionText"></div>
+        <div class="options" id="optionsBox"></div>
+        <div class="controls">
+          <button id="nextBtn">Next</button>
+          <button id="finishBtn">Finish</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Final Modal -->
+  <div class="modal" id="finalModal" aria-hidden="true">
+    <div class="modal-card">
+      <h2>Thank You!</h2>
+      <p id="finalMsg" style="margin:0;font-size:1.05rem;color:#42596b">Your answers have been submitted.</p>
+      <button class="primary" id="restartBtn">Play Again</button>
+    </div>
+  </div>
+
+  <!-- Editor Modal -->
+  <div id="editorModal" aria-hidden="true">
+    <div id="editorCard">
+      <h2 style="margin:0 0 -4px;font-size:1.55rem;color:#153b56">Edit Questions</h2>
+      <div class="editor-flex">
+        <div class="col">
+          <label class="small">Question List</label>
+          <div class="q-list" id="qList"></div>
+          <button id="addQuestion" class="addChoiceBtn" style="margin-top:4px">Add Question</button>
+        </div>
+        <div class="col">
+          <label class="small">Question Text</label>
+          <textarea id="editPrompt" rows="4" placeholder="Enter question..."></textarea>
+          <label class="small">Choices (select one correct)</label>
+          <div id="choiceRows" style="display:flex;flex-direction:column;gap:8px"></div>
+          <button id="addChoice" class="addChoiceBtn" type="button">Add Choice</button>
+          <div class="editor-actions">
+            <button id="saveQuestion" type="button">Save Question</button>
+            <button id="closeEditor" type="button" class="secondary">Close</button>
+            <button id="deleteQuestion" type="button" class="secondary" style="background:#ffe9e9;color:#c03636">Delete</button>
+          </div>
+          <div class="status" id="editStatus"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ========== DATA & STATE ========== */
+const LS_KEY='mc_quiz_v1';
+let questions=[
+  {prompt:'What is 5 + 7 ?', choices:['10','11','12','13'], correct:2},
+  {prompt:'Capital of France?', choices:['Berlin','Paris','Rome','Madrid'], correct:1},
+  {prompt:'Water chemical formula?', choices:['H2O','CO2','O2','H2'], correct:0}
+];
+try{
+  const saved=JSON.parse(localStorage.getItem(LS_KEY)||'null');
+  if(Array.isArray(saved)&&saved.every(v=>v&&typeof v.prompt==='string'&&Array.isArray(v.choices)&&Number.isInteger(v.correct))){
+    questions=saved;
+  }
+}catch(e){}
+let current=0;
+let userAnswers=new Array(questions.length).fill(null);
+
+/* ========== ELEMENTS ========== */
+const questionText=qs('#questionText');
+const optionsBox=qs('#optionsBox');
+const nextBtn=qs('#nextBtn');
+const finishBtn=qs('#finishBtn');
+const bar=qs('#bar');
+
+function qs(s){return document.querySelector(s);}
+
+/* ========== RENDER QUESTION ========== */
+function renderQuestion(){
+  const q=questions[current];
+  if(!q) return;
+  questionText.textContent=q.prompt;
+  optionsBox.innerHTML='';
+  q.choices.forEach((txt,i)=>{
+    const div=document.createElement('button');
+    div.type='button';
+    div.className='option';
+    div.innerHTML='<span class="badge">'+String.fromCharCode(65+i)+'</span><span>'+escapeHtml(txt)+'</span>';
+    div.addEventListener('click',()=>selectOption(i,div));
+    if(userAnswers[current]===i){div.setAttribute('selected','true');}
+    optionsBox.appendChild(div);
+  });
+  updateNav();
+  updateBar();
+  if(window.__quizFit) setTimeout(window.__quizFit,0);
+}
+function selectOption(i,el){
+  if(userAnswers[current]!=null) return; // prevent change once selected
+  userAnswers[current]=i;
+  [...optionsBox.children].forEach(c=>c.removeAttribute('selected'));
+  el.setAttribute('selected','true');
+  updateNav();
+}
+function updateNav(){
+  const answeredAll=userAnswers.every(v=>v!=null);
+  const answeredCurrent=userAnswers[current]!=null;
+  nextBtn.style.display = (current<questions.length-1 && answeredCurrent)?'inline-block':'none';
+  finishBtn.style.display = (current===questions.length-1 && answeredCurrent)?'inline-block':'none';
+  if(!answeredCurrent){ nextBtn.style.display='none'; finishBtn.style.display='none'; }
+}
+function updateBar(){
+  const pct=((current)/Math.max(questions.length-1,1))*100;
+  bar.style.width=pct+'%';
+}
+
+/* ========== NAV EVENTS ========== */
+nextBtn.addEventListener('click',()=>{
+  if(userAnswers[current]==null) return;
+  current++;
+  renderQuestion();
+});
+finishBtn.addEventListener('click',finishQuiz);
+
+function finishQuiz(){
+  // lock options
+  [...optionsBox.children].forEach(o=>o.disabled=true);
+  openFinal();
+}
+
+/* ========== FINAL MODAL ========== */
+const finalModal=qs('#finalModal');
+const finalMsg=qs('#finalMsg');
+qs('#restartBtn').addEventListener('click',()=>{
+  closeFinal();
+  current=0;
+  userAnswers=new Array(questions.length).fill(null);
+  renderQuestion();
+});
+function openFinal(){
+  finalMsg.textContent='You answered '+userAnswers.filter(v=>v!=null).length+' question'+(questions.length===1?'':'s')+'.';
+  finalModal.style.display='flex';
+  finalModal.setAttribute('aria-hidden','false');
+}
+function closeFinal(){
+  finalModal.style.display='none';
+  finalModal.setAttribute('aria-hidden','true');
+}
+
+/* ========== EDITOR ========== */
+const editorModal=qs('#editorModal');
+const qList=qs('#qList');
+const editPrompt=qs('#editPrompt');
+const choiceRows=qs('#choiceRows');
+const editStatus=qs('#editStatus');
+const addQuestionBtn=qs('#addQuestion');
+const addChoiceBtn=qs('#addChoice');
+const saveQuestionBtn=qs('#saveQuestion');
+const deleteQuestionBtn=qs('#deleteQuestion');
+const closeEditorBtn=qs('#closeEditor');
+let editingIndex=0;
+
+qs('#editOpen').addEventListener('click',openEditor);
+closeEditorBtn.addEventListener('click',closeEditor);
+addQuestionBtn.addEventListener('click',addQuestion);
+addChoiceBtn.addEventListener('click',()=>addChoiceRow(''));
+saveQuestionBtn.addEventListener('click',saveEditingQuestion);
+deleteQuestionBtn.addEventListener('click',deleteEditingQuestion);
+
+function openEditor(){
+  buildQList();
+  loadEditingQuestion(editingIndex);
+  editStatus.textContent='';
+  editorModal.style.display='flex';
+  editorModal.setAttribute('aria-hidden','false');
+}
+function closeEditor(){
+  editorModal.style.display='none';
+  editorModal.setAttribute('aria-hidden','true');
+}
+function buildQList(){
+  qList.innerHTML='';
+  questions.forEach((q,i)=>{
+    const r=document.createElement('div');
+    r.className='qrow'+(i===editingIndex?' active':'');
+    r.innerHTML='<div style="font-size:.8rem;font-weight:600;color:#38546a">'+(i+1)+'. '+escapeHtml(q.prompt.slice(0,60))+'</div><div class="inline"></div>';
+    const btn=document.createElement('button');
+    btn.textContent='Edit';
+    btn.addEventListener('click',()=>{editingIndex=i;buildQList();loadEditingQuestion(i);});
+    r.querySelector('.inline').appendChild(btn);
+    qList.appendChild(r);
+  });
+}
+function loadEditingQuestion(i){
+  const q=questions[i]; if(!q) return;
+  editPrompt.value=q.prompt;
+  choiceRows.innerHTML='';
+  q.choices.forEach((c,idx)=>addChoiceRow(c, idx===q.correct));
+}
+function addChoiceRow(text='',isCorrect=false){
+  const row=document.createElement('div');
+  row.className='choice-row';
+  row.innerHTML=`
+    <input type="radio" name="correctChoice" ${isCorrect?'checked':''} style="margin:0">
+    <input type="text" value="${escapeHtml(text)}" placeholder="Choice text">
+    <button type="button">&times;</button>
+  `;
+  row.querySelector('button').addEventListener('click',()=>row.remove());
+  choiceRows.appendChild(row);
+}
+function saveEditingQuestion(){
+  const prompt=editPrompt.value.trim();
+  if(!prompt){status('Enter question text',true);return;}
+  const rows=[...choiceRows.querySelectorAll('.choice-row')];
+  if(!rows.length){status('Add at least one choice',true);return;}
+  const choices=[]; let correct=-1;
+  rows.forEach((r,i)=>{
+    const txt=r.querySelector('input[type=text]').value.trim();
+    if(txt){choices.push(txt); if(r.querySelector('input[type=radio]').checked) correct=choices.length-1;}
+  });
+  if(!choices.length){status('All choices empty',true);return;}
+  if(correct<0){status('Select a correct choice',true);return;}
+  questions[editingIndex]={prompt,choices,correct};
+  localStorage.setItem(LS_KEY, JSON.stringify(questions));
+  status('Saved');
+  buildQList();
+  // Reset play data
+  current=0;
+  userAnswers=new Array(questions.length).fill(null);
+  renderQuestion();
+  if(window.__quizFit) setTimeout(window.__quizFit,0);
+}
+function deleteEditingQuestion(){
+  if(!questions.length) return;
+  if(!confirm('Delete this question?')) return;
+  questions.splice(editingIndex,1);
+  if(editingIndex>=questions.length) editingIndex=questions.length-1;
+  if(!questions.length){
+    questions.push({prompt:'New question',choices:['Choice 1','Choice 2'],correct:0});
+    editingIndex=0;
+  }
+  localStorage.setItem(LS_KEY, JSON.stringify(questions));
+  buildQList();
+  loadEditingQuestion(editingIndex);
+  current=0;
+  userAnswers=new Array(questions.length).fill(null);
+  renderQuestion();
+  if(window.__quizFit) setTimeout(window.__quizFit,0);
+}
+function addQuestion(){
+  questions.push({prompt:'New question',choices:['Choice 1','Choice 2'],correct:0});
+  editingIndex=questions.length-1;
+  buildQList();
+  loadEditingQuestion(editingIndex);
+  localStorage.setItem(LS_KEY, JSON.stringify(questions));
+  if(window.__quizFit) setTimeout(window.__quizFit,0);
+}
+function status(msg,err){
+  editStatus.textContent=msg;
+  editStatus.style.color= err? 'var(--danger)':'var(--accent)';
+}
+
+/* ========== UTIL ========== */
+function escapeHtml(s){return s.replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+
+/* ========== INIT ========== */
+renderQuestion();
+</script>
+</body>
+</html>

@@ -245,7 +245,7 @@
 // Use shared buildEditorUrl for create lesson navigation
 // Create Lesson button: go to Editor.html (new lesson)
 document.getElementById('createLessonBtn').onclick = function() {
-    window.location.href = '../Editor/index.html';
+    window.location.href = 'Editor.html';
 };
 
 // Quiz Section button: go to quiz section page (replace with your quiz page)
@@ -1062,7 +1062,8 @@ firebase.auth().onAuthStateChanged(async function(user) {
 function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
     const params = `quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(name)}&subject=${encodeURIComponent(subject)}`;
     if (mode === 'edit') {
-    window.location.href = buildEditorUrl({ quarter, name, subject });
+        // FIX: Always go to Editor.html for edit mode
+        window.location.href = 'Editor.html?' + params;
     } else {
         window.location.href = 'present.html?' + params;
     }

@@ -419,6 +419,7 @@ td:hover .action-btns .reject,
             <div class="admin-dropdown-content" id="adminDropdownContent">
                 <div class="admin-email" id="adminEmail">admin@email.com</div>
                 <div class="admin-username" id="adminUsername">@admin</div>
+                <button class="review" id="openAddAdminBtn" style="width:100%;margin-bottom:8px;">Add Admin</button>
                 <button class="logout-btn" onclick="logoutAdmin()">Logout</button>
             </div>
         </div>
@@ -460,6 +461,18 @@ td:hover .action-btns .reject,
             </div>
         </div>
     </div>
+
+    <!-- Add AFTER the existing review modal (#reviewModal) -->
+<div class="admin-modal-bg" id="adminCreatedModal" aria-hidden="true" role="dialog">
+  <div class="admin-modal-card">
+    <button class="close-btn" onclick="closeAdminCreatedModal()">&times;</button>
+    <div class="modal-title">Admin Created</div>
+    <div class="modal-content">
+      <div id="adminCreatedText">The admin account has been created successfully.</div>
+    </div>
+    <button class="logout-btn" id="adminCreatedOk">OK</button>
+  </div>
+</div>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -623,9 +636,265 @@ function loadTeachers() {
         document.getElementById('reviewModal').style.display = 'none';
     }
 
+    // Success modal helpers
+function openAdminCreatedModal(text){
+  const m=document.getElementById('adminCreatedModal');
+  document.getElementById('adminCreatedText').textContent = text || 'The admin account has been created successfully.';
+  m.style.display='flex';
+  m.setAttribute('aria-hidden','false');
+}
+function closeAdminCreatedModal(){
+  const m=document.getElementById('adminCreatedModal');
+  m.style.display='none';
+  m.setAttribute('aria-hidden','true');
+}
+document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminCreatedModal);
+
     // Initial load
     loadTeachers();
     </script>
     </div>
+
+
+    <!-- Insert Admin Registration form here (place just inside #mainContent, e.g. before the <h2>) -->
+<section id="addAdminSection" style="display:none;max-width:920px;margin:18px auto;padding:0 18px;position:relative;">
+  <style>
+    /* Scoped styles for the inline admin form */
+    #addAdminSection .reg-container {
+      background: #fff;
+      padding: 28px;
+      border-radius: 14px;
+      box-shadow: 0 6px 28px rgba(0,0,0,0.06);
+      width: 420px;
+      margin: 0 auto 22px auto;
+      border: 2px solid #218838;
+      box-sizing: border-box;
+      max-height: calc(100vh - 140px);
+      overflow: auto;
+    }
+    /* close button for inline form */
+    #closeInlineAdminBtn {
+      position: absolute;
+      right: calc(50% - 210px); /* align near the form right edge */
+      top: 8px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: none; /* shown when section is visible */
+    }
+    #addAdminSection h2 { text-align:center; margin-bottom:18px; color:#218838; }
+    #addAdminSection label { display:block; margin-bottom:8px; font-weight:600; color:#218838; }
+    #addAdminSection .input-wrapper { position:relative; }
+    #addAdminSection input[type="text"],
+    #addAdminSection input[type="email"],
+    #addAdminSection input[type="password"] {
+      width:100%; padding:12px; margin-bottom:14px; border-radius:8px; border:2px solid #218838;
+      background:#f6f7fb; box-sizing:border-box; font-size:15px;
+    }
+    #addAdminSection input:focus { outline:none; background:#e8f5e9; border-color:#17692c; }
+    #addAdminSection .toggle-password { position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; width:26px; height:26px; display:flex; align-items:center; justify-content:center; }
+    #addAdminSection .field-error { color:#d32f2f; font-size:13px; margin-top:-10px; margin-bottom:8px; min-height:18px; }
+    #addAdminSection button[type="submit"] { width:100%; padding:12px; border-radius:8px; border:none; background:#218838; color:#fff; font-weight:700; cursor:pointer; font-size:16px; }
+    #addAdminSection .success { color:#2e7d32; text-align:center; margin-top:10px; }
+    #addAdminSection .error { color:#c62828; text-align:center; margin-top:10px; }
+  </style>
+
+  <button id="closeInlineAdminBtn" aria-label="Close admin form">&times; Close</button>
+   <div class="reg-container" role="region" aria-labelledby="adminFormTitle">
+     <h2 id="adminFormTitle">Admin Registration</h2>
+
+     <form id="inlineAdminRegForm" autocomplete="off" novalidate>
+      <label for="firstName">First Name</label>
+      <input type="text" id="firstName" name="firstName">
+      <div id="errorFirstName" class="field-error"></div>
+
+      <label for="middleName">Middle Name</label>
+      <input type="text" id="middleName" name="middleName">
+      <div id="errorMiddleName" class="field-error"></div>
+
+      <label for="lastName">Last Name</label>
+      <input type="text" id="lastName" name="lastName">
+      <div id="errorLastName" class="field-error"></div>
+
+      <label for="adminEmailInput">Email</label>
+      <input type="email" id="adminEmailInput" name="adminEmail">
+      <div id="errorAdminEmail" class="field-error"></div>
+
+      <label for="adminPassword">Password</label>
+      <div class="input-wrapper">
+        <input type="password" id="adminPassword" name="adminPassword" style="padding-right:44px;">
+        <span class="toggle-password" onclick="togglePassword('adminPassword', this)" aria-hidden="true">
+          <svg class="eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#ec407a" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="#ec407a" stroke-width="2"/></svg>
+          <svg class="eye-off hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path stroke="#ec407a" stroke-width="2" d="M3 3l18 18"/><path stroke="#ec407a" stroke-width="2" d="M10.73 10.73A3 3 0 0 0 12 15a3 3 0 0 0 2.27-4.27"/><path stroke="#ec407a" stroke-width="2" d="M1 12s4-7 11-7c2.54 0 4.68.7 6.41 1.7M21 12s-4 7-11 7c-2.54 0-4.68-.7-6.41-1.7"/></svg>
+        </span>
+      </div>
+      <div id="errorAdminPassword" class="field-error"></div>
+
+      <label for="confirmPassword">Confirm Password</label>
+      <div class="input-wrapper">
+        <input type="password" id="confirmPassword" name="confirmPassword" style="padding-right:44px;">
+        <span class="toggle-password" onclick="togglePassword('confirmPassword', this)" aria-hidden="true">
+          <svg class="eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#ec407a" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="#ec407a" stroke-width="2"/></svg>
+          <svg class="eye-off hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path stroke="#ec407a" stroke-width="2" d="M3 3l18 18"/><path stroke="#ec407a" stroke-width="2" d="M10.73 10.73A3 3 0 0 0 12 15a3 3 0 0 0 2.27-4.27"/><path stroke="#ec407a" stroke-width="2" d="M1 12s4-7 11-7c2.54 0 4.68.7 6.41 1.7M21 12s-4 7-11 7c-2.54 0-4.68-.7-6.41-1.7"/></svg>
+        </span>
+      </div>
+      <div id="errorConfirmPassword" class="field-error"></div>
+
+      <label style="font-weight:500;">
+        <input type="checkbox" id="termsCheckbox" name="termsCheckbox" style="margin-right:8px;">
+        I agree to the Terms and Conditions
+      </label>
+      <div id="errorTerms" class="field-error"></div>
+
+      <button type="submit">Register</button>
+      <div id="message" role="status" aria-live="polite"></div>
+     </form>
+   </div>
+ </section>
+<!-- end insert -->
+
+<script>
+// ...existing code...
+
+// Show/hide inline admin form and wire the Add Admin button
+(function () {
+  const openBtn = document.getElementById('openAddAdminBtn');
+  const addSection = document.getElementById('addAdminSection');
+  const closeBtn = document.getElementById('closeInlineAdminBtn');
+
+  if (!addSection) return;
+
+  function showForm() {
+    addSection.style.display = 'block';
+    // show close button
+    if (closeBtn) closeBtn.style.display = 'inline-block';
+    // scroll into view centered
+    addSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function hideForm() {
+    addSection.style.display = 'none';
+    if (closeBtn) closeBtn.style.display = 'none';
+  }
+
+  if (openBtn) {
+    openBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      // close admin dropdown
+      document.getElementById('adminDropdownContent')?.classList.remove('show');
+      showForm();
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', hideForm);
+  }
+
+  // Clicking outside the form should not close the admin page; provide ESC to close
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && addSection.style.display === 'block') hideForm();
+  });
+
+  // Ensure togglePassword is available globally (used by inline onclicks)
+  if (typeof window.togglePassword !== 'function') {
+    window.togglePassword = function(fieldId, iconEl){
+      const input = document.getElementById(fieldId);
+      if (!input) return;
+      const eye = iconEl && iconEl.querySelector && iconEl.querySelector('.eye');
+      const eyeOff = iconEl && iconEl.querySelector && iconEl.querySelector('.eye-off');
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (eye) eye.classList.add('hidden');
+        if (eyeOff) eyeOff.classList.remove('hidden');
+      } else {
+        input.type = 'password';
+        if (eye) eye.classList.remove('hidden');
+        if (eyeOff) eyeOff.classList.add('hidden');
+      }
+    };
+  }
+})();
+
+(() => {
+  const form = document.getElementById('inlineAdminRegForm');
+  if(!form) return;
+
+  const f = id => document.getElementById(id);
+  const msgEl = f('message');
+
+  // Reuse config; create secondary app so we don't log out current admin
+  let secondaryApp;
+  function getSecondary(){
+    if(!secondaryApp){
+      secondaryApp = firebase.initializeApp(firebase.app().options, 'secondary');
+    }
+    return secondaryApp;
+  }
+
+  function setMsg(txt, ok){
+    msgEl.textContent = txt;
+    msgEl.className = ok ? 'success' : 'error';
+  }
+
+  form.addEventListener('submit', async e=>{
+    e.preventDefault();
+    // Clear errors
+    ['FirstName','MiddleName','LastName','AdminEmail','AdminPassword','ConfirmPassword','Terms'].forEach(n=>{
+      const el = document.getElementById('error'+n);
+      if(el) el.textContent='';
+    });
+    setMsg('', true);
+
+    const first = f('firstName').value.trim();
+    const middle = f('middleName').value.trim();
+    const last = f('lastName').value.trim();
+    const email = f('adminEmailInput').value.trim();
+    const pass = f('adminPassword').value;
+    const pass2 = f('confirmPassword').value;
+    const terms = f('termsCheckbox').checked;
+
+    let invalid=false;
+    if(!first){ f('errorFirstName').textContent='Required'; invalid=true; }
+    if(!last){ f('errorLastName').textContent='Required'; invalid=true; }
+    if(!email){ f('errorAdminEmail').textContent='Required'; invalid=true; }
+    if(pass.length<6){ f('errorAdminPassword').textContent='Min 6 chars'; invalid=true; }
+    if(pass!==pass2){ f('errorConfirmPassword').textContent='Passwords differ'; invalid=true; }
+    if(!terms){ f('errorTerms').textContent='Accept terms'; invalid=true; }
+    if(invalid) return;
+
+    setMsg('Creating admin account...', true);
+    form.querySelector('button[type=submit]').disabled=true;
+
+    try{
+      const sec = getSecondary();
+      const cred = await sec.auth().createUserWithEmailAndPassword(email, pass);
+      const uid = cred.user.uid;
+      const adminData = {
+        uid,
+        email,
+        fname:first,
+        mname:middle,
+        lname:last,
+        role:'admin',
+        createdAt: Date.now()
+      };
+      await firebase.database().ref('admins/'+uid).set(adminData);
+      setMsg('Admin created.', true);
+      openAdminCreatedModal('Admin '+(adminData.fname||'')+' '+(adminData.lname||'')+' has been created.');
+
+      // Clean up & keep current admin session
+      await sec.auth().signOut();
+      form.reset();
+    }catch(err){
+      console.error(err);
+      setMsg(err.message || 'Error creating admin', false);
+    }finally{
+      form.querySelector('button[type=submit]').disabled=false;
+    }
+  });
+})();
+</script>
 </body>
 </html>

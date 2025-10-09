@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Math Drag & Drop Game</title>
+    <style>
+      :root {
+    --primary: #2e8b57;
+    --secondary: #ffd700;
+    --peach: #ff69b4;
+    --forest-green: #3f4d34;
+    --sun-yellow: #ffd700;
+    --white: #ffffff;
+} 
+        body {
+            font-family: 'Comic Neue', Arial, sans-serif;
+            background: rgb(177, 177, 177);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #start-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgb(177, 177, 177); color: #fff; z-index: 100000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #start-screen > div {
+            background: #fff; color: #000000;
+            padding: 48px 40px; border-radius: 18px;
+            box-shadow: 0 4px 24px #0002;
+            text-align: center;
+            max-width: 400px;
+        }
+        #start-btn {
+            padding: 16px 48px;
+            border-radius: 10px;
+            background: #1769ff;
+            color: #fff;
+            border: none;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-top: 28px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #0001;
+        }
+        #modal-instructions {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgb(177, 177, 177); z-index: 99999;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #modal-instructions > div {
+            background: #fff; padding: 40px 32px; border-radius: 14px;
+            max-width: 420px; width: 96vw; box-shadow: 0 4px 24px #0002;
+            position: relative;
+        }
+        .game-container {
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px #0001;
+            padding: 32px;
+            text-align: center;
+            position: relative;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        .question {
+            font-size: 2.3rem;
+            margin-bottom: 24px;
+            font-weight: bold;
+        }
+        .answers {
+            display: flex;
+            gap: 18px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .draggable {
+            background: #e3f2fd;
+            color: #1769ff;
+            border-radius: 8px;
+            padding: 16px 28px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: grab;
+            border: 2px solid #1769ff;
+            transition: background 0.2s, color 0.2s;
+        }
+        .draggable.dragging {
+            opacity: 0.6;
+        }
+        .dropzone {
+            background: #fffde7;
+            border: 2px dashed #fbc02d;
+            border-radius: 10px;
+            min-height: 60px;
+            min-width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #fbc02d;
+            font-weight: bold;
+            margin-bottom: 24px;
+        }
+        #feedback {
+            font-size: 1.1rem;
+            margin-bottom: 18px;
+            min-height: 24px;
+        }
+        #next-btn {
+            padding: 10px 32px;
+            border-radius: 8px;
+            background: #1769ff;
+            color: #fff;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 18px;
+            display: none;
+        }
+        #congrats-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+        }
+        #congrats-modal > div {
+            background: #fff;
+            padding: 48px 40px;
+            border-radius: 18px;
+            max-width: 420px;
+            width: 96vw;
+            box-shadow: 0 4px 24px #0002;
+            text-align: center;
+            position: relative;
+        }
+        #final-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 100000;
+            align-items: center;
+            justify-content: center;
+        }
+        #final-modal > div {
+            background: #fff;
+            padding: 48px 40px;
+            border-radius: 18px;
+            max-width: 420px;
+            width: 96vw;
+            box-shadow: 0 4px 24px #0002;
+            text-align: center;
+            position: relative;
+        }
+        /* Edit button and modal styles */
+        #edit-game-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #ff9800;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #0001;
+        }
+        #edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100001;
+            align-items: center;
+            justify-content: center;
+        }
+        #edit-modal > div {
+            background: #fff;
+            padding: 40px 32px;
+            border-radius: 14px;
+            max-width: 500px;
+            width: 96vw;
+            box-shadow: 0 4px 24px #0002;
+            position: relative;
+        }
+        #edit-questions-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 24px;
+        }
+        .edit-question-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .edit-question-item input {
+            border: 1px solid #1769ff;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 1rem;
+            width: calc(100% - 24px);
+            margin-right: 12px;
+        }
+        .edit-question-item button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            background: #1769ff;
+            color: #fff;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Start Screen -->
+    <div id="start-screen">
+        <div>
+            <h1 style="margin-bottom:18px;">Math Drag & Drop Game</h1>
+            <p style="font-size:1.1rem;">Test your math skills!<br>Drag the correct answer to solve each problem.</p>
+            <button id="start-btn">Start</button>
+        </div>
+    </div>
+    <!-- Instructions Modal -->
+    <div id="modal-instructions" style="display:none;">
+        <div>
+            <h2>How to Play</h2>
+            <p>
+                Solve each math problem by dragging the correct answer into the yellow box.<br>
+                Try to get them all right!
+            </p>
+            <ul>
+                <li>Read the math question.</li>
+                <li>Drag the correct answer into the drop zone.</li>
+                <li>Click "Next" to move to the next question.</li>
+            </ul>
+            <button id="close-instructions" style="padding:12px 36px; border-radius:8px; background:#1769ff; color:#fff; border:none; font-size:20px; font-weight:bold; cursor: pointer;">Start Game</button>
+        </div>
+    </div>
+    <div class="game-container" style="display:none;">
+        <div class="question" id="question" style="padding-bottom:15px; padding-top:15px;"></div>
+        <div class="answers" id="answers" style="padding-bottom:15px;"></div>
+        <div class="dropzone" id="dropzone">Drop answer here</div>
+        <div id="feedback"></div>
+        <button id="next-btn">Next</button>
+    </div>
+    <!-- Congratulations Modal for each level -->
+    <div id="congrats-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:99999; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:48px 40px; border-radius:18px; max-width:420px; width:96vw; box-shadow:0 4px 24px #0002; text-align:center; position:relative;">
+            <h2 style="font-size:2.2rem; color:#1769ff; margin-bottom:24px;">🎉 Congratulations! 🎉</h2>
+            <p style="font-size:1.3rem; margin-bottom:32px;">You got it right!</p>
+            <button id="next-level-btn" style="padding:18px 48px; border-radius:12px; background:#1769ff; color:#fff; border:none; font-size:2rem; font-weight:bold; margin-top:24px; cursor:pointer;">Next Level</button>
+        </div>
+    </div>
+    <!-- Final Congratulations Modal -->
+    <div id="final-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:100000; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:48px 40px; border-radius:18px; max-width:420px; width:96vw; box-shadow:0 4px 24px #0002; text-align:center; position:relative;">
+            <h2 style="font-size:2.2rem; color:#1769ff; margin-bottom:24px;">🏆 All Levels Complete!</h2>
+            <p id="final-score" style="font-size:1.3rem; margin-bottom:32px;"></p>
+            <button id="play-again-btn" style="padding:18px 48px; border-radius:12px; background:#1769ff; color:#fff; border:none; font-size:2rem; font-weight:bold; margin-top:24px; cursor:pointer;">Play Again</button>
+        </div>
+    </div>
+    <!-- Add Edit button and Edit modal -->
+    <button id="edit-game-btn" style="position: absolute; top: 20px; right: 20px; z-index: 1000;">Edit Game</button>
+    <div id="edit-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); z-index:100001; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:40px 32px; border-radius:14px; max-width:500px; width:96vw; box-shadow:0 4px 24px #0002; position:relative;">
+            <h3 style="margin-top:0; margin-bottom:24px;">Edit Math Questions</h3>
+            <div id="edit-questions-list"></div>
+            <button id="add-question-btn" style="margin-top:18px; padding:8px 24px; border-radius:6px; background:#1769ff; color:#fff; border:none; font-size:16px; cursor: pointer;">Add Question</button>
+            <div style="text-align:right; margin-top:24px;">
+                <button id="save-edit-btn" style="padding:8px 24px; border-radius:6px; background:#1769ff; color:#fff; border:none; margin-right:12px; font-size:16px; cursor: pointer;">Save</button>
+                <button id="close-edit-btn" style="padding:8px 24px; border-radius:6px; background:#eee; color:#333; border:none; font-size:16px; cursor: pointer;">Close</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Load questions from localStorage if available
+        let editableQuestions = [
+            { q: "5 + 3 =", answers: [6, 8, 9], correct: 8 },
+            { q: "12 - 7 =", answers: [5, 4, 6], correct: 5 },
+            { q: "6 × 2 =", answers: [12, 8, 10], correct: 12 },
+            { q: "15 ÷ 3 =", answers: [5, 6, 4], correct: 5 },
+            { q: "9 + 6 =", answers: [14, 15, 16], correct: 15 }
+        ];
+        if (localStorage.getItem('mathDragQuestions')) {
+            editableQuestions = JSON.parse(localStorage.getItem('mathDragQuestions'));
+        }
+        const questions = editableQuestions;
+        let current = 0;
+        let score = 0;
+
+        // Start screen logic
+        document.getElementById('start-btn').onclick = function() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('modal-instructions').style.display = 'flex';
+        };
+
+        // Modal logic
+        document.getElementById('close-instructions').onclick = function() {
+            document.getElementById('modal-instructions').style.display = 'none';
+            document.querySelector('.game-container').style.display = '';
+            loadQuestion();
+        };
+
+        function loadQuestion() {
+            const q = questions[current];
+            document.getElementById('question').textContent = q.q;
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('next-btn').style.display = 'none';
+            // Answers
+            const answersDiv = document.getElementById('answers');
+            answersDiv.innerHTML = '';
+            q.answers.forEach(ans => {
+                const btn = document.createElement('div');
+                btn.className = 'draggable';
+                btn.textContent = ans;
+                btn.draggable = true;
+                btn.ondragstart = function(e) {
+                    btn.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', ans);
+                };
+                btn.ondragend = function() {
+                    btn.classList.remove('dragging');
+                };
+                answersDiv.appendChild(btn);
+            });
+            // Dropzone
+            const dropzone = document.getElementById('dropzone');
+            dropzone.textContent = "Drop answer here";
+            dropzone.style.color = "#fbc02d";
+            dropzone.ondragover = function(e) {
+                e.preventDefault();
+                dropzone.style.background = "#fff9c4";
+            };
+            dropzone.ondragleave = function() {
+                dropzone.style.background = "#fffde7";
+            };
+            dropzone.ondrop = function(e) {
+                e.preventDefault();
+                dropzone.style.background = "#fffde7";
+                const dropped = e.dataTransfer.getData('text/plain');
+                dropzone.textContent = dropped;
+                checkAnswer(Number(dropped));
+            };
+        }
+
+        function checkAnswer(ans) {
+            const q = questions[current];
+            if (ans === q.correct) {
+                score++; // Increment score only for correct answer
+                document.getElementById('feedback').textContent = "";
+                // If last question, show final modal
+                if (current === questions.length - 1) {
+                    showFinalModal();
+                } else {
+                    showCongratsModal();
+                }
+            } else {
+                document.getElementById('feedback').textContent = "❌ Try again!";
+                document.getElementById('next-btn').style.display = '';
+            }
+        }
+
+        function showCongratsModal() {
+            document.getElementById('congrats-modal').style.display = 'flex';
+        }
+
+        document.getElementById('next-btn').onclick = function() {
+            current++;
+            if (current < questions.length) {
+                loadQuestion();
+            } else {
+                showFinalModal();
+            }
+        };
+
+        document.getElementById('next-level-btn').onclick = function() {
+            document.getElementById('congrats-modal').style.display = 'none';
+            current++;
+            loadQuestion();
+        };
+
+        function showFinalModal() {
+            document.getElementById('final-score').textContent = `Your score: ${score} / ${questions.length}`;
+            document.getElementById('final-modal').style.display = 'flex';
+        }
+
+        document.getElementById('play-again-btn').onclick = function() {
+            document.getElementById('final-modal').style.display = 'none';
+            current = 0;
+            score = 0;
+            document.querySelector('.game-container').style.display = '';
+            loadQuestion();
+        };
+
+        // Edit game logic
+        document.getElementById('edit-game-btn').onclick = function() {
+            showEditModal();
+        };
+
+        function showEditModal() {
+            document.getElementById('edit-modal').style.display = 'flex';
+            const list = document.getElementById('edit-questions-list');
+            list.innerHTML = '';
+            editableQuestions.forEach((q, idx) => {
+                list.innerHTML += `
+                    <div style="margin-bottom:18px; border-bottom:1px solid #eee; padding-bottom:8px;">
+                        <label>Question: <input type="text" class="edit-q" data-idx="${idx}" value="${q.q}" style="width:70%;"></label><br>
+                        <label>Answers (comma separated): <input type="text" class="edit-answers" data-idx="${idx}" value="${q.answers.join(', ')}" style="width:70%;"></label><br>
+                        <label>Correct Answer: <input type="number" class="edit-correct" data-idx="${idx}" value="${q.correct}" style="width:70%;"></label>
+                        <button class="remove-question-btn" data-idx="${idx}" style="margin-left:10px; color:#e57373; background:none; border:none; font-size:1rem; cursor:pointer;">Remove</button>
+                    </div>
+                `;
+            });
+            // Remove logic
+            list.querySelectorAll('.remove-question-btn').forEach(btn => {
+                btn.onclick = function() {
+                    const idx = Number(btn.dataset.idx);
+                    editableQuestions.splice(idx, 1);
+                    showEditModal();
+                };
+            });
+        }
+
+        // Add question
+        document.getElementById('add-question-btn').onclick = function() {
+            editableQuestions.push({ q: "New Question", answers: [0,0,0], correct: 0 });
+            showEditModal();
+        };
+
+        // Save edits
+        document.getElementById('save-edit-btn').onclick = function() {
+            document.querySelectorAll('.edit-q').forEach(input => {
+                const idx = input.dataset.idx;
+                editableQuestions[idx].q = input.value.trim();
+            });
+            document.querySelectorAll('.edit-answers').forEach(input => {
+                const idx = input.dataset.idx;
+                editableQuestions[idx].answers = input.value.split(',').map(a => Number(a.trim()));
+            });
+            document.querySelectorAll('.edit-correct').forEach(input => {
+                const idx = input.dataset.idx;
+                editableQuestions[idx].correct = Number(input.value.trim());
+            });
+            localStorage.setItem('mathDragQuestions', JSON.stringify(editableQuestions)); // Save to localStorage
+            document.getElementById('edit-modal').style.display = 'none';
+            // Reset game with new questions
+            current = 0;
+            score = 0;
+            document.querySelector('.game-container').style.display = '';
+            loadQuestion();
+        };
+
+        // Close modal
+        document.getElementById('close-edit-btn').onclick = function() {
+            document.getElementById('edit-modal').style.display = 'none';
+        };
+    </script>
+</body>
+</html>
