@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Builder - Edutaktika</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../CSS/header.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/dropdown.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(46, 139, 87, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .builder-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #2e8b57;
+            box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1);
+            outline: none;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .question-item {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .question-item:hover {
+            border-color: #2e8b57;
+            box-shadow: 0 4px 12px rgba(46, 139, 87, 0.1);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .question-type {
+            background: #2e8b57;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .question-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #2e8b57;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e6b47;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .add-question-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .add-question-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3);
+        }
+
+        .question-options {
+            margin-top: 15px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .option-item input[type="text"] {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .option-item input[type="radio"] {
+            width: auto;
+        }
+
+        .add-option-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .remove-option-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 30px;
+        }
+
+        .sidebar-section h3 {
+            color: #2e8b57;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .preview-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preview-item:hover {
+            border-color: #2e8b57;
+            background: #f0f8f0;
+        }
+
+        .preview-item.active {
+            border-color: #2e8b57;
+            background: #e8f5e8;
+        }
+
+        .preview-question {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .preview-type {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .save-assessment-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .save-assessment-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: #2e8b57;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .close-btn:hover {
+            color: #dc3545;
+        }
+
+        .question-type-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .question-type-btn {
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .question-type-btn:hover {
+            border-color: #2e8b57;
+            background: #f8f9fa;
+        }
+
+        .question-type-btn.selected {
+            border-color: #2e8b57;
+            background: #e8f5e8;
+        }
+
+        .question-type-btn i {
+            display: block;
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #2e8b57;
+        }
+
+        .question-type-btn span {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .builder-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Site Header -->
+    <header>
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="logo-text">
+                    <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="homepage.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="subject_math.html">Math</a></li>
+                            <li><a href="subject_english.html">English</a></li>
+                            <li><a href="subject_science.html">Science</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="studentlist.html">Student</a></li>
+                    <li><a href="grading.html">Grading</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Assessments <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="assessment-builder.html">Create Assessment</a></li>
+                            <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="leaderboard_math.html">Math</a></li>
+                            <li><a href="leaderboard_english.html">English</a></li>
+                            <li><a href="leaderboard_science.html">Science</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-edit"></i> Assessment Builder</h1>
+            <p>Create interactive assessments for your students</p>
+        </div>
+
+        <div class="builder-container">
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Assessment Details -->
+                <div class="form-group">
+                    <label for="assessmentTitle">Assessment Title</label>
+                    <input type="text" id="assessmentTitle" placeholder="Enter assessment title">
+                </div>
+
+                <div class="form-group">
+                    <label for="assessmentDescription">Description</label>
+                    <textarea id="assessmentDescription" placeholder="Enter assessment description"></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <select id="subject">
+                            <option value="">Select Subject</option>
+                            <option value="Math">Mathematics</option>
+                            <option value="English">English</option>
+                            <option value="Science">Science</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="gradeLevel">Grade Level</label>
+                        <select id="gradeLevel">
+                            <option value="">Select Grade</option>
+                            <option value="Grade 5">Grade 5</option>
+                            <option value="Grade 6">Grade 6</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="timeLimit">Time Limit (minutes)</label>
+                        <input type="number" id="timeLimit" placeholder="60" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="maxAttempts">Max Attempts</label>
+                        <input type="number" id="maxAttempts" placeholder="3" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="passingScore">Passing Score (%)</label>
+                        <input type="number" id="passingScore" placeholder="70" min="0" max="100">
+                    </div>
+                </div>
+
+                <!-- Questions Section -->
+                <div style="margin-top: 30px;">
+                    <h3 style="color: #2e8b57; margin-bottom: 20px;">
+                        <i class="fas fa-question-circle"></i> Questions
+                    </h3>
+                    
+                    <button class="add-question-btn" onclick="openQuestionModal()">
+                        <i class="fas fa-plus"></i> Add Question
+                    </button>
+
+                    <div id="questionsContainer">
+                        <!-- Questions will be added here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-eye"></i> Preview</h3>
+                    <div id="previewContainer">
+                        <p style="color: #6c757d; text-align: center; padding: 20px;">
+                            Add questions to see preview
+                        </p>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3><i class="fas fa-cog"></i> Settings</h3>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="shuffleQuestions"> Shuffle Questions
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="showResults"> Show Results Immediately
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="allowReview"> Allow Review After Submission
+                        </label>
+                    </div>
+                </div>
+
+                <button class="save-assessment-btn" onclick="saveAssessment()">
+                    <i class="fas fa-save"></i> Save Assessment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Modal -->
+    <div id="questionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Question</h3>
+                <button class="close-btn" onclick="closeQuestionModal()">&times;</button>
+            </div>
+
+            <div class="question-type-selector">
+                <div class="question-type-btn" onclick="selectQuestionType('multiple-choice')">
+                    <i class="fas fa-list-ul"></i>
+                    <span>Multiple Choice</span>
+                </div>
+                <div class="question-type-btn" onclick="selectQuestionType('true-false')">
+                    <i class="fas fa-check-circle"></i>
+                    <span>True/False</span>
+                </div>
+                <div class="question-type-btn" onclick="selectQuestionType('short-answer')">
+                    <i class="fas fa-edit"></i>
+                    <span>Short Answer</span>
+                </div>
+                <div class="question-type-btn" onclick="selectQuestionType('essay')">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Essay</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="questionText">Question Text</label>
+                <textarea id="questionText" placeholder="Enter your question"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="questionPoints">Points</label>
+                <input type="number" id="questionPoints" placeholder="10" min="1">
+            </div>
+
+            <div id="optionsContainer" style="display: none;">
+                <label>Options</label>
+                <div id="optionsList">
+                    <!-- Options will be added here -->
+                </div>
+                <button type="button" class="add-option-btn" onclick="addOption()">
+                    <i class="fas fa-plus"></i> Add Option
+                </button>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="closeQuestionModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="addQuestion()">Add Question</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+            authDomain: "edutaktika.firebaseapp.com",
+            databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+            projectId: "edutaktika",
+            storageBucket: "edutaktika.appspot.com",
+            messagingSenderId: "676848575316",
+            appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+            measurementId: "G-X3GT5TNN87"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        // Global variables
+        let questions = [];
+        let currentQuestionType = '';
+        let editingQuestionIndex = -1;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            auth.onAuthStateChanged(function(user) {
+                if (!user) {
+                    window.location.href = 'logreg.html';
+                }
+            });
+        });
+
+        // Question type selection
+        function selectQuestionType(type) {
+            currentQuestionType = type;
+            
+            // Update UI
+            document.querySelectorAll('.question-type-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.closest('.question-type-btn').classList.add('selected');
+
+            // Show/hide options container
+            const optionsContainer = document.getElementById('optionsContainer');
+            if (type === 'multiple-choice' || type === 'true-false') {
+                optionsContainer.style.display = 'block';
+                if (type === 'true-false') {
+                    setupTrueFalseOptions();
+                } else {
+                    setupMultipleChoiceOptions();
+                }
+            } else {
+                optionsContainer.style.display = 'none';
+            }
+        }
+
+        // Setup multiple choice options
+        function setupMultipleChoiceOptions() {
+            const optionsList = document.getElementById('optionsList');
+            optionsList.innerHTML = '';
+            
+            for (let i = 0; i < 4; i++) {
+                addOption();
+            }
+        }
+
+        // Setup true/false options
+        function setupTrueFalseOptions() {
+            const optionsList = document.getElementById('optionsList');
+            optionsList.innerHTML = `
+                <div class="option-item">
+                    <input type="radio" name="correctAnswer" value="0">
+                    <input type="text" value="True" readonly>
+                </div>
+                <div class="option-item">
+                    <input type="radio" name="correctAnswer" value="1">
+                    <input type="text" value="False" readonly>
+                </div>
+            `;
+        }
+
+        // Add option
+        function addOption() {
+            const optionsList = document.getElementById('optionsList');
+            const optionIndex = optionsList.children.length;
+            
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option-item';
+            optionDiv.innerHTML = `
+                <input type="radio" name="correctAnswer" value="${optionIndex}">
+                <input type="text" placeholder="Option ${optionIndex + 1}">
+                <button type="button" class="remove-option-btn" onclick="removeOption(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            
+            optionsList.appendChild(optionDiv);
+        }
+
+        // Remove option
+        function removeOption(button) {
+            button.closest('.option-item').remove();
+        }
+
+        // Open question modal
+        function openQuestionModal() {
+            document.getElementById('questionModal').style.display = 'flex';
+            resetQuestionForm();
+        }
+
+        // Close question modal
+        function closeQuestionModal() {
+            document.getElementById('questionModal').style.display = 'none';
+            resetQuestionForm();
+        }
+
+        // Reset question form
+        function resetQuestionForm() {
+            document.getElementById('questionText').value = '';
+            document.getElementById('questionPoints').value = '10';
+            currentQuestionType = '';
+            editingQuestionIndex = -1;
+            
+            document.querySelectorAll('.question-type-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            document.getElementById('optionsContainer').style.display = 'none';
+        }
+
+        // Add question
+        function addQuestion() {
+            const questionText = document.getElementById('questionText').value.trim();
+            const questionPoints = parseInt(document.getElementById('questionPoints').value) || 10;
+
+            if (!questionText) {
+                alert('Please enter question text');
+                return;
+            }
+
+            if (!currentQuestionType) {
+                alert('Please select a question type');
+                return;
+            }
+
+            const question = {
+                id: Date.now(),
+                type: currentQuestionType,
+                text: questionText,
+                points: questionPoints,
+                options: [],
+                correctAnswer: null
+            };
+
+            // Handle options for multiple choice and true/false
+            if (currentQuestionType === 'multiple-choice' || currentQuestionType === 'true-false') {
+                const optionInputs = document.querySelectorAll('#optionsList input[type="text"]');
+                const correctAnswerRadio = document.querySelector('input[name="correctAnswer"]:checked');
+
+                if (!correctAnswerRadio) {
+                    alert('Please select the correct answer');
+                    return;
+                }
+
+                optionInputs.forEach(input => {
+                    if (input.value.trim()) {
+                        question.options.push(input.value.trim());
+                    }
+                });
+
+                question.correctAnswer = parseInt(correctAnswerRadio.value);
+            }
+
+            if (editingQuestionIndex >= 0) {
+                questions[editingQuestionIndex] = question;
+            } else {
+                questions.push(question);
+            }
+
+            renderQuestions();
+            updatePreview();
+            closeQuestionModal();
+        }
+
+        // Edit question
+        function editQuestion(index) {
+            const question = questions[index];
+            editingQuestionIndex = index;
+
+            document.getElementById('questionText').value = question.text;
+            document.getElementById('questionPoints').value = question.points;
+
+            // Select question type
+            document.querySelectorAll('.question-type-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            const typeBtn = document.querySelector(`[onclick="selectQuestionType('${question.type}')"]`);
+            if (typeBtn) {
+                typeBtn.classList.add('selected');
+                currentQuestionType = question.type;
+            }
+
+            // Setup options
+            if (question.type === 'multiple-choice' || question.type === 'true-false') {
+                document.getElementById('optionsContainer').style.display = 'block';
+                const optionsList = document.getElementById('optionsList');
+                optionsList.innerHTML = '';
+
+                question.options.forEach((option, i) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'option-item';
+                    optionDiv.innerHTML = `
+                        <input type="radio" name="correctAnswer" value="${i}" ${i === question.correctAnswer ? 'checked' : ''}>
+                        <input type="text" value="${option}" ${question.type === 'true-false' ? 'readonly' : ''}>
+                        ${question.type === 'multiple-choice' ? `<button type="button" class="remove-option-btn" onclick="removeOption(this)"><i class="fas fa-trash"></i></button>` : ''}
+                    `;
+                    optionsList.appendChild(optionDiv);
+                });
+            }
+
+            document.getElementById('questionModal').style.display = 'flex';
+        }
+
+        // Delete question
+        function deleteQuestion(index) {
+            if (confirm('Are you sure you want to delete this question?')) {
+                questions.splice(index, 1);
+                renderQuestions();
+                updatePreview();
+            }
+        }
+
+        // Render questions
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            
+            if (questions.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 40px;">No questions added yet. Click "Add Question" to get started.</p>';
+                return;
+            }
+
+            container.innerHTML = questions.map((question, index) => `
+                <div class="question-item">
+                    <div class="question-header">
+                        <div>
+                            <span class="question-type">${getQuestionTypeLabel(question.type)}</span>
+                            <span style="margin-left: 10px; color: #6c757d;">${question.points} points</span>
+                        </div>
+                        <div class="question-actions">
+                            <button class="btn btn-primary" onclick="editQuestion(${index})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteQuestion(${index})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="question-text">${question.text}</div>
+                    ${question.options.length > 0 ? `
+                        <div class="question-options">
+                            ${question.options.map((option, i) => `
+                                <div class="option-item">
+                                    <input type="radio" disabled>
+                                    <span>${option}</span>
+                                    ${i === question.correctAnswer ? '<i class="fas fa-check" style="color: #28a745; margin-left: 10px;"></i>' : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Get question type label
+        function getQuestionTypeLabel(type) {
+            const labels = {
+                'multiple-choice': 'Multiple Choice',
+                'true-false': 'True/False',
+                'short-answer': 'Short Answer',
+                'essay': 'Essay'
+            };
+            return labels[type] || type;
+        }
+
+        // Update preview
+        function updatePreview() {
+            const container = document.getElementById('previewContainer');
+            
+            if (questions.length === 0) {
+                container.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 20px;">Add questions to see preview</p>';
+                return;
+            }
+
+            container.innerHTML = questions.map((question, index) => `
+                <div class="preview-item" onclick="scrollToQuestion(${index})">
+                    <div class="preview-question">Q${index + 1}: ${question.text.substring(0, 50)}${question.text.length > 50 ? '...' : ''}</div>
+                    <div class="preview-type">${getQuestionTypeLabel(question.type)} • ${question.points} points</div>
+                </div>
+            `).join('');
+        }
+
+        // Scroll to question
+        function scrollToQuestion(index) {
+            const questionItems = document.querySelectorAll('.question-item');
+            if (questionItems[index]) {
+                questionItems[index].scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Save assessment
+        function saveAssessment() {
+            const title = document.getElementById('assessmentTitle').value.trim();
+            const description = document.getElementById('assessmentDescription').value.trim();
+            const subject = document.getElementById('subject').value;
+            const gradeLevel = document.getElementById('gradeLevel').value;
+            const timeLimit = parseInt(document.getElementById('timeLimit').value) || 60;
+            const maxAttempts = parseInt(document.getElementById('maxAttempts').value) || 3;
+            const passingScore = parseInt(document.getElementById('passingScore').value) || 70;
+
+            if (!title) {
+                alert('Please enter assessment title');
+                return;
+            }
+
+            if (!subject || !gradeLevel) {
+                alert('Please select subject and grade level');
+                return;
+            }
+
+            if (questions.length === 0) {
+                alert('Please add at least one question');
+                return;
+            }
+
+            const assessment = {
+                title,
+                description,
+                subject,
+                gradeLevel,
+                timeLimit,
+                maxAttempts,
+                passingScore,
+                questions,
+                settings: {
+                    shuffleQuestions: document.getElementById('shuffleQuestions').checked,
+                    showResults: document.getElementById('showResults').checked,
+                    allowReview: document.getElementById('allowReview').checked
+                },
+                createdAt: new Date().toISOString(),
+                createdBy: auth.currentUser.uid,
+                totalPoints: questions.reduce((sum, q) => sum + q.points, 0)
+            };
+
+            // Save to Firebase
+            const assessmentRef = db.ref('assessments').push();
+            assessmentRef.set(assessment)
+                .then(() => {
+                    alert('Assessment saved successfully!');
+                    // Reset form
+                    document.getElementById('assessmentTitle').value = '';
+                    document.getElementById('assessmentDescription').value = '';
+                    document.getElementById('subject').value = '';
+                    document.getElementById('gradeLevel').value = '';
+                    document.getElementById('timeLimit').value = '';
+                    document.getElementById('maxAttempts').value = '';
+                    document.getElementById('passingScore').value = '';
+                    questions = [];
+                    renderQuestions();
+                    updatePreview();
+                })
+                .catch(error => {
+                    console.error('Error saving assessment:', error);
+                    alert('Error saving assessment. Please try again.');
+                });
+        }
+
+        // Logout function
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = 'logreg.html';
+            });
+        }
+    </script>
+
+    <!-- Site Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Edutaktika</h3>
+                <p>Empowering education through technology</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="homepage.html">Home</a></li>
+                    <li><a href="subject_math.html">Mathematics</a></li>
+                    <li><a href="subject_english.html">English</a></li>
+                    <li><a href="subject_science.html">Science</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Edutaktika. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -663,23 +663,120 @@ auth.onAuthStateChanged(async function(user) {
 <script src="../assets/js/Student Side/editProfile.js"></script>
 <link rel="stylesheet" href="../CSS/editProfile.css">
 <script>
-// --- Inject Assessment Card & Score ---
+// --- Load Teacher-Created Assessments ---
 (function(){
     const container = document.getElementById('assessmentsContainer');
     if(!container) return;
 
-    // Create Assessment 1 card
-    const card = document.createElement('div');
-    card.className = 'lesson-item';
-    card.innerHTML = `
-        <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;">A1</div>
-        <div class="lesson-title">
-            <h3>Assessment 1: Everyday Math</h3>
-            <p>10-item real‑life math skills check.</p>
-            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Assessment/Assexam.html'">Start</span>
-            <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
-        </div>`;
-    container.appendChild(card);
+    // Load assessments from Firebase
+    function loadAssessments() {
+        // Clear existing content
+        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Loading assessments...</div>';
+        
+        // Load published assessments for Math subject
+        firebase.database().ref('assessments').orderByChild('subject').equalTo('math').once('value')
+            .then(snapshot => {
+                const assessments = [];
+                snapshot.forEach(childSnapshot => {
+                    const assessment = childSnapshot.val();
+                    if (assessment.status === 'published') {
+                        assessments.push({
+                            id: childSnapshot.key,
+                            ...assessment
+                        });
+                    }
+                });
+
+                if (assessments.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            <i class="fas fa-clipboard-list" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                            <p>No assessments available yet.</p>
+                            <p style="font-size: 0.9rem; margin-top: 8px;">Your teacher will publish assessments here.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Display assessments
+                container.innerHTML = '';
+                assessments.forEach((assessment, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'lesson-item';
+                    card.innerHTML = `
+                        <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;">A${index + 1}</div>
+                        <div class="lesson-title">
+                            <h3>${assessment.title}</h3>
+                            <p>${assessment.description || 'Math assessment'}</p>
+                            <span class="lesson-badge" style="cursor:pointer;" onclick="startAssessment('${assessment.id}')">Start</span>
+                            <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="score-${assessment.id}">Last Score: -</div>
+                            <div style="margin-top:4px;font-size:0.8rem;color:#888;">${assessment.questions ? assessment.questions.length : 0} questions • ${assessment.timeLimit || 60} minutes</div>
+                        </div>`;
+                    container.appendChild(card);
+                    
+                    // Load student's scores for this assessment
+                    loadStudentScores(assessment.id);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading assessments:', error);
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #dc3545;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px;"></i>
+                        <p>Error loading assessments.</p>
+                        <p style="font-size: 0.9rem; margin-top: 8px;">Please try refreshing the page.</p>
+                    </div>
+                `;
+            });
+    }
+
+    // Load student's scores for a specific assessment
+    function loadStudentScores(assessmentId) {
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (!user) return;
+            
+            const uid = user.uid;
+            firebase.database().ref('assessmentAttempts').orderByChild('assessmentId').equalTo(assessmentId).once('value')
+                .then(snapshot => {
+                    const attempts = [];
+                    snapshot.forEach(childSnapshot => {
+                        const attempt = childSnapshot.val();
+                        if (attempt.studentId === uid) {
+                            attempts.push(attempt);
+                        }
+                    });
+
+                    if (attempts.length > 0) {
+                        // Sort by timestamp to get latest
+                        attempts.sort((a, b) => b.timestamp - a.timestamp);
+                        const latestAttempt = attempts[0];
+                        const bestScore = Math.max(...attempts.map(a => a.percentage));
+                        
+                        const scoreElement = document.getElementById(`score-${assessmentId}`);
+                        if (scoreElement) {
+                            scoreElement.innerHTML = `
+                                Last Score: ${Math.round(latestAttempt.percentage)}%<br>
+                                Best Score: ${Math.round(bestScore)}%
+                            `;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading scores:', error);
+                });
+        });
+    }
+
+    // Start assessment function
+    window.startAssessment = function(assessmentId) {
+        // Store assessment ID for the taker
+        sessionStorage.setItem('currentAssessmentId', assessmentId);
+        // Navigate to assessment taker
+        window.location.href = 'assessment-taker.html';
+    };
+
+    // Load assessments when page loads
+    loadAssessments();
 
     // Fetch last score if user logged in
     firebase.auth().onAuthStateChanged(function(user){

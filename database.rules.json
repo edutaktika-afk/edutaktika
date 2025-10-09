@@ -1,0 +1,27 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "assessments": {
+      ".indexOn": ["subject", "status", "createdBy", "gradeLevel"]
+    },
+    "assessmentAttempts": {
+      ".indexOn": ["assessmentId", "studentId", "timestamp"]
+    },
+    "students": {
+      ".indexOn": ["role", "grade", "subject"]
+    },
+    "teachers": {
+      ".indexOn": ["role", "subject", "status"]
+    },
+    "admins": {
+      ".indexOn": ["role", "status"]
+    },
+    "quizSummaries": {
+      ".indexOn": ["lessonId", "studentId"]
+    },
+    "assessmentSummaries": {
+      ".indexOn": ["assessmentId", "studentId"]
+    }
+  }
+}

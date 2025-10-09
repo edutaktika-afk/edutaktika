@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const admin = snap.val();
         if (!admin || admin.role !== "admin") {
             document.getElementById('mainContent').style.display = "none";
-            alert("Access denied.");
+            alert("Access denied. Only admins can access this page.");
             await firebase.auth().signOut();
             window.location.href = "logreg.html";
         } else {
@@ -425,27 +425,182 @@ td:hover .action-btns .reject,
         </div>
     </div>
 
-    <h2 style="text-align:center;">Teacher Account Approvals</h2>
-    <table id="teachersTable">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Grade Level</th>
-                <th>Section</th>
-                <th>Students</th> <!-- NEW COLUMN -->
-                <th>Status</th>
-                <th>Action</th>
-                <th>Delete</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Rows will be inserted here by JS -->
-        </tbody>
-    </table>
+    <!-- Modern Admin Dashboard -->
+    <div style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+        <!-- Dashboard Header -->
+        <div style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white; padding: 30px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(46, 139, 87, 0.3);">
+            <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700; text-align: center;">Admin Dashboard</h1>
+            
+        </div>
 
-    <!-- Modal for review -->
+        <!-- Navigation Tabs -->
+        <div style="background: white; border-radius: 12px; padding: 20px; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                <button id="tabAdmins" class="nav-tab active" onclick="showTab('admins')" style="background: #2e8b57; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease;">
+                    <i class="fas fa-user-shield"></i> Admin Management
+                </button>
+                <button id="tabStudents" class="nav-tab" onclick="showTab('students')" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease;">
+                    <i class="fas fa-user-graduate"></i> Student Management
+                </button>
+                <button id="tabTeachers" class="nav-tab" onclick="showTab('teachers')" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease;">
+                    <i class="fas fa-chalkboard-teacher"></i> Teacher Approvals
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Management Tab -->
+        <div id="contentAdmins" class="tab-content" style="display: block;">
+            <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h2 style="color: #2e8b57; margin: 0; font-size: 1.8rem; font-weight: 700;">
+                        <i class="fas fa-user-shield" style="margin-right: 10px;"></i>Admin Management
+                    </h2>
+                    <button id="createAdminBtn" style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3); transition: all 0.3s ease;">
+                        <i class="fas fa-user-plus"></i> Create New Admin
+                    </button>
+                </div>
+                
+                <!-- Create Admin Form (Hidden by default) -->
+                <div id="createAdminForm" style="display: none; background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e9ecef;">
+                    <h3 style="color: #2e8b57; margin-bottom: 20px; font-size: 1.3rem;">Create New Admin Account</h3>
+                    <form id="adminForm">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">First Name</label>
+                                <input type="text" id="adminFname" required style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Last Name</label>
+                                <input type="text" id="adminLname" required style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease;">
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Email Address</label>
+                            <input type="email" id="adminEmail" required style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease;">
+                        </div>
+                        <div style="margin-bottom: 25px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Password</label>
+                            <input type="password" id="adminPassword" required style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease;">
+                            <small style="color: #6c757d; font-size: 12px; margin-top: 5px; display: block;">Password must be at least 8 characters with uppercase, lowercase, number, and special character.</small>
+                        </div>
+                        <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                            <button type="button" id="cancelAdminBtn" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease;">Cancel</button>
+                            <button type="submit" style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3); transition: all 0.3s ease;">Create Admin</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Current Admins List -->
+                <div id="adminsList">
+                    <h3 style="color: #2e8b57; margin-bottom: 20px; font-size: 1.3rem;">Current Admins</h3>
+                    <div style="overflow-x: auto;">
+                        <table id="adminsTable" style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                            <thead>
+                                <tr style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white;">
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Name</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Email</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Created</th>
+                                    <th style="padding: 15px; text-align: center; font-weight: 600;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminsTableBody">
+                                <!-- Admin rows will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Management Tab -->
+        <div id="contentStudents" class="tab-content" style="display: none;">
+            <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+                <h2 style="color: #2e8b57; margin-bottom: 25px; font-size: 1.8rem; font-weight: 700;">
+                    <i class="fas fa-user-graduate" style="margin-right: 10px;"></i>Student Account Management
+                </h2>
+                
+                <!-- Student Search and Filters -->
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e9ecef;">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; align-items: end;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Search Students</label>
+                            <input type="text" id="studentSearch" placeholder="Search by name, email, or ID..." 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; transition: border-color 0.3s ease;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Grade Level</label>
+                            <select id="gradeFilter" style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; background: white;">
+                                <option value="">All Grades</option>
+                                <option value="Grade 5">Grade 5</option>
+                                <option value="Grade 6">Grade 6</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Section</label>
+                            <select id="sectionFilter" style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; background: white;">
+                                <option value="">All Sections</option>
+                                <option value="A">Section A</option>
+                                <option value="B">Section B</option>
+                                <option value="C">Section C</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Students Table -->
+                <div style="overflow-x: auto;">
+                    <table id="studentsTable" style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white;">
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">ID</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">Name</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">Email</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">Grade</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">Section</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">Subject</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">Registered</th>
+                                <th style="padding: 15px; text-align: center; font-weight: 600;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <!-- Student rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teacher Approvals Tab -->
+        <div id="contentTeachers" class="tab-content" style="display: none;">
+            <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+                <h2 style="color: #2e8b57; margin-bottom: 25px; font-size: 1.8rem; font-weight: 700;">
+                    <i class="fas fa-chalkboard-teacher" style="margin-right: 10px;"></i>Teacher Account Approvals
+                </h2>
+                <div style="overflow-x: auto;">
+                    <table id="teachersTable" style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white;">
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">ID</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">Name</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">Email</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">Grade Level</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">Section</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">Students</th>
+                                <th style="padding: 15px; text-align: left; font-weight: 600;">Status</th>
+                                <th style="padding: 15px; text-align: center; font-weight: 600;">Action</th>
+                                <th style="padding: 15px; text-align: center; font-weight: 600;">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Rows will be inserted here by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for teacher review -->
     <div class="admin-modal-bg" id="reviewModal">
         <div class="admin-modal-card">
             <button class="close-btn" onclick="closeReviewModal()">&times;</button>
@@ -651,7 +806,10 @@ function closeAdminCreatedModal(){
 document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminCreatedModal);
 
     // Initial load
+    loadCurrentAdmin();
+    loadStudents();
     loadTeachers();
+    enhanceTableStyling();
     </script>
     </div>
 

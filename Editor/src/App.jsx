@@ -20,6 +20,7 @@ import { StableDiffusionSection } from './sections/stable-diffusion-section';
 import { MyDesignsSection } from './sections/my-designs-section';
 import { PhotosSection } from './sections/photos-section';
 import { BackgroundsSection } from './sections/backgrounds-section';
+import { EducationalTemplatesSection } from './sections/science-templates/science-templates-section';
 
 import { useProject } from './project';
 
@@ -67,6 +68,15 @@ DEFAULT_SECTIONS.splice(3, 1, ShapesSection);
 DEFAULT_SECTIONS.splice(3, 0, IconsSection);
 // add photos and backgrounds sections
 DEFAULT_SECTIONS.splice(4, 0, PhotosSection, BackgroundsSection);
+
+// Find and replace the default templates section with our Educational Templates
+const templatesIndex = DEFAULT_SECTIONS.findIndex(section => section.name === 'templates');
+if (templatesIndex !== -1) {
+  DEFAULT_SECTIONS.splice(templatesIndex, 1, EducationalTemplatesSection);
+} else {
+  // If no templates section found, add it at position 5
+  DEFAULT_SECTIONS.splice(5, 0, EducationalTemplatesSection);
+}
 // add two more sections
 DEFAULT_SECTIONS.push(QuotesSection, QrSection);
 // DEFAULT_SECTIONS.unshift(UploadSection);
