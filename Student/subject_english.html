@@ -42,7 +42,6 @@
     <link rel="stylesheet" href="../CSS/subject.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/burger.css">
-    <link rel="stylesheet" href="../CSS/loadQuizzes.css">
     <title>English</title>
     <style>
         nav ul {
@@ -289,14 +288,16 @@
         </div>
 
         <div class="quarter-section active" id="quarter-1">
-            <div class="quarter-title">
-                <i class="fas fa-calendar-alt"></i>
-                <h2>
-                    Quarter 1: 
-                    <span class="bounce-word">
-                        <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
-                    </span>
-                </h2>
+            <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <i class="fas fa-calendar-alt"></i>
+                    <h2 style="display:inline-block;margin:0 0 0 8px;">
+                        Quarter 1: 
+                        <span class="bounce-word">
+                            <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
+                        </span>
+                    </h2>
+                </div>
             </div>
 
             <div class="lessons-container">
@@ -344,14 +345,16 @@
 
         <!-- Quarter 2 -->
         <div class="quarter-section" id="quarter-2">
-            <div class="quarter-title">
-                <i class="fas fa-calendar-alt"></i>
-                 <h2>
-                    Quarter 2: 
-                    <span class="bounce-word">
-                        <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
-                    </span>
-                </h2>
+            <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <i class="fas fa-calendar-alt"></i>
+                    <h2 style="display:inline-block;margin:0 0 0 8px;">
+                        Quarter 2: 
+                        <span class="bounce-word">
+                            <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
+                        </span>
+                    </h2>
+                </div>
             </div>
 
             <div class="lessons-container">
@@ -384,14 +387,16 @@
 
         <!-- Quarter 3 -->
         <div class="quarter-section" id="quarter-3">
-            <div class="quarter-title">
-                <i class="fas fa-calendar-alt"></i>
-                <h2>
-                    Quarter 3: 
-                    <span class="bounce-word">
-                        <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
-                    </span>
-                </h2>
+            <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <i class="fas fa-calendar-alt"></i>
+                    <h2 style="display:inline-block;margin:0 0 0 8px;">
+                        Quarter 3: 
+                        <span class="bounce-word">
+                            <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
+                        </span>
+                    </h2>
+                </div>
             </div>
 
             <div class="lessons-container">
@@ -424,14 +429,16 @@
 
         <!-- Quarter 4 -->
         <div class="quarter-section" id="quarter-4">
-            <div class="quarter-title">
-                <i class="fas fa-calendar-alt"></i>
-                <h2>
-                    Quarter 4: 
-                    <span class="bounce-word">
-                        <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
-                    </span>
-                </h2>
+            <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <i class="fas fa-calendar-alt"></i>
+                    <h2 style="display:inline-block;margin:0 0 0 8px;">
+                        Quarter 4: 
+                        <span class="bounce-word">
+                            <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
+                        </span>
+                    </h2>
+                </div>
             </div>
 
             <div class="lessons-container">
@@ -472,7 +479,6 @@
                 <div style="display: flex; align-items: center;">
                     <label for="quiz-quarter-filter" style="font-weight:600; margin-right:8px;">Filter by Quarter:</label>
                     <select id="quiz-quarter-filter" style="min-width:120px;">
-                        <option value="">All Quarters</option>
                         <option value="1">Quarter 1</option>
                         <option value="2">Quarter 2</option>
                         <option value="3">Quarter 3</option>
@@ -481,10 +487,11 @@
                 </div>
             </div>
             <div class="lessons-container">
-                <div id="quizzesContainer"></div>
-                
+                <div id="quiz-list"></div>
+                <div id="student-quiz-cards"></div>
             </div>
         </div>
+
         <!-- Assessments panel -->
         <div class="quarter-section" id="quarter-assessments">
             <div class="quarter-title">
@@ -654,59 +661,138 @@ document.getElementById('logoutSwitch').onclick = function() {
 
 // Place this at the end of your file, after Firebase scripts
 
-const subjectPage = "subject_english"; // For Math page
-// For Science: const subjectPage = "subject_science";
-// For English: const subjectPage = "subject_english";
+const subjectPage = "subject_english";
 
-auth.onAuthStateChanged(async function(user) {
-    if (user) {
-        const uid = user.uid;
-        // Get student info
-        const studentSnap = await db.ref('students/' + uid).once('value');
-        const student = studentSnap.val();
-        if (!student || !student.section) return;
+// Enhanced lesson loading function
+async function loadStudentLessons() {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
 
-        // Find teacher for this section
-        let teacherUID = null;
-        const teachersSnap = await db.ref('teachers').once('value');
-        teachersSnap.forEach(tsnap => {
-            const t = tsnap.val();
-            if (t.section && t.section.trim().toLowerCase() === student.section.trim().toLowerCase()) {
-                teacherUID = tsnap.key;
+    const uid = user.uid;
+    
+    // Get student info
+    const studentSnap = await db.ref('students/' + uid).once('value');
+    const student = studentSnap.val();
+    if (!student || !student.section) {
+        console.log('Student section not found');
+        return;
+    }
+
+    // Find teacher for this section
+    let teacherUID = null;
+    const teachersSnap = await db.ref('teachers').once('value');
+    teachersSnap.forEach(tsnap => {
+        const t = tsnap.val();
+        if (t.section && t.section.trim().toLowerCase() === student.section.trim().toLowerCase()) {
+            teacherUID = tsnap.key;
+        }
+    });
+
+    if (!teacherUID) {
+        document.querySelectorAll('.lessons-container').forEach(c => {
+            if (!c.querySelector('.lesson-item')) {
+                c.innerHTML = "<div style='text-align:center;padding:20px;color:#666;'>No teacher found for your section.</div>";
             }
         });
+        return;
+    }
 
-        if (!teacherUID) {
-            document.querySelectorAll('.lessons-container').forEach(c => c.innerHTML = "<div>No teacher found for your section.</div>");
-            return;
-        }
+    console.log('Loading lessons for teacher:', teacherUID, 'section:', student.section);
 
-        for (let q = 1; q <= 4; q++) {
-            const lessonsSnap = await db.ref('teachers/' + teacherUID + '/sections/' + student.section + '/lessons/' + subjectPage + '/quarter-' + q).once('value');
-            const container = document.querySelector(`#quarter-${q} .lessons-container`);
-            if (!container) continue;
-            container.innerHTML = '';
-            if (!lessonsSnap.exists()) {
-                
-                continue;
+    // Load lessons for each quarter
+    for (let q = 1; q <= 4; q++) {
+        const container = document.querySelector(`#quarter-${q} .lessons-container`);
+        if (!container) continue;
+
+        let lessons = [];
+
+        // Load teacher's lessons from Editor
+        try {
+            const lessonsSnap = await db.ref(`teachers/${teacherUID}/sections/${student.section}/lessons/${subjectPage}/quarter-${q}`).once('value');
+            if (lessonsSnap.exists()) {
+                lessonsSnap.forEach(lessonSnap => {
+                    const lesson = lessonSnap.val();
+                    lessons.push({
+                        title: lesson.title || lessonSnap.key,
+                        description: lesson.description || 'No description available',
+                        quarter: q,
+                        teacherUID: teacherUID,
+                        source: 'teacher'
+                    });
+                });
             }
-            lessonsSnap.forEach(lessonSnap => {
-                const lesson = lessonSnap.val();
-                const name = lesson.title || lessonSnap.key;
-                const div = document.createElement('div');
-                div.className = 'lesson-item';
-                div.setAttribute('data-presentation', name);
-                div.innerHTML = `
-                    <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
-                    <div class="lesson-title">
-                        <h3>${name}</h3>
-                        <p>${lesson.description || ''}</p>
-                        <span class="lesson-badge" onclick="window.location.href='present.html?subject=${subjectPage}&quarter=${q}&name=${encodeURIComponent(name)}'" style="cursor:pointer;">View</span>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
+        } catch (error) {
+            console.error('Error loading teacher lessons:', error);
         }
+
+        // Load global/shared lessons
+        try {
+            const globalSnap = await db.ref(`presentations/${subjectPage}/quarter-${q}`).once('value');
+            if (globalSnap.exists()) {
+                globalSnap.forEach(lessonSnap => {
+                    const lesson = lessonSnap.val();
+                    lessons.push({
+                        title: lesson.title || lessonSnap.key,
+                        description: lesson.description || 'No description available',
+                        quarter: q,
+                        source: 'global'
+                    });
+                });
+            }
+        } catch (error) {
+            console.error('Error loading global lessons:', error);
+        }
+
+        // Render lessons
+        if (lessons.length === 0) {
+            if (!container.querySelector('.lesson-item')) {
+                container.innerHTML = "<div style='text-align:center;padding:20px;color:#666;'>No lessons available for this quarter.</div>";
+            }
+        } else {
+            // Sort lessons by title
+            lessons.sort((a, b) => a.title.localeCompare(b.title));
+            
+            container.innerHTML = lessons.map(lesson => `
+                <div class="lesson-item" data-presentation="${lesson.title}">
+                    <div class="lesson-thumbnail" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-book-open" style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <div class="lesson-title">
+                        <h3>${lesson.title}</h3>
+                        <p>${lesson.description}</p>
+                        <div style="margin-top: 8px;">
+                            <span class="lesson-badge" onclick="openLesson('${lesson.title}', ${lesson.quarter}, '${lesson.source}', '${lesson.teacherUID || ''}')" style="cursor:pointer; background: #4CAF50; color: white; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">View Lesson</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #888; margin-top: 4px;">
+                            ${lesson.source === 'teacher' ? 'Teacher Lesson' : 'Shared Lesson'}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+}
+
+// Function to open lesson
+function openLesson(lessonTitle, quarter, source, teacherUID) {
+    const params = new URLSearchParams({
+        subject: subjectPage,
+        quarter: quarter,
+        name: lessonTitle,
+        source: source
+    });
+    
+    if (teacherUID) {
+        params.append('teacherUID', teacherUID);
+    }
+    
+    window.location.href = `present.html?${params.toString()}`;
+}
+
+// Initialize lesson loading when user is authenticated
+firebase.auth().onAuthStateChanged(async function(user) {
+    if (user) {
+        await loadStudentLessons();
     }
 });
     </script>
@@ -875,7 +961,90 @@ auth.onAuthStateChanged(async function(user) {
 .lesson-badge:hover {
     background: #ffd600;
 }
-
+    #createQuizModal {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.35);
+        z-index: 99999;
+        align-items: center;
+        justify-content: center;
+    }
+    #createQuizModal .modal-content {
+        background: #fff;
+        padding: 32px 28px;
+        border-radius: 16px;
+        max-width: 370px;
+        width: 90%;
+        box-shadow: 0 4px 24px #0002;
+        text-align: left;
+        position: relative;
+        animation: modalPop 0.25s;
+    }
+        @keyframes modalPop {
+        0% { transform: scale(0.95); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    #createQuizModal h3 {
+        margin-top: 0;
+        margin-bottom: 18px;
+        font-size: 1.35rem;
+        color: #059981;
+        letter-spacing: 1px;
+    }
+    #createQuizModal label {
+        font-weight: 500;
+        color: #2d3923;
+        font-size: 1rem;
+    }
+    #createQuizModal input, #createQuizModal select, #createQuizModal textarea {
+        width: 100%;
+        padding: 8px 10px;
+        margin-top: 4px;
+        margin-bottom: 12px;
+        border: 1px solid #b2b2b2;
+        border-radius: 6px;
+        font-size: 1rem;
+        background: #f8f8f8;
+        transition: border 0.2s;
+    }
+    #createQuizModal input:focus, #createQuizModal select:focus, #createQuizModal textarea:focus {
+        border: 1.5px solid #059981;
+        outline: none;
+        background: #fff;
+    }
+    #createQuizModal .modal-actions {
+        text-align: right;
+        margin-top: 10px;
+    }
+    #createQuizModal button[type="button"] {
+        background: #eee;
+        color: #333;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 18px;
+        font-size: 1rem;
+        margin-right: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #createQuizModal button[type="button"]:hover {
+        background: #e0e0e0;
+    }
+    #createQuizModal button[type="submit"] {
+        background: #059981;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 22px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    #createLessonModal button[type="submit"]:hover {
+        background: #037a65;
+    }
 </style>
 
 <script>
@@ -1277,6 +1446,9 @@ window.testPlaylist = function() {
         });
     });
 })();
+
+// Function to create a new lesson
+// Student view - no lesson creation functionality needed
 </script>
 
 <script src="../assets/js/navbar.js"></script>
@@ -1289,212 +1461,10 @@ window.testPlaylist = function() {
 <script src="../assets/js/student-qa-empty-state.js"></script>
 <!-- ...existing script includes... -->
 <script src="../assets/js/Student Side/student-card-clickable.js"></script>
-
-<script>
-// Enhanced quiz loading with filter functionality for English - Teacher quizzes only
-async function loadStudentAvailableQuizzes(studentUID, filterQuarter = null) {
-    console.log('Loading available quizzes for student:', studentUID, 'Quarter filter:', filterQuarter);
-    
-    const quizzesContainer = document.getElementById('quizzesContainer');
-    if (!quizzesContainer) return;
-
-    // Show loading message
-    quizzesContainer.innerHTML = '<div style="color:#888;text-align:center;padding:20px;">Loading your assigned quizzes...</div>';
-
-    try {
-        const subjectPage = "subject_english";
-        let allQuizzes = [];
-
-        // Load quizzes from specific quarter or all quarters
-        const quartersToLoad = filterQuarter ? [parseInt(filterQuarter)] : [1, 2, 3, 4];
-        
-        for (let q of quartersToLoad) {
-            const quizzesPath = `students/${studentUID}/quizzes/${subjectPage}/${q}`;
-            console.log(`Checking available quizzes: ${quizzesPath}`);
-            
-            const quizzesSnap = await db.ref(quizzesPath).once('value');
-            if (quizzesSnap.exists()) {
-                console.log(`✓ Found available quizzes for Q${q}:`, quizzesSnap.val());
-                quizzesSnap.forEach(quizSnap => {
-                    const quiz = quizSnap.val();
-                    allQuizzes.push({
-                        ...quiz,
-                        name: quizSnap.key,
-                        quarter: q,
-                        source: 'teacher'
-                    });
-                });
-            }
-        }
-
-        console.log(`Total teacher quizzes found:`, allQuizzes.length);
-
-        // Clear container and set proper grid styling
-        quizzesContainer.innerHTML = '';
-        quizzesContainer.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 15px;';
-
-        if (allQuizzes.length === 0) {
-            const emptyMsg = document.createElement('div');
-            
-            quizzesContainer.appendChild(emptyMsg);
-        } else {
-            // Sort quizzes by creation date (newest first)
-            allQuizzes.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-
-            allQuizzes.forEach(quiz => {
-                const quizItem = document.createElement('div');
-                quizItem.className = 'lesson-item student-quiz-item';
-                
-                const createdDate = quiz.createdAt ? new Date(quiz.createdAt).toLocaleDateString() : '';
-                const isLocked = quiz.isLocked !== false;
-                const hasPassword = quiz.hasPassword !== false;
-                
-                quizItem.innerHTML = `
-                    <div class="lesson-thumbnail" style="background: linear-gradient(135deg, #ffe600 0%, #ffcd00 100%); position: relative; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
-                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; font-size: 10px; padding: 2px 6px; border-radius: 3px;">
-                            ${quiz.teacherName || 'Teacher'}
-                        </div>
-                        <div style="position: absolute; top: 5px; left: 5px; background: ${isLocked ? '#e74c3c' : '#27ae60'}; color: white; font-size: 9px; padding: 2px 4px; border-radius: 3px; font-weight: bold;">
-                            ${isLocked ? '🔒 LOCKED' : '🔓 UNLOCKED'}
-                        </div>
-                        <div style="position: absolute; bottom: 5px; right: 5px; background: rgba(255,255,255,0.9); color: #333; font-size: 10px; padding: 2px 6px; border-radius: 3px;">
-                            Q${quiz.quarter}
-                        </div>
-                        <div style="position: absolute; top: 8px; center: 8px; background: rgba(255,255,255,0.9); color: #333; font-size: 9px; padding: 3px 8px; border-radius: 12px; font-weight: bold;">
-                            TEACHER QUIZ
-                        </div>
-                        📝
-                    </div>
-                    <div class="lesson-title">
-                        <h3>${quiz.title || quiz.name}</h3>
-                        <p>${quiz.description || 'Teacher-created quiz'}</p>
-                        <div style="font-size: 0.85rem; color: #666; margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px;">
-                            <i class="fas fa-user-tie" style="margin-right: 4px;"></i><strong>Teacher:</strong> ${quiz.teacherName || 'Unknown'}<br>
-                            ${createdDate ? `<i class="fas fa-calendar" style="margin-right: 4px;"></i><strong>Created:</strong> ${createdDate}<br>` : ''}
-                            <strong>Status:</strong> <span style="color: ${isLocked ? '#e74c3c' : '#27ae60'};">${isLocked ? 'Locked' : 'Available'}</span>
-                            ${quiz.attempts ? `<br><strong>Attempts:</strong> ${quiz.attempts}` : ''}
-                            ${quiz.bestScore ? `<br><strong>Best Score:</strong> ${quiz.bestScore}` : ''}
-                        </div>
-                        ${isLocked ? 
-                            `<button class="lesson-badge" onclick="unlockStudentQuiz('${quiz.quarter}','${quiz.name}','${subjectPage}')" style="cursor:pointer; background: #e74c3c;">
-                                🔒 Enter Password
-                            </button>` :
-                            `<button class="lesson-badge" onclick="startStudentQuiz('${quiz.quarter}','${quiz.name}','${quiz.createdBy}','${subjectPage}')" style="cursor:pointer; background: #27ae60;">
-                                ▶ Start Quiz
-                            </button>`
-                        }
-                    </div>
-                `;
-                quizzesContainer.appendChild(quizItem);
-            });
-        }
-
-    } catch (error) {
-        console.error('Error loading available quizzes:', error);
-        quizzesContainer.innerHTML = `<div style="color:#e74c3c;text-align:center;padding:20px;">Error loading quizzes: ${error.message}</div>`;
-    }
-}
-
-// Function to unlock student quiz with password
-window.unlockStudentQuiz = async function(quarter, name, subject) {
-    const password = prompt('Enter the quiz password provided by your teacher:');
-    if (!password) return;
-
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-
-    const studentUID = user.uid;
-
-    try {
-        // Check the quiz from student's collection to get the correct password
-        const studentQuizRef = db.ref(`students/${studentUID}/quizzes/${subject}/${quarter}/${name}`);
-        const studentQuizSnap = await studentQuizRef.once('value');
-        
-        if (!studentQuizSnap.exists()) {
-            alert('Quiz not found.');
-            return;
-        }
-
-        const studentQuiz = studentQuizSnap.val();
-        
-        if (studentQuiz.password === password) {
-            // Unlock the quiz
-            await studentQuizRef.update({
-                isLocked: false,
-                unlockedAt: new Date().toISOString(),
-                status: 'unlocked'
-            });
-            
-            alert('Quiz unlocked successfully! You can now start the quiz.');
-            
-            // Reload the quizzes to show updated status
-            const filterSelect = document.getElementById('quiz-quarter-filter');
-            const currentFilter = filterSelect ? filterSelect.value : null;
-            loadStudentAvailableQuizzes(studentUID, currentFilter);
-        } else {
-            alert('Incorrect password. Please try again.');
-        }
-    } catch (error) {
-        console.error('Error unlocking quiz:', error);
-        alert('Error unlocking quiz. Please try again.');
-    }
-};
-
-// Function to start student quiz
-window.startStudentQuiz = function(quarter, name, teacherUID, subject) {
-    console.log('Starting student quiz:', { quarter, name, teacherUID, subject });
-    
-    const params = new URLSearchParams({
-        quarter: quarter,
-        name: name,
-        subject: subject,
-        teacher: teacherUID,
-        mode: 'student'
-    });
-    
-    window.location.href = 'quizView.html?' + params.toString();
-};
-
-// Enhanced auth state handler with filter support for English
-firebase.auth().onAuthStateChanged(async function(user) {
-    if (!user) {
-        window.location.href = "logreg.html";
-        return;
-    }
-
-    const studentUID = user.uid;
-    
-    try {
-        const studentSnap = await db.ref('students/' + studentUID).once('value');
-        const student = studentSnap.val();
-        
-        if (!student || student.role !== "student") {
-            alert("Access denied.");
-            await firebase.auth().signOut();
-            window.location.href = "logreg.html";
-            return;
-        }
-
-        document.getElementById('mainContent').style.display = "block";
-
-        // Load quizzes initially (all quarters)
-        await loadStudentAvailableQuizzes(studentUID);
-
-        // Set up filter functionality
-        const filterSelect = document.getElementById('quiz-quarter-filter');
-        if (filterSelect) {
-            filterSelect.addEventListener('change', function() {
-                const selectedQuarter = this.value;
-                console.log('Filter changed to quarter:', selectedQuarter);
-                loadStudentAvailableQuizzes(studentUID, selectedQuarter);
-            });
-        }
-
-    } catch (error) {
-        console.error('Error in student auth state change:', error);
-    }
-});
-</script>
-
+</body>
+</html>
+</body>
+</html>
+</div>
 </body>
 </html>

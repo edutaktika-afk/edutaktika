@@ -148,3 +148,28 @@ dialog {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 2px 4px rgba(17, 20, 24, 0.4), 0 8px 24px rgba(17, 20, 24, 0.4);
   color: #f6f7f9;
 }
+
+/* Ensure PagesTimeline is visible and properly positioned */
+.polotno-pages-timeline {
+  position: relative !important;
+  z-index: 10 !important;
+  background: #fff !important;
+  border-top: 1px solid #e0e0e0 !important;
+  padding: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.polotno-pages-timeline button {
+  background: #f7f7f7 !important;
+  color: #222 !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px !important;
+  padding: 6px 8px !important;
+  cursor: pointer !important;
+}
+
+.polotno-pages-timeline button:hover {
+  background: #e0e0e0 !important;
+}

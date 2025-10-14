@@ -446,6 +446,191 @@
             background: #dc3545;
         }
 
+        /* Advanced Analytics Styles */
+        .analytics-sections {
+            margin-top: 30px;
+        }
+
+        .analytics-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid #e9ecef;
+        }
+
+        .analytics-section h3 {
+            color: #2e8b57;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Heatmap Styles */
+        .heatmap-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .heatmap-legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .heatmap-item {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .heatmap-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .heatmap-item.strong {
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .heatmap-item.moderate {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+        }
+
+        .heatmap-item.weak {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .heatmap-student {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .heatmap-score {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        /* Question Stats Styles */
+        .question-stats-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .question-stats-filters {
+            margin-bottom: 20px;
+        }
+
+        .question-stats-filters select {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        /* Trends Styles */
+        .trends-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .trends-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .trends-filters select {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .trends-chart {
+            text-align: center;
+        }
+
+        /* Distribution Styles */
+        .distribution-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .distribution-charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .chart-item {
+            text-align: center;
+        }
+
+        .chart-item h4 {
+            color: #2e8b57;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        /* Difficulty Level Badge */
+        .difficulty-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .difficulty-easy {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .difficulty-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .difficulty-hard {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -464,6 +649,19 @@
             }
             
             .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .heatmap-legend {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .trends-filters {
+                flex-direction: column;
+            }
+
+            .distribution-charts {
                 grid-template-columns: 1fr;
             }
         }
@@ -524,6 +722,20 @@
         <div class="header">
             <h1><i class="fas fa-clipboard-list"></i> Assessment Manager</h1>
             <p>Manage and monitor your assessments</p>
+        </div>
+
+        <!-- Single Attempt Policy Notice -->
+        <div style="background: #e8f5e8; padding: 20px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid #2e8b57;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-info-circle" style="color: #2e8b57; font-size: 24px;"></i>
+                <div>
+                    <h3 style="color: #2e8b57; margin: 0 0 5px 0;">Single Attempt Policy</h3>
+                    <p style="margin: 0; color: #333;">
+                        All assessments are configured for single attempts only. This ensures fair evaluation and prevents multiple submissions. 
+                        Students who have already attempted an assessment will see their previous results instead of being able to retake it.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <!-- Tabs -->
@@ -591,6 +803,7 @@
                                 <th>Grade</th>
                                 <th>Questions</th>
                                 <th>Time Limit</th>
+                                <th>Attempts</th>
                                 <th>Status</th>
                                 <th>Created</th>
                                 <th>Actions</th>
@@ -608,7 +821,7 @@
         <div id="analyticsTab" class="tab-content">
             <div class="content-card">
                 <div class="content-header">
-                    <h2><i class="fas fa-chart-bar"></i> Assessment Analytics</h2>
+                    <h2><i class="fas fa-chart-bar"></i> Advanced Assessment Analytics</h2>
                 </div>
 
                 <div class="stats-grid">
@@ -642,6 +855,85 @@
                     </div>
                 </div>
 
+                <!-- Advanced Analytics Sections -->
+                <div class="analytics-sections">
+                    <!-- Student Weakness Heatmap -->
+                    <div class="analytics-section">
+                        <h3><i class="fas fa-fire"></i> Student Weakness Heatmap</h3>
+                        <div class="heatmap-container">
+                            <div class="heatmap-legend">
+                                <span class="legend-item">
+                                    <div class="legend-color" style="background: #d4edda;"></div>
+                                    <span>Strong (80-100%)</span>
+                                </span>
+                                <span class="legend-item">
+                                    <div class="legend-color" style="background: #fff3cd;"></div>
+                                    <span>Moderate (60-79%)</span>
+                                </span>
+                                <span class="legend-item">
+                                    <div class="legend-color" style="background: #f8d7da;"></div>
+                                    <span>Weak (0-59%)</span>
+                                </span>
+                            </div>
+                            <div id="weaknessHeatmap" class="heatmap-grid">
+                                <!-- Heatmap will be generated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question-Level Statistics -->
+                    <div class="analytics-section">
+                        <h3><i class="fas fa-question-circle"></i> Question-Level Statistics</h3>
+                        <div class="question-stats-container">
+                            <div class="question-stats-filters">
+                                <select id="questionStatsFilter" onchange="updateQuestionStats()">
+                                    <option value="">All Assessments</option>
+                                </select>
+                            </div>
+                            <div id="questionStatsTable" class="table-container">
+                                <!-- Question statistics will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Improvement Trends -->
+                    <div class="analytics-section">
+                        <h3><i class="fas fa-trending-up"></i> Improvement Trends</h3>
+                        <div class="trends-container">
+                            <div class="trends-filters">
+                                <select id="trendsTimeFilter" onchange="updateTrends()">
+                                    <option value="7">Last 7 days</option>
+                                    <option value="30">Last 30 days</option>
+                                    <option value="90">Last 90 days</option>
+                                </select>
+                                <select id="trendsAssessmentFilter" onchange="updateTrends()">
+                                    <option value="">All Assessments</option>
+                                </select>
+                            </div>
+                            <div class="trends-chart">
+                                <canvas id="improvementChart" width="800" height="400"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Distribution -->
+                    <div class="analytics-section">
+                        <h3><i class="fas fa-chart-pie"></i> Performance Distribution</h3>
+                        <div class="distribution-container">
+                            <div class="distribution-charts">
+                                <div class="chart-item">
+                                    <h4>Score Distribution</h4>
+                                    <canvas id="scoreDistributionChart" width="300" height="300"></canvas>
+                                </div>
+                                <div class="chart-item">
+                                    <h4>Time Distribution</h4>
+                                    <canvas id="timeDistributionChart" width="300" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="table-container">
                     <table id="analyticsTable">
                         <thead>
@@ -651,6 +943,7 @@
                                 <th>Average Score</th>
                                 <th>Pass Rate</th>
                                 <th>Average Time</th>
+                                <th>Difficulty Level</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -730,6 +1023,9 @@
         </div>
     </div>
 
+    <!-- Chart.js for Advanced Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -843,11 +1139,15 @@
             tbody.innerHTML = '';
 
             if (assessments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #6c757d;">No assessments found. <a href="assessment-builder.html">Create your first assessment</a></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: #6c757d;">No assessments found. <a href="assessment-builder.html">Create your first assessment</a></td></tr>';
                 return;
             }
 
             assessments.forEach(assessment => {
+                // Count actual attempts for this assessment
+                const assessmentAttempts = attempts.filter(a => a.assessmentId === assessment.id);
+                const attemptCount = assessmentAttempts.length;
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
@@ -858,6 +1158,10 @@
                     <td>${assessment.gradeLevel}</td>
                     <td>${assessment.questions.length}</td>
                     <td>${assessment.timeLimit} min</td>
+                    <td>
+                        <span style="color: #2e8b57; font-weight: 600;">${attemptCount}</span>
+                        <small style="color: #6c757d; display: block;">Single Attempt</small>
+                    </td>
                     <td><span class="status-badge status-${assessment.status || 'draft'}">${(assessment.status || 'draft').toUpperCase()}</span></td>
                     <td>${new Date(assessment.createdAt).toLocaleDateString()}</td>
                     <td>
@@ -947,6 +1251,11 @@
                     (assessmentAttempts.filter(a => a.passed).length / assessmentAttempts.length) * 100 : 0;
                 const averageTime = assessmentAttempts.length > 0 ? 
                     assessmentAttempts.reduce((sum, attempt) => sum + attempt.timeTaken, 0) / assessmentAttempts.length : 0;
+                
+                // Calculate difficulty level
+                const difficulty = calculateDifficulty(averageScore, passRate);
+                const difficultyClass = difficulty === 'Easy' ? 'difficulty-easy' : 
+                                       difficulty === 'Medium' ? 'difficulty-medium' : 'difficulty-hard';
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -955,6 +1264,7 @@
                     <td>${Math.round(averageScore)}%</td>
                     <td>${Math.round(passRate)}%</td>
                     <td>${Math.round(averageTime / 60)}m</td>
+                    <td><span class="difficulty-badge ${difficultyClass}">${difficulty}</span></td>
                     <td>
                         <div class="actions">
                             <button class="btn btn-primary" onclick="viewAttempts('${assessment.id}')">
@@ -965,6 +1275,323 @@
                 `;
                 tbody.appendChild(row);
             });
+
+            // Update advanced analytics
+            updateWeaknessHeatmap();
+            updateQuestionStats();
+            updateTrends();
+            updateDistributionCharts();
+        }
+
+        // Calculate difficulty level
+        function calculateDifficulty(averageScore, passRate) {
+            if (averageScore >= 80 && passRate >= 80) return 'Easy';
+            if (averageScore >= 60 && passRate >= 60) return 'Medium';
+            return 'Hard';
+        }
+
+        // Update weakness heatmap
+        function updateWeaknessHeatmap() {
+            const container = document.getElementById('weaknessHeatmap');
+            container.innerHTML = '';
+
+            if (students.length === 0 || attempts.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 40px;">No data available for heatmap</p>';
+                return;
+            }
+
+            // Group attempts by student
+            const studentStats = {};
+            students.forEach(student => {
+                const studentAttempts = attempts.filter(a => a.studentId === student.uid);
+                if (studentAttempts.length > 0) {
+                    const averageScore = studentAttempts.reduce((sum, attempt) => sum + attempt.percentage, 0) / studentAttempts.length;
+                    studentStats[student.uid] = {
+                        name: `${student.fname} ${student.lname}`,
+                        score: averageScore,
+                        attempts: studentAttempts.length
+                    };
+                }
+            });
+
+            // Create heatmap items
+            Object.values(studentStats).forEach(stat => {
+                const item = document.createElement('div');
+                item.className = 'heatmap-item';
+                
+                if (stat.score >= 80) {
+                    item.classList.add('strong');
+                } else if (stat.score >= 60) {
+                    item.classList.add('moderate');
+                } else {
+                    item.classList.add('weak');
+                }
+
+                item.innerHTML = `
+                    <div class="heatmap-student">${stat.name}</div>
+                    <div class="heatmap-score">${Math.round(stat.score)}%</div>
+                    <div style="font-size: 12px; color: #6c757d;">${stat.attempts} attempts</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Update question statistics
+        function updateQuestionStats() {
+            const container = document.getElementById('questionStatsTable');
+            container.innerHTML = '';
+
+            if (assessments.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 40px;">No assessments available</p>';
+                return;
+            }
+
+            // Populate filter
+            const filter = document.getElementById('questionStatsFilter');
+            filter.innerHTML = '<option value="">All Assessments</option>';
+            assessments.forEach(assessment => {
+                const option = document.createElement('option');
+                option.value = assessment.id;
+                option.textContent = assessment.title;
+                filter.appendChild(option);
+            });
+
+            // Generate question stats table
+            let allQuestionStats = [];
+            assessments.forEach(assessment => {
+                const assessmentAttempts = attempts.filter(a => a.assessmentId === assessment.id);
+                assessment.questions.forEach((question, index) => {
+                    const questionAttempts = assessmentAttempts.filter(attempt => 
+                        attempt.answers && attempt.answers[index] !== undefined
+                    );
+                    
+                    if (questionAttempts.length > 0) {
+                        const correctAnswers = questionAttempts.filter(attempt => {
+                            if (question.type === 'multiple-choice' || question.type === 'true-false') {
+                                return attempt.answers[index] === question.correctAnswer;
+                            }
+                            return attempt.answers[index] && attempt.answers[index].trim();
+                        }).length;
+
+                        const accuracy = (correctAnswers / questionAttempts.length) * 100;
+                        const averageTime = questionAttempts.reduce((sum, attempt) => sum + attempt.timeTaken, 0) / questionAttempts.length;
+
+                        allQuestionStats.push({
+                            assessment: assessment.title,
+                            question: question.text.substring(0, 50) + (question.text.length > 50 ? '...' : ''),
+                            type: question.type,
+                            attempts: questionAttempts.length,
+                            accuracy: accuracy,
+                            averageTime: averageTime,
+                            difficulty: calculateQuestionDifficulty(accuracy)
+                        });
+                    }
+                });
+            });
+
+            // Create table
+            const table = document.createElement('table');
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.innerHTML = `
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white;">
+                        <th style="padding: 12px; text-align: left;">Assessment</th>
+                        <th style="padding: 12px; text-align: left;">Question</th>
+                        <th style="padding: 12px; text-align: left;">Type</th>
+                        <th style="padding: 12px; text-align: center;">Attempts</th>
+                        <th style="padding: 12px; text-align: center;">Accuracy</th>
+                        <th style="padding: 12px; text-align: center;">Avg Time</th>
+                        <th style="padding: 12px; text-align: center;">Difficulty</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${allQuestionStats.map(stat => `
+                        <tr style="border-bottom: 1px solid #e9ecef;">
+                            <td style="padding: 12px;">${stat.assessment}</td>
+                            <td style="padding: 12px;">${stat.question}</td>
+                            <td style="padding: 12px;">${stat.type}</td>
+                            <td style="padding: 12px; text-align: center;">${stat.attempts}</td>
+                            <td style="padding: 12px; text-align: center;">${Math.round(stat.accuracy)}%</td>
+                            <td style="padding: 12px; text-align: center;">${Math.round(stat.averageTime / 60)}m</td>
+                            <td style="padding: 12px; text-align: center;">
+                                <span class="difficulty-badge ${stat.difficulty === 'Easy' ? 'difficulty-easy' : 
+                                                              stat.difficulty === 'Medium' ? 'difficulty-medium' : 'difficulty-hard'}">
+                                    ${stat.difficulty}
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            `;
+            container.appendChild(table);
+        }
+
+        // Calculate question difficulty
+        function calculateQuestionDifficulty(accuracy) {
+            if (accuracy >= 80) return 'Easy';
+            if (accuracy >= 60) return 'Medium';
+            return 'Hard';
+        }
+
+        // Update trends
+        function updateTrends() {
+            const ctx = document.getElementById('improvementChart');
+            if (!ctx) return;
+
+            // Destroy existing chart if it exists
+            if (window.improvementChart && typeof window.improvementChart.destroy === 'function') {
+                window.improvementChart.destroy();
+            }
+
+            // Generate sample trend data (in real implementation, this would come from Firebase)
+            const days = 30;
+            const labels = [];
+            const scores = [];
+            const attempts = [];
+
+            for (let i = days - 1; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString());
+                
+                // Generate sample data
+                scores.push(Math.random() * 40 + 60); // 60-100%
+                attempts.push(Math.floor(Math.random() * 10) + 1);
+            }
+
+            window.improvementChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Average Score (%)',
+                        data: scores,
+                        borderColor: '#2e8b57',
+                        backgroundColor: 'rgba(46, 139, 87, 0.1)',
+                        tension: 0.4,
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Number of Attempts',
+                        data: attempts,
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Score (%)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Attempts'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update distribution charts
+        function updateDistributionCharts() {
+            // Score Distribution Chart
+            const scoreCtx = document.getElementById('scoreDistributionChart');
+            if (scoreCtx) {
+                if (window.scoreDistributionChart && typeof window.scoreDistributionChart.destroy === 'function') {
+                    window.scoreDistributionChart.destroy();
+                }
+
+                const scoreRanges = ['0-20%', '21-40%', '41-60%', '61-80%', '81-100%'];
+                const scoreData = [5, 10, 25, 35, 25]; // Sample data
+
+                window.scoreDistributionChart = new Chart(scoreCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: scoreRanges,
+                        datasets: [{
+                            data: scoreData,
+                            backgroundColor: [
+                                '#dc3545',
+                                '#fd7e14',
+                                '#ffc107',
+                                '#20c997',
+                                '#28a745'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Time Distribution Chart
+            const timeCtx = document.getElementById('timeDistributionChart');
+            if (timeCtx) {
+                if (window.timeDistributionChart && typeof window.timeDistributionChart.destroy === 'function') {
+                    window.timeDistributionChart.destroy();
+                }
+
+                const timeRanges = ['< 30min', '30-60min', '60-90min', '> 90min'];
+                const timeData = [30, 40, 20, 10]; // Sample data
+
+                window.timeDistributionChart = new Chart(timeCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: timeRanges,
+                        datasets: [{
+                            data: timeData,
+                            backgroundColor: [
+                                '#17a2b8',
+                                '#6f42c1',
+                                '#e83e8c',
+                                '#fd7e14'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         // Filter assessments
@@ -1130,29 +1757,49 @@
     <footer>
         <div class="footer-wrap">
             <div class="footer-col">
-                <h4 class="footer-brand">Edutaktika</h4>
-                <p>Empowering education through technology</p>
+                <h4 class="footer-brand">Eduktaktika</h4>
+                <p>Interactive, game‑based learning for Math, English, and Science.</p>
             </div>
             <div class="footer-col">
-                <h4>Quick Links</h4>
+                <h4>Connect</h4>
+                <ul class="footer-social">
+                    <li><a href="homepage.html">Homepage</a></li>
+                    <li><a href="studentlist.html">Student</a></li>
+                    <li><a href="grading.html">Grading</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Subjects</h4>
                 <ul class="footer-links">
-                    <li><a href="homepage.html">Home</a></li>
-                    <li><a href="subject_math.html">Mathematics</a></li>
+                    <li><a href="subject_math.html">Math</a></li>
                     <li><a href="subject_english.html">English</a></li>
                     <li><a href="subject_science.html">Science</a></li>
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Support</h4>
+                <h4>Assessments</h4>
                 <ul class="footer-links">
-                    <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="assessment-builder.html">Create Assessment</a></li>
+                    <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Leaderboards</h4>
+                <ul class="footer-links">
+                    <li><a href="leaderboard_math.html">Math</a></li>
+                    <li><a href="leaderboard_english.html">English</a></li>
+                    <li><a href="leaderboard_science.html">Science</a></li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 Edutaktika. All rights reserved.</p>
+            <div class="footer-social-row">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p>&copy; 2025 Eduktaktika. All rights reserved.</p>
         </div>
     </footer>
 </body>

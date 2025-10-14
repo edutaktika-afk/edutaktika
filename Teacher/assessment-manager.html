@@ -724,6 +724,20 @@
             <p>Manage and monitor your assessments</p>
         </div>
 
+        <!-- Single Attempt Policy Notice -->
+        <div style="background: #e8f5e8; padding: 20px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid #2e8b57;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-info-circle" style="color: #2e8b57; font-size: 24px;"></i>
+                <div>
+                    <h3 style="color: #2e8b57; margin: 0 0 5px 0;">Single Attempt Policy</h3>
+                    <p style="margin: 0; color: #333;">
+                        All assessments are configured for single attempts only. This ensures fair evaluation and prevents multiple submissions. 
+                        Students who have already attempted an assessment will see their previous results instead of being able to retake it.
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <!-- Tabs -->
         <div class="tabs">
             <button class="tab-btn active" onclick="showTab('assessments')">
@@ -789,6 +803,7 @@
                                 <th>Grade</th>
                                 <th>Questions</th>
                                 <th>Time Limit</th>
+                                <th>Attempts</th>
                                 <th>Status</th>
                                 <th>Created</th>
                                 <th>Actions</th>
@@ -1124,11 +1139,15 @@
             tbody.innerHTML = '';
 
             if (assessments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px; color: #6c757d;">No assessments found. <a href="assessment-builder.html">Create your first assessment</a></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: #6c757d;">No assessments found. <a href="assessment-builder.html">Create your first assessment</a></td></tr>';
                 return;
             }
 
             assessments.forEach(assessment => {
+                // Count actual attempts for this assessment
+                const assessmentAttempts = attempts.filter(a => a.assessmentId === assessment.id);
+                const attemptCount = assessmentAttempts.length;
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
@@ -1139,6 +1158,10 @@
                     <td>${assessment.gradeLevel}</td>
                     <td>${assessment.questions.length}</td>
                     <td>${assessment.timeLimit} min</td>
+                    <td>
+                        <span style="color: #2e8b57; font-weight: 600;">${attemptCount}</span>
+                        <small style="color: #6c757d; display: block;">Single Attempt</small>
+                    </td>
                     <td><span class="status-badge status-${assessment.status || 'draft'}">${(assessment.status || 'draft').toUpperCase()}</span></td>
                     <td>${new Date(assessment.createdAt).toLocaleDateString()}</td>
                     <td>
@@ -1734,29 +1757,49 @@
     <footer>
         <div class="footer-wrap">
             <div class="footer-col">
-                <h4 class="footer-brand">Edutaktika</h4>
-                <p>Empowering education through technology</p>
+                <h4 class="footer-brand">Eduktaktika</h4>
+                <p>Interactive, game‑based learning for Math, English, and Science.</p>
             </div>
             <div class="footer-col">
-                <h4>Quick Links</h4>
+                <h4>Connect</h4>
+                <ul class="footer-social">
+                    <li><a href="homepage.html">Homepage</a></li>
+                    <li><a href="studentlist.html">Student</a></li>
+                    <li><a href="grading.html">Grading</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Subjects</h4>
                 <ul class="footer-links">
-                    <li><a href="homepage.html">Home</a></li>
-                    <li><a href="subject_math.html">Mathematics</a></li>
+                    <li><a href="subject_math.html">Math</a></li>
                     <li><a href="subject_english.html">English</a></li>
                     <li><a href="subject_science.html">Science</a></li>
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Support</h4>
+                <h4>Assessments</h4>
                 <ul class="footer-links">
-                    <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="assessment-builder.html">Create Assessment</a></li>
+                    <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Leaderboards</h4>
+                <ul class="footer-links">
+                    <li><a href="leaderboard_math.html">Math</a></li>
+                    <li><a href="leaderboard_english.html">English</a></li>
+                    <li><a href="leaderboard_science.html">Science</a></li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 Edutaktika. All rights reserved.</p>
+            <div class="footer-social-row">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p>&copy; 2025 Eduktaktika. All rights reserved.</p>
         </div>
     </footer>
 </body>

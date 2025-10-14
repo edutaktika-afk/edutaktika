@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 1 Quiz - Time & World Time Zones</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../../CSS/header.css">
+    <link rel="stylesheet" href="../../CSS/fonts.css">
+    <link rel="stylesheet" href="../../CSS/dropdown.css">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2e8b57;
+            --secondary: #ffd700;
+            --peach: #ff69b4;
+            --forest-green: #3f4d34;
+            --sun-yellow: #ffd700;
+            --white: #ffffff;
+        }
+    body { font-family: 'Baloo 2', Arial, sans-serif; background:#f5f7fb; margin:0; }
+    main { padding:100px 20px 40px; min-height:calc(100vh - 260px); }
+    .page-wrapper { display:flex; align-items:center; justify-content:center; }
+        .game-container {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px var(--peach);
+            padding: 32px;
+            text-align: center;
+            max-width: 500px;
+            width: 96vw;
+            position: relative;
+        }
+        .question {
+            font-size: 1.3rem;
+            margin-bottom: 24px;
+            color: var(--forest-green);
+            font-weight: bold;
+        }
+        .answers {
+            display: flex;
+            gap: 18px;
+            margin-bottom: 32px;
+            justify-content: center;
+        }
+        .draggable {
+            background: var(--sun-yellow);
+            color: var(--forest-green);
+            border-radius: 50%;
+            padding: 24px 0;
+            width: 90px;
+            height: 90px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: grab;
+            border: 3px solid var(--primary);
+            box-shadow: 0 2px 8px var(--peach);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            animation: float 2s infinite ease-in-out;
+        }
+        .draggable.dragging {
+            opacity: 0.6;
+            transform: scale(1.15) rotate(-8deg);
+            box-shadow: 0 8px 24px var(--peach);
+            z-index: 2;
+        }
+        @keyframes float {
+            0% { transform: translateY(0);}
+            50% { transform: translateY(-12px);}
+            100% { transform: translateY(0);}
+        }
+        .dropzone {
+            background: var(--peach);
+            border: 3px dashed var(--primary);
+            border-radius: 18px;
+            min-height: 80px;
+            min-width: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: var(--white);
+            font-weight: bold;
+            margin-bottom: 24px;
+            margin-left: auto;
+            margin-right: auto;
+            transition: background 0.2s, border 0.2s;
+        }
+        .dropzone.active {
+            background: var(--secondary);
+            color: var(--forest-green);
+            border-color: var(--peach);
+        }
+        #feedback {
+            font-size: 1.2rem;
+            margin: 18px 0;
+            min-height: 28px;
+        }
+        /* Modals */
+        .modal-bg {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.35);
+            z-index: 100000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: var(--white);
+            padding: 48px 40px;
+            border-radius: 18px;
+            max-width: 420px;
+            width: 96vw;
+            box-shadow: 0 4px 24px var(--peach);
+            text-align: center;
+            position: relative;
+        }
+        .modal-content h2 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 24px;
+        }
+        .modal-btn {
+            padding: 18px 48px;
+            border-radius: 12px;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-top: 24px;
+            cursor: pointer;
+        }
+        #edit-modal .modal-content label,
+        #edit-modal .modal-content input,
+        #edit-modal .modal-content button {
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+        }
+        #edit-modal .modal-content input {
+            width: 90%;
+            padding: 6px 8px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--primary);
+        }
+        #edit-modal .remove-question-btn {
+            margin-left: 10px;
+            color: #e57373;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        @media (max-width: 700px) {
+            #edit-modal .modal-content { padding: 18px 4px; }
+            #edit-modal .modal-content input { font-size: 1rem; }
+            #edit-modal .modal-content label { font-size: 1rem; }
+        }
+    </style>
+    
+    </style>
+</head>
+<body>
+    <!-- Site Header -->
+    <header>
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+                <div class="logo-text"><span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span></div>
+            </div>
+            <nav id="dynamic-nav">
+                <!-- Navigation will be populated by JavaScript based on user role -->
+            </nav>
+        </div>
+    </header>
+    <main>
+    <div class="page-wrapper">
+    <!-- Start Screen -->
+    <div id="start-modal" class="modal-bg" style="display:flex;">
+        <div class="modal-content">
+            <h2>Time & World Time Zones</h2>
+            <p style="font-size:1.2rem;">Test your knowledge of 12/24-hour time and world time zones!</p>
+            <button id="start-btn" class="modal-btn">Start</button>
+        </div>
+    </div>
+    <!-- Instructions Modal -->
+    <div id="instructions-modal" class="modal-bg">
+        <div class="modal-content">
+            <h2>Instructions</h2>
+            <ul style="font-size:1.1rem; text-align:left; margin-bottom:24px;">
+                <li>Read the question carefully.</li>
+                <li>Drag the correct answer into the drop zone.</li>
+                <li>Review your answer before moving to the next question.</li>
+                <li>Try to get the highest score!</li>
+            </ul>
+            <button id="close-instructions-btn" class="modal-btn">Continue</button>
+        </div>
+    </div>
+    <!-- Review Modal -->
+    <div id="review-modal" class="modal-bg">
+        <div class="modal-content">
+            <h2 id="review-title"></h2>
+            <p id="review-question" style="font-size:1.2rem;"></p>
+            <p id="review-user-answer" style="font-size:1.2rem;"></p>
+            <p id="review-correct-answer" style="font-size:1.2rem;"></p>
+            <button id="next-btn" class="modal-btn">Next</button>
+        </div>
+    </div>
+    <!-- Final Modal -->
+    <div id="final-modal" class="modal-bg">
+        <div class="modal-content">
+            <h2>🏆 Game Complete!</h2>
+            <p id="final-score" style="font-size:1.3rem; margin-bottom:32px;"></p>
+            <button id="play-again-btn" class="modal-btn">Back to Lessons</button>
+        </div>
+    </div>
+     <div class="game-container" style="display:none;">
+         <h2 style="color:var(--primary);margin-bottom:18px;">Time & World Time Zones</h2>
+         <div class="question" id="question"></div>
+         <div class="answers" id="answers"></div>
+         <div class="dropzone" id="dropzone">Drop the correct answer here</div>
+         <div id="feedback"></div>
+         <div id="uploadStatus" style="font-size:13px;margin-top:10px;color:#444;"></div>
+         <button id="viewAttemptsBtn" style="display:none;margin-top:12px; background:#6d28d9; color:#fff; border:none; padding:10px 18px; border-radius:8px; cursor:pointer;">View Attempts</button>
+         <button id="answerSheetBtn" style="display:none;margin-top:12px; background:#28a745; color:#fff; border:none; padding:10px 18px; border-radius:8px; cursor:pointer; margin-left:10px;">Answer Sheet</button>
+     </div>
+    <div id="edit-modal" class="modal-bg">
+        <div class="modal-content" style="max-width:600px; width:96vw;">
+            <h2 style="margin-top:0; margin-bottom:24px;">Edit Questions</h2>
+            <div id="edit-questions-list" style="max-height:55vh; overflow-y:auto;"></div>
+            <button id="add-question-btn" style="margin-top:18px; padding:8px 24px; border-radius:6px; background:var(--primary); color:#fff; border:none; font-size:16px;">Add Question</button>
+            <div style="text-align:right; margin-top:24px;">
+                <button id="save-edit-btn" style="padding:8px 24px; border-radius:6px; background:var(--primary); color:#fff; border:none; margin-right:12px; font-size:16px;">Save</button>
+                <button id="close-edit-btn" style="padding:8px 24px; border-radius:6px; background:#eee; color:#333; border:none; font-size:16px;">Close</button>
+            </div>
+        </div>
+    </div>
+         <!-- Attempts Modal -->
+         <div id="attemptsModal">
+             <div class="modal-content">
+                 <h3 style="margin-top:0;">Your Attempts</h3>
+                 <div id="attemptsList">Loading...</div>
+                 <div style="text-align:right;margin-top:18px;">
+                     <button onclick="closeAttemptsModal()">Close</button>
+                 </div>
+             </div>
+         </div>
+         
+         <!-- Answer Sheet Modal -->
+         <div id="answerSheetModal" class="modal-bg">
+             <div class="modal-content" style="max-width:700px; width:96vw; max-height:80vh; overflow-y:auto;">
+                 <h2 style="margin-top:0; margin-bottom:24px; color:var(--primary);">📋 Answer Sheet</h2>
+                 <div id="answerSheetContent">
+                     <!-- Answer sheet content will be populated here -->
+                 </div>
+                 <div style="text-align:right; margin-top:24px;">
+                     <button onclick="closeAnswerSheetModal()" style="padding:8px 24px; border-radius:6px; background:#6c757d; color:#fff; border:none; font-size:16px;">Close</button>
+                 </div>
+             </div>
+         </div>
+        </div><!-- /page-wrapper -->
+        </main>
+
+        <link rel="stylesheet" href="../../CSS/attemptsModal.css">
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <script>
+        // Firebase init
+        const firebaseConfig = { apiKey:"AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE", authDomain:"edutaktika.firebaseapp.com", databaseURL:"https://edutaktika-default-rtdb.firebaseio.com", projectId:"edutaktika", storageBucket:"edutaktika.appspot.com", messagingSenderId:"676848575316", appId:"1:676848575316:web:f78f8c0f83bf3d9dfb5ec1", measurementId:"G-X3GT5TNN87" };
+        if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+        const QUIZ_KEY = 'lesson1';
+        const USE_STUDENT_PATH = true; // fallback friendly
+        function requireAuthUid(){ const u = auth.currentUser; if(!u){ document.getElementById('uploadStatus').textContent='Login required to save score.'; return null;} return u.uid; }
+        function primaryAttemptRef(uid){ return db.ref(`quizAttempts/${QUIZ_KEY}/${uid}`).push(); }
+        function studentAttemptRef(uid){ return db.ref(`students/${uid}/quizzes/${QUIZ_KEY}/attempts`).push(); }
+        function summaryRefPrimary(uid){ return db.ref(`quizSummaries/${QUIZ_KEY}/${uid}`); }
+        function summaryRefStudent(uid){ return db.ref(`students/${uid}/quizzes/${QUIZ_KEY}/summary`); }
+        function saveAttempt(rawScore,total){
+             const uid = requireAuthUid(); if(!uid) return;
+             const payload = { score:rawScore, total:total, percentage: Math.round(rawScore/total*100), timestamp: Date.now() };
+             const statusEl = document.getElementById('uploadStatus');
+             statusEl.textContent='Saving attempt...';
+             const tryPrimary = !USE_STUDENT_PATH;
+             const doPrimary = () => primaryAttemptRef(uid).set(payload).then(()=> updateSummary(uid,payload,true));
+             const doStudent = () => studentAttemptRef(uid).set(payload).then(()=> updateSummary(uid,payload,false));
+             (tryPrimary ? doPrimary().catch(err=>{ if(err && err.code==='PERMISSION_DENIED') return doStudent(); throw err; }) : doStudent())
+                 .then(()=>{ statusEl.textContent='Attempt saved ✅'; document.getElementById('viewAttemptsBtn').style.display='inline-block'; loadAttempts(); })
+                 .catch(e=>{ statusEl.textContent='Save failed: '+ e.message; console.error(e); });
+        }
+        function updateSummary(uid,payload,usedPrimary){
+             const ref = (USE_STUDENT_PATH || !usedPrimary) ? summaryRefStudent(uid) : summaryRefPrimary(uid);
+             let bestDelta = 0;
+             return ref.transaction(current => {
+                    if(!current){ bestDelta = payload.score; return { best:payload.score, bestPercentage:payload.percentage, last:payload.score, lastPercentage:payload.percentage, total:payload.total, attempts:1, lastTimestamp:payload.timestamp }; }
+                    const prevBest = current.best || 0;
+                    const best = Math.max(prevBest, payload.score);
+                    if(best > prevBest) bestDelta = best - prevBest;
+                    return { best, bestPercentage: Math.round(best/payload.total*100), last: payload.score, lastPercentage: payload.percentage, total: payload.total, attempts: (current.attempts||0)+1, lastTimestamp: payload.timestamp };
+             }).then(()=>{ if(bestDelta>0){ db.ref(`students/${uid}/points`).transaction(p => (p||0)+bestDelta); } });
+        }
+        function openAttemptsModal(){ document.getElementById('attemptsModal').style.display='flex'; loadAttempts(); }
+        function closeAttemptsModal(){ document.getElementById('attemptsModal').style.display='none'; }
+        window.closeAttemptsModal = closeAttemptsModal;
+        function loadAttempts(){
+             const uid = requireAuthUid(); if(!uid) return;
+             const listDiv = document.getElementById('attemptsList'); listDiv.textContent='Loading...';
+             const path = (USE_STUDENT_PATH ? `students/${uid}/quizzes/${QUIZ_KEY}/attempts` : `quizAttempts/${QUIZ_KEY}/${uid}`);
+             db.ref(path).orderByChild('timestamp').once('value').then(snap=>{
+                    if(!snap.exists()){ listDiv.textContent='No attempts yet.'; return; }
+                    const rows=[]; snap.forEach(c=>rows.push(c.val())); rows.sort((a,b)=> b.timestamp - a.timestamp);
+                    listDiv.innerHTML = rows.map((a,i)=>{ const ds = new Date(a.timestamp).toLocaleString(); return `<div class='attempt-row'><span>#${rows.length - i}</span><span>${a.score}/${a.total}</span><span>${a.percentage}%</span><span>${ds}</span></div>`; }).join('');
+             }).catch(e=>{ listDiv.textContent='Load failed: '+ e.message; });
+        }
+        document.getElementById('viewAttemptsBtn').addEventListener('click', openAttemptsModal);
+        auth.onAuthStateChanged(u=>{ if(u){ document.getElementById('viewAttemptsBtn').style.display='inline-block'; loadAttempts(); } });
+        </script>
+         <script>
+         // Teacher detection and role-based functionality
+         let isTeacher = false;
+         let userRole = 'student';
+         
+         // Initialize Firebase and detect user role
+         firebase.auth().onAuthStateChanged(async function(user) {
+             if (user) {
+                 const uid = user.uid;
+                 
+                 // Check if user is a teacher
+                 const teacherSnap = await firebase.database().ref('teachers/' + uid).once('value');
+                 const teacher = teacherSnap.val();
+                 
+                 if (teacher && teacher.role === "teacher") {
+                     isTeacher = true;
+                     userRole = 'teacher';
+                     setupTeacherUI();
+                 } else {
+                     // Check if user is a student
+                     const studentSnap = await firebase.database().ref('students/' + uid).once('value');
+                     const student = studentSnap.val();
+                     if (student && student.role === "student") {
+                         userRole = 'student';
+                         setupStudentUI();
+                     }
+                 }
+                 
+                 setupNavigation();
+             } else {
+                 // Redirect to login if not authenticated
+                 window.location.href = '../../Student/logreg.html';
+             }
+         });
+         
+         function setupNavigation() {
+             const nav = document.getElementById('dynamic-nav');
+             if (isTeacher) {
+                 nav.innerHTML = `
+                     <ul>
+                         <li><a href="../../Teacher/homepage.html">Home</a></li>
+                         <li class="dropdown subject-dropdown">
+                             <button class="dropbtn" type="button">
+                                 <span>Subject</span>
+                                 <i class="fa fa-caret-down" style="margin-left:6px;font-size:.75rem;"></i>
+                             </button>
+                             <ul class="dropdown-content">
+                                 <li><a href="../../Teacher/subject_math.html">Math</a></li>
+                                 <li><a href="../../Teacher/subject_english.html">English</a></li>
+                                 <li><a href="../../Teacher/subject_science.html">Science</a></li>
+                             </ul>
+                         </li>
+                         <li><a href="../../Teacher/studentlist.html">Student</a></li>
+                         <li class="dropdown">
+                             <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                             <ul class="dropdown-content">
+                                 <li><a href="../../Teacher/leaderboard_math.html">Math</a></li>
+                                 <li><a href="../../Teacher/leaderboard_english.html">English</a></li>
+                                 <li><a href="../../Teacher/leaderboard_science.html">Science</a></li>
+                             </ul>
+                         </li>
+                     </ul>
+                 `;
+             } else {
+                 nav.innerHTML = `
+                     <ul>
+                         <li><a href="../../Student/homepage.html">Home</a></li>
+                         <li><a href="../../Student/subject_math.html">Math</a></li>
+                         <li><a href="../../Student/subject_english.html">English</a></li>
+                         <li><a href="../../Student/subject_science.html">Science</a></li>
+                         <li><a href="../../Student/leaderboard.html">Leaderboard</a></li>
+                     </ul>
+                 `;
+             }
+         }
+         
+         function setupTeacherUI() {
+             // Show answer sheet button for teachers
+             document.getElementById('answerSheetBtn').style.display = 'inline-block';
+             
+             // Add event listener for answer sheet button
+             document.getElementById('answerSheetBtn').addEventListener('click', showAnswerSheet);
+             
+             // Modify the start modal for teachers
+             const startModal = document.getElementById('start-modal');
+             const startContent = startModal.querySelector('.modal-content');
+             startContent.innerHTML = `
+                 <h2>Time & World Time Zones - Teacher View</h2>
+                 <p style="font-size:1.2rem;">This is a read-only view of the quiz for teachers.</p>
+                 <p style="font-size:1.1rem; color:#666;">You can view questions and answers but cannot take the quiz.</p>
+                 <button id="start-btn" class="modal-btn">View Quiz</button>
+             `;
+             
+             
+             // Add navigation controls after the game container is shown
+             setTimeout(() => {
+                 addTeacherNavigation();
+             }, 100);
+         }
+         
+         function setupStudentUI() {
+             // Hide answer sheet button for students
+             document.getElementById('answerSheetBtn').style.display = 'none';
+         }
+         
+         function showAnswerSheet() {
+             const modal = document.getElementById('answerSheetModal');
+             const content = document.getElementById('answerSheetContent');
+             
+             let html = '<div style="text-align:left;">';
+             questions.forEach((q, index) => {
+                 html += `
+                     <div style="margin-bottom:24px; padding:16px; border:1px solid #ddd; border-radius:8px; background:#f9f9f9;">
+                         <h4 style="color:var(--primary); margin-bottom:12px;">Question ${index + 1}:</h4>
+                         <p style="margin-bottom:12px; font-size:1.1rem;">${q.q}</p>
+                         <div style="margin-bottom:8px;">
+                             <strong>Choices:</strong>
+                             <ul style="margin:8px 0; padding-left:20px;">
+                                 ${q.choices.map(choice => `<li>${choice}</li>`).join('')}
+                             </ul>
+                         </div>
+                         <div style="background:#d4edda; padding:8px; border-radius:4px; border-left:4px solid #28a745;">
+                             <strong style="color:#155724;">Correct Answer: ${q.a}</strong>
+                         </div>
+                     </div>
+                 `;
+             });
+             html += '</div>';
+             
+             content.innerHTML = html;
+             modal.style.display = 'flex';
+         }
+         
+         function closeAnswerSheetModal() {
+             document.getElementById('answerSheetModal').style.display = 'none';
+         }
+         
+         // Existing game logic (augmented with saveAttempt call)
+         // Questions for 12/24-hour time and world time zones
+         let current = 0;
+         let score = 0;
+         let userAnswer = "";
+
+        // Start screen logic using event delegation
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'start-btn') {
+                document.getElementById('start-modal').style.display = 'none';
+                if (isTeacher) {
+                    // Skip instructions for teachers and go directly to read-only quiz view
+                    document.querySelector('.game-container').style.display = '';
+                    loadQuestion();
+                } else {
+                    document.getElementById('instructions-modal').style.display = 'flex';
+                }
+            }
+        });
+
+        document.getElementById('close-instructions-btn').onclick = function() {
+            document.getElementById('instructions-modal').style.display = 'none';
+            document.querySelector('.game-container').style.display = '';
+            loadQuestion();
+        };
+
+        function loadQuestion() {
+            document.getElementById('question').innerHTML = questions[current].q;
+            document.getElementById('feedback').textContent = '';
+            userAnswer = "";
+            
+            // Answers
+            const answersDiv = document.getElementById('answers');
+            answersDiv.innerHTML = '';
+            questions[current].choices.forEach(ans => {
+                const btn = document.createElement('div');
+                btn.className = 'draggable';
+                btn.textContent = ans;
+                
+                if (isTeacher) {
+                    // Make read-only for teachers
+                    btn.draggable = false;
+                    btn.style.opacity = '0.6';
+                    btn.style.cursor = 'not-allowed';
+                    btn.style.border = '3px solid #ccc';
+                    
+                    // Highlight correct answer for teachers
+                    if (ans === questions[current].a) {
+                        btn.style.background = '#d4edda';
+                        btn.style.border = '3px solid #28a745';
+                        btn.style.color = '#155724';
+                    }
+                } else {
+                    // Normal functionality for students
+                    btn.draggable = true;
+                    btn.ondragstart = function(e) {
+                        btn.classList.add('dragging');
+                        e.dataTransfer.setData('text/plain', ans);
+                    };
+                    btn.ondragend = function() {
+                        btn.classList.remove('dragging');
+                    };
+                }
+                
+                answersDiv.appendChild(btn);
+            });
+            
+            // Dropzone
+            const dropzone = document.getElementById('dropzone');
+            if (isTeacher) {
+                // Show correct answer in dropzone for teachers
+                dropzone.textContent = `Correct Answer: ${questions[current].a}`;
+                dropzone.style.background = '#d4edda';
+                dropzone.style.color = '#155724';
+                dropzone.style.border = '3px solid #28a745';
+                dropzone.style.cursor = 'not-allowed';
+                dropzone.ondragover = null;
+                dropzone.ondragleave = null;
+                dropzone.ondrop = null;
+            } else {
+                // Normal functionality for students
+                dropzone.textContent = "Drop the correct answer here";
+                dropzone.style.background = 'var(--peach)';
+                dropzone.style.color = 'var(--white)';
+                dropzone.style.border = '3px dashed var(--primary)';
+                dropzone.style.cursor = 'default';
+                dropzone.classList.remove('active');
+                dropzone.ondragover = function(e) {
+                    e.preventDefault();
+                    dropzone.classList.add('active');
+                };
+                dropzone.ondragleave = function() {
+                    dropzone.classList.remove('active');
+                };
+                dropzone.ondrop = function(e) {
+                    e.preventDefault();
+                    dropzone.classList.remove('active');
+                    const dropped = e.dataTransfer.getData('text/plain');
+                    dropzone.textContent = dropped;
+                    userAnswer = dropped;
+                    showReviewModal(dropped);
+                };
+            }
+            
+            // Update teacher navigation if applicable
+            if (isTeacher) {
+                updateTeacherNavigation();
+            }
+        }
+
+        function showReviewModal(ans) {
+            if (isTeacher) return; // Prevent teachers from seeing review modal
+            
+            let correct = ans === questions[current].a;
+            document.getElementById('review-title').textContent = correct ? "✅ Correct!" : "❌ Incorrect!";
+            document.getElementById('review-question').innerHTML = "Question: " + questions[current].q;
+            document.getElementById('review-user-answer').innerHTML = "Your answer: <b>" + ans + "</b>";
+            document.getElementById('review-correct-answer').innerHTML = correct ? "" : "Correct answer: <b>" + questions[current].a + "</b>";
+            document.getElementById('review-modal').style.display = 'flex';
+            if (correct) score++;
+        }
+
+        document.getElementById('next-btn').onclick = function() {
+            if (isTeacher) return; // Prevent teachers from using next button
+            document.getElementById('review-modal').style.display = 'none';
+            current++;
+            if (current < questions.length) {
+                loadQuestion();
+            } else {
+                showFinalModal();
+            }
+        };
+        
+        // Add navigation controls for teachers
+        function addTeacherNavigation() {
+            if (isTeacher) {
+                const gameContainer = document.querySelector('.game-container');
+                const navControls = document.createElement('div');
+                navControls.style.cssText = 'margin-top: 20px; display: flex; justify-content: space-between; align-items: center;';
+                navControls.innerHTML = `
+                    <button id="prev-btn" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; ${current === 0 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">Previous</button>
+                    <span style="font-weight: bold; color: var(--primary);">Question ${current + 1} of ${questions.length}</span>
+                    <button id="next-nav-btn" style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; ${current === questions.length - 1 ? 'opacity: 0.5; cursor: not-allowed;' : ''}">Next</button>
+                `;
+                gameContainer.appendChild(navControls);
+                
+                // Add event listeners for navigation
+                document.getElementById('prev-btn').addEventListener('click', function() {
+                    if (current > 0) {
+                        current--;
+                        loadQuestion();
+                        updateTeacherNavigation();
+                    }
+                });
+                
+                document.getElementById('next-nav-btn').addEventListener('click', function() {
+                    if (current < questions.length - 1) {
+                        current++;
+                        loadQuestion();
+                        updateTeacherNavigation();
+                    }
+                });
+            }
+        }
+        
+        function updateTeacherNavigation() {
+            if (isTeacher) {
+                const prevBtn = document.getElementById('prev-btn');
+                const nextBtn = document.getElementById('next-nav-btn');
+                const questionCounter = document.querySelector('span');
+                
+                if (prevBtn) {
+                    prevBtn.style.opacity = current === 0 ? '0.5' : '1';
+                    prevBtn.style.cursor = current === 0 ? 'not-allowed' : 'pointer';
+                }
+                
+                if (nextBtn) {
+                    nextBtn.style.opacity = current === questions.length - 1 ? '0.5' : '1';
+                    nextBtn.style.cursor = current === questions.length - 1 ? 'not-allowed' : 'pointer';
+                }
+                
+                if (questionCounter) {
+                    questionCounter.textContent = `Question ${current + 1} of ${questions.length}`;
+                }
+            }
+        }
+
+        function showFinalModal() {
+            if (isTeacher) return; // Prevent teachers from seeing final modal
+            
+            document.getElementById('final-score').textContent = `Your score: ${score} / ${questions.length}`;
+            document.getElementById('final-modal').style.display = 'flex';
+            // Save attempt to Firebase
+            saveAttempt(score, questions.length);
+        }
+
+        document.getElementById('play-again-btn').onclick = function() {
+            if (isTeacher) {
+                // Redirect to teacher math subject page
+                window.location.href = '../../Teacher/subject_math.html';
+            } else {
+                // Redirect to lessons/quiz menu (Math subject page)
+                window.location.href = '../../Student/subject_math.html';
+            }
+        };
+
+
+        function showEditModal() {
+            document.getElementById('edit-modal').style.display = 'flex';
+            const list = document.getElementById('edit-questions-list');
+            list.innerHTML = '';
+            editableQuestions.forEach((q, idx) => {
+                list.innerHTML += `
+                    <div style="margin-bottom:18px; border-bottom:1px solid #eee; padding-bottom:8px;">
+                        <label>Question:<br>
+                            <input type="text" class="edit-q" data-idx="${idx}" value="${q.q.replace(/"/g, '&quot;')}">
+                        </label><br>
+                        <label>Choices (comma separated):<br>
+                            <input type="text" class="edit-choices" data-idx="${idx}" value="${q.choices.join(', ')}">
+                        </label><br>
+                        <label>Correct Answer:<br>
+                            <input type="text" class="edit-correct" data-idx="${idx}" value="${q.a}">
+                        </label>
+                        <button class="remove-question-btn" data-idx="${idx}">Remove</button>
+                    </div>
+                `;
+            });
+            // Remove logic
+            list.querySelectorAll('.remove-question-btn').forEach(btn => {
+                btn.onclick = function() {
+                    const idx = Number(btn.dataset.idx);
+                    editableQuestions.splice(idx, 1);
+                    showEditModal();
+                };
+            });
+        }
+
+        // Add question
+        document.getElementById('add-question-btn').onclick = function() {
+            editableQuestions.push({ q: "New Question", choices: ["Choice 1", "Choice 2", "Choice 3"], a: "Choice 1" });
+            showEditModal();
+        };
+
+        // Save edits
+        document.getElementById('save-edit-btn').onclick = function() {
+            document.querySelectorAll('.edit-q').forEach(input => {
+                const idx = input.dataset.idx;
+                editableQuestions[idx].q = input.value.trim();
+            });
+            document.querySelectorAll('.edit-choices').forEach(input => {
+                const idx = input.dataset.idx;
+                editableQuestions[idx].choices = input.value.split(',').map(a => a.trim());
+            });
+            document.querySelectorAll('.edit-correct').forEach(input => {
+                const idx = input.dataset.idx;
+                editableQuestions[idx].a = input.value.trim();
+            });
+            localStorage.setItem('lesson1Questions', JSON.stringify(editableQuestions)); // Save to localStorage
+            document.getElementById('edit-modal').style.display = 'none';
+            // Reset game with new questions
+            current = 0;
+            score = 0;
+            document.querySelector('.game-container').style.display = '';
+            loadQuestion();
+        };
+
+        // Close modal
+        document.getElementById('close-edit-btn').onclick = function() {
+            document.getElementById('edit-modal').style.display = 'none';
+        };
+
+        // Load questions from localStorage if available
+        let editableQuestions = [
+            {
+                q: "What is <b>15:00</b> in 12-hour time?",
+                choices: ["3:00 AM", "3:00 PM", "12:00 PM"],
+                a: "3:00 PM"
+            },
+            {
+                q: "What is <b>7:30 PM</b> in 24-hour time?",
+                choices: ["19:30", "07:30", "17:30"],
+                a: "19:30"
+            },
+            {
+                q: "If it is <b>10:00 AM</b> in Manila (UTC+8), what time is it in London (UTC+0)?",
+                choices: ["2:00 AM", "6:00 AM", "10:00 AM"],
+                a: "2:00 AM"
+            },
+            {
+                q: "What is the difference in hours between UTC+8 and UTC-5?",
+                choices: ["13", "3", "8"],
+                a: "13"
+            },
+            {
+                q: "What is <b>12:00 AM</b> in 24-hour time?",
+                choices: ["00:00", "12:00", "24:00"],
+                a: "00:00"
+            },
+            {
+                q: "If it is <b>18:00</b> in New York (UTC-5), what time is it in Manila (UTC+8)?",
+                choices: ["7:00 AM", "11:00 AM", "1:00 AM"],
+                a: "7:00 AM"
+            }
+        ];
+        if (localStorage.getItem('lesson1Questions')) {
+            editableQuestions = JSON.parse(localStorage.getItem('lesson1Questions'));
+        }
+        // Use editableQuestions for the game
+        const questions = editableQuestions;
+
+        // Show start screen on load
+        document.getElementById('start-modal').style.display = 'flex';
+        document.getElementById('instructions-modal').style.display = 'none';
+        document.getElementById('review-modal').style.display = 'none';
+        document.getElementById('final-modal').style.display = 'none';
+        document.querySelector('.game-container').style.display = 'none';
+    </script>
+    </body>
+    </html>
+</body>
+</html>

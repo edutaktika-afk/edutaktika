@@ -7,7 +7,9 @@ import {
   NavbarDivider,
   EditableText,
   Popover,
+  Icon,
 } from '@blueprintjs/core';
+import { IconNames } from '@blueprintjs/icons';
 
 import FaGithub from '@meronex/icons/fa/FaGithub';
 import FaDiscord from '@meronex/icons/fa/FaDiscord';
@@ -183,6 +185,21 @@ export default observer(({ store }) => {
           </AnchorButton>
           <PostProcessButton store={store} />
           <DownloadButton store={store} />
+          <NavbarDivider />
+          <AnchorButton
+            minimal
+            icon={<Icon icon={IconNames.HELP} />}
+            onClick={() => {
+              // Trigger tutorial
+              const tutorialButton = document.querySelector('[data-tutorial-trigger]');
+              if (tutorialButton) {
+                tutorialButton.click();
+              }
+            }}
+            title="Start Tutorial"
+          >
+            Help
+          </AnchorButton>
           <UserMenu store={store} project={project} />
           {/* <NavbarHeading>Polotno Studio</NavbarHeading> */}
         </Navbar.Group>

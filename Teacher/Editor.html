@@ -446,29 +446,25 @@ canvas:focus + .upper-canvas {
     <div class="editor-layout">
         <div class="main-area">
             <aside class="sidebar">
-
-                
-                <div class="sidebar-group"> 
-
-
-
+                <div class="sidebar-group">
                     <div style="display:flex;align-items:center;justify-content:space-between;">
-                        <h4 class="sidebar-label" style="margin-bottom:0;">Template</h4>
+                        <h4 class="sidebar-label" style="margin-bottom:0;">Elements</h4>
+                        <p id="see-all-elements-btn" style="font-size:0.95em;cursor:pointer;">See all</p>
                     </div>
                     <div class="elements-library-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
                     <input type="file" id="element-upload" accept="image/*,.json" style="margin-top:10px; display: none;" />
                     <button id="upload-element-btn"  style="display: none;">Upload Element</button>
-                    <!-- Add this line below -->
-                    <button id="custom-template-btn" style="background:#ffd700;color:#232946;font-weight:bold;">Insert Template</button>
                 </div>
-
                 <!-- Add this inside your <aside class="sidebar"> -->
                 <div class="sidebar-group" style="display: none;">
                     <div class="sidebar-label">GIFs</div>
                     <input type="file" id="gif-upload" accept="image/gif" />
                     <button id="upload-gif-btn">Upload GIF</button>
                 </div>
-               
+                <div class="sidebar-group">
+                    <div class="sidebar-label">Games</div>
+                    <button id="add-game-btn">Add a Game</button>
+                </div>
                 <div class="sidebar-group">
                     <div class="sidebar-label">Text</div>
                     <button class="add-headline">Headline</button>
@@ -2296,9 +2292,7 @@ function updateTextEffectInputs() {
    
 </script>
 
-<script src="../assets/js/templates.js"></script>
-
-
+    
 
 </body>
 </html>

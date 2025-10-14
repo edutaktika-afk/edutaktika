@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Math True or False Game</title>
+    <style>
+        :root {
+            --primary: #2e8b57;
+            --secondary: #ffd700;
+            --peach: #ff69b4;
+            --forest-green: #3f4d34;
+            --sun-yellow: #ffd700;
+            --white: #ffffff;
+        }
+        body {
+            font-family: 'Comic Neue', Arial, sans-serif;
+            background: var(--primary);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .game-container {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px var(--peach);
+            padding: 32px 32px 40px;
+            text-align: center;
+            max-width: 440px;
+            width: 96vw;
+            position: relative;
+        }
+        .question {
+            font-size: 1.6rem;
+            margin: 26px 0 28px;
+            color: var(--forest-green);
+            font-weight: bold;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .btn {
+            padding: 14px 44px;
+            border-radius: 10px;
+            background: var(--secondary);
+            color: var(--forest-green);
+            border: 0;
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin: 10px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px var(--peach);
+            transition: .2s;
+        }
+        .btn:hover {
+            background: var(--peach);
+            color: var(--white);
+        }
+        #feedback {
+            font-size: 1.15rem;
+            margin: 16px 0 8px;
+            min-height: 28px;
+        }
+        #final-modal, #edit-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            z-index: 100000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #final-modal > div, #edit-modal > div {
+            background: #fff;
+            padding: 42px 40px 46px;
+            border-radius: 18px;
+            max-width: 520px;
+            width: 96vw;
+            box-shadow: 0 4px 30px -4px var(--peach);
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 92vh;
+            overflow: auto;
+        }
+        #play-again-btn {
+            padding: 16px 42px;
+            border-radius: 12px;
+            background: var(--primary);
+            color: #fff;
+            border: 0;
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-top: 6px;
+            cursor: pointer;
+        }
+        #next-btn {
+            display: none;
+            margin-top: 8px;
+            background: var(--primary);
+            color: #fff;
+            border: 0;
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px -3px rgba(0, 0, 0, .3);
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .small-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #fff;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 6px 14px;
+            font-size: .85rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .small-btn:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+        .edit-list-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .edit-list-row:last-child {
+            border-bottom: 0;
+        }
+        .edit-list-row input[type=text] {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #cfd9e2;
+            border-radius: 6px;
+            font-size: .9rem;
+        }
+        .edit-list-row select {
+            padding: 8px 10px;
+            border: 1px solid #cfd9e2;
+            border-radius: 6px;
+        }
+        .edit-list-row button {
+            background: #ff5f5f;
+            color: #fff;
+            border: 0;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: .7rem;
+            cursor: pointer;
+        }
+        #add-question-btn {
+            background: var(--primary);
+            color: #fff;
+            border: 0;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: .85rem;
+        }
+        #save-questions-btn {
+            background: var(--peach);
+            color: #fff;
+            border: 0;
+            padding: 10px 22px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: .95rem;
+        }
+        .status-msg {
+            font-size: .8rem;
+            min-height: 16px;
+            color: #2e8b57;
+            text-align: left;
+        }
+        /* (optional) hide feedback area completely */
+        #feedback{display:none}
+    </style>
+</head>
+<body>
+  <div class="game-container">
+    <button id="edit-open-btn" class="small-btn">Edit</button>
+    <h2 style="color:var(--primary);margin:0;">Math True or False</h2>
+    <div class="question" id="question"></div>
+    <button class="btn" id="true-btn">True</button>
+    <button class="btn" id="false-btn">False</button>
+    <div id="feedback"></div>
+    <button id="next-btn">Next</button>
+  </div>
+
+  <div id="final-modal" aria-hidden="true">
+    <div>
+      <h2 style="font-size:2.1rem;color:var(--primary);margin:0 0 10px;">🏁 Finished!</h2>
+      <p id="final-score" style="font-size:1.15rem;margin:0 0 24px;"></p>
+      <button id="play-again-btn">Play Again</button>
+    </div>
+  </div>
+
+  <!-- EDIT MODAL -->
+  <div id="edit-modal" aria-hidden="true">
+    <div>
+      <h3 style="margin:0;font-size:1.4rem;color:var(--primary);">Edit Questions</h3>
+      <div id="edit-list"></div>
+      <div class="status-msg" id="edit-status"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="add-question-btn">Add Question</button>
+        <button id="save-questions-btn">Save & Close</button>
+        <button id="edit-cancel-btn" style="background:#ddd;color:#222;border:0;padding:8px 14px;border-radius:8px;font-weight:600;cursor:pointer;font-size:.85rem">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const LS_KEY='tf_quiz_questions_v1';
+let questions = [
+  { q: "7 + 5 = 12", answer: true },
+  { q: "9 - 4 = 6", answer: false },
+  { q: "3 × 3 = 9", answer: true },
+  { q: "15 ÷ 5 = 2", answer: false },
+  { q: "8 + 2 = 10", answer: true }
+];
+try{
+  const saved=JSON.parse(localStorage.getItem(LS_KEY)||'null');
+  if(Array.isArray(saved)&&saved.length && saved.every(x=>typeof x.q==='string' && typeof x.answer==='boolean')) questions=saved;
+}catch(e){}
+
+let current = 0;
+let score = 0;
+let answeredCurrent = false;
+let userAnswers = []; // NEW: store student selections
+
+const qEl = document.getElementById('question');
+const feedbackEl = document.getElementById('feedback');
+const trueBtn = document.getElementById('true-btn');
+const falseBtn = document.getElementById('false-btn');
+const nextBtn = document.getElementById('next-btn');
+const finalModal = document.getElementById('final-modal');
+const finalScore = document.getElementById('final-score');
+
+function loadQuestion(){
+  const q = questions[current];
+  qEl.textContent = q ? q.q : '';
+  feedbackEl.textContent='';
+  answeredCurrent=false;
+  nextBtn.style.display='none';
+  enableAnswerButtons(true);
+}
+
+function enableAnswerButtons(on){
+  trueBtn.disabled=!on;
+  falseBtn.disabled=!on;
+  trueBtn.style.opacity= on? '1':'0.55';
+  falseBtn.style.opacity= on? '1':'0.55';
+}
+
+function showFinalModal(){
+  finalScore.textContent = "Thank you for completing the activity.";
+  finalModal.style.display='flex';
+  finalModal.setAttribute('aria-hidden','false');
+}
+
+function checkAnswer(ans){
+  if(answeredCurrent) return;
+  answeredCurrent = true;
+  userAnswers[current] = ans;   // record selection
+  // NO correctness / score / feedback
+  enableAnswerButtons(false);
+  nextBtn.style.display='inline-block';
+}
+
+trueBtn.onclick=()=>checkAnswer(true);
+falseBtn.onclick=()=>checkAnswer(false);
+
+nextBtn.onclick=()=>{
+  if(!answeredCurrent) return;
+  current++;
+  if(current < questions.length){
+    loadQuestion();
+  }else{
+    showFinalModal();
+  }
+};
+
+document.getElementById('play-again-btn').onclick=()=>{
+  finalModal.style.display='none';
+  current=0; score=0; userAnswers=[];
+  loadQuestion();
+};
+
+/* ---------- EDIT FEATURE ---------- */
+const editModal = document.getElementById('edit-modal');
+const editOpenBtn = document.getElementById('edit-open-btn');
+const editList = document.getElementById('edit-list');
+const editStatus = document.getElementById('edit-status');
+const addQuestionBtn = document.getElementById('add-question-btn');
+const saveQuestionsBtn = document.getElementById('save-questions-btn');
+const editCancelBtn = document.getElementById('edit-cancel-btn');
+
+editOpenBtn.addEventListener('click', openEditor);
+editCancelBtn.addEventListener('click',closeEditor);
+addQuestionBtn.addEventListener('click',()=> addRow('',true));
+
+saveQuestionsBtn.addEventListener('click', saveEditorQuestions);
+
+function openEditor(){
+  editList.innerHTML='';
+  questions.forEach(q=> addRow(q.q,q.answer));
+  editStatus.textContent='';
+  editModal.style.display='flex';
+  editModal.setAttribute('aria-hidden','false');
+}
+
+function closeEditor(){
+  editModal.style.display='none';
+  editModal.setAttribute('aria-hidden','true');
+}
+
+function addRow(text='',ans=true){
+  const row=document.createElement('div');
+  row.className='edit-list-row';
+  row.innerHTML=`
+    <input type="text" class="row-text" placeholder="Question text" value="${escapeHtml(text)}">
+    <select class="row-ans">
+      <option value="true" ${ans?'selected':''}>True</option>
+      <option value="false" ${!ans?'selected':''}>False</option>
+    </select>
+    <button type="button" class="del">X</button>
+  `;
+  row.querySelector('.del').addEventListener('click',()=> row.remove());
+  editList.appendChild(row);
+}
+
+function saveEditorQuestions(){
+  const rows=[...editList.querySelectorAll('.edit-list-row')];
+  const newQs=[];
+  for(const r of rows){
+    const txt=r.querySelector('.row-text').value.trim();
+    if(!txt){ editStatus.style.color='#c0392b'; editStatus.textContent='Empty question found.'; return; }
+    const ans=r.querySelector('.row-ans').value==='true';
+    newQs.push({q:txt,answer:ans});
+  }
+  if(!newQs.length){ editStatus.style.color='#c0392b'; editStatus.textContent='Add at least one question.'; return; }
+  questions=newQs;
+  localStorage.setItem(LS_KEY, JSON.stringify(questions));
+  // Reset game
+  current=0; score=0;
+  loadQuestion();
+  editStatus.style.color='var(--primary)';
+  editStatus.textContent='Saved!';
+  setTimeout(closeEditor,450);
+}
+
+/* Utility to escape user-entered text */
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[ch]));
+}
+
+/* Init */
+loadQuestion();
+
+</script>
+</body>
+</html>

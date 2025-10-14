@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Arrange the Steps (GMDAS)</title>
+  <style>
+    :root {
+      --primary: #2e8b57;
+      --secondary: #ffd700;
+      --peach: #ff69b4;
+      --forest-green: #3f4d34;
+      --sun-yellow: #ffd700;
+      --white: #ffffff;
+    }
+    body {
+      font-family: 'Baloo 2', Arial, sans-serif;
+      background: var(--primary);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+    .container {
+      background: #fff;
+      color: #2e8b57;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px #ff69b4;
+      padding: 32px 24px;
+      margin-top: 9px;
+      max-width: 900px;
+      width: 96vw;
+      text-align: center;
+      position: relative;
+      min-height: 340px;
+
+    }
+    .expression {
+      font-size: 1.7rem;
+      font-weight: bold;
+      margin-bottom: 24px;
+      color: var(--primary);
+    }
+    .draggables {
+      display: flex;
+      flex-direction: row;
+      gap: 18px;
+      margin-bottom: 24px;
+      align-items: center;
+      justify-content: center;
+    }
+    .draggable {
+      background: #ffd700;
+      color: #3f4d34;
+      border-radius: 10px;
+      padding: 16px 0;
+      width: 220px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: grab;
+      border: 2px solid #2e8b57;
+      box-shadow: 0 2px 8px #ff69b4;
+      text-align: center;
+      user-select: none;
+      transition: background 0.2s, color 0.2s;
+      margin-bottom: 4px;
+    }
+    .draggable.dragging {
+      opacity: 0.7;
+      background: #ff69b4;
+      color: #fff;
+    }
+    .dropzones {
+      display: flex;
+      flex-direction: row;
+      gap: 18px;
+      margin-bottom: 24px;
+      align-items: center;
+      justify-content: center;
+    }
+    .dropzone {
+      border: 2px dashed #2e8b57;
+      background: #e9ffe9;
+      border-radius: 12px;
+      min-height: 54px;
+      width: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #3f4d34;
+      transition: background 0.2s, border 0.2s;
+      position: relative;
+    }
+    .dropzone.active {
+      background: #ffd700;
+      border-color: #ff69b4;
+    }
+    .dropzone-label {
+      position: absolute;
+      top: -28px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1rem;
+      color: var(--peach);
+      font-weight: bold;
+      background: #fff;
+      padding: 2px 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px #ff69b4;
+      z-index: 2;
+    }
+    #finalAnswerInput {
+      margin-top: 18px;
+      font-size: 1.2rem;
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: 2px solid var(--primary);
+      width: 120px;
+      text-align: center;
+      outline: none;
+    }
+    #checkBtn, #nextBtn, #playAgainBtn, #editBtn, #saveEditBtn, #cancelEditBtn, #wrongContinueBtn {
+      padding: 14px 44px;
+      border-radius: 10px;
+      background: #2e8b57;
+      color: #fff;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      box-shadow: 0 2px 8px #ff69b4;
+    }
+    #feedback {
+      font-size: 1.2rem;
+      margin-top: 18px;
+      min-height: 28px;
+      font-weight: bold;
+    }
+    .modal-bg {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.35);
+      z-index: 100000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: #fff;
+      color: #2e8b57;
+      padding: 40px 28px;
+      border-radius: 18px;
+      max-width: 400px;
+      width: 96vw;
+      box-shadow: 0 4px 24px #ff69b4;
+      text-align: center;
+      position: relative;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content h2 {
+      font-size: 2rem;
+      margin-bottom: 18px;
+    }
+    .modal-content p, .modal-content ul {
+      font-size: 1.2rem;
+      margin-bottom: 18px;
+    }
+    .modal-btn {
+      padding: 14px 44px;
+      border-radius: 10px;
+      background: #2e8b57;
+      color: #fff;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 12px;
+      box-shadow: 0 2px 8px #ff69b4;
+    }
+    .edit-modal-content label, .edit-modal-content input, .edit-modal-content textarea {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      width: 90%;
+      display: block;
+    }
+    .edit-modal-content input, .edit-modal-content textarea {
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--primary);
+      margin-bottom: 12px;
+    }
+    .edit-modal-content textarea {
+      resize: vertical;
+      min-height: 40px;
+    }
+    .edit-question-block {
+      background: #e9ffe9;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 8px #ff69b4;
+    }
+    .remove-question-btn {
+      background: #ff69b4;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 18px;
+      font-size: 1rem;
+      cursor: pointer;
+      float: right;
+      margin-top: -8px;
+      margin-right: -8px;
+    }
+    @media (max-width: 700px) {
+      .container { padding: 12px 2px; min-width: 0; }
+      .draggable, .dropzone { width: 98vw; font-size: 1rem; }
+      .draggables, .dropzones { flex-direction: column; }
+      .dropzone-label { top: -22px; font-size: 0.9rem; }
+      .edit-modal-content label, .edit-modal-content input, .edit-modal-content textarea { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Edit Questions button: only show when answering (not on start/instructions/final modals) -->
+  <button class="modal-btn" id="editBtn" style="margin-top:5px;display:none; margin-left: auto; padding: 9px;">Edit Questions</button>
+
+  <!-- Start Modal (remove editBtn from here) -->
+  <div class="modal-bg" id="startModal" style="display:flex;">
+    <div class="modal-content">
+      <h2>GMDAS Drag & Drop Assessment</h2>
+      <p style="color: black;">Test your understanding of the order of operations (Grouping, Multiplication, Division, Addition, Subtraction).</p>
+      <button class="modal-btn" id="startBtn">Start</button>
+    </div>
+  </div>
+  <!-- Instructions Modal -->
+  <div class="modal-bg" id="instructionsModal">
+    <div class="modal-content">
+      <h2>Instructions</h2>
+      <ul style="text-align:left; color: black;">
+        <li>Read the math expression carefully.</li>
+        <li>Drag and drop the steps into the correct order (left to right).</li>
+        <li>Enter the final answer for the expression.</li>
+        <li>Click "Check Answer" to validate your response.</li>
+        <li>Try to get all questions correct!</li>
+      </ul>
+      <button class="modal-btn" id="continueBtn">Continue</button>
+    </div>
+  </div>
+  <div class="container" id="gameContainer" style="display:none;">
+    <div class="expression" id="expression" style="padding-top:20px; padding-bottom: 15px;"></div>
+    <div class="draggables" id="draggables"></div>
+    <div style="margin-bottom:8px;font-weight:bold; padding-bottom:40px;">Drop the steps here in order (left to right):</div>
+    <div class="dropzones" id="dropzones"></div>
+    <div style="margin:18px 0 8px 0;font-weight:bold;">Enter the final answer:</div>
+    <input type="text" id="finalAnswerInput" autocomplete="off" />
+    <button id="checkBtn">Check Answer</button>
+    <div id="feedback"></div>
+    <button id="nextBtn" style="display:none;">Next Question</button>
+  </div>
+  <div class="modal-bg" id="finalModal">
+    <div class="modal-content">
+      <h2>Congratulations!</h2>
+      <p id="finalScore"></p>
+      <button id="playAgainBtn">Play Again</button>
+    </div>
+  </div>
+  <!-- Wrong Answer Modal -->
+  <div class="modal-bg" id="wrongModal">
+    <div class="modal-content">
+      <h2>Incorrect!</h2>
+      <p id="wrongSteps"></p>
+      <p id="wrongFinal"></p>
+      <button class="modal-btn" id="wrongContinueBtn">Next Question</button>
+      <button class="modal-btn" id="wrongPlayAgainBtn" style="display:none;">Play Again</button>
+    </div>
+  </div>
+  <!-- Edit Modal (styled like lesson1) -->
+  <div class="modal-bg" id="editModal">
+    <div class="modal-content edit-modal-content" style="max-width:600px;width:96vw;border-radius:16px;box-shadow:0 4px 24px #ff69b4;max-height:80vh;overflow-y:auto;">
+      <h2>Edit Questions</h2>
+      <div id="editQuestionsList"></div>
+      <button class="modal-btn" id="addQuestionBtn">Add Question</button>
+      <button class="modal-btn" id="saveEditBtn">Save</button>
+      <button class="modal-btn" id="cancelEditBtn">Cancel</button>
+    </div>
+  </div>
+  <style>
+    #editModal .modal-content.edit-modal-content {
+      background: #fff;
+      color: #2e8b57;
+      padding: 32px 24px;
+      border-radius: 16px;
+      max-width: 480px;
+      width: 96vw;
+      box-shadow: 0 4px 24px #ff69b4;
+      text-align: center;
+      position: relative;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .edit-modal-content label, .edit-modal-content input, .edit-modal-content textarea {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      width: 90%;
+      display: block;
+    }
+    .edit-modal-content input, .edit-modal-content textarea {
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--primary);
+      margin-bottom: 12px;
+    }
+    .edit-modal-content textarea {
+      resize: vertical;
+      min-height: 40px;
+    }
+    .edit-question-block {
+      background: #e9ffe9;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 8px #ff69b4;
+    }
+    .remove-question-btn {
+      background: #ff69b4;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 18px;
+      font-size: 1rem;
+      cursor: pointer;
+      float: right;
+      margin-top: -8px;
+      margin-right: -8px;
+    }
+    @media (max-width: 700px) {
+      #editModal .modal-content.edit-modal-content {
+        padding: 12px 2vw !important;
+        max-width: 100vw !important;
+        width: 100vw !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        max-height: 90vh !important;
+      }
+      .edit-question-block label,
+      .edit-question-block input,
+      .edit-question-block textarea {
+        font-size: 0.95rem !important;
+        width: 98vw !important;
+        min-width: 0 !important;
+      }
+      .edit-question-block {
+        padding: 8px !important;
+        margin-bottom: 12px !important;
+      }
+      .remove-question-btn {
+        font-size: 0.95rem !important;
+        padding: 4px 12px !important;
+      }
+    }
+  </style>
+  <div class="modal-bg" id="answerModal">
+    <div class="modal-content">
+      <h2 id="answerModalTitle"></h2>
+      <p id="answerModalMessage" style="color:black;"></p>
+      <button class="modal-btn" id="answerModalNextBtn" style="display:none; margin: auto;">Next Question</button>
+      <button class="modal-btn" id="answerModalPlayAgainBtn" style="display:none; margin: auto;">Play Again</button>
+    </div>
+  </div>
+  <script>
+    // Load questions from localStorage if available
+    let defaultQuestions = [
+      {
+        expr: "6 + 2 × (4 − 1)",
+        steps: [
+          "Solve (4 − 1)",
+          "Multiply 2 × 3",
+          "Add 6 + 6"
+        ],
+        correct: ["Solve (4 − 1)", "Multiply 2 × 3", "Add 6 + 6"],
+        answer: "12"
+      },
+      {
+        expr: "(5 + 3) × 2 − 4",
+        steps: [
+          "Solve (5 + 3)",
+          "Multiply 8 × 2",
+          "Subtract 16 − 4"
+        ],
+        correct: ["Solve (5 + 3)", "Multiply 8 × 2", "Subtract 16 − 4"],
+        answer: "12"
+      },
+      {
+        expr: "18 ÷ (6 − 3) + 2",
+        steps: [
+          "Solve (6 − 3)",
+          "Divide 18 ÷ 3",
+          "Add 6 + 2"
+        ],
+        correct: ["Solve (6 − 3)", "Divide 18 ÷ 3", "Add 6 + 2"],
+        answer: "8"
+      }
+    ];
+    let questions = [];
+    if (localStorage.getItem('gmdasQuestions')) {
+      questions = JSON.parse(localStorage.getItem('gmdasQuestions'));
+    } else {
+      questions = JSON.parse(JSON.stringify(defaultQuestions));
+    }
+
+    let current = 0;
+    let score = 0;
+
+    // Modal logic
+    document.getElementById('startBtn').onclick = function() {
+      document.getElementById('startModal').style.display = 'none';
+      document.getElementById('instructionsModal').style.display = 'flex';
+    };
+    document.getElementById('continueBtn').onclick = function() {
+      document.getElementById('instructionsModal').style.display = 'none';
+      document.getElementById('gameContainer').style.display = '';
+      renderQuestion();
+      document.getElementById('editBtn').style.display = 'block'; // Show after instructions
+    };
+
+    // Edit modal logic
+    document.getElementById('editBtn').onclick = function() {
+      showEditModal();
+    };
+    document.getElementById('cancelEditBtn').onclick = function() {
+      document.getElementById('editModal').style.display = 'none';
+    };
+    document.getElementById('addQuestionBtn').onclick = function() {
+      questions.push({
+        expr: "",
+        steps: ["", "", ""],
+        correct: ["", "", ""],
+        answer: ""
+      });
+      showEditModal();
+    };
+    document.getElementById('saveEditBtn').onclick = function() {
+      // Save edits
+      let blocks = document.querySelectorAll('.edit-question-block');
+      let newQuestions = [];
+      blocks.forEach((block, idx) => {
+        let expr = block.querySelector('.edit-expr').value.trim();
+        let steps = [
+          block.querySelector('.edit-step1').value.trim(),
+          block.querySelector('.edit-step2').value.trim(),
+          block.querySelector('.edit-step3').value.trim()
+        ];
+        let answer = block.querySelector('.edit-answer').value.trim();
+        newQuestions.push({
+          expr: expr,
+          steps: steps,
+          correct: steps.slice(),
+          answer: answer
+        });
+      });
+      questions = newQuestions;
+      localStorage.setItem('gmdasQuestions', JSON.stringify(questions));
+      document.getElementById('editModal').style.display = 'none';
+      current = 0;
+      score = 0;
+      renderQuestion();
+    };
+    function showEditModal() {
+      document.getElementById('editModal').style.display = 'flex';
+      const list = document.getElementById('editQuestionsList');
+      list.innerHTML = '';
+      questions.forEach((q, idx) => {
+        list.innerHTML += `
+          <div class="edit-question-block">
+            <button class="remove-question-btn" data-idx="${idx}">Remove</button>
+            <label>Expression:<br>
+              <input type="text" class="edit-expr" value="${q.expr.replace(/"/g, '&quot;')}">
+            </label>
+            <label>Step 1:<br>
+              <input type="text" class="edit-step1" value="${q.steps[0] ? q.steps[0].replace(/"/g, '&quot;') : ''}">
+            </label>
+            <label>Step 2:<br>
+              <input type="text" class="edit-step2" value="${q.steps[1] ? q.steps[1].replace(/"/g, '&quot;') : ''}">
+            </label>
+            <label>Step 3:<br>
+              <input type="text" class="edit-step3" value="${q.steps[2] ? q.steps[2].replace(/"/g, '&quot;') : ''}">
+            </label>
+            <label>Final Answer:<br>
+              <input type="text" class="edit-answer" value="${q.answer.replace(/"/g, '&quot;')}">
+            </label>
+          </div>
+        `;
+      });
+      // Remove logic
+      list.querySelectorAll('.remove-question-btn').forEach(btn => {
+        btn.onclick = function() {
+          const idx = Number(btn.dataset.idx);
+          questions.splice(idx, 1);
+          showEditModal();
+        };
+      });
+    }
+
+    function renderQuestion() {
+      document.getElementById('feedback').textContent = "";
+      document.getElementById('nextBtn').style.display = "none";
+      document.getElementById('checkBtn').style.display = "";
+      document.getElementById('finalAnswerInput').value = "";
+      document.getElementById('wrongModal').style.display = "none";
+      document.getElementById('wrongPlayAgainBtn').style.display = "none";
+      document.getElementById('wrongContinueBtn').style.display = "";
+      document.getElementById('expression').textContent = `Arrange the steps for: ${questions[current].expr}`;
+      // Draggables
+      const draggablesDiv = document.getElementById('draggables');
+      draggablesDiv.innerHTML = "";
+      questions[current].steps.forEach((step, idx) => {
+        const div = document.createElement('div');
+        div.className = "draggable";
+        div.draggable = true;
+        div.id = "step" + idx;
+        div.textContent = step;
+        draggablesDiv.appendChild(div);
+      });
+      // Dropzones
+      const dropzonesDiv = document.getElementById('dropzones');
+      dropzonesDiv.innerHTML = "";
+      for (let i = 0; i < questions[current].steps.length; i++) {
+        const dz = document.createElement('div');
+        dz.className = "dropzone";
+        dz.id = "zone" + i;
+        // Label above each dropzone
+        const label = document.createElement('div');
+        label.className = "dropzone-label";
+        label.textContent = `Step ${i+1}`;
+        dz.appendChild(label);
+        dropzonesDiv.appendChild(dz);
+      }
+      addDragDropListeners();
+    }
+
+    function addDragDropListeners() {
+      let dragged = null;
+      document.querySelectorAll('.draggable').forEach(elem => {
+        elem.addEventListener('dragstart', function(ev) {
+          dragged = ev.target;
+          setTimeout(() => {
+            ev.target.classList.add('dragging');
+          }, 0);
+          ev.dataTransfer.setData("text", ev.target.id);
+        });
+        elem.addEventListener('dragend', function(ev) {
+          ev.target.classList.remove('dragging');
+          dragged = null;
+        });
+      });
+
+      document.querySelectorAll('.dropzone').forEach(zone => {
+        zone.addEventListener('dragover', function(ev) {
+          ev.preventDefault();
+          zone.classList.add('active');
+        });
+        zone.addEventListener('dragleave', function(ev) {
+          zone.classList.remove('active');
+        });
+        zone.addEventListener('drop', function(ev) {
+          ev.preventDefault();
+          zone.classList.remove('active');
+          // Only allow one child per dropzone (after label)
+          if (zone.childNodes.length < 2 && dragged) {
+            zone.appendChild(dragged);
+          }
+        });
+      });
+    }
+
+    document.getElementById('checkBtn').onclick = function() {
+      const zones = [];
+      for (let i = 0; i < questions[current].steps.length; i++) {
+        const zone = document.getElementById('zone' + i);
+        zones.push(zone.childNodes[1] ? zone.childNodes[1].textContent : "");
+      }
+      const finalAns = document.getElementById('finalAnswerInput').value.trim();
+      let correct = true;
+      for (let i = 0; i < zones.length; i++) {
+        if (zones[i] !== questions[current].correct[i]) {
+          correct = false;
+          break;
+        }
+      }
+      if (finalAns !== questions[current].answer) {
+        correct = false;
+      }
+
+      // Always show modal for every answer
+      document.getElementById('answerModal').style.display = "flex";
+      document.getElementById('answerModalNextBtn').style.display = "none";
+      document.getElementById('answerModalPlayAgainBtn').style.display = "none";
+
+      if (correct) {
+        score++;
+        if (current === questions.length - 1) {
+          document.getElementById('answerModalTitle').textContent = "Congratulations!";
+          document.getElementById('answerModalMessage').textContent = `Your score: ${score} / ${questions.length}`;
+          document.getElementById('answerModalPlayAgainBtn').style.display = "block";
+        } else {
+          document.getElementById('answerModalTitle').textContent = "✅ Correct!";
+          document.getElementById('answerModalMessage').textContent = `Final Answer: ${questions[current].answer}`;
+          document.getElementById('answerModalNextBtn').style.display = "block";
+        }
+      } else {
+        if (current === questions.length - 1) {
+          document.getElementById('answerModalTitle').textContent = "Incorrect!";
+          document.getElementById('answerModalMessage').innerHTML =
+            `<b>Correct Steps:</b><br>${questions[current].correct.map((s,i)=>`Step ${i+1}: ${s}`).join('<br>')}<br><br><b>Correct Final Answer:</b> ${questions[current].answer}<br> <br>Your score: ${score} / ${questions.length}`;
+          document.getElementById('answerModalPlayAgainBtn').style.display = "block";
+        } else {
+          document.getElementById('answerModalTitle').textContent = "Incorrect!";
+          document.getElementById('answerModalMessage').innerHTML =
+            `<b>Correct Steps:</b><br>${questions[current].correct.map((s,i)=>`Step ${i+1}: ${s}`).join('<br>')}<br><br><b>Correct Final Answer:</b> ${questions[current].answer}`;
+          document.getElementById('answerModalNextBtn').style.display = "block";
+        }
+      }
+    };
+
+    document.getElementById('answerModalNextBtn').onclick = function() {
+      document.getElementById('answerModal').style.display = "none";
+      current++;
+      if (current < questions.length) {
+        renderQuestion();
+        document.getElementById('editBtn').style.display = 'block';
+      }
+    };
+
+    document.getElementById('answerModalPlayAgainBtn').onclick = function() {
+      document.getElementById('answerModal').style.display = "none";
+      current = 0;
+      score = 0;
+      renderQuestion();
+      document.getElementById('editBtn').style.display = 'block';
+    };
+
+    // Hide old modals and buttons not needed anymore
+    document.getElementById('nextBtn').style.display = "none";
+    document.getElementById('finalModal').style.display = "none";
+    document.getElementById('wrongModal').style.display = "none";
+
+    // Initial state
+    window.onload = function() {
+      document.getElementById('startModal').style.display = 'flex';
+      document.getElementById('editBtn').style.display = 'none';
+    };
+  </script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+// --- Edit Profile Modal Logic ---
 
 // Open modal and fill with current info
 const profileEditBtn = document.querySelector('.profile-edit-btn');
