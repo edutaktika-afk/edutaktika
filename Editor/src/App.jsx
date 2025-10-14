@@ -14,13 +14,15 @@ import { loadFile } from './file';
 
 import { QrSection } from './sections/qr-section';
 import { QuotesSection } from './sections/quotes-section';
-import { IconsSection } from './sections/icons-section';
+// import { IconsSection } from './sections/icons-section'; // REMOVED - Icons tab disabled
 import { ShapesSection } from './sections/shapes-section';
 import { StableDiffusionSection } from './sections/stable-diffusion-section';
 import { MyDesignsSection } from './sections/my-designs-section';
-import { PhotosSection } from './sections/photos-section';
+// import { PhotosSection } from './sections/photos-section'; // REMOVED - Photos tab disabled
 import { BackgroundsSection } from './sections/backgrounds-section';
 import { EducationalTemplatesSection } from './sections/science-templates/science-templates-section';
+import { TextSection } from './sections/text-section';
+import { MaterialIconsSection } from './sections/material-icons-section';
 
 import { useProject } from './project';
 
@@ -32,6 +34,7 @@ import ptBr from './translations/pt-br';
 import zhCh from './translations/zh-ch';
 
 import Topbar from './topbar/topbar';
+import Tutorial from './components/Tutorial';
 
 // load default translations
 setTranslations(en);
@@ -45,29 +48,71 @@ const isVideoSection = (sec) => {
   return name.includes('video') || tabName.includes('video') || panelName.includes('video');
 };
 
-// Remove any built-in video sections immediately
+// Helper to detect background sections
+const isBackgroundSection = (sec) => {
+  const s = sec || {};
+  const name = String(s.name || '').toLowerCase();
+  return name === 'background' || name === 'backgrounds';
+};
+
+// Helper to detect photos sections
+const isPhotosSection = (sec) => {
+  const s = sec || {};
+  const name = String(s.name || '').toLowerCase();
+  const tabName = String(s.Tab?.name || s.Tab?.displayName || '').toLowerCase();
+  const panelName = String(s.Panel?.name || s.Panel?.displayName || '').toLowerCase();
+  return name.includes('photo') || tabName.includes('photo') || panelName.includes('photo');
+};
+
+// Helper to detect icons sections
+const isIconsSection = (sec) => {
+  const s = sec || {};
+  const name = String(s.name || '').toLowerCase();
+  const tabName = String(s.Tab?.name || s.Tab?.displayName || '').toLowerCase();
+  const panelName = String(s.Panel?.name || s.Panel?.displayName || '').toLowerCase();
+  return name.includes('icon') || tabName.includes('icon') || panelName.includes('icon');
+};
+
+// Helper to detect default text sections (but not our custom TextSection)
+const isDefaultTextSection = (sec) => {
+  const s = sec || {};
+  const name = String(s.name || '').toLowerCase();
+  // Only filter out default Polotno text sections, not our custom TextSection
+  return name === 'text' && !s.Tab; // Our custom TextSection has a Tab property
+};
+
+// Helper to detect elements sections (duplicate with shapes)
+const isElementsSection = (sec) => {
+  const s = sec || {};
+  const name = String(s.name || '').toLowerCase();
+  return name === 'elements';
+};
+
+// Remove any built-in video, background, photos, icons, default text, and elements sections immediately
 for (let i = DEFAULT_SECTIONS.length - 1; i >= 0; i--) {
   const sec = DEFAULT_SECTIONS[i];
-  if (isVideoSection(sec)) {
+  if (isVideoSection(sec) || isBackgroundSection(sec) || isPhotosSection(sec) || isIconsSection(sec) || isDefaultTextSection(sec) || isElementsSection(sec)) {
     DEFAULT_SECTIONS.splice(i, 1);
   }
 }
 
-// Guard against future insertions of video sections
+// Guard against future insertions of video, background, photos, icons, default text, and elements sections
 const _push = DEFAULT_SECTIONS.push.bind(DEFAULT_SECTIONS);
-DEFAULT_SECTIONS.push = (...items) => _push(...items.filter((s) => !isVideoSection(s)));
+DEFAULT_SECTIONS.push = (...items) => _push(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !isDefaultTextSection(s) && !isElementsSection(s)));
 const _unshift = DEFAULT_SECTIONS.unshift.bind(DEFAULT_SECTIONS);
-DEFAULT_SECTIONS.unshift = (...items) => _unshift(...items.filter((s) => !isVideoSection(s)));
+DEFAULT_SECTIONS.unshift = (...items) => _unshift(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !isDefaultTextSection(s) && !isElementsSection(s)));
 const _splice = DEFAULT_SECTIONS.splice.bind(DEFAULT_SECTIONS);
 DEFAULT_SECTIONS.splice = (start, deleteCount, ...items) =>
-  _splice(start, deleteCount, ...items.filter((s) => !isVideoSection(s)));
+  _splice(start, deleteCount, ...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !isDefaultTextSection(s) && !isElementsSection(s)));
 
-// replace elements section with just shapes
-DEFAULT_SECTIONS.splice(3, 1, ShapesSection);
-// add icons
-DEFAULT_SECTIONS.splice(3, 0, IconsSection);
-// add photos and backgrounds sections
-DEFAULT_SECTIONS.splice(4, 0, PhotosSection, BackgroundsSection);
+// add backgrounds section (Photos and Icons removed)
+DEFAULT_SECTIONS.splice(3, 0, BackgroundsSection);
+
+// Add shapes section back (was removed when we removed elements)
+DEFAULT_SECTIONS.splice(4, 0, ShapesSection);
+
+// Add Material Icons section
+DEFAULT_SECTIONS.splice(5, 0, MaterialIconsSection);
 
 // Find and replace the default templates section with our Educational Templates
 const templatesIndex = DEFAULT_SECTIONS.findIndex(section => section.name === 'templates');
@@ -76,6 +121,15 @@ if (templatesIndex !== -1) {
 } else {
   // If no templates section found, add it at position 5
   DEFAULT_SECTIONS.splice(5, 0, EducationalTemplatesSection);
+}
+
+// Add our custom text section with Google Fonts after templates
+const textTemplatesIndex = DEFAULT_SECTIONS.findIndex(section => section.name === 'templates');
+if (textTemplatesIndex !== -1) {
+  DEFAULT_SECTIONS.splice(textTemplatesIndex + 1, 0, TextSection);
+} else {
+  // If no templates section found, add text section at position 1
+  DEFAULT_SECTIONS.splice(1, 0, TextSection);
 }
 // add two more sections
 DEFAULT_SECTIONS.push(QuotesSection, QrSection);
@@ -152,19 +206,36 @@ const App = observer(({ store }) => {
     project.firstLoad();
   }, []);
 
-  // Runtime safeguard: if upstream injects a Videos tab, remove it from DOM
+  // Runtime safeguard: if upstream injects unwanted tabs, remove them from DOM
   React.useEffect(() => {
-    const hideVideoTabs = () => {
+    const hideUnwantedTabs = () => {
       const tabs = document.querySelectorAll('.polotno-side-panel-tab');
+      const seenTabs = new Set();
+      
       tabs.forEach((tab) => {
         const text = (tab.textContent || '').trim().toLowerCase();
-        if (text === 'videos' || text === 'video' || text.includes('videos')) {
+        
+        // Remove videos, photos, icons, and elements tabs
+        if (text === 'videos' || text === 'video' || text.includes('videos') ||
+            text === 'photos' || text === 'photo' || text.includes('photos') ||
+            text === 'icons' || text === 'icon' || text.includes('icons') ||
+            text === 'elements' || text === 'element' || text.includes('elements')) {
           tab.remove();
+          return;
         }
+        
+        // Remove duplicate tabs
+        if (seenTabs.has(text)) {
+          tab.remove();
+          return;
+        }
+        
+        seenTabs.add(text);
       });
     };
-    hideVideoTabs();
-    const mo = new MutationObserver(() => hideVideoTabs());
+    
+    hideUnwantedTabs();
+    const mo = new MutationObserver(() => hideUnwantedTabs());
     mo.observe(document.body, { childList: true, subtree: true });
     return () => mo.disconnect();
   }, []);
@@ -200,7 +271,7 @@ const App = observer(({ store }) => {
           <SidePanelWrap>
             <SidePanel
               store={store}
-              sections={DEFAULT_SECTIONS.filter((s) => !isVideoSection(s))}
+              sections={DEFAULT_SECTIONS.filter((s) => !isVideoSection(s) && !isPhotosSection(s) && !isIconsSection(s))}
             />
           </SidePanelWrap>
           <WorkspaceWrap>
@@ -211,6 +282,7 @@ const App = observer(({ store }) => {
           </WorkspaceWrap>
         </PolotnoContainer>
       </div>
+      <Tutorial store={store} />
       {project.status === 'loading' && (
         <div
           style={{

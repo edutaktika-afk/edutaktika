@@ -419,7 +419,6 @@ td:hover .action-btns .reject,
             <div class="admin-dropdown-content" id="adminDropdownContent">
                 <div class="admin-email" id="adminEmail">admin@email.com</div>
                 <div class="admin-username" id="adminUsername">@admin</div>
-                <button class="review" id="openAddAdminBtn" style="width:100%;margin-bottom:8px;">Add Admin</button>
                 <button class="logout-btn" onclick="logoutAdmin()">Logout</button>
             </div>
         </div>
@@ -617,17 +616,83 @@ td:hover .action-btns .reject,
         </div>
     </div>
 
-    <!-- Add AFTER the existing review modal (#reviewModal) -->
-<div class="admin-modal-bg" id="adminCreatedModal" aria-hidden="true" role="dialog">
-  <div class="admin-modal-card">
-    <button class="close-btn" onclick="closeAdminCreatedModal()">&times;</button>
-    <div class="modal-title">Admin Created</div>
-    <div class="modal-content">
-      <div id="adminCreatedText">The admin account has been created successfully.</div>
+    <!-- Modal for student review -->
+    <div class="admin-modal-bg" id="studentReviewModal">
+        <div class="admin-modal-card">
+            <button class="close-btn" onclick="closeStudentReviewModal()">&times;</button>
+            <div style="display:flex;flex-direction:column;align-items:center;">
+                <img class="profile-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=student" alt="Student Avatar" style="width:80px;height:80px;border-radius:50%;border:3px solid #ffd700;margin-bottom:10px;">
+            </div>
+            <div class="profile-name" id="modalStudentName" style="font-size:1.3em;font-family:'Baloo 2',cursive;color:#2e8b57;margin-bottom:2px;text-align:center;">Student Name</div>
+            <div class="profile-role" style="color:#2e8b57;font-weight:700;font-size:1.05rem;margin-bottom:14px;letter-spacing:1px;text-align:center;">
+                Student
+            </div>
+            <div class="profile-info" id="studentModalContent" style="width:100%;max-width:420px;margin:0 auto 0 auto;">
+                <!-- Details will be filled by JS -->
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                <button onclick="editStudent()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    <i class="fas fa-edit"></i> Edit Student
+                </button>
+                <button onclick="deleteStudentFromModal()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                    <i class="fas fa-trash"></i> Delete Student
+                </button>
+            </div>
+        </div>
     </div>
-    <button class="logout-btn" id="adminCreatedOk">OK</button>
-  </div>
-</div>
+
+    <!-- Modal for student editing -->
+    <div class="admin-modal-bg" id="studentEditModal">
+        <div class="admin-modal-card" style="max-width: 500px;">
+            <button class="close-btn" onclick="closeStudentEditModal()">&times;</button>
+            <h4 style="color: #2e8b57; margin-bottom: 20px; text-align: center;">Edit Student Information</h4>
+            <form id="studentEditForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">First Name:</label>
+                        <input type="text" id="editFname" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Last Name:</label>
+                        <input type="text" id="editLname" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Email:</label>
+                    <input type="email" id="editEmail" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Grade:</label>
+                        <select id="editGrade" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="Grade 5">Grade 5</option>
+                            <option value="Grade 6">Grade 6</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Section:</label>
+                        <select id="editSection" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="A">Section A</option>
+                            <option value="B">Section B</option>
+                            <option value="C">Section C</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Subject:</label>
+                    <select id="editSubject" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="Math">Math</option>
+                        <option value="English">English</option>
+                        <option value="Science">Science</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeStudentEditModal()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Cancel</button>
+                    <button type="submit" style="background: #2e8b57; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -791,19 +856,406 @@ function loadTeachers() {
         document.getElementById('reviewModal').style.display = 'none';
     }
 
-    // Success modal helpers
-function openAdminCreatedModal(text){
-  const m=document.getElementById('adminCreatedModal');
-  document.getElementById('adminCreatedText').textContent = text || 'The admin account has been created successfully.';
-  m.style.display='flex';
-  m.setAttribute('aria-hidden','false');
-}
-function closeAdminCreatedModal(){
-  const m=document.getElementById('adminCreatedModal');
-  m.style.display='none';
-  m.setAttribute('aria-hidden','true');
-}
-document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminCreatedModal);
+    // Admin Management Functions
+    let currentAdmin = null;
+
+    // Load current admin info
+    function loadCurrentAdmin() {
+        firebase.auth().onAuthStateChanged(async function(user) {
+            if (user) {
+                const uid = user.uid;
+                const snap = await db.ref('admins/' + uid).once('value');
+                const admin = snap.val();
+                if (admin && admin.role === "admin") {
+                    currentAdmin = admin;
+                    currentAdmin.uid = uid;
+                    loadAdmins();
+                }
+            }
+        });
+    }
+
+    // Load all admins
+    function loadAdmins() {
+        db.ref('admins').once('value').then(snapshot => {
+            const tbody = document.querySelector('#adminsTableBody');
+            tbody.innerHTML = '';
+            snapshot.forEach(child => {
+                const admin = child.val();
+                if (admin.role === "admin") {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">${(admin.fname || '') + ' ' + (admin.lname || '')}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">${admin.email || ''}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee;">${admin.createdAt ? new Date(admin.createdAt).toLocaleDateString() : '—'}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
+                            ${child.key !== currentAdmin.uid ? 
+                                `<button onclick="deleteAdmin('${child.key}')" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete</button>` : 
+                                '<span style="color: #28a745; font-weight: bold;">Current Admin</span>'
+                            }
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+        });
+    }
+
+    // Create new admin
+    async function createAdmin(adminData) {
+        try {
+            // Create user in Firebase Auth
+            const userCredential = await firebase.auth().createUserWithEmailAndPassword(adminData.email, adminData.password);
+            const user = userCredential.user;
+            const uid = user.uid;
+
+            // Save admin data in Realtime Database
+            const newAdminData = {
+                fname: adminData.fname,
+                lname: adminData.lname,
+                email: adminData.email,
+                role: "admin",
+                createdAt: new Date().toISOString(),
+                createdBy: currentAdmin.uid
+            };
+
+            await db.ref('admins/' + uid).set(newAdminData);
+
+            // Send verification email
+            try {
+                await user.sendEmailVerification();
+            } catch (err) {
+                console.log("Failed to send verification email: " + err.message);
+            }
+
+            // Sign out the created user (we don't want to stay logged in as them)
+            await firebase.auth().signOut();
+
+            alert('Admin created successfully! Verification email sent.');
+            document.getElementById('adminForm').reset();
+            document.getElementById('createAdminForm').style.display = 'none';
+            loadAdmins();
+
+        } catch (error) {
+            console.error('Error creating admin:', error);
+            alert('Error creating admin: ' + error.message);
+        }
+    }
+
+    // Delete admin
+    function deleteAdmin(adminUid) {
+        if (confirm('Are you sure you want to delete this admin? This action cannot be undone.')) {
+            db.ref('admins/' + adminUid).remove()
+                .then(() => {
+                    alert('Admin deleted successfully.');
+                    loadAdmins();
+                })
+                .catch(err => {
+                    console.error('Error deleting admin:', err);
+                    alert('Error deleting admin: ' + err.message);
+                });
+        }
+    }
+
+    // Event listeners for admin management
+    document.getElementById('createAdminBtn').onclick = function() {
+        document.getElementById('createAdminForm').style.display = 'block';
+    };
+
+    document.getElementById('cancelAdminBtn').onclick = function() {
+        document.getElementById('createAdminForm').style.display = 'none';
+        document.getElementById('adminForm').reset();
+    };
+
+    document.getElementById('adminForm').onsubmit = function(e) {
+        e.preventDefault();
+        
+        const fname = document.getElementById('adminFname').value;
+        const lname = document.getElementById('adminLname').value;
+        const email = document.getElementById('adminEmail').value;
+        const password = document.getElementById('adminPassword').value;
+
+        // Password validation
+        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        if (!strongPasswordRegex.test(password)) {
+            alert('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+            return;
+        }
+
+        const adminData = { fname, lname, email, password };
+        createAdmin(adminData);
+    };
+
+    // Student Management Functions
+    let currentStudent = null;
+    let allStudents = [];
+
+    // Load all students
+    function loadStudents() {
+        db.ref('students').once('value').then(snapshot => {
+            allStudents = [];
+            const tbody = document.querySelector('#studentsTableBody');
+            tbody.innerHTML = '';
+            
+            snapshot.forEach(child => {
+                const student = child.val();
+                allStudents.push({ ...student, uid: child.key });
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.id || ''}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                        <button onclick="reviewStudent('${child.key}')" style="background: none; border: none; color: #2e8b57; cursor: pointer; font-weight: 600; text-decoration: underline;">
+                            ${(student.fname || '') + ' ' + (student.lname || '')}
+                        </button>
+                    </td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.email || ''}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.gradelevel || ''}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.section || ''}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.subject || ''}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.registeredAt ? new Date(student.registeredAt).toLocaleDateString() : '—'}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
+                        <button onclick="editStudent('${child.key}')" style="background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 5px;">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button onclick="deleteStudent('${child.key}')" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    }
+
+    // Review student (show modal)
+    function reviewStudent(studentUid) {
+        const student = allStudents.find(s => s.uid === studentUid);
+        if (!student) return;
+        
+        currentStudent = student;
+        document.getElementById('modalStudentName').textContent = `${(student.fname || '')} ${(student.lname || '')}`;
+        
+        let html = `
+            <div><span class="modal-label">ID:</span> <span>${student.id || ''}</span></div>
+            <div><span class="modal-label">First Name:</span> <span>${student.fname || ''}</span></div>
+            <div><span class="modal-label">Last Name:</span> <span>${student.lname || ''}</span></div>
+            <div><span class="modal-label">Email:</span> <span>${student.email || ''}</span></div>
+            <div><span class="modal-label">Grade Level:</span> <span>${student.gradelevel || ''}</span></div>
+            <div><span class="modal-label">Section:</span> <span>${student.section || ''}</span></div>
+            <div><span class="modal-label">Subject:</span> <span>${student.subject || ''}</span></div>
+            <div><span class="modal-label">Gender:</span> <span>${student.gender || ''}</span></div>
+            <div><span class="modal-label">Age:</span> <span>${student.age || ''}</span></div>
+            <div><span class="modal-label">School Year:</span> <span>${student.school_year || ''}</span></div>
+            <div><span class="modal-label">Registered:</span> <span>${student.registeredAt ? new Date(student.registeredAt).toLocaleString() : '—'}</span></div>
+        `;
+        
+        document.getElementById('studentModalContent').innerHTML = html;
+        document.getElementById('studentReviewModal').style.display = 'flex';
+    }
+
+    // Edit student
+    function editStudent(studentUid = null) {
+        const student = studentUid ? allStudents.find(s => s.uid === studentUid) : currentStudent;
+        if (!student) return;
+        
+        currentStudent = student;
+        
+        // Populate form with current student data
+        document.getElementById('editFname').value = student.fname || '';
+        document.getElementById('editLname').value = student.lname || '';
+        document.getElementById('editEmail').value = student.email || '';
+        document.getElementById('editGrade').value = student.gradelevel || 'Grade 5';
+        document.getElementById('editSection').value = student.section || 'A';
+        document.getElementById('editSubject').value = student.subject || 'Math';
+        
+        document.getElementById('studentEditModal').style.display = 'flex';
+    }
+
+    // Delete student
+    function deleteStudent(studentUid) {
+        if (confirm('Are you sure you want to delete this student? This action cannot be undone.')) {
+            db.ref('students/' + studentUid).remove()
+                .then(() => {
+                    alert('Student deleted successfully.');
+                    loadStudents();
+                })
+                .catch(err => {
+                    console.error('Error deleting student:', err);
+                    alert('Error deleting student: ' + err.message);
+                });
+        }
+    }
+
+    // Delete student from modal
+    function deleteStudentFromModal() {
+        if (currentStudent) {
+            deleteStudent(currentStudent.uid);
+            closeStudentReviewModal();
+        }
+    }
+
+    // Update student
+    function updateStudent(studentData) {
+        if (!currentStudent) return;
+        
+        db.ref('students/' + currentStudent.uid).update(studentData)
+            .then(() => {
+                alert('Student updated successfully.');
+                closeStudentEditModal();
+                loadStudents();
+            })
+            .catch(err => {
+                console.error('Error updating student:', err);
+                alert('Error updating student: ' + err.message);
+            });
+    }
+
+    // Close modals
+    function closeStudentReviewModal() {
+        document.getElementById('studentReviewModal').style.display = 'none';
+        currentStudent = null;
+    }
+
+    function closeStudentEditModal() {
+        document.getElementById('studentEditModal').style.display = 'none';
+    }
+
+    // Student search and filter
+    function filterStudents() {
+        const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
+        const gradeFilter = document.getElementById('gradeFilter').value;
+        const sectionFilter = document.getElementById('sectionFilter').value;
+        
+        const tbody = document.querySelector('#studentsTableBody');
+        tbody.innerHTML = '';
+        
+        const filteredStudents = allStudents.filter(student => {
+            const matchesSearch = !searchTerm || 
+                (student.fname && student.fname.toLowerCase().includes(searchTerm)) ||
+                (student.lname && student.lname.toLowerCase().includes(searchTerm)) ||
+                (student.email && student.email.toLowerCase().includes(searchTerm)) ||
+                (student.id && student.id.toLowerCase().includes(searchTerm));
+            
+            const matchesGrade = !gradeFilter || student.gradelevel === gradeFilter;
+            const matchesSection = !sectionFilter || student.section === sectionFilter;
+            
+            return matchesSearch && matchesGrade && matchesSection;
+        });
+        
+        filteredStudents.forEach(student => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.id || ''}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">
+                    <button onclick="reviewStudent('${student.uid}')" style="background: none; border: none; color: #2e8b57; cursor: pointer; font-weight: 600; text-decoration: underline;">
+                        ${(student.fname || '') + ' ' + (student.lname || '')}
+                    </button>
+                </td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.email || ''}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.gradelevel || ''}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.section || ''}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.subject || ''}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.registeredAt ? new Date(student.registeredAt).toLocaleDateString() : '—'}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
+                    <button onclick="editStudent('${student.uid}')" style="background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 5px;">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button onclick="deleteStudent('${student.uid}')" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Event listeners for student management
+    document.getElementById('studentSearch').addEventListener('input', filterStudents);
+    document.getElementById('gradeFilter').addEventListener('change', filterStudents);
+    document.getElementById('sectionFilter').addEventListener('change', filterStudents);
+
+    document.getElementById('studentEditForm').onsubmit = function(e) {
+        e.preventDefault();
+        
+        const studentData = {
+            fname: document.getElementById('editFname').value,
+            lname: document.getElementById('editLname').value,
+            email: document.getElementById('editEmail').value,
+            gradelevel: document.getElementById('editGrade').value,
+            section: document.getElementById('editSection').value,
+            subject: document.getElementById('editSubject').value,
+            updatedAt: new Date().toISOString()
+        };
+        
+        updateStudent(studentData);
+    };
+
+    // Tab Navigation Functions
+    function showTab(tabName) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.style.display = 'none';
+        });
+        
+        // Remove active class from all tabs
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.style.background = '#6c757d';
+        });
+        
+        // Show selected tab content
+        document.getElementById('content' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).style.display = 'block';
+        
+        // Add active class to selected tab
+        document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).style.background = '#2e8b57';
+    }
+
+    // Enhanced table styling for better UX
+    function enhanceTableStyling() {
+        // Add hover effects to table rows
+        const style = document.createElement('style');
+        style.textContent = `
+            .tab-content table tbody tr {
+                transition: all 0.3s ease;
+            }
+            .tab-content table tbody tr:hover {
+                background: #f8f9fa !important;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            }
+            .tab-content table tbody td {
+                padding: 15px;
+                border-bottom: 1px solid #e9ecef;
+                vertical-align: middle;
+            }
+            .tab-content input:focus, .tab-content select:focus {
+                border-color: #2e8b57 !important;
+                box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1) !important;
+                outline: none !important;
+            }
+            .nav-tab:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            }
+            .approved {
+                color: #28a745;
+                font-weight: 600;
+                background: #d4edda;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+            }
+            .pending {
+                color: #ffc107;
+                font-weight: 600;
+                background: #fff3cd;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+            }
+        `;
+        document.head.appendChild(style);
+    }
 
     // Initial load
     loadCurrentAdmin();
@@ -812,247 +1264,5 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
     enhanceTableStyling();
     </script>
     </div>
-
-
-    <!-- Insert Admin Registration form here (place just inside #mainContent, e.g. before the <h2>) -->
-<section id="addAdminSection" style="display:none;max-width:920px;margin:18px auto;padding:0 18px;position:relative;">
-  <style>
-    /* Scoped styles for the inline admin form */
-    #addAdminSection .reg-container {
-      background: #fff;
-      padding: 28px;
-      border-radius: 14px;
-      box-shadow: 0 6px 28px rgba(0,0,0,0.06);
-      width: 420px;
-      margin: 0 auto 22px auto;
-      border: 2px solid #218838;
-      box-sizing: border-box;
-      max-height: calc(100vh - 140px);
-      overflow: auto;
-    }
-    /* close button for inline form */
-    #closeInlineAdminBtn {
-      position: absolute;
-      right: calc(50% - 210px); /* align near the form right edge */
-      top: 8px;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 6px 10px;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      display: none; /* shown when section is visible */
-    }
-    #addAdminSection h2 { text-align:center; margin-bottom:18px; color:#218838; }
-    #addAdminSection label { display:block; margin-bottom:8px; font-weight:600; color:#218838; }
-    #addAdminSection .input-wrapper { position:relative; }
-    #addAdminSection input[type="text"],
-    #addAdminSection input[type="email"],
-    #addAdminSection input[type="password"] {
-      width:100%; padding:12px; margin-bottom:14px; border-radius:8px; border:2px solid #218838;
-      background:#f6f7fb; box-sizing:border-box; font-size:15px;
-    }
-    #addAdminSection input:focus { outline:none; background:#e8f5e9; border-color:#17692c; }
-    #addAdminSection .toggle-password { position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; width:26px; height:26px; display:flex; align-items:center; justify-content:center; }
-    #addAdminSection .field-error { color:#d32f2f; font-size:13px; margin-top:-10px; margin-bottom:8px; min-height:18px; }
-    #addAdminSection button[type="submit"] { width:100%; padding:12px; border-radius:8px; border:none; background:#218838; color:#fff; font-weight:700; cursor:pointer; font-size:16px; }
-    #addAdminSection .success { color:#2e7d32; text-align:center; margin-top:10px; }
-    #addAdminSection .error { color:#c62828; text-align:center; margin-top:10px; }
-  </style>
-
-  <button id="closeInlineAdminBtn" aria-label="Close admin form">&times; Close</button>
-   <div class="reg-container" role="region" aria-labelledby="adminFormTitle">
-     <h2 id="adminFormTitle">Admin Registration</h2>
-
-     <form id="inlineAdminRegForm" autocomplete="off" novalidate>
-      <label for="firstName">First Name</label>
-      <input type="text" id="firstName" name="firstName">
-      <div id="errorFirstName" class="field-error"></div>
-
-      <label for="middleName">Middle Name</label>
-      <input type="text" id="middleName" name="middleName">
-      <div id="errorMiddleName" class="field-error"></div>
-
-      <label for="lastName">Last Name</label>
-      <input type="text" id="lastName" name="lastName">
-      <div id="errorLastName" class="field-error"></div>
-
-      <label for="adminEmailInput">Email</label>
-      <input type="email" id="adminEmailInput" name="adminEmail">
-      <div id="errorAdminEmail" class="field-error"></div>
-
-      <label for="adminPassword">Password</label>
-      <div class="input-wrapper">
-        <input type="password" id="adminPassword" name="adminPassword" style="padding-right:44px;">
-        <span class="toggle-password" onclick="togglePassword('adminPassword', this)" aria-hidden="true">
-          <svg class="eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#ec407a" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="#ec407a" stroke-width="2"/></svg>
-          <svg class="eye-off hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path stroke="#ec407a" stroke-width="2" d="M3 3l18 18"/><path stroke="#ec407a" stroke-width="2" d="M10.73 10.73A3 3 0 0 0 12 15a3 3 0 0 0 2.27-4.27"/><path stroke="#ec407a" stroke-width="2" d="M1 12s4-7 11-7c2.54 0 4.68.7 6.41 1.7M21 12s-4 7-11 7c-2.54 0-4.68-.7-6.41-1.7"/></svg>
-        </span>
-      </div>
-      <div id="errorAdminPassword" class="field-error"></div>
-
-      <label for="confirmPassword">Confirm Password</label>
-      <div class="input-wrapper">
-        <input type="password" id="confirmPassword" name="confirmPassword" style="padding-right:44px;">
-        <span class="toggle-password" onclick="togglePassword('confirmPassword', this)" aria-hidden="true">
-          <svg class="eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#ec407a" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="#ec407a" stroke-width="2"/></svg>
-          <svg class="eye-off hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path stroke="#ec407a" stroke-width="2" d="M3 3l18 18"/><path stroke="#ec407a" stroke-width="2" d="M10.73 10.73A3 3 0 0 0 12 15a3 3 0 0 0 2.27-4.27"/><path stroke="#ec407a" stroke-width="2" d="M1 12s4-7 11-7c2.54 0 4.68.7 6.41 1.7M21 12s-4 7-11 7c-2.54 0-4.68-.7-6.41-1.7"/></svg>
-        </span>
-      </div>
-      <div id="errorConfirmPassword" class="field-error"></div>
-
-      <label style="font-weight:500;">
-        <input type="checkbox" id="termsCheckbox" name="termsCheckbox" style="margin-right:8px;">
-        I agree to the Terms and Conditions
-      </label>
-      <div id="errorTerms" class="field-error"></div>
-
-      <button type="submit">Register</button>
-      <div id="message" role="status" aria-live="polite"></div>
-     </form>
-   </div>
- </section>
-<!-- end insert -->
-
-<script>
-// ...existing code...
-
-// Show/hide inline admin form and wire the Add Admin button
-(function () {
-  const openBtn = document.getElementById('openAddAdminBtn');
-  const addSection = document.getElementById('addAdminSection');
-  const closeBtn = document.getElementById('closeInlineAdminBtn');
-
-  if (!addSection) return;
-
-  function showForm() {
-    addSection.style.display = 'block';
-    // show close button
-    if (closeBtn) closeBtn.style.display = 'inline-block';
-    // scroll into view centered
-    addSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-  function hideForm() {
-    addSection.style.display = 'none';
-    if (closeBtn) closeBtn.style.display = 'none';
-  }
-
-  if (openBtn) {
-    openBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      // close admin dropdown
-      document.getElementById('adminDropdownContent')?.classList.remove('show');
-      showForm();
-    });
-  }
-
-  if (closeBtn) {
-    closeBtn.addEventListener('click', hideForm);
-  }
-
-  // Clicking outside the form should not close the admin page; provide ESC to close
-  document.addEventListener('keydown', function (ev) {
-    if (ev.key === 'Escape' && addSection.style.display === 'block') hideForm();
-  });
-
-  // Ensure togglePassword is available globally (used by inline onclicks)
-  if (typeof window.togglePassword !== 'function') {
-    window.togglePassword = function(fieldId, iconEl){
-      const input = document.getElementById(fieldId);
-      if (!input) return;
-      const eye = iconEl && iconEl.querySelector && iconEl.querySelector('.eye');
-      const eyeOff = iconEl && iconEl.querySelector && iconEl.querySelector('.eye-off');
-      if (input.type === 'password') {
-        input.type = 'text';
-        if (eye) eye.classList.add('hidden');
-        if (eyeOff) eyeOff.classList.remove('hidden');
-      } else {
-        input.type = 'password';
-        if (eye) eye.classList.remove('hidden');
-        if (eyeOff) eyeOff.classList.add('hidden');
-      }
-    };
-  }
-})();
-
-(() => {
-  const form = document.getElementById('inlineAdminRegForm');
-  if(!form) return;
-
-  const f = id => document.getElementById(id);
-  const msgEl = f('message');
-
-  // Reuse config; create secondary app so we don't log out current admin
-  let secondaryApp;
-  function getSecondary(){
-    if(!secondaryApp){
-      secondaryApp = firebase.initializeApp(firebase.app().options, 'secondary');
-    }
-    return secondaryApp;
-  }
-
-  function setMsg(txt, ok){
-    msgEl.textContent = txt;
-    msgEl.className = ok ? 'success' : 'error';
-  }
-
-  form.addEventListener('submit', async e=>{
-    e.preventDefault();
-    // Clear errors
-    ['FirstName','MiddleName','LastName','AdminEmail','AdminPassword','ConfirmPassword','Terms'].forEach(n=>{
-      const el = document.getElementById('error'+n);
-      if(el) el.textContent='';
-    });
-    setMsg('', true);
-
-    const first = f('firstName').value.trim();
-    const middle = f('middleName').value.trim();
-    const last = f('lastName').value.trim();
-    const email = f('adminEmailInput').value.trim();
-    const pass = f('adminPassword').value;
-    const pass2 = f('confirmPassword').value;
-    const terms = f('termsCheckbox').checked;
-
-    let invalid=false;
-    if(!first){ f('errorFirstName').textContent='Required'; invalid=true; }
-    if(!last){ f('errorLastName').textContent='Required'; invalid=true; }
-    if(!email){ f('errorAdminEmail').textContent='Required'; invalid=true; }
-    if(pass.length<6){ f('errorAdminPassword').textContent='Min 6 chars'; invalid=true; }
-    if(pass!==pass2){ f('errorConfirmPassword').textContent='Passwords differ'; invalid=true; }
-    if(!terms){ f('errorTerms').textContent='Accept terms'; invalid=true; }
-    if(invalid) return;
-
-    setMsg('Creating admin account...', true);
-    form.querySelector('button[type=submit]').disabled=true;
-
-    try{
-      const sec = getSecondary();
-      const cred = await sec.auth().createUserWithEmailAndPassword(email, pass);
-      const uid = cred.user.uid;
-      const adminData = {
-        uid,
-        email,
-        fname:first,
-        mname:middle,
-        lname:last,
-        role:'admin',
-        createdAt: Date.now()
-      };
-      await firebase.database().ref('admins/'+uid).set(adminData);
-      setMsg('Admin created.', true);
-      openAdminCreatedModal('Admin '+(adminData.fname||'')+' '+(adminData.lname||'')+' has been created.');
-
-      // Clean up & keep current admin session
-      await sec.auth().signOut();
-      form.reset();
-    }catch(err){
-      console.error(err);
-      setMsg(err.message || 'Error creating admin', false);
-    }finally{
-      form.querySelector('button[type=submit]').disabled=false;
-    }
-  });
-})();
-</script>
 </body>
 </html>

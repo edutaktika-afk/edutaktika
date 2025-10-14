@@ -108,6 +108,14 @@
       </ul>
     </li>
                     <li><a href="studentlist.html">Student</a></li>
+                    <li><a href="grading.html">Grading</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Assessments <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="assessment-builder.html">Create Assessment</a></li>
+                            <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                        </ul>
+                    </li>
                     <li class="dropdown">
                             <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
                             <ul class="dropdown-content">
@@ -971,51 +979,88 @@ document.getElementById('createLessonForm').onsubmit = async function(e) {
 
 <script>
 
-firebase.auth().onAuthStateChanged(async function(user) {
+// Enhanced teacher lesson loading function
+async function loadTeacherLessons() {
+    const user = firebase.auth().currentUser;
     if (!user) return;
+
     const teacherUID = user.uid;
     const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
     const teacher = teacherSnap.val();
     const section = teacher && teacher.section ? teacher.section : null;
 
+    if (!section) {
+        console.log('Teacher section not found');
+        return;
+    }
+
+    console.log('Loading lessons for teacher:', teacherUID, 'section:', section);
+
     for (let q = 1; q <= 4; q++) {
         const container = document.querySelector(`#quarter-${q} .lessons-container`);
         if (!container) continue;
 
-        // Fetch ONLY teacher's own lessons
         let lessons = [];
-        if (section) {
-            const teacherLessonsSnap = await db.ref('teachers/' + teacherUID + '/sections/' + section + '/lessons/' + subjectPage + '/quarter-' + q).once('value');
+
+        // Fetch teacher's own lessons from Editor
+        try {
+            const teacherLessonsSnap = await db.ref(`teachers/${teacherUID}/sections/${section}/lessons/${subjectPage}/quarter-${q}`).once('value');
             if (teacherLessonsSnap.exists()) {
                 teacherLessonsSnap.forEach(child => {
                     const data = child.val();
                     lessons.push({
                         title: data.title || child.key,
-                        description: data.description || ''
+                        description: data.description || 'No description available',
+                        quarter: q,
+                        savedAt: data.savedAt || '',
+                        source: 'teacher'
                     });
                 });
             }
+        } catch (error) {
+            console.error('Error loading teacher lessons:', error);
         }
 
-        // Sort lessons alphabetically by title
-        lessons.sort((a, b) => a.title.localeCompare(b.title));
+        // Sort lessons by creation date (newest first)
+        lessons.sort((a, b) => {
+            if (a.savedAt && b.savedAt) {
+                return new Date(b.savedAt) - new Date(a.savedAt);
+            }
+            return a.title.localeCompare(b.title);
+        });
 
         // Render lessons
         if (lessons.length === 0) {
-            
+            if (!container.querySelector('.lesson-item')) {
+                container.innerHTML = "<div style='text-align:center;padding:20px;color:#666;'>No lessons created for this quarter yet.<br><small>Click 'Create Lesson' to get started!</small></div>";
+            }
         } else {
             container.innerHTML = lessons.map(lesson => `
                 <div class="lesson-item" data-presentation="${lesson.title}">
-                    <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
+                    <div class="lesson-thumbnail" style="background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-book-open" style="font-size: 2rem; color: white;"></i>
+                    </div>
                     <div class="lesson-title">
                         <h3>${lesson.title}</h3>
                         <p>${lesson.description}</p>
-                        <button class="lesson-badge" onclick="viewPresentation('${q}','${lesson.title}','view','${subjectPage}')" style="cursor:pointer;">View</button>
-                        <button class="lesson-badge" onclick="viewPresentation('${q}','${lesson.title}','edit','${subjectPage}')" style="cursor:pointer;">Edit</button>
+                        <div style="margin-top: 8px; display: flex; gap: 8px;">
+                            <button class="lesson-badge" onclick="viewPresentation('${lesson.quarter}','${lesson.title}','view','${subjectPage}')" style="cursor:pointer; background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">View</button>
+                            <button class="lesson-badge" onclick="viewPresentation('${lesson.quarter}','${lesson.title}','edit','${subjectPage}')" style="cursor:pointer; background: #FF9800; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">Edit</button>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #888; margin-top: 4px;">
+                            Created: ${lesson.savedAt ? new Date(lesson.savedAt).toLocaleDateString() : 'Unknown'}
+                        </div>
                     </div>
                 </div>
             `).join('');
         }
+    }
+}
+
+// Initialize lesson loading when user is authenticated
+firebase.auth().onAuthStateChanged(async function(user) {
+    if (user) {
+        await loadTeacherLessons();
     }
 });
 function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {

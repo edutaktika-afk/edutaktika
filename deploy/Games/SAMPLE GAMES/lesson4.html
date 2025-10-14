@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Area Calculation Drag & Drop Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        body {
+            min-height: 100vh;
+            min-width: 100vw;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f8ffae 0%, #43c6ac 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            overflow: hidden;
+        }
+        .game-canvas {
+            width: 100vw;
+            height: 100vh;
+            max-width: 100vw;
+            max-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+        h1 {
+            color: #43c6ac;
+            font-size: 2.8rem;
+            margin-bottom: 18px;
+            letter-spacing: 1px;
+        }
+        .shape-svg {
+            width: 260px;
+            height: 160px;
+            margin: 0 auto 24px auto;
+            display: block;
+        }
+        .label {
+            font-weight: bold;
+            color: #2e8b57;
+            margin-bottom: 16px;
+            font-size: 1.5rem;
+        }
+        .slots {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 32px 0;
+        }
+        .slot {
+            background: #e0f7fa;
+            border: 2px dashed #43c6ac;
+            border-radius: 18px;
+            width: 140px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            color: #43c6ac;
+            margin: 0 12px;
+            transition: background 0.2s, border 0.2s;
+        }
+        .slot.active {
+            background: #43c6ac22;
+            border-color: #f8ffae;
+        }
+        .slot.filled {
+            background: #43c6ac;
+            color: #fff;
+            border-color: #43c6ac;
+        }
+        .draggables {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 36px 0 18px 0;
+        }
+        .draggable {
+            background: #43c6ac;
+            color: #fff;
+            border-radius: 32px;
+            padding: 22px 48px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: grab;
+            box-shadow: 0 2px 12px #43c6ac33;
+            user-select: none;
+            border: 2px solid #fffbe6;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .draggable.dragging {
+            background: #f8ffae;
+            color: #43c6ac;
+            transform: scale(1.08);
+            opacity: 0.8;
+        }
+        #score {
+            font-size: 1.3rem;
+            margin-top: 24px;
+            color: #000000;
+            font-weight: bold;
+        }
+        /* Modal styles */
+        .modal-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-bg.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #fff;
+            border-radius: 20px;
+            padding: 38px 32px;
+            max-width: 520px;
+            width: 96vw;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+            text-align: center;
+            position: relative;
+        }
+        .modal-content h2 {
+            margin: 0 0 18px 0;
+            font-size: 2rem;
+            color: #43c6ac;
+        }
+        .modal-content p, .modal-content ul {
+            margin: 0 0 18px 0;
+            font-size: 1.18rem;
+            color: #333;
+        }
+        .modal-btn {
+            background: #43c6ac;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 18px;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+        .modal-btn:hover {
+            background: #236d4d;
+        }
+        #answerModalNextBtn, #answerModalPlayAgainBtn {
+            display: none;
+            margin-left: auto;
+            margin-right: auto;
+            float: none;
+        }
+        .modal-content button {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            float: none;
+        }
+        /* Edit Modal */
+        #editModal .modal-content.edit-modal-content {
+            background: #fff;
+            color: #2e8b57;
+            padding: 32px 24px;
+            border-radius: 16px;
+            max-width: 620px;
+            width: 96vw;
+            box-shadow: 0 4px 24px #ff69b4;
+            text-align: center;
+            position: relative;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .edit-modal-content label, .edit-modal-content input, .edit-modal-content textarea {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            width: 90%;
+            display: block;
+        }
+        .edit-modal-content input, .edit-modal-content textarea {
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #2e8b57;
+            margin-bottom: 12px;
+        }
+        .edit-modal-content textarea {
+            resize: vertical;
+            min-height: 40px;
+        }
+        .edit-question-block {
+            background: #e9ffe9;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px #ff69b4;
+        }
+        .remove-question-btn {
+            background: #ff69b4;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 18px;
+            font-size: 1rem;
+            cursor: pointer;
+            float: right;
+            margin-top: -8px;
+            margin-right: -8px;
+        }
+        @media (max-width: 700px) {
+            .game-canvas { padding: 12px 2vw 18px 2vw; }
+            .draggables, .slots { flex-direction: column; gap: 18px; }
+            .shape-svg { width: 98vw; height: 90px; }
+            .slot { width: 98vw; max-width: 140px; }
+            .modal-content { padding: 18px 4vw; max-width: 98vw; }
+        }
+        #editBtn {
+            position: fixed;
+            top: 24px;
+            right: 32px;
+            z-index: 1100;
+            margin-top: 0 !important;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Start Modal -->
+    <div class="modal-bg active" id="startModal">
+        <div class="modal-content">
+            <h2>Area Calculation Drag & Drop Game</h2>
+            <p>Welcome! Practice calculating the area of Parallelogram, Triangle, and Trapezoid.<br>Click Start to begin.</p>
+            <button class="modal-btn" id="startBtn">Start</button>
+        </div>
+    </div>
+    <!-- Instructions Modal -->
+    <div class="modal-bg" id="instructionsModal">
+        <div class="modal-content">
+            <h2>Instructions</h2>
+            <ul style="text-align:left;">
+                <li>Each world shows a shape and its area formula.</li>
+                <li>Drag the correct values for base(s) and height into the slots.</li>
+                <li>After filling all slots, you'll get feedback and see the area calculation.</li>
+                <li>Click "Next Shape" to move to the next world.</li>
+                <li>Try to get all shapes correct!</li>
+            </ul>
+            <button class="modal-btn" id="continueBtn">Continue</button>
+        </div>
+    </div>
+    <!-- Answer Modal -->
+    <div class="modal-bg" id="answerModal">
+        <div class="modal-content">
+            <h2 id="answerModalTitle"></h2>
+            <p id="answerModalMessage"></p>
+            <button class="modal-btn" id="answerModalNextBtn" style="display:none;">Next Shape</button>
+            <button class="modal-btn" id="answerModalPlayAgainBtn" style="display:none;">Play Again</button>
+        </div>
+    </div>
+    <!-- Edit Modal -->
+    <div class="modal-bg" id="editModal">
+        <div class="modal-content edit-modal-content">
+            <h2>Edit Area Worlds</h2>
+            <div id="editQuestionsList"></div>
+            <button class="modal-btn" id="addQuestionBtn">Add World</button>
+            <button class="modal-btn" id="saveEditBtn">Save</button>
+            <button class="modal-btn" id="cancelEditBtn">Cancel</button>
+        </div>
+    </div>
+    <button class="modal-btn" id="editBtn" style="display:none;">Edit Worlds</button>
+    <div class="game-canvas" id="gameCanvas" style="display:none;">
+        <h1 id="worldTitle">Area Calculation Game</h1>
+        <div id="shapeSVG"></div>
+        <div class="label" id="formulaLabel"></div>
+        <div class="slots" id="slots"></div>
+        <div class="draggables" id="draggables"></div>
+        <div id="score"></div>
+    </div>
+    <script>
+        // Load worlds from localStorage if available
+        let defaultWorlds = [
+            {
+                name: "Parallelogram World",
+                svg: `<svg class="shape-svg" viewBox="0 0 180 120"><polygon points="20,100 160,100 140,20 0,20" fill="#43c6ac" stroke="#2e8b57" stroke-width="3"/><text x="90" y="115" text-anchor="middle" font-size="16" fill="#2e8b57">Parallelogram</text></svg>`,
+                formula: "Area = Base × Height",
+                slots: ["Base", "Height"],
+                values: [
+                    {label: "Base = 12", value: 12},
+                    {label: "Height = 8", value: 8},
+                    {label: "Base = 10", value: 10},
+                    {label: "Height = 6", value: 6}
+                ],
+                correct: [12, 8]
+            },
+            {
+                name: "Triangle World",
+                svg: `<svg class="shape-svg" viewBox="0 0 180 120"><polygon points="20,100 160,100 90,20" fill="#43c6ac" stroke="#2e8b57" stroke-width="3"/><text x="90" y="115" text-anchor="middle" font-size="16" fill="#2e8b57">Triangle</text></svg>`,
+                formula: "Area = ½ × Base × Height",
+                slots: ["Base", "Height"],
+                values: [
+                    {label: "Base = 14", value: 14},
+                    {label: "Height = 9", value: 9},
+                    {label: "Base = 11", value: 11},
+                    {label: "Height = 7", value: 7}
+                ],
+                correct: [14, 9]
+            },
+            {
+                name: "Trapezoid World",
+                svg: `<svg class="shape-svg" viewBox="0 0 180 120"><polygon points="40,100 140,100 120,40 60,40" fill="#43c6ac" stroke="#2e8b57" stroke-width="3"/><text x="90" y="115" text-anchor="middle" font-size="16" fill="#2e8b57">Trapezoid</text></svg>`,
+                formula: "Area = ½ × (Base₁ + Base₂) × Height",
+                slots: ["Base 1", "Base 2", "Height"],
+                values: [
+                    {label: "Base 1 = 16", value: 16},
+                    {label: "Base 2 = 10", value: 10},
+                    {label: "Height = 7", value: 7},
+                    {label: "Base 1 = 13", value: 13},
+                    {label: "Base 2 = 9", value: 9},
+                    {label: "Height = 5", value: 5}
+                ],
+                correct: [16, 10, 7]
+            }
+        ];
+        let worlds = [];
+        if (localStorage.getItem('areaWorlds')) {
+            worlds = JSON.parse(localStorage.getItem('areaWorlds'));
+        } else {
+            worlds = JSON.parse(JSON.stringify(defaultWorlds));
+        }
+        let currentWorld = 0;
+        let score = 0;
+
+        // Modal logic
+        document.getElementById('startBtn').onclick = function() {
+            document.getElementById('startModal').classList.remove('active');
+            document.getElementById('instructionsModal').classList.add('active');
+        };
+        document.getElementById('continueBtn').onclick = function() {
+            document.getElementById('instructionsModal').classList.remove('active');
+            document.getElementById('gameCanvas').style.display = '';
+            document.getElementById('editBtn').style.display = 'block';
+            loadWorld();
+        };
+
+        function loadWorld() {
+            document.getElementById('worldTitle').textContent = worlds[currentWorld].name;
+            document.getElementById('shapeSVG').innerHTML = worlds[currentWorld].svg;
+            document.getElementById('formulaLabel').textContent = worlds[currentWorld].formula;
+            document.getElementById('score').textContent = `Score: ${score} / ${worlds.length}`;
+            // Slots
+            const slotsDiv = document.getElementById('slots');
+            slotsDiv.innerHTML = "";
+            worlds[currentWorld].slots.forEach((slot, idx) => {
+                slotsDiv.innerHTML += `<div class="slot" id="slot${idx}" data-idx="${idx}">${slot}</div>`;
+            });
+            // Draggables
+            const draggablesDiv = document.getElementById('draggables');
+            draggablesDiv.innerHTML = "";
+            worlds[currentWorld].values
+                .sort(() => Math.random() - 0.5)
+                .forEach((item, idx) => {
+                    const div = document.createElement('div');
+                    div.className = "draggable";
+                    div.draggable = true;
+                    div.id = "drag" + idx;
+                    div.textContent = item.label;
+                    div.dataset.value = item.value;
+                    draggablesDiv.appendChild(div);
+                });
+            addDragDropListeners();
+        }
+
+        function addDragDropListeners() {
+            let dragged = null;
+            document.querySelectorAll('.draggable').forEach(elem => {
+                elem.addEventListener('dragstart', function(ev) {
+                    dragged = ev.target;
+                    setTimeout(() => {
+                        ev.target.classList.add('dragging');
+                    }, 0);
+                    ev.dataTransfer.setData("text", ev.target.id);
+                });
+                elem.addEventListener('dragend', function(ev) {
+                    ev.target.classList.remove('dragging');
+                    dragged = null;
+                });
+            });
+
+            document.querySelectorAll('.slot').forEach(slot => {
+                slot.ondragover = function(ev) {
+                    ev.preventDefault();
+                    slot.classList.add('active');
+                };
+                slot.ondragleave = function(ev) {
+                    slot.classList.remove('active');
+                };
+                slot.ondrop = function(ev) {
+                    ev.preventDefault();
+                    slot.classList.remove('active');
+                    if (slot.classList.contains('filled')) return;
+                    const data = ev.dataTransfer.getData("text");
+                    const answer = document.getElementById(data);
+                    slot.textContent = answer.textContent;
+                    slot.classList.add('filled');
+                    slot.dataset.value = answer.dataset.value;
+                    answer.style.visibility = "hidden";
+                    checkIfAllFilled();
+                };
+            });
+        }
+
+        function checkIfAllFilled() {
+            const slots = Array.from(document.querySelectorAll('.slot'));
+            if (slots.every(slot => slot.classList.contains('filled'))) {
+                // Get values in order
+                const values = slots.map(slot => Number(slot.dataset.value));
+                let correct = false, area = 0, hint = "";
+                if (currentWorld === 0) { // Parallelogram
+                    correct = values[0] === worlds[0].correct[0] && values[1] === worlds[0].correct[1];
+                    area = values[0] * values[1];
+                    hint = `Area = ${values[0]} × ${values[1]} = ${area}`;
+                } else if (currentWorld === 1) { // Triangle
+                    correct = values[0] === worlds[1].correct[0] && values[1] === worlds[1].correct[1];
+                    area = 0.5 * values[0] * values[1];
+                    hint = `Area = ½ × ${values[0]} × ${values[1]} = ${area}`;
+                } else if (currentWorld === 2) { // Trapezoid
+                    correct = values[0] === worlds[2].correct[0] && values[1] === worlds[2].correct[1] && values[2] === worlds[2].correct[2];
+                    area = 0.5 * (values[0] + values[1]) * values[2];
+                    hint = `Area = ½ × (${values[0]} + ${values[1]}) × ${values[2]} = ${area}`;
+                }
+                // Show modal for every answer
+                document.getElementById('answerModal').classList.add('active');
+                document.getElementById('answerModalNextBtn').style.display = "none";
+                document.getElementById('answerModalPlayAgainBtn').style.display = "none";
+                if (correct) {
+                    score++;
+                    if (currentWorld === worlds.length - 1) {
+                        document.getElementById('answerModalTitle').textContent = "Congratulations!";
+                        document.getElementById('answerModalMessage').innerHTML = `Your final score: ${score} / ${worlds.length}<br>${hint}`;
+                        document.getElementById('answerModalPlayAgainBtn').style.display = "block";
+                    } else {
+                        document.getElementById('answerModalTitle').textContent = "✅ Correct!";
+                        document.getElementById('answerModalMessage').textContent = hint;
+                        document.getElementById('answerModalNextBtn').style.display = "block";
+                    }
+                } else {
+                    if (currentWorld === worlds.length - 1) {
+                        document.getElementById('answerModalTitle').textContent = "Incorrect!";
+                        document.getElementById('answerModalMessage').innerHTML = `Hint: ${hint}<br>Your final score: ${score} / ${worlds.length}`;
+                        document.getElementById('answerModalPlayAgainBtn').style.display = "block";
+                    } else {
+                        document.getElementById('answerModalTitle').textContent = "Incorrect!";
+                        document.getElementById('answerModalMessage').textContent = `Hint: ${hint}`;
+                        document.getElementById('answerModalNextBtn').style.display = "block";
+                    }
+                }
+                document.getElementById('score').textContent = `Score: ${score} / ${worlds.length}`;
+            }
+        }
+
+        document.getElementById('answerModalNextBtn').onclick = function() {
+            document.getElementById('answerModal').classList.remove('active');
+            currentWorld++;
+            loadWorld();
+        };
+        document.getElementById('answerModalPlayAgainBtn').onclick = function() {
+            document.getElementById('answerModal').classList.remove('active');
+            currentWorld = 0;
+            score = 0;
+            loadWorld();
+        };
+
+        // Edit Worlds logic
+        document.getElementById('editBtn').onclick = function() {
+            showEditModal();
+            document.getElementById('editModal').classList.add('active');
+        };
+        document.getElementById('cancelEditBtn').onclick = function() {
+            document.getElementById('editModal').classList.remove('active');
+        };
+        function showEditModal() {
+            document.getElementById('editQuestionsList').innerHTML = '';
+            worlds.forEach((w, idx) => {
+                let valuesHtml = '';
+                w.values.forEach((v, vIdx) => {
+                    valuesHtml += `
+                        <label>Value ${vIdx+1}:<br>
+                            <input type="text" class="edit-value-label" value="${v.label.replace(/"/g, '&quot;')}" data-widx="${idx}" data-vidx="${vIdx}">
+                            <input type="number" class="edit-value-num" value="${v.value}" data-widx="${idx}" data-vidx="${vIdx}">
+                        </label>
+                    `;
+                });
+                let correctHtml = '';
+                w.correct.forEach((c, cIdx) => {
+                    correctHtml += `
+                        <label>Correct Value ${cIdx+1}:<br>
+                            <input type="number" class="edit-correct-num" value="${c}" data-widx="${idx}" data-cidx="${cIdx}">
+                        </label>
+                    `;
+                });
+                document.getElementById('editQuestionsList').innerHTML += `
+                    <div class="edit-question-block">
+                        <button class="remove-question-btn" data-idx="${idx}" style="float: right; margin-top: -8px; margin-right: -8px;">Remove</button>
+                        <label>World Name:<br>
+                            <input type="text" class="edit-name" value="${w.name.replace(/"/g, '&quot;')}">
+                        </label>
+                        
+                        <label>Formula:<br>
+                            <input type="text" class="edit-formula" value="${w.formula.replace(/"/g, '&quot;')}">
+                        </label>
+                        <label>Slots (comma separated):<br>
+                            <input type="text" class="edit-slots" value="${w.slots.join(', ')}">
+                        </label>
+                        ${valuesHtml}
+                        ${correctHtml}
+                    </div>
+                `;
+            });
+            // Remove logic
+            document.querySelectorAll('.remove-question-btn').forEach(btn => {
+                btn.onclick = function() {
+                    const idx = Number(btn.dataset.idx);
+                    worlds.splice(idx, 1);
+                    showEditModal();
+                };
+            });
+        }
+        document.getElementById('addQuestionBtn').onclick = function() {
+            worlds.push({
+                name: "",
+                svg: "",
+                formula: "",
+                slots: ["", ""],
+                values: [{label:"",value:0},{label:"",value:0}],
+                correct: [0,0]
+            });
+            showEditModal();
+        };
+        document.getElementById('saveEditBtn').onclick = function() {
+            // Save edits
+            let blocks = document.querySelectorAll('.edit-question-block');
+            let newWorlds = [];
+            blocks.forEach((block, idx) => {
+                let name = block.querySelector('.edit-name').value.trim();
+                let svg = block.querySelector('.edit-svg').value.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+                let formula = block.querySelector('.edit-formula').value.trim();
+                let slots = block.querySelector('.edit-slots').value.split(',').map(s=>s.trim());
+                let valueLabels = block.querySelectorAll('.edit-value-label');
+                let valueNums = block.querySelectorAll('.edit-value-num');
+                let values = [];
+                for(let i=0;i<valueLabels.length;i++){
+                    values.push({
+                        label: valueLabels[i].value.trim(),
+                        value: Number(valueNums[i].value)
+                    });
+                }
+                let correctNums = block.querySelectorAll('.edit-correct-num');
+                let correct = [];
+                for(let i=0;i<correctNums.length;i++){
+                    correct.push(Number(correctNums[i].value));
+                }
+                newWorlds.push({
+                    name: name,
+                    svg: svg,
+                    formula: formula,
+                    slots: slots,
+                    values: values,
+                    correct: correct
+                });
+            });
+            worlds = newWorlds;
+            localStorage.setItem('areaWorlds', JSON.stringify(worlds));
+            document.getElementById('editModal').classList.remove('active');
+            currentWorld = 0;
+            score = 0;
+            loadWorld();
+        };
+
+        // Hide Edit button on start/instructions/final modals
+        document.getElementById('startBtn').onclick = function() {
+            document.getElementById('startModal').classList.remove('active');
+            document.getElementById('instructionsModal').classList.add('active');
+            document.getElementById('editBtn').style.display = 'none';
+        };
+        document.getElementById('continueBtn').onclick = function() {
+            document.getElementById('instructionsModal').classList.remove('active');
+            document.getElementById('gameCanvas').style.display = '';
+            document.getElementById('editBtn').style.display = 'block';
+            loadWorld();
+        };
+        document.getElementById('answerModalPlayAgainBtn').onclick = function() {
+            document.getElementById('answerModal').classList.remove('active');
+            currentWorld = 0;
+            score = 0;
+            loadWorld();
+        };
+        // Initial state
+        window.onload = function() {
+            document.getElementById('startModal').classList.add('active');
+            document.getElementById('instructionsModal').classList.remove('active');
+            document.getElementById('answerModal').classList.remove('active');
+            document.getElementById('gameCanvas').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

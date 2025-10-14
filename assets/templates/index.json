@@ -1,0 +1,121 @@
+{
+  "templates": [
+    {
+      "id": "science-lesson",
+      "name": "Science Lesson",
+      "description": "Professional science lesson presentation with objectives, content, and summary slides",
+      "file": "science-lesson.json",
+      "category": "science",
+      "pages": 4,
+      "thumbnail": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=400&h=300&fit=crop",
+      "colors": ["#3498db", "#2ecc71", "#2c3e50"],
+      "tags": ["science", "lesson", "education", "professional"]
+    },
+    {
+      "id": "math-lesson",
+      "name": "Math Lesson",
+      "description": "Mathematics lesson template with formula presentation, worked examples, and practice problems",
+      "file": "math-lesson.json",
+      "category": "math",
+      "pages": 4,
+      "thumbnail": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=300&fit=crop",
+      "colors": ["#8e44ad", "#f1c40f", "#ecf0f1"],
+      "tags": ["math", "lesson", "formula", "education"]
+    },
+    {
+      "id": "english-essay",
+      "name": "English Essay Structure",
+      "description": "Comprehensive essay writing guide with introduction, body paragraphs, and conclusion",
+      "file": "english-essay.json",
+      "category": "english",
+      "pages": 5,
+      "thumbnail": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=300&fit=crop",
+      "colors": ["#9b59b6", "#ffffff", "#2c3e50"],
+      "tags": ["english", "essay", "writing", "education"]
+    },
+    {
+      "id": "quiz-assessment",
+      "name": "Quiz & Assessment",
+      "description": "Clean quiz template with cover page and multiple-choice question format",
+      "file": "quiz-assessment.json",
+      "category": "assessment",
+      "pages": 2,
+      "thumbnail": "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=400&h=300&fit=crop",
+      "colors": ["#e74c3c", "#ffffff", "#2c3e50"],
+      "tags": ["quiz", "test", "assessment", "questions"]
+    },
+    {
+      "id": "blank-presentation",
+      "name": "Blank Presentation",
+      "description": "Simple starter template with title and content slides for custom presentations",
+      "file": "blank-presentation.json",
+      "category": "general",
+      "pages": 2,
+      "thumbnail": "https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?w=400&h=300&fit=crop",
+      "colors": ["#3498db", "#ffffff", "#2c3e50"],
+      "tags": ["blank", "starter", "custom", "general"]
+    },
+    {
+      "id": "book-report",
+      "name": "Book Report",
+      "description": "Comprehensive book report template with summary, characters, and personal opinion sections",
+      "file": "book-report.json",
+      "category": "english",
+      "pages": 4,
+      "thumbnail": "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400&h=300&fit=crop",
+      "colors": ["#27ae60", "#ffffff", "#2c3e50"],
+      "tags": ["english", "book", "report", "literature"]
+    },
+    {
+      "id": "lesson-welcome",
+      "name": "Lesson Welcome",
+      "description": "Creative welcome slide with decorative elements and essay outline (reference example)",
+      "file": "polotno.json",
+      "category": "general",
+      "pages": 2,
+      "thumbnail": "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=300&fit=crop",
+      "colors": ["#641e72", "#f0e347", "#2c2030"],
+      "tags": ["welcome", "lesson", "creative", "example"]
+    }
+  ],
+  "categories": [
+    {
+      "id": "science",
+      "name": "Science",
+      "icon": "🔬",
+      "description": "Templates for science lessons and presentations"
+    },
+    {
+      "id": "math",
+      "name": "Mathematics",
+      "icon": "🔢",
+      "description": "Templates for math lessons and problem-solving"
+    },
+    {
+      "id": "english",
+      "name": "English",
+      "icon": "📚",
+      "description": "Templates for English language and writing"
+    },
+    {
+      "id": "assessment",
+      "name": "Assessment",
+      "icon": "📝",
+      "description": "Templates for quizzes, tests, and assessments"
+    },
+    {
+      "id": "general",
+      "name": "General",
+      "icon": "🎨",
+      "description": "Multi-purpose templates for any subject"
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-01-09",
+    "totalTemplates": 7,
+    "resolution": "1920x1080",
+    "format": "Polotno JSON (Schema v2)"
+  }
+}
+

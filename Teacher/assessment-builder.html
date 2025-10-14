@@ -490,18 +490,27 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div class="form-group">
                         <label for="timeLimit">Time Limit (minutes)</label>
                         <input type="number" id="timeLimit" placeholder="60" min="1">
                     </div>
                     <div class="form-group">
-                        <label for="maxAttempts">Max Attempts</label>
-                        <input type="number" id="maxAttempts" placeholder="3" min="1">
-                    </div>
-                    <div class="form-group">
                         <label for="passingScore">Passing Score (%)</label>
                         <input type="number" id="passingScore" placeholder="70" min="0" max="100">
+                    </div>
+                </div>
+                
+                <!-- Single Attempt Notice -->
+                <div class="form-group" style="background: #e8f5e8; padding: 15px; border-radius: 8px; border-left: 4px solid #2e8b57;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-info-circle" style="color: #2e8b57; font-size: 18px;"></i>
+                        <div>
+                            <strong style="color: #2e8b57;">Single Attempt Policy</strong>
+                            <p style="margin: 5px 0 0 0; color: #333; font-size: 14px;">
+                                Students can only attempt this assessment once. This ensures fair evaluation and prevents multiple submissions.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -934,7 +943,7 @@
             const subject = document.getElementById('subject').value;
             const gradeLevel = document.getElementById('gradeLevel').value;
             const timeLimit = parseInt(document.getElementById('timeLimit').value) || 60;
-            const maxAttempts = parseInt(document.getElementById('maxAttempts').value) || 3;
+            const maxAttempts = 1; // Single attempt policy
             const passingScore = parseInt(document.getElementById('passingScore').value) || 70;
 
             if (!title) {
@@ -982,7 +991,6 @@
                     document.getElementById('subject').value = '';
                     document.getElementById('gradeLevel').value = '';
                     document.getElementById('timeLimit').value = '';
-                    document.getElementById('maxAttempts').value = '';
                     document.getElementById('passingScore').value = '';
                     questions = [];
                     renderQuestions();
@@ -1004,31 +1012,51 @@
 
     <!-- Site Footer -->
     <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>Edutaktika</h3>
-                <p>Empowering education through technology</p>
+        <div class="footer-wrap">
+            <div class="footer-col">
+                <h4 class="footer-brand">Eduktaktika</h4>
+                <p>Interactive, game‑based learning for Math, English, and Science.</p>
             </div>
-            <div class="footer-section">
-                <h4>Quick Links</h4>
-                <ul>
-                    <li><a href="homepage.html">Home</a></li>
-                    <li><a href="subject_math.html">Mathematics</a></li>
+            <div class="footer-col">
+                <h4>Connect</h4>
+                <ul class="footer-social">
+                    <li><a href="homepage.html">Homepage</a></li>
+                    <li><a href="studentlist.html">Student</a></li>
+                    <li><a href="grading.html">Grading</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Subjects</h4>
+                <ul class="footer-links">
+                    <li><a href="subject_math.html">Math</a></li>
                     <li><a href="subject_english.html">English</a></li>
                     <li><a href="subject_science.html">Science</a></li>
                 </ul>
             </div>
-            <div class="footer-section">
-                <h4>Support</h4>
-                <ul>
-                    <li><a href="#">Help Center</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
+            <div class="footer-col">
+                <h4>Assessments</h4>
+                <ul class="footer-links">
+                    <li><a href="assessment-builder.html">Create Assessment</a></li>
+                    <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Leaderboards</h4>
+                <ul class="footer-links">
+                    <li><a href="leaderboard_math.html">Math</a></li>
+                    <li><a href="leaderboard_english.html">English</a></li>
+                    <li><a href="leaderboard_science.html">Science</a></li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 Edutaktika. All rights reserved.</p>
+            <div class="footer-social-row">
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+            <p>&copy; 2025 Eduktaktika. All rights reserved.</p>
         </div>
     </footer>
 </body>

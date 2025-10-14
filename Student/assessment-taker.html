@@ -608,6 +608,42 @@
                 return;
             }
 
+            // Check if student has already attempted this assessment
+            checkPreviousAttempt(assessmentId);
+        }
+
+        // Check if student has already attempted this assessment
+        function checkPreviousAttempt(assessmentId) {
+            db.ref('attempts').orderByChild('assessmentId').equalTo(assessmentId).once('value')
+                .then(snapshot => {
+                    let hasAttempted = false;
+                    let previousAttempt = null;
+                    
+                    snapshot.forEach(child => {
+                        const attempt = child.val();
+                        if (attempt.studentId === auth.currentUser.uid) {
+                            hasAttempted = true;
+                            previousAttempt = attempt;
+                        }
+                    });
+
+                    if (hasAttempted) {
+                        showAlreadyAttemptedMessage(previousAttempt);
+                        return;
+                    }
+
+                    // Load assessment if no previous attempt
+                    loadAssessmentData(assessmentId);
+                })
+                .catch(error => {
+                    console.error('Error checking previous attempts:', error);
+                    // Continue with loading assessment if check fails
+                    loadAssessmentData(assessmentId);
+                });
+        }
+
+        // Load assessment data from Firebase
+        function loadAssessmentData(assessmentId) {
             db.ref('assessments/' + assessmentId).once('value')
                 .then(snapshot => {
                     assessment = snapshot.val();
@@ -628,6 +664,58 @@
                     console.error('Error loading assessment:', error);
                     showError('Error loading assessment. Please try again.');
                 });
+        }
+
+        // Show message for already attempted assessment
+        function showAlreadyAttemptedMessage(previousAttempt) {
+            const percentage = Math.round((previousAttempt.score / previousAttempt.totalPoints) * 100);
+            const passed = previousAttempt.passed ? 'PASSED' : 'FAILED';
+            const statusColor = previousAttempt.passed ? '#28a745' : '#dc3545';
+            
+            document.body.innerHTML = `
+                <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f8f9fa; font-family: 'Inter', sans-serif;">
+                    <div style="background: white; padding: 40px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); max-width: 500px; text-align: center;">
+                        <div style="width: 80px; height: 80px; background: #f8d7da; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: #dc3545;"></i>
+                        </div>
+                        <h2 style="color: #333; margin-bottom: 15px;">Assessment Already Attempted</h2>
+                        <p style="color: #6c757d; margin-bottom: 30px; line-height: 1.6;">
+                            You have already completed this assessment. Each student is allowed only one attempt to ensure fair evaluation.
+                        </p>
+                        
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+                            <h3 style="color: #333; margin-bottom: 15px;">Your Previous Result</h3>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <span style="color: #6c757d;">Score:</span>
+                                <strong style="color: #333;">${previousAttempt.score}/${previousAttempt.totalPoints}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <span style="color: #6c757d;">Percentage:</span>
+                                <strong style="color: #333;">${percentage}%</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <span style="color: #6c757d;">Status:</span>
+                                <strong style="color: ${statusColor};">${passed}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #6c757d;">Submitted:</span>
+                                <strong style="color: #333;">${new Date(previousAttempt.submittedAt).toLocaleDateString()}</strong>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 15px; justify-content: center;">
+                            <button onclick="window.location.href='subject_math.html'" 
+                                    style="padding: 12px 24px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                <i class="fas fa-arrow-left"></i> Back to Subjects
+                            </button>
+                            <button onclick="window.location.href='homepage.html'" 
+                                    style="padding: 12px 24px; background: #2e8b57; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                <i class="fas fa-home"></i> Home
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         // Show error message
