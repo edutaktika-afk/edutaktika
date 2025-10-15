@@ -23,11 +23,17 @@ const initFirebase = async () => {
   
   try {
     // Dynamically import Firebase modules
-    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+    const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
     const { getDatabase } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js');
     const { getAuth } = await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js');
     
-    firebase = initializeApp(firebaseConfig);
+    // Check if Firebase is already initialized
+    if (getApps().length === 0) {
+      firebase = initializeApp(firebaseConfig);
+    } else {
+      firebase = getApps()[0]; // Use existing app
+    }
+    
     db = getDatabase(firebase);
     auth = getAuth(firebase);
     
