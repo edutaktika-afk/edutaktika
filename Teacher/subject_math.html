@@ -26,9 +26,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="stylesheet" href="../CSS/fonts.css">
-<!-- ...inside <head> -->
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../CSS/fonts.css">
+    <!-- ...inside <head> -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="../CSS/header.css">
@@ -255,7 +255,7 @@ document.getElementById('createLessonBtn').onclick = function() {
 
 // Quiz Section button: go to quiz section page (replace with your quiz page)
 document.getElementById('createQuizBtn').onclick = function() {
-    window.location.href = 'quizEditor.html';
+    window.location.href = 'create-quiz.html';
 };
 </script>
 
@@ -1506,9 +1506,9 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
     // Add this script after the existing createLessonModal script
 
 // Show modal on Create Quiz click
-document.getElementById('createQuizBtn').onclick = function() {
-    document.getElementById('createQuizModal').style.display = 'flex';
-};
+//document.getElementById('createQuizBtn').onclick = function() {
+ //   document.getElementById('createQuizModal').style.display = 'flex';
+//};
 
 // Hide modal function
 function closeCreateQuizModal() {

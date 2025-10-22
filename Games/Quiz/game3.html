@@ -431,6 +431,46 @@ function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','
 
 /* ========= INIT ========= */
 renderQuestion();
+document.addEventListener('DOMContentLoaded', function () {
+  (function controlEditButtonVisibility() {
+    const btn = document.getElementById('editOpen');
+    if (!btn) return;
+
+    // default: hidden for quizView (teacher/student). Only show from quizEditor or explicit flags.
+    btn.style.display = 'none';
+
+    try {
+      const params = new URLSearchParams(location.search);
+      const explicitEditor = params.get('editor') === 'true' || params.get('edit') === 'true' || params.get('mode') === 'edit';
+
+      // show if explicit editor mode in URL
+      if (explicitEditor) { btn.style.display = ''; return; }
+
+      // best-effort: show if referrer or parent/opener looks like quizEditor
+      if (document.referrer && document.referrer.toLowerCase().includes('quizeditor')) { btn.style.display = ''; return; }
+
+      try {
+        if (window.parent && window.parent !== window && String(window.parent.location.href).toLowerCase().includes('quizeditor')) { btn.style.display = ''; return; }
+      } catch (e) { /* cross-origin - ignore */ }
+
+      try {
+        if (window.opener && String(window.opener.location.href).toLowerCase().includes('quizeditor')) { btn.style.display = ''; return; }
+      } catch (e) { /* cross-origin - ignore */ }
+    } catch (err) {
+      // keep hidden on error
+      console.warn('controlEditButtonVisibility error', err);
+    }
+
+    // allow parent to override visibility via postMessage
+    window.addEventListener('message', function (ev) {
+      try {
+        const d = ev.data || {};
+        if (d && d.type === 'allowEdit' && d.allow === true) btn.style.display = '';
+        if (d && d.type === 'hideEditUI') btn.style.display = 'none';
+      } catch (e) { /* ignore */ }
+    }, false);
+  })();
+});
 </script>
 </body>
 </html>

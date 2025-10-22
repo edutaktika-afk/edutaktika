@@ -238,7 +238,12 @@
                 <i class="fa fa-plus"></i> Create Quiz
             </button>
         </div>
-
+<script>
+    // Quiz Section button: go to quiz section page (replace with your quiz page)
+document.getElementById('createQuizBtn').onclick = function() {
+    window.location.href = 'create-quiz.html';
+};
+</script>
 <script>
 // Create Lesson button using shared environment helper
 (function(){
@@ -1504,9 +1509,9 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
     // Add this script after the existing createLessonModal script
 
 // Show modal on Create Quiz click
-document.getElementById('createQuizBtn').onclick = function() {
-    document.getElementById('createQuizModal').style.display = 'flex';
-};
+// document.getElementById('createQuizBtn').onclick = function() {
+//    document.getElementById('createQuizModal').style.display = 'flex';
+//};
 
 // Hide modal function
 function closeCreateQuizModal() {

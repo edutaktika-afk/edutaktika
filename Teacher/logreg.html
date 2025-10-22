@@ -426,6 +426,7 @@ label {
 
 
     </style>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 <body>
@@ -448,8 +449,9 @@ label {
             <div class="container">
                 <h2 style="text-align:center; color:#2e8b57; margin-top:0;">Teacher</h2>
                 <div class="tabs">
-                    <button class="tab-btn active" id="loginTab" onclick="showTab('login')">Login</button>
-                    <button class="tab-btn" id="registerTab" onclick="showTab('register')">Register</button>
+                    <button type="button" class="tab-btn active" id="loginTab" onclick="showTab('login')">Login</button>
+                    <button type="button" class="tab-btn" id="registerTab" onclick="showTab('register')">Register</button>
+                    <button type="button" class="tab-btn" id="adminTab" onclick="showTab('admin')">Admin</button>
                 </div>
                 <!-- Login Form -->
                 <div class="form-section" id="loginSection" style="display:block;">
@@ -628,6 +630,25 @@ label {
                             </div>
                             <button type="submit" class="action-btn">Register</button>
                         </div>
+                    </form>
+                </div>
+                <!-- Added: Admin Login Form (same design) -->
+                <div class="form-section" id="adminSection" style="display:none;">
+                    <form id="adminLoginForm" autocomplete="off">
+                        <div class="form-group">
+                            <span class="input-icon"><i class="fas fa-user-shield"></i></span>
+                            <label for="admin_login_email">Admin Email</label>
+                            <input type="email" name="admin_login_email" id="admin_login_email" required>
+                        </div>
+                        <div class="form-group" style="position:relative;">
+                            <span class="input-icon"><i class="fas fa-lock"></i></span>
+                            <label for="admin_login_password">Password</label>
+                            <input type="password" name="admin_login_password" id="admin_login_password" required>
+                            <span class="toggle-password" onclick="togglePassword('admin_login_password', this)" style="position:absolute;right:12px;top:38px;cursor:pointer;">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                        <button type="submit" class="action-btn">Admin Login</button>
                     </form>
                 </div>
             </div>
@@ -881,6 +902,40 @@ document.getElementById('loginForm').onsubmit = async function(e) {
     }
 };
 
+// Added: Admin login handler (strict admin check)
+document.getElementById('adminLoginForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('admin_login_email').value.trim();
+    const password = document.getElementById('admin_login_password').value;
+
+    try {
+        const cred = await auth.signInWithEmailAndPassword(email, password);
+        const uid = cred.user.uid;
+
+        // Check admin role in DB
+        const adminSnap = await db.ref('admins/' + uid).once('value');
+        const adminVal = adminSnap.val();
+        const isAdmin =
+            adminSnap.exists() &&
+            (
+                adminVal === true ||
+                adminVal === 'true' ||
+                (adminVal && adminVal.role && String(adminVal.role).toLowerCase() === 'admin')
+            );
+
+        if (!isAdmin) {
+            await auth.signOut();
+            showCustomModal('This account is not an admin.');
+            return;
+        }
+
+        // Proceed to admin area
+        window.location.href = "admin.html";
+    } catch (err) {
+        showCustomModal('Invalid admin email or password.');
+    }
+});
+
 function showRegisterSuccessModal() {
     document.getElementById('registerSuccessModal').style.display = 'flex';
 }
@@ -980,6 +1035,30 @@ function togglePassword(id, trigger){
         icon.classList.toggle('fa-eye-slash', !showing);
     }
 }
+</script>
+
+<!-- Replace the fallback showTab block with this override, keep it after the external JS -->
+<script>
+// Override to support Login/Register/Admin (wins over external showTab)
+window.showTab = function(name) {
+    const sections = {
+        login: document.getElementById('loginSection'),
+        register: document.getElementById('registerSection'),
+        admin: document.getElementById('adminSection')
+    };
+    const tabs = {
+        login: document.getElementById('loginTab'),
+        register: document.getElementById('registerTab'),
+        admin: document.getElementById('adminTab')
+    };
+    Object.values(sections).forEach(s => s && (s.style.display = 'none'));
+    Object.values(tabs).forEach(t => t && t.classList.remove('active'));
+
+    const target = sections[name] || sections.login;
+    const tabBtn = tabs[name] || tabs.login;
+    if (target) target.style.display = 'block';
+    if (tabBtn) tabBtn.classList.add('active');
+};
 </script>
 
 <script>
