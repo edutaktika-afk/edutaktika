@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Gallery - Edutaktika</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #1976d2;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .toggle-mode {
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .toggle-mode button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-mode button:hover {
+            background: #1565c0;
+        }
+
+        .config-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .config-section h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        .config-section textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .config-section input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(45deg, #e3f2fd 0%, #90caf9 100%);
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-title {
+            color: #1976d2;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .card-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .card-button:hover {
+            background: #1565c0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state h2 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .gallery {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Design Gallery</h1>
+            <p class="subtitle">Browse and view Polotno designs</p>
+        </header>
+
+        <div class="toggle-mode">
+            <button id="toggleModeBtn" onclick="toggleMode()">
+                Switch to Auto Mode (Firebase SDK)
+            </button>
+            <p style="margin-top: 10px; color: #666; font-size: 0.9em;">
+                <strong>Manual Mode:</strong> Edit the designs array below | 
+                <strong>Auto Mode:</strong> Fetch from Firebase Storage
+            </p>
+        </div>
+
+        <div id="manualConfig" class="config-section">
+            <h3>📝 Manual Configuration</h3>
+            <p style="color: #666; margin-bottom: 10px;">Edit the designs array with your Firebase Storage URLs:</p>
+            <textarea id="manualDesigns">const designs = [
+  {
+    name: "Math Poster",
+    jsonUrl: "https://firebasestorage.googleapis.com/v0/b/yourproject.appspot.com/o/designs%2Fmathposter.json?alt=media",
+    thumbUrl: "https://firebasestorage.googleapis.com/v0/b/yourproject.appspot.com/o/designs%2Fmathposter.png?alt=media"
+  },
+  {
+    name: "Spelling Bee",
+    jsonUrl: "https://firebasestorage.googleapis.com/v0/b/yourproject.appspot.com/o/designs%2Fspellingbee.json?alt=media",
+    thumbUrl: "https://firebasestorage.googleapis.com/v0/b/yourproject.appspot.com/o/designs%2Fspellingbee.png?alt=media"
+  }
+];</textarea>
+            <button onclick="loadManualDesigns()" style="margin-top: 10px; padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em;">
+                Load Designs
+            </button>
+        </div>
+
+        <div id="autoConfig" class="config-section" style="display: none;">
+            <h3>🔥 Firebase Configuration</h3>
+            <p style="color: #666; margin-bottom: 10px;">Enter your Firebase configuration:</p>
+            <input type="text" id="apiKey" placeholder="API Key">
+            <input type="text" id="authDomain" placeholder="Auth Domain (yourproject.firebaseapp.com)">
+            <input type="text" id="projectId" placeholder="Project ID">
+            <input type="text" id="storageBucket" placeholder="Storage Bucket (yourproject.appspot.com)">
+            <input type="text" id="storageFolder" placeholder="Storage Folder (e.g., designs/)" value="designs/">
+            <button onclick="loadFirebaseDesigns()" style="margin-top: 10px; padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em;">
+                Load from Firebase
+            </button>
+        </div>
+
+        <div id="galleryContainer">
+            <div class="empty-state">
+                <h2>👋 Welcome!</h2>
+                <p>Configure your designs above and click the load button to view your gallery.</p>
+                <p style="margin-top: 10px;"><strong>Manual Mode:</strong> Edit the designs array and click "Load Designs"</p>
+                <p><strong>Auto Mode:</strong> Enter your Firebase config and click "Load from Firebase"</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        let currentMode = 'manual'; // 'manual' or 'auto'
+
+        window.toggleMode = function() {
+            currentMode = currentMode === 'manual' ? 'auto' : 'manual';
+            const manualConfig = document.getElementById('manualConfig');
+            const autoConfig = document.getElementById('autoConfig');
+            const toggleBtn = document.getElementById('toggleModeBtn');
+
+            if (currentMode === 'auto') {
+                manualConfig.style.display = 'none';
+                autoConfig.style.display = 'block';
+                toggleBtn.textContent = 'Switch to Manual Mode';
+            } else {
+                manualConfig.style.display = 'block';
+                autoConfig.style.display = 'none';
+                toggleBtn.textContent = 'Switch to Auto Mode (Firebase SDK)';
+            }
+        };
+
+        window.loadManualDesigns = function() {
+            const textarea = document.getElementById('manualDesigns');
+            const code = textarea.value;
+            
+            try {
+                // Extract the array from the code
+                const match = code.match(/const designs = (\[[\s\S]*\]);/);
+                if (!match) {
+                    throw new Error('Invalid format. Please use: const designs = [...];');
+                }
+                
+                const designs = eval(match[1]);
+                displayGallery(designs);
+            } catch (error) {
+                showError('Error parsing designs: ' + error.message);
+            }
+        };
+
+        window.loadFirebaseDesigns = async function() {
+            const apiKey = document.getElementById('apiKey').value;
+            const authDomain = document.getElementById('authDomain').value;
+            const projectId = document.getElementById('projectId').value;
+            const storageBucket = document.getElementById('storageBucket').value;
+            const storageFolder = document.getElementById('storageFolder').value;
+
+            if (!apiKey || !authDomain || !projectId || !storageBucket) {
+                showError('Please fill in all Firebase configuration fields.');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js");
+                const { getStorage, ref, listAll, getDownloadURL } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js");
+
+                const firebaseConfig = {
+                    apiKey,
+                    authDomain,
+                    projectId,
+                    storageBucket
+                };
+
+                const app = initializeApp(firebaseConfig);
+                const storage = getStorage(app);
+                const listRef = ref(storage, storageFolder);
+
+                const res = await listAll(listRef);
+                const designs = [];
+                const filesByName = {};
+
+                // Group files by name (without extension)
+                for (const item of res.items) {
+                    const fileName = item.name;
+                    const baseName = fileName.replace(/\.(json|png)$/, '');
+                    const extension = fileName.split('.').pop();
+
+                    if (!filesByName[baseName]) {
+                        filesByName[baseName] = { name: baseName };
+                    }
+
+                    const url = await getDownloadURL(item);
+
+                    if (extension === 'json') {
+                        filesByName[baseName].jsonUrl = url;
+                    } else if (extension === 'png') {
+                        filesByName[baseName].thumbUrl = url;
+                    }
+                }
+
+                // Convert to array and filter complete entries (must have JSON)
+                for (const [name, data] of Object.entries(filesByName)) {
+                    if (data.jsonUrl) {
+                        designs.push({
+                            name: formatName(name),
+                            jsonUrl: data.jsonUrl,
+                            thumbUrl: data.thumbUrl || null
+                        });
+                    }
+                }
+
+                if (designs.length === 0) {
+                    showError('No designs found in the specified folder. Make sure you have .json files uploaded.');
+                    return;
+                }
+
+                displayGallery(designs);
+            } catch (error) {
+                showError('Firebase Error: ' + error.message);
+            }
+        };
+
+        function formatName(str) {
+            return str
+                .replace(/[-_]/g, ' ')
+                .replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        function displayGallery(designs) {
+            const container = document.getElementById('galleryContainer');
+            
+            if (!designs || designs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>📭 No Designs Found</h2>
+                        <p>No designs available to display.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = `
+                <div class="gallery">
+                    ${designs.map(design => `
+                        <div class="card" onclick="openViewer('${encodeURIComponent(design.jsonUrl)}')">
+                            <img 
+                                class="card-image" 
+                                src="${design.thumbUrl || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\'%3E%3Crect fill=\'%23e3f2fd\' width=\'300\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'20\' fill=\'%231976d2\'%3E${design.name}%3C/text%3E%3C/svg%3E'}" 
+                                alt="${design.name}"
+                                onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\'%3E%3Crect fill=\'%23e3f2fd\' width=\'300\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'20\' fill=\'%231976d2\'%3ENo Preview%3C/text%3E%3C/svg%3E'"
+                            >
+                            <div class="card-content">
+                                <div class="card-title">${design.name}</div>
+                                <a href="viewer.html?design=${encodeURIComponent(design.jsonUrl)}" class="card-button" onclick="event.stopPropagation()">
+                                    View Design →
+                                </a>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        function showLoading() {
+            document.getElementById('galleryContainer').innerHTML = `
+                <div class="loading">
+                    <p>🔄 Loading designs from Firebase...</p>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            document.getElementById('galleryContainer').innerHTML = `
+                <div class="error">
+                    <strong>⚠️ Error:</strong> ${message}
+                </div>
+                <div class="empty-state">
+                    <h2>Need Help?</h2>
+                    <p>Make sure your Firebase configuration is correct and you have .json files in your storage folder.</p>
+                </div>
+            `;
+        }
+
+        window.openViewer = function(jsonUrl) {
+            window.location.href = `viewer.html?design=${jsonUrl}`;
+        };
+
+        // Load manual designs by default on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Optionally auto-load manual designs
+            // loadManualDesigns();
+        });
+    </script>
+</body>
+</html>
+
