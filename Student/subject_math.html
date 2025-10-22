@@ -109,6 +109,7 @@
             display: block;
         }
     </style>
+    </style>
 </head>
 <body>
     <div id="mainContent" style="display:none;">
@@ -338,7 +339,6 @@
                 <div style="display: flex; align-items: center;">
                     <label for="quiz-quarter-filter" style="font-weight:600; margin-right:8px;">Filter by Quarter:</label>
                     <select id="quiz-quarter-filter" style="min-width:120px;">
-                        <option value="">All Quarters</option>
                         <option value="1">Quarter 1</option>
                         <option value="2">Quarter 2</option>
                         <option value="3">Quarter 3</option>
@@ -351,9 +351,7 @@
                 
             </div>
         </div>
-
         
-
         <!-- Assessments panel -->
         <div class="quarter-section" id="quarter-assessments">
             <div class="quarter-title">
@@ -871,7 +869,7 @@ auth.onAuthStateChanged(async function(user) {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    margin-bottom: 8px;
+
 }
 .lesson-thumbnail {
     width: 100%;
@@ -1137,7 +1135,7 @@ async function loadStudentAvailableQuizzes(studentUID, filterQuarter = null) {
 
         // Clear container and set proper grid styling
         quizzesContainer.innerHTML = '';
-        quizzesContainer.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 15px;';
+        quizzesContainer.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px; margin-top: 15px;';
 
         if (allQuizzes.length === 0) {
             const emptyMsg = document.createElement('div');

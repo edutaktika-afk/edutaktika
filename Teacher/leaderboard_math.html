@@ -356,18 +356,18 @@
             // Calculate Math-specific scores
             students.forEach(s => {
                 // Math quiz points - only from math quizzes
-                let mathQuizPoints = 0;
-                if (s.quizzes) {
-                    Object.keys(s.quizzes).forEach(quizKey => {
-                        // Only count math-related quizzes
-                        if (quizKey.includes('math') || quizKey.includes('lesson1') || quizKey.includes('clock-quiz')) {
-                            const summary = s.quizzes[quizKey]?.summary;
-                            if (summary && typeof summary.best === 'number') {
-                                mathQuizPoints += summary.best;
-                            }
-                        }
-                    });
+    let mathQuizPoints = 0;
+    if (s.quizzes) {
+        Object.keys(s.quizzes).forEach(quizKey => {
+            if (quizKey.includes('math') || quizKey.includes('lesson1') || quizKey.includes('clock-quiz')) {
+                const summary = s.quizzes[quizKey]?.summary;
+                if (summary && typeof summary.best === 'number') {
+                    mathQuizPoints += summary.best;
                 }
+            }
+        });
+    }
+    s.quizPoints = mathQuizPoints;
                 
                 // Math assessment points - only from math assessments
                 let mathAssessmentPoints = 0;
@@ -425,6 +425,29 @@
         document.getElementById('podium').innerHTML = podiumHtml;
 
             // Leaderboard table rows
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = ''; // Clear existing content
+            students.forEach((s, idx) => {
+                // Avatar logic
+                const avatar = s.avatar ? s.avatar : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent((s.fname||'') + (s.lname||''))}`;
+                
+                // Row rendering with combined math quiz score
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td class="player-cell">
+                            <img src="${avatar}" alt="${s.fname||''}">
+                            <span>${(s.fname||'') + ' ' + (s.lname||'')}</span>
+                        </td>
+                        <td>${s.quizPoints}</td> <!-- This shows the combined math quiz score -->
+                        <td>${s.assessmentPoints}</td>
+                        <td>${s.combinedPoints}</td>
+                        <td>${s.badges || ''}</td>
+                    </tr>
+                `;
+            });
+
+            // Pagination setup
             applyLeaderboardPagination(students,{
             tbodyId:'leaderboard-body',
             paginationId:'pagination',

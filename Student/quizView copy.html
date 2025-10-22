@@ -379,40 +379,26 @@ function showGameIframe(slide, canvasEl) {
     wrapper.appendChild(iframe);
     
     // CRITICAL: Send custom quiz data to game
-iframe.onload = function() {
-    setTimeout(() => {
-        // Send custom quiz data if needed
-        if (slide.game && slide.game.data) {
-            let gameData = null;
-            try {
-                gameData = typeof slide.game.data === 'string' ? JSON.parse(slide.game.data) : slide.game.data;
-            } catch (e) {
-                console.error('Error parsing game data:', e);
-            }
-            if (gameData) {
-                iframe.contentWindow.postMessage({
-                    type: 'loadQuizGameData',
-                    gameData: gameData,
-                    isStudent: true
-                }, '*');
-            }
-        }
-        // Send the test index AFTER the game is loaded and ready
-        iframe.contentWindow.postMessage({
-            type: 'setTestIndex',
-            index: currentSlide // This is the current test number!
-        }, '*');
-    }, 500); // Wait for iframe to be ready
-};
-    
-    // After loading a new slide/game in the iframe:
     iframe.onload = function() {
-      setTimeout(() => {
-        iframe.contentWindow.postMessage({
-          type: 'setTestIndex',
-          index: currentSlide // This is the current test number!
-        }, '*');
-      }, 500);
+        setTimeout(() => {
+            if (slide.game && slide.game.data) {
+                let gameData = null;
+                try {
+                    gameData = typeof slide.game.data === 'string' ? JSON.parse(slide.game.data) : slide.game.data;
+                } catch (e) {
+                    console.error('Error parsing game data:', e);
+                }
+                
+                if (gameData) {
+                    console.log('📤 STUDENT: Sending custom quiz data:', gameData);
+                    iframe.contentWindow.postMessage({
+                        type: 'loadQuizGameData',
+                        gameData: gameData,
+                        isStudent: true
+                    }, '*');
+                }
+            }
+        }, 1000);
     };
 }
 
@@ -780,102 +766,9 @@ function overlayGifsOnCanvasPresent(canvas) {
         }
     });
 }
-
-// Collect and save total scores for each test, then save overall quiz summary
-let testScores = {}; // {slideIndex: {score, maxScore, answers, timestamp}}
-
-// Track which tests have been attempted
-let attemptedTests = {}; // {slideIndex: true}
-
-// Listen for quiz results and enforce single attempt per test
-window.addEventListener('message', function(event) {
-  try {
-    const msg = event.data || {};
-    if (!msg || msg.type !== 'quizResult') return;
-
-    const payload = msg.payload || {};
-    const score = payload.score;
-    const maxScore = payload.maxScore;
-    const answers = payload.answers;
-    const quizId = payload.quizId || getParam('quizId') || getParam('name') || 'unknown_quiz';
-    const subject = getParam('subject') || 'unknown_subject';
-    const quarter = getParam('quarter') || 'unknown_quarter';
-    const slideIndex = typeof payload.slideIndex === 'number'
-    ? payload.slideIndex
-    : (typeof currentSlide === 'number' ? currentSlide : 0);
-
-    // Only first attempt per test
-    if (attemptedTests[slideIndex]) return;
-    attemptedTests[slideIndex] = true;
-    testScores[slideIndex] = { score, maxScore, answers, timestamp: Date.now() };
-
-    // Save to Firebase and update summary
-    const user = firebase.auth().currentUser;
-    if (user) {
-      saveToStudentQuiz(user);
-    }
-
-    // Now increment slide and load next
-    setTimeout(() => {
-      if (currentSlide < slides.length - 1) {
-        currentSlide++;
-        loadSlide(currentSlide);
-        updateSlideIndicator();
-      } else {
-        // Show Done button and lock quiz
-        let doneBtn = document.getElementById('quiz-done-btn');
-        if (!doneBtn) {
-          doneBtn = document.createElement('button');
-          doneBtn.id = 'quiz-done-btn';
-          doneBtn.textContent = 'Done';
-          doneBtn.style = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);padding:18px 48px;font-size:1.3rem;background:#27ae60;color:#fff;border:none;border-radius:18px;box-shadow:0 4px 24px rgba(39,174,96,0.18);font-weight:700;z-index:9999;cursor:pointer;';
-          doneBtn.onclick = function() {
-            // Lock quiz and prevent retake
-            document.body.innerHTML += `<div style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;"><div style="background:#fff;padding:48px 60px;border-radius:24px;font-size:1.5rem;color:#222;font-weight:700;text-align:center;">Quiz Completed.<br>You cannot take this quiz again.</div></div>`;
-            window.parent.postMessage({ type: 'quizClosed', quizId: quizId, timestamp: Date.now() }, '*');
-          };
-          document.body.appendChild(doneBtn);
-        }
-        // Optionally disable navigation
-        document.getElementById('next-slide-btn').disabled = true;
-        document.getElementById('prev-slide-btn').disabled = true;
-      }
-    }, 700);
-
-  } catch (e) {
-    console.error('quizResult handler error', e);
-  }
-}, false);
-
-// Save function for student quiz data
-function saveToStudentQuiz(user) {
-  const uid = user.uid;
-  const quizId = getParam('name') || 'unknown_quiz';
-  const subject = getParam('subject') || 'unknown_subject';
-  const quarter = getParam('quarter') || 'unknown_quarter';
-
-  Object.keys(testScores).forEach(slideIndex => {
-    const scoreObj = testScores[slideIndex];
-    // Attach gameUrl for this test
-    scoreObj.gameUrl = slides[slideIndex]?.game?.url || null;
-    db.ref(`students/${uid}/quizzes/${subject}/${quarter}/${quizId}/tests/${slideIndex}/score`).set(scoreObj);
-    db.ref(`students/${uid}/quizzes/${subject}/${quarter}/${quizId}/tests/${slideIndex}/summary`).set({
-      score: scoreObj.score,
-      maxScore: scoreObj.maxScore,
-      timestamp: scoreObj.timestamp,
-      gameUrl: scoreObj.gameUrl
-    });
-  });
-
-  const totalScore = Object.values(testScores).reduce((sum, t) => sum + t.score, 0);
-  const totalMax = Object.values(testScores).reduce((sum, t) => sum + t.maxScore, 0);
-  db.ref(`students/${uid}/quizzes/${subject}/${quarter}/${quizId}/summary`).set({
-    totalScore,
-    totalMax,
-    completedAt: Date.now()
-  });
-}
 </script>
+
+
 
 </body>
 </html>
