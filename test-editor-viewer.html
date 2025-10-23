@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Editor Viewer - Edutaktika</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .test-button:hover {
+            background: #1565c0;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Editor Viewer Test</h1>
+        <p>Test the new Editor-based viewer functionality.</p>
+        
+        <div class="test-info success">
+            <h3>✅ What's New:</h3>
+            <ul>
+                <li><strong>Editor-based viewing:</strong> Uses the full Editor infrastructure</li>
+                <li><strong>View-only mode:</strong> Hides editing tools, shows only viewing controls</li>
+                <li><strong>Presentation mode:</strong> Full presentation capabilities</li>
+                <li><strong>Fullscreen support:</strong> Immersive viewing experience</li>
+                <li><strong>Seamless navigation:</strong> Back to gallery, download, etc.</li>
+            </ul>
+        </div>
+        
+        <div class="test-info">
+            <h3>Test URLs:</h3>
+            <p>Try these test URLs to see the Editor in view-only mode:</p>
+        </div>
+        
+        <div>
+            <a href="Editor/index.html?design=https://edutaktika-default-rtdb.firebaseio.com/designs/test-design.json&view=true" class="test-button">
+                Test Design 1 (View Mode)
+            </a>
+            <a href="Editor/index.html?design=https://edutaktika-default-rtdb.firebaseio.com/designs/sample-design.json&view=true" class="test-button">
+                Test Design 2 (View Mode)
+            </a>
+            <a href="Editor/index.html?design=invalid-url&view=true" class="test-button">
+                Test Error Handling
+            </a>
+        </div>
+        
+        <div class="test-info">
+            <h3>Expected Behavior:</h3>
+            <ul>
+                <li>✅ Editor loads in view-only mode</li>
+                <li>✅ Side panel and editing tools are hidden</li>
+                <li>✅ Top bar shows "Design Viewer" and view controls</li>
+                <li>✅ Fullscreen and Present buttons work</li>
+                <li>✅ Back to Gallery button works</li>
+                <li>✅ Download button works</li>
+            </ul>
+        </div>
+        
+        <div>
+            <a href="gallery.html" class="test-button">← Back to Gallery</a>
+            <a href="Editor/index.html" class="test-button">✏️ Create New Design</a>
+        </div>
+    </div>
+</body>
+</html>

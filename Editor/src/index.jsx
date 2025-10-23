@@ -26,7 +26,19 @@ unstable_setAnimationsEnabled(true);
 
 const store = createStore({ key: 'nFA5H9elEytDyPyvKL7T' });
 window.store = store;
-store.addPage();
+
+// Check if we're in view-only mode
+const urlParams = new URLSearchParams(window.location.search);
+const designUrl = urlParams.get('design');
+const isViewOnly = urlParams.get('view') === 'true' || designUrl;
+
+if (isViewOnly && designUrl) {
+  console.log('🎨 Loading design in view-only mode:', designUrl);
+  // Add a default page first to prevent null activePage errors
+  store.addPage();
+} else {
+  store.addPage();
+}
 
 const project = createProject({ store });
 window.project = project;

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Auto-Presentation - Edutaktika</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .test-button:hover {
+            background: #1565c0;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Auto-Presentation Test</h1>
+        <p>Test that designs automatically open in presentation mode when clicking "View Lesson".</p>
+        
+        <div class="test-info success">
+            <h3>✅ What's New:</h3>
+            <ul>
+                <li><strong>Auto-Presentation:</strong> Designs open directly in presentation mode</li>
+                <li><strong>Seamless Experience:</strong> No need to click "Present" button</li>
+                <li><strong>URL Parameter:</strong> <code>&present=true</code> triggers auto-presentation</li>
+                <li><strong>Smart Detection:</strong> Automatically finds and clicks present button</li>
+            </ul>
+        </div>
+        
+        <div class="test-info warning">
+            <h3>⚠️ How It Works:</h3>
+            <ul>
+                <li><strong>Gallery Click:</strong> "View Design" → Auto-presentation</li>
+                <li><strong>URL Format:</strong> <code>deploy/editor/index.html?design=URL&view=true&present=true</code></li>
+                <li><strong>Auto-Click:</strong> Waits 2 seconds then clicks "Present" button</li>
+                <li><strong>Fallback:</strong> Multiple methods to find present button</li>
+            </ul>
+        </div>
+        
+        <div class="test-info">
+            <h3>Test Steps:</h3>
+            <ol>
+                <li>Open the gallery: <code>gallery.html</code></li>
+                <li>Click on any design card</li>
+                <li>Wait 2 seconds - should automatically enter presentation mode</li>
+                <li>Verify you're in full presentation mode (dark background, centered content)</li>
+                <li>Test navigation with arrow keys</li>
+            </ol>
+        </div>
+        
+        <div>
+            <a href="gallery.html" class="test-button">🧪 Test Gallery</a>
+            <a href="deploy/editor/index.html" class="test-button">✏️ Test Editor</a>
+            <a href="test-comprehensive-hiding.html" class="test-button">🔍 Test Button Hiding</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Button Hiding - Edutaktika</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .test-button:hover {
+            background: #1565c0;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        
+        /* Demo buttons that should be hidden */
+        .demo-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 8px;
+        }
+        .demo-button {
+            padding: 8px 12px;
+            background: #e0e0e0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Button Hiding Test</h1>
+        <p>Test the editing button hiding functionality in view-only mode.</p>
+        
+        <div class="test-info success">
+            <h3>✅ What's Hidden:</h3>
+            <ul>
+                <li><strong>Blueprint UI buttons:</strong> <code>.bp5-button.bp5-minimal</code></li>
+                <li><strong>Editing controls:</strong> Up/down arrows, duplicate, delete, add buttons</li>
+                <li><strong>Dynamic hiding:</strong> JavaScript watches for new buttons</li>
+                <li><strong>CSS + JS:</strong> Multiple methods for maximum effectiveness</li>
+            </ul>
+        </div>
+        
+        <div class="test-info warning">
+            <h3>⚠️ Demo Buttons (Should be hidden):</h3>
+            <div class="demo-buttons">
+                <button class="demo-button bp5-button bp5-minimal" title="Move up">↑</button>
+                <button class="demo-button bp5-button bp5-minimal" title="Move down">↓</button>
+                <button class="demo-button bp5-button bp5-minimal" title="Duplicate">⧉</button>
+                <button class="demo-button bp5-button bp5-minimal" title="Delete">🗑</button>
+                <button class="demo-button bp5-button bp5-minimal" title="Add new">+</button>
+            </div>
+        </div>
+        
+        <div class="test-info">
+            <h3>Test Steps:</h3>
+            <ol>
+                <li>Open the deployed editor: <code>deploy/editor/index.html</code></li>
+                <li>Check if editing buttons are hidden in view-only mode</li>
+                <li>Look for buttons with classes like <code>bp5-button bp5-minimal</code></li>
+                <li>Try presentation mode - buttons should still be hidden</li>
+                <li>Check console for any button hiding messages</li>
+            </ol>
+        </div>
+        
+        <div>
+            <a href="deploy/editor/index.html" class="test-button">🧪 Test Deployed Editor</a>
+            <a href="gallery.html" class="test-button">🎨 Test Gallery</a>
+            <button onclick="testButtonHiding()" class="test-button">🔍 Test Button Hiding</button>
+        </div>
+    </div>
+
+    <script>
+        function testButtonHiding() {
+            const buttons = document.querySelectorAll('.bp5-button.bp5-minimal');
+            buttons.forEach(button => {
+                button.style.display = 'none';
+                button.style.visibility = 'hidden';
+                button.style.opacity = '0';
+            });
+            alert('Buttons hidden! This simulates what happens to editing controls in view-only mode.');
+        }
+        
+        // Simulate the button hiding functionality
+        function hideEditingButtons() {
+            const buttons = document.querySelectorAll('.bp5-button.bp5-minimal');
+            buttons.forEach(button => {
+                button.style.display = 'none';
+                button.style.visibility = 'hidden';
+                button.style.opacity = '0';
+                button.style.height = '0';
+                button.style.width = '0';
+                button.style.overflow = 'hidden';
+            });
+        }
+        
+        // Test the button hiding on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 Testing button hiding functionality...');
+            hideEditingButtons();
+        });
+    </script>
+</body>
+</html>
