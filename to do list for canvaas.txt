@@ -133,3 +133,24 @@ updateSlidePreviewBar();
 // Initial call after navBar creation
 updateSlidePreviewBar();
 </script>
+
+hide the edit button in quiz view for teacher and students, but show it only in quizEditor
+
+let parentTestIndex = 0;
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'setTestIndex') {
+    parentTestIndex = event.data.index;
+  }
+});
+
+// When sending the score:
+window.parent.postMessage({
+  type: 'quizResult',
+  payload: {
+    score: score,
+    maxScore: questions.length,
+    answers: userAnswers,
+    quizId: window.location.pathname.split('/').pop(),
+    slideIndex: parentTestIndex // <-- Always use this!
+  }
+}, '*');

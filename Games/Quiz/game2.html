@@ -280,7 +280,7 @@ small.muted{color:var(--muted);font-size:12px;font-weight:500;letter-spacing:.3p
     <header>
       <h1>Drag & Drop Quiz</h1>
       <div class="controls">
-        <button id="playBtn">Play</button>
+        <button id="playBtn" style="display: none;">Play</button>
         <button id="editBtn" class="ghost">Edit</button>
       </div>
     </header>
@@ -303,13 +303,12 @@ small.muted{color:var(--muted);font-size:12px;font-weight:500;letter-spacing:.3p
 
         <div class="actions">
           <button id="clearZone" class="ghost small">Clear Answers</button>
-          
-            <nav class="qnav">
-                <button id="nextBtn" class="ghost small">Next</button>
-                <button id="finishBtn" class="ghost small" style="display:none">Finish</button>
-            </nav>
-
-            <div class="status-line" id="statusLine"></div>
+          <nav class="qnav">
+            <button id="prevBtn" class="ghost small" style="display:none">Previous</button>
+            <button id="nextBtn" class="ghost small">Next</button>
+          </nav>
+          <div class="status-line" id="statusLine"></div>
+          <button id="doneBtn" style="display:none;background:var(--accent);color:#fff;border:0;padding:14px 44px;font-size:1.15rem;font-weight:bold;border-radius:12px;margin-top:12px;box-shadow:0 4px 14px -3px rgba(0,0,0,.18);cursor:pointer;">Done</button>
         </div>
        
       </section>
@@ -415,7 +414,6 @@ let answeredMap={}; // questionId -> correct? bool
 const playBtn=qs('#playBtn');
 const editBtn=qs('#editBtn');
 const nextBtn=qs('#nextBtn');
-const finishBtn=qs('#finishBtn');
 const clearZoneBtn=qs('#clearZone');
 const choicesTray=qs('#choicesTray');          // now present again
 const answerZone=qs('#answerZone');
@@ -427,6 +425,7 @@ const progressBar=qs('#progressBar');
 const statusLine=qs('#statusLine');
 const remainingLabel=qs('#remainingLabel');    // restored
 const instructions=qs('#instructions');
+const doneBtn = document.getElementById('doneBtn');
 
 let userAnswers = {};           // q.id -> [selected texts]
 let hasInteracted = false;      // to hide instructions after first interaction
@@ -524,14 +523,20 @@ function renderQuestion(){
   }
   qNum.textContent=currentIndex+1;
   qTotal.textContent=questions.length;
-  nextBtn.disabled = currentIndex === questions.length - 1; /* ADDED: disable on last question */
+  // Show/hide Previous and Next
+  prevBtn.style.display = (currentIndex > 0) ? 'inline-block' : 'none';
+  nextBtn.style.display = (currentIndex < questions.length - 1) ? 'inline-block' : 'none';
+  nextBtn.disabled = (currentIndex >= questions.length - 1);
+  // Show Done button only on last question and if answered
+  const answered = (userAnswers[q.id] || []).length > 0;
+  doneBtn.style.display = (currentIndex === questions.length - 1) ? 'inline-block' : 'none';
   updateRemaining();
   updateProgressBar();
   statusLine.textContent='';
   markAnsweredState();
   syncScoreBadge();
-  updateFinishVisibility();
 }
+
 function updateRemaining(){
   if(!choicesTray || !remainingLabel) return;
   const trayChoices=[...choicesTray.querySelectorAll('.choice')].filter(c=>c.dataset.selected!=='true').length;
@@ -635,8 +640,15 @@ function updateAnswerState(){
   const tokens=[...answerZone.querySelectorAll('.token')];
   userAnswers[q.id]=tokens.map(t=>t.textContent.trim());
   updateRemaining();
-  updateFinishVisibility();
 }
+
+/* Previous button event */
+prevBtn.addEventListener('click', () => {
+  if (currentIndex > 0) {
+    currentIndex--;
+    renderQuestion();
+  }
+});
 
 function nextQuestion(){
   const q=questions[currentIndex];
@@ -650,27 +662,6 @@ function nextQuestion(){
   if(currentIndex<questions.length-1){
     currentIndex++; renderQuestion();
   }
-}
-
-function updateFinishVisibility(){
-  const allAnswered = questions.every(q=> (userAnswers[q.id]||[]).length>0 );
-  finishBtn.style.display = allAnswered ? 'inline-block' : 'none';
-}
-
-function finishQuiz(){
-  // lock UI on finish (no scoring shown to student; scoring logic kept internal if needed)
-  answerZone.querySelectorAll('.token').forEach(t=>t.draggable=false);
-  choicesTray.querySelectorAll('.choice').forEach(c=>c.draggable=false);
-  statusLine.textContent='Submitted. Thank you!';
-  statusLine.style.color='var(--accent)';
-  nextBtn.disabled=true;
-  clearZoneBtn.disabled=true;
-  // hide buttons after finishing
-  nextBtn.style.display='none';
-  clearZoneBtn.style.display='none';
-
-  // Show thank you modal
-  openThankYouModal();
 }
 
 /* Utilities */
@@ -836,20 +827,48 @@ playBtn.addEventListener('click',()=>{
   clearZoneBtn.style.display='inline-block';
 });
 editBtn.addEventListener('click',openEditor);
-finishBtn.addEventListener('click',finishQuiz);
+nextBtn.addEventListener('click', nextQuestion);
 clearZoneBtn.addEventListener('click',()=>{
   answerZone.innerHTML='';
   [...choicesTray.querySelectorAll('.choice')].forEach(c=>c.dataset.selected='false');
   updateAnswerState();
   statusLine.textContent='Cleared'; statusLine.style.color='var(--muted)';
 });
-nextBtn.addEventListener('click', nextQuestion); /* ADDED listener */
 closeEditor.addEventListener('click',closeEditorModal);
 addQuestionBtn.addEventListener('click',addNewQuestion);
 deleteQuestionBtn.addEventListener('click',deleteEditorQuestion);
 addChoiceRow.addEventListener('click',()=> addChoiceRowEl());
 saveQuestionBtn.addEventListener('click',saveEditorQuestion);
 thankClose.addEventListener('click',closeThankYouModal);
+doneBtn.addEventListener('click', () => {
+  // Calculate score
+  let score = 0;
+  questions.forEach(q => {
+    const correctAnswers = q.choices.filter(c => c.correct).map(c => c.text.trim());
+    const userAns = userAnswers[q.id] || [];
+    // Mark correct if all correct answers are selected and no incorrect ones
+    if (
+      userAns.length === correctAnswers.length &&
+      userAns.every(ans => correctAnswers.includes(ans))
+    ) {
+      score++;
+    }
+  });
+  // Send result to parent for saving in Firebase
+window.parent.postMessage({
+  type: 'quizResult',
+  payload: {
+    score: score,
+    maxScore: questions.length,
+    answers: userAnswers,
+    quizId: window.location.pathname.split('/').pop(),
+    slideIndex: parentTestIndex // This matches the Test number!
+  }
+}, '*');
+  doneBtn.disabled = true;
+  doneBtn.textContent = "Submitted!";
+  openThankYouModal();
+});
 
 /* Init */
 load();
@@ -900,6 +919,69 @@ qs('#retakeBtn').addEventListener('click',()=>{
   save();
   currentIndex=0;
   renderQuestion();
+});
+</script>
+<script>
+(function controlEditButtonVisibility(){
+  const btn = document.getElementById('editBtn');
+  if (!btn) return;
+
+  function show(){ btn.style.display = ''; btn.disabled = false; }
+  function hide(){ btn.style.display = 'none'; btn.disabled = true; }
+
+  // default: hide in quizView (teacher/student)
+  hide();
+
+  try {
+    const params = new URLSearchParams(location.search);
+    const explicitEditor = params.get('editor') === 'true' || params.get('edit') === 'true' || params.get('mode') === 'edit';
+
+    // show when explicitly opened in editor mode via URL
+    if (explicitEditor) { show(); return; }
+
+    // best-effort: show if referrer/opener/parent looks like quizEditor
+    if (document.referrer && document.referrer.toLowerCase().includes('quizeditor')) { show(); return; }
+    try {
+      if (window.parent && window.parent !== window && String(window.parent.location.href).toLowerCase().includes('quizeditor')) { show(); return; }
+    } catch (e) { /* cross-origin - ignore */ }
+    try {
+      if (window.opener && String(window.opener.location.href).toLowerCase().includes('quizeditor')) { show(); return; }
+    } catch (e) { /* cross-origin - ignore */ }
+  } catch (e) {
+    console.warn('controlEditButtonVisibility error', e);
+  }
+
+  // allow parent/page to override via postMessage
+  window.addEventListener('message', (ev) => {
+    try {
+      const d = ev.data || {};
+      if (d && d.type === 'allowEdit' && d.allow === true) show();
+      if (d && d.type === 'hideEditUI') hide();
+    } catch (err) { /* ignore */ }
+  }, false);
+})();
+</script>
+<script>
+let parentTestIndex = 0;
+window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'setTestIndex') {
+        parentTestIndex = event.data.index;
+        // Optional: log for debugging
+        console.log('Received parentTestIndex:', parentTestIndex);
+    }
+});
+
+doneBtn.addEventListener('click', () => {
+  window.parent.postMessage({
+    type: 'quizResult',
+    payload: {
+      score: score,
+      maxScore: questions.length,
+      answers: userAnswers,
+      quizId: window.location.pathname.split('/').pop(),
+      slideIndex: parentTestIndex // <-- Always use this!
+    }
+  }, '*');
 });
 </script>
 </body>

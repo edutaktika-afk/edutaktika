@@ -419,6 +419,7 @@ td:hover .action-btns .reject,
             <div class="admin-dropdown-content" id="adminDropdownContent">
                 <div class="admin-email" id="adminEmail">admin@email.com</div>
                 <div class="admin-username" id="adminUsername">@admin</div>
+                
                 <button class="logout-btn" onclick="logoutAdmin()">Logout</button>
             </div>
         </div>
@@ -454,9 +455,10 @@ td:hover .action-btns .reject,
                     <h2 style="color: #2e8b57; margin: 0; font-size: 1.8rem; font-weight: 700;">
                         <i class="fas fa-user-shield" style="margin-right: 10px;"></i>Admin Management
                     </h2>
-                    <button id="createAdminBtn" style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3); transition: all 0.3s ease;">
+                    <button class="review" id="openAddAdminBtn" style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 4px 15px rgba(46, 139, 87, 0.3); transition: all 0.3s ease;">
                         <i class="fas fa-user-plus"></i> Create New Admin
                     </button>
+                    
                 </div>
                 
                 <!-- Create Admin Form (Hidden by default) -->
