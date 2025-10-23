@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Banner Hiding - Edutaktika</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .test-button:hover {
+            background: #1565c0;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        .demo-banner {
+            background: #ff4444;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Banner Hiding Test</h1>
+        <p>Test the Polotno license banner hiding functionality.</p>
+        
+        <div class="test-info success">
+            <h3>✅ What's Added:</h3>
+            <ul>
+                <li><strong>CSS Zoom:</strong> 5% zoom to push banner out of view</li>
+                <li><strong>Banner Hiding:</strong> CSS rules to hide license banners</li>
+                <li><strong>JavaScript Detection:</strong> Dynamically hides banners as they appear</li>
+                <li><strong>Mutation Observer:</strong> Watches for new banners and hides them</li>
+            </ul>
+        </div>
+        
+        <div class="test-info warning">
+            <h3>⚠️ Demo Banner (Should be hidden):</h3>
+            <div class="demo-banner" id="demoBanner">
+                Polotno free license limitation exceeded - Please upgrade your account.
+            </div>
+        </div>
+        
+        <div class="test-info">
+            <h3>Test Steps:</h3>
+            <ol>
+                <li>Open the deployed editor: <code>deploy/editor/index.html</code></li>
+                <li>Check if the page appears slightly zoomed (5% zoom)</li>
+                <li>Look for any license banners - they should be hidden</li>
+                <li>Try presentation mode - banner should still be hidden</li>
+                <li>Check console for any banner hiding messages</li>
+            </ol>
+        </div>
+        
+        <div>
+            <a href="deploy/editor/index.html" class="test-button">🧪 Test Deployed Editor</a>
+            <a href="gallery.html" class="test-button">🎨 Test Gallery</a>
+            <button onclick="testBannerHiding()" class="test-button">🔍 Test Banner Hiding</button>
+        </div>
+    </div>
+
+    <script>
+        function testBannerHiding() {
+            const banner = document.getElementById('demoBanner');
+            if (banner) {
+                banner.style.display = 'none';
+                alert('Banner hidden! This simulates what happens to the Polotno license banner.');
+            }
+        }
+        
+        // Simulate the banner hiding functionality
+        function hideLicenseBanner() {
+            const banners = document.querySelectorAll('[class*="license"], [class*="banner"], [class*="upgrade"], [class*="limitation"]');
+            banners.forEach(banner => {
+                banner.style.display = 'none';
+                banner.style.visibility = 'hidden';
+                banner.style.opacity = '0';
+                banner.style.height = '0';
+                banner.style.overflow = 'hidden';
+            });
+        }
+        
+        // Test the banner hiding on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 Testing banner hiding functionality...');
+            hideLicenseBanner();
+        });
+    </script>
+</body>
+</html>

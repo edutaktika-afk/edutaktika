@@ -185,6 +185,8 @@ const useHeight = () => {
 const App = observer(({ store }) => {
   const project = useProject();
   const height = useHeight();
+  const [isViewOnly, setIsViewOnly] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   React.useEffect(() => {
     if (project.language.startsWith('fr')) {
@@ -203,8 +205,118 @@ const App = observer(({ store }) => {
   }, [project.language]);
 
   React.useEffect(() => {
-    project.firstLoad();
+    // Check for view-only mode
+    const urlParams = new URLSearchParams(window.location.search);
+    const designUrl = urlParams.get('design');
+    const viewMode = urlParams.get('view') === 'true' || designUrl;
+    const presentMode = urlParams.get('present') === 'true';
+    
+    if (viewMode && designUrl) {
+      setIsViewOnly(true);
+      loadDesignForViewing(designUrl);
+      
+      // Auto-trigger presentation mode if present=true
+      if (presentMode) {
+        setTimeout(() => {
+          // Find and click the present button
+          const presentButton = document.querySelector('[title*="Present"], [title*="present"], button:contains("Present")');
+          if (presentButton) {
+            presentButton.click();
+          } else {
+            // Fallback: try to find by text content
+            const buttons = document.querySelectorAll('button, .bp5-button');
+            buttons.forEach(button => {
+              if (button.textContent.includes('Present') || button.textContent.includes('present')) {
+                button.click();
+              }
+            });
+          }
+        }, 2000); // Wait 2 seconds for the design to load
+      }
+    } else {
+      project.firstLoad();
+    }
   }, []);
+
+  const loadDesignForViewing = async (designUrl) => {
+    setIsLoading(true);
+    try {
+      console.log('Loading design for viewing:', designUrl);
+      
+      // Try to fetch the design
+      let designData;
+      try {
+        const response = await fetch(designUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch design (HTTP ${response.status})`);
+        }
+        const data = await response.json();
+        designData = data.json || data;
+      } catch (fetchError) {
+        console.log('Direct fetch failed, trying Firebase SDK...', fetchError);
+        
+        // Try Firebase SDK method - designUrl is now just the design ID
+        const designId = designUrl;
+        
+        // Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+          authDomain: "edutaktika.firebaseapp.com",
+          databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+          projectId: "edutaktika",
+          storageBucket: "edutaktika.appspot.com",
+          messagingSenderId: "676848575316",
+          appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+          measurementId: "G-X3GT5TNN87"
+        };
+
+        if (!firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+        const snapshot = await db.ref(`designs/${designId}`).once('value');
+        const data = snapshot.val();
+        
+        if (!data) {
+          throw new Error('Design not found in database');
+        }
+        
+        designData = data.json;
+      }
+
+      if (!designData) {
+        throw new Error('No design data found');
+      }
+
+      console.log('Design data loaded, applying to store:', designData);
+      
+      // Ensure we have at least one page before loading the design
+      if (store.pages.length === 0) {
+        store.addPage();
+      }
+      
+      // Load the design into the store
+      store.loadJSON(designData);
+      
+      // Ensure we still have at least one page after loading
+      if (store.pages.length === 0) {
+        store.addPage();
+      }
+      
+      console.log('Design loaded successfully in view-only mode');
+    } catch (error) {
+      console.error('Error loading design for viewing:', error);
+      
+      // Ensure we have at least one page even if design loading fails
+      if (store.pages.length === 0) {
+        store.addPage();
+      }
+      
+      alert(`Failed to load design: ${error.message}\n\nA blank page has been created. You can still use the Editor normally.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Runtime safeguard: if upstream injects unwanted tabs, remove them from DOM
   React.useEffect(() => {
@@ -255,6 +367,23 @@ const App = observer(({ store }) => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div style={{
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#f8f9fa'
+      }}>
+        <Spinner />
+        <div style={{ marginTop: '20px', color: '#666' }}>Loading design...</div>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -265,24 +394,26 @@ const App = observer(({ store }) => {
       }}
       onDrop={handleDrop}
     >
-      <Topbar store={store} />
+      <Topbar store={store} isViewOnly={isViewOnly} />
       <div style={{ height: 'calc(100% - 50px)' }}>
         <PolotnoContainer className="polotno-app-container">
-          <SidePanelWrap>
-            <SidePanel
-              store={store}
-              sections={DEFAULT_SECTIONS.filter((s) => !isVideoSection(s) && !isPhotosSection(s) && !isIconsSection(s))}
-            />
-          </SidePanelWrap>
+          {!isViewOnly && (
+            <SidePanelWrap>
+              <SidePanel
+                store={store}
+                sections={DEFAULT_SECTIONS.filter((s) => !isVideoSection(s) && !isPhotosSection(s) && !isIconsSection(s))}
+              />
+            </SidePanelWrap>
+          )}
           <WorkspaceWrap>
-            <Toolbar store={store} />
+            {!isViewOnly && <Toolbar store={store} />}
             <Workspace store={store} />
-            <ZoomButtons store={store} />
-            <PagesTimeline store={store} />
+            {!isViewOnly && <ZoomButtons store={store} />}
+            {!isViewOnly && <PagesTimeline store={store} />}
           </WorkspaceWrap>
         </PolotnoContainer>
       </div>
-      <Tutorial store={store} />
+      {!isViewOnly && <Tutorial store={store} />}
       {project.status === 'loading' && (
         <div
           style={{

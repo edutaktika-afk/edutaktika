@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Viewer - Edutaktika</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .test-button:hover {
+            background: #1565c0;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Viewer Test Page</h1>
+        <p>This page helps test the new design viewer functionality.</p>
+        
+        <div class="test-info">
+            <h3>Test Options:</h3>
+            <p>Choose a test design to view in the new viewer:</p>
+        </div>
+        
+        <div>
+            <a href="viewer.html?design=https://edutaktika-default-rtdb.firebaseio.com/designs/test-design.json" class="test-button">
+                Test Design 1
+            </a>
+            <a href="viewer.html?design=https://edutaktika-default-rtdb.firebaseio.com/designs/sample-design.json" class="test-button">
+                Test Design 2
+            </a>
+            <a href="viewer.html?design=invalid-url" class="test-button">
+                Test Error Handling
+            </a>
+        </div>
+        
+        <div class="test-info">
+            <h3>Expected Behavior:</h3>
+            <ul>
+                <li>✅ Design should load in the new viewer</li>
+                <li>✅ Presentation mode should work (click Present button)</li>
+                <li>✅ Fullscreen should work (click Fullscreen button)</li>
+                <li>✅ Keyboard navigation should work (arrow keys, F, P, Esc)</li>
+                <li>✅ Back to Gallery button should work</li>
+            </ul>
+        </div>
+        
+        <div>
+            <a href="gallery.html" class="test-button">← Back to Gallery</a>
+            <a href="Editor/index.html" class="test-button">✏️ Create New Design</a>
+        </div>
+    </div>
+</body>
+</html>

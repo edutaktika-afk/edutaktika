@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Design Gallery - Edutaktika</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <style>
         * {
             margin: 0;
@@ -185,6 +188,10 @@
             line-height: 1.6;
         }
 
+        .editor-link:hover {
+            background: #45a049 !important;
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 2em;
@@ -202,6 +209,15 @@
         <header>
             <h1>🎨 Design Gallery</h1>
             <p class="subtitle">Browse and view Polotno designs</p>
+            <div style="background: #e8f5e8; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 0.9em;">
+                <strong>✨ Auto-Presentation:</strong> Designs now open directly in presentation mode! Click "View Design" to instantly start your lesson presentation.
+                <br><small style="color: #666;">Version 2.1 - Auto-presentation mode</small>
+            </div>
+            <div style="margin-top: 20px;">
+                <a href="deploy/editor/index.html" class="editor-link" style="display: inline-block; padding: 12px 24px; background: #4caf50; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; transition: background 0.3s;">
+                    ✏️ Create New Design
+                </a>
+            </div>
         </header>
 
         <div class="toggle-mode">
@@ -210,38 +226,46 @@
             </button>
             <p style="margin-top: 10px; color: #666; font-size: 0.9em;">
                 <strong>Manual Mode:</strong> Edit the designs array below | 
-                <strong>Auto Mode:</strong> Fetch from Firebase Storage
+                <strong>Auto Mode:</strong> Fetch from Firebase Realtime Database
             </p>
         </div>
 
         <div id="manualConfig" class="config-section">
             <h3>📝 Manual Configuration</h3>
-            <p style="color: #666; margin-bottom: 10px;">Edit the designs array with your Firebase Storage URLs:</p>
+            <p style="color: #666; margin-bottom: 10px;">Edit the designs array with your Firebase Realtime Database URLs:</p>
             <textarea id="manualDesigns">const designs = [
   {
     name: "Math Poster",
-    jsonUrl: "https://firebasestorage.googleapis.com/v0/b/yourproject.appspot.com/o/designs%2Fmathposter.json?alt=media",
-    thumbUrl: "https://firebasestorage.googleapis.com/v0/b/yourproject.appspot.com/o/designs%2Fmathposter.png?alt=media"
+    jsonUrl: "https://edutaktika-default-rtdb.firebaseio.com/designs/math-poster-1234567890.json",
+    thumbUrl: null
   },
   {
     name: "Spelling Bee",
-    jsonUrl: "https://firebasestorage.googleapis.com/v0/b/yourproject.appspot.com/o/designs%2Fspellingbee.json?alt=media",
-    thumbUrl: "https://firebasestorage.googleapis.com/v0/b/yourproject.appspot.com/o/designs%2Fspellingbee.png?alt=media"
+    jsonUrl: "https://edutaktika-default-rtdb.firebaseio.com/designs/spelling-bee-1234567890.json",
+    thumbUrl: null
   }
-];</textarea>
+];
+
+// Example with sample design (replace with your actual Firebase Realtime Database URLs):
+// const designs = [
+//   {
+//     name: "Sample Design",
+//     jsonUrl: "https://edutaktika-default-rtdb.firebaseio.com/designs/sample-design-1234567890.json",
+//     thumbUrl: null
+//   }
+// ];</textarea>
             <button onclick="loadManualDesigns()" style="margin-top: 10px; padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em;">
                 Load Designs
             </button>
         </div>
 
         <div id="autoConfig" class="config-section" style="display: none;">
-            <h3>🔥 Firebase Configuration</h3>
-            <p style="color: #666; margin-bottom: 10px;">Enter your Firebase configuration:</p>
-            <input type="text" id="apiKey" placeholder="API Key">
-            <input type="text" id="authDomain" placeholder="Auth Domain (yourproject.firebaseapp.com)">
-            <input type="text" id="projectId" placeholder="Project ID">
-            <input type="text" id="storageBucket" placeholder="Storage Bucket (yourproject.appspot.com)">
-            <input type="text" id="storageFolder" placeholder="Storage Folder (e.g., designs/)" value="designs/">
+            <h3>🔥 Firebase Auto Mode</h3>
+            <p style="color: #666; margin-bottom: 10px;">Automatically load all designs from the existing Firebase database:</p>
+            <div style="margin-bottom: 15px; padding: 15px; background: #e8f5e8; border-radius: 8px; font-size: 0.9em;">
+                <strong>✅ Firebase Ready:</strong> Using existing edutaktika Firebase project<br>
+                <strong>Database:</strong> https://edutaktika-default-rtdb.firebaseio.com/designs/
+            </div>
             <button onclick="loadFirebaseDesigns()" style="margin-top: 10px; padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em;">
                 Load from Firebase
             </button>
@@ -252,10 +276,14 @@
                 <h2>👋 Welcome!</h2>
                 <p>Configure your designs above and click the load button to view your gallery.</p>
                 <p style="margin-top: 10px;"><strong>Manual Mode:</strong> Edit the designs array and click "Load Designs"</p>
-                <p><strong>Auto Mode:</strong> Enter your Firebase config and click "Load from Firebase"</p>
+                <p><strong>Auto Mode:</strong> Click "Load from Firebase" to fetch all designs from the database</p>
             </div>
         </div>
     </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script type="module">
         let currentMode = 'manual'; // 'manual' or 'auto'
@@ -296,72 +324,58 @@
         };
 
         window.loadFirebaseDesigns = async function() {
-            const apiKey = document.getElementById('apiKey').value;
-            const authDomain = document.getElementById('authDomain').value;
-            const projectId = document.getElementById('projectId').value;
-            const storageBucket = document.getElementById('storageBucket').value;
-            const storageFolder = document.getElementById('storageFolder').value;
-
-            if (!apiKey || !authDomain || !projectId || !storageBucket) {
-                showError('Please fill in all Firebase configuration fields.');
-                return;
-            }
-
             showLoading();
 
             try {
-                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js");
-                const { getStorage, ref, listAll, getDownloadURL } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js");
-
+                // Use the existing Firebase configuration
                 const firebaseConfig = {
-                    apiKey,
-                    authDomain,
-                    projectId,
-                    storageBucket
+                    apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+                    authDomain: "edutaktika.firebaseapp.com",
+                    databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+                    projectId: "edutaktika",
+                    storageBucket: "edutaktika.appspot.com",
+                    messagingSenderId: "676848575316",
+                    appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+                    measurementId: "G-X3GT5TNN87"
                 };
 
-                const app = initializeApp(firebaseConfig);
-                const storage = getStorage(app);
-                const listRef = ref(storage, storageFolder);
+                // Initialize Firebase
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                const db = firebase.database();
 
-                const res = await listAll(listRef);
-                const designs = [];
-                const filesByName = {};
+                // Fetch designs from the database
+                const snapshot = await db.ref('designs').once('value');
+                const designsData = snapshot.val();
 
-                // Group files by name (without extension)
-                for (const item of res.items) {
-                    const fileName = item.name;
-                    const baseName = fileName.replace(/\.(json|png)$/, '');
-                    const extension = fileName.split('.').pop();
-
-                    if (!filesByName[baseName]) {
-                        filesByName[baseName] = { name: baseName };
-                    }
-
-                    const url = await getDownloadURL(item);
-
-                    if (extension === 'json') {
-                        filesByName[baseName].jsonUrl = url;
-                    } else if (extension === 'png') {
-                        filesByName[baseName].thumbUrl = url;
-                    }
+                if (!designsData) {
+                    showError('No designs found in the database. Make sure you have designs saved from the Editor.');
+                    return;
                 }
 
-                // Convert to array and filter complete entries (must have JSON)
-                for (const [name, data] of Object.entries(filesByName)) {
-                    if (data.jsonUrl) {
+                const designs = [];
+                
+                // Convert database data to gallery format
+                for (const [designId, designData] of Object.entries(designsData)) {
+                    if (designData && designData.json && designData.name) {
                         designs.push({
-                            name: formatName(name),
-                            jsonUrl: data.jsonUrl,
-                            thumbUrl: data.thumbUrl || null
+                            name: designData.name,
+                            jsonUrl: `https://edutaktika-default-rtdb.firebaseio.com/designs/${designId}.json`,
+                            thumbUrl: designData.thumbnail || null,
+                            designId: designId,
+                            createdAt: designData.createdAt || null
                         });
                     }
                 }
 
                 if (designs.length === 0) {
-                    showError('No designs found in the specified folder. Make sure you have .json files uploaded.');
+                    showError('No valid designs found in the database.');
                     return;
                 }
+
+                // Sort by creation date (newest first)
+                designs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
                 displayGallery(designs);
             } catch (error) {
@@ -400,7 +414,7 @@
                             >
                             <div class="card-content">
                                 <div class="card-title">${design.name}</div>
-                                <a href="viewer.html?design=${encodeURIComponent(design.jsonUrl)}" class="card-button" onclick="event.stopPropagation()">
+                                <a href="deploy/editor/index.html?design=${encodeURIComponent(design.jsonUrl)}&view=true&present=true" class="card-button" onclick="event.stopPropagation()">
                                     View Design →
                                 </a>
                             </div>
@@ -415,7 +429,7 @@
         function showLoading() {
             document.getElementById('galleryContainer').innerHTML = `
                 <div class="loading">
-                    <p>🔄 Loading designs from Firebase...</p>
+                    <p>🔄 Loading designs from Firebase Realtime Database...</p>
                 </div>
             `;
         }
@@ -427,17 +441,22 @@
                 </div>
                 <div class="empty-state">
                     <h2>Need Help?</h2>
-                    <p>Make sure your Firebase configuration is correct and you have .json files in your storage folder.</p>
+                    <p>Make sure you have designs saved from the Editor and they are accessible in the Firebase Realtime Database.</p>
                 </div>
             `;
         }
 
         window.openViewer = function(jsonUrl) {
-            window.location.href = `viewer.html?design=${jsonUrl}`;
+            console.log('🎨 Opening design in presentation mode:', jsonUrl);
+            const editorUrl = `deploy/editor/index.html?design=${jsonUrl}&view=true&present=true`;
+            console.log('🔗 Editor URL:', editorUrl);
+            window.location.href = editorUrl;
         };
 
         // Load manual designs by default on page load
         window.addEventListener('DOMContentLoaded', () => {
+            console.log('🎨 Gallery loaded - Editor-based viewer v2.0');
+            console.log('🔗 All design links now point to Editor in view-only mode');
             // Optionally auto-load manual designs
             // loadManualDesigns();
         });

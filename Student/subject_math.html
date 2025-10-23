@@ -265,6 +265,150 @@
     <script src="../assets/js/Student Side/header.js"></script>
 
     <div class="container">
+        <!-- Add Firebase design loading functionality -->
+        <script>
+        // Firebase design loading for students (similar to teacher side)
+        async function loadFirebaseDesignsForStudent() {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+
+            try {
+                console.log('🔄 Loading Firebase designs for student...');
+                
+                // Get Firebase reference
+                const db = firebase.database();
+                
+                // Fetch designs from the database
+                const snapshot = await db.ref('designs').once('value');
+                const designsData = snapshot.val();
+
+                if (!designsData) {
+                    console.log('No designs found in database');
+                    return;
+                }
+
+                // Load designs for each quarter
+                for (let q = 1; q <= 4; q++) {
+                    const container = document.querySelector(`#quarter-${q} .lessons-container`);
+                    if (!container) continue;
+
+                    await loadFirebaseDesignsForStudentQuarter(container, q, designsData);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error loading Firebase designs for student:', error);
+            }
+        }
+
+        // Load Firebase designs for a specific quarter (student version)
+        async function loadFirebaseDesignsForStudentQuarter(container, quarterNumber, designsData) {
+            try {
+                console.log(`🔄 Loading Firebase designs for student quarter ${quarterNumber}...`);
+                
+                // Show loading state
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;"><i class="fa fa-spinner fa-spin"></i> Loading designs...</div>';
+                
+                const designs = [];
+                
+                // Convert database data to gallery format
+                for (const [designId, designData] of Object.entries(designsData)) {
+                    if (designData && designData.json && designData.name) {
+                        // Filter by subject (math) and quarter
+                        const isMathDesign = designData.subject === 'math';
+                        const isCorrectQuarter = designData.quarter === quarterNumber.toString();
+                        
+                        console.log(`📋 Design: ${designData.name}`, {
+                            subject: designData.subject,
+                            quarter: designData.quarter,
+                            isMathDesign,
+                            isCorrectQuarter,
+                            targetQuarter: quarterNumber
+                        });
+                        
+                        if (isMathDesign && isCorrectQuarter) {
+                            designs.push({
+                                id: designId,
+                                name: designData.name,
+                                description: designData.description || 'No description available',
+                                jsonUrl: designId,
+                                thumbUrl: designData.thumbnail || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%234CAF50' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3E${designData.name}%3C/text%3E%3C/svg%3E`,
+                                created: designData.createdAt ? new Date(designData.createdAt).toLocaleDateString() : 'Unknown',
+                                subject: designData.subject,
+                                quarter: designData.quarter
+                            });
+                        }
+                    }
+                }
+
+                if (designs.length === 0) {
+                    container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No designs found for this quarter.<br><small>Your teacher will add designs here.</small></div>';
+                    return;
+                }
+
+                // Sort by creation date (newest first)
+                designs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                
+                console.log(`📊 Loaded ${designs.length} designs from Firebase for student quarter ${quarterNumber}`);
+                console.log('🎯 Found designs:', designs.map(d => ({ name: d.name, subject: d.subject, quarter: d.quarter })));
+                renderDesignsForStudent(designs, container);
+                
+            } catch (error) {
+                console.error('❌ Error loading Firebase designs for student quarter:', error);
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">Error loading designs. Please refresh the page.</div>';
+            }
+        }
+
+        // Render designs for student (view-only)
+        function renderDesignsForStudent(designs, container) {
+            if (designs.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No designs found.<br><small>Your teacher will add designs here.</small></div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="gallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin: 20px 0;">
+                    ${designs.map(design => `
+                        <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;" onclick="openDesignViewer('${encodeURIComponent(design.jsonUrl)}')">
+                            <img 
+                                class="card-image" 
+                                src="${design.thumbUrl}" 
+                                alt="${design.name}"
+                                style="width: 100%; height: 160px; object-fit: cover;"
+                                onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\'%3E%3Crect fill=\'%23e3f2fd\' width=\'300\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'20\' fill=\'%231976d2\'%3E${design.name}%3C/text%3E%3C/svg%3E'"
+                            >
+                            <div class="card-content" style="padding: 16px;">
+                                <div class="card-title" style="font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 8px;">${design.name}</div>
+                                <div class="card-description" style="font-size: 0.9rem; color: #666; margin-bottom: 12px;">${design.description}</div>
+                                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                    <button onclick="event.stopPropagation(); openDesignViewer('${encodeURIComponent(design.jsonUrl)}')" style="background: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; cursor: pointer; flex: 1;">View Design</button>
+                                </div>
+                                <div style="font-size: 0.8rem; color: #888;">Created: ${design.created}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Open design viewer for students (view-only)
+        function openDesignViewer(jsonUrl) {
+            console.log('🎨 Opening design in presentation mode:', jsonUrl);
+            const presentationUrl = `../deploy/editor/index.html?design=${encodeURIComponent(jsonUrl)}&view=true&present=true`;
+            console.log('🔗 Editor Presentation URL:', presentationUrl);
+            window.open(presentationUrl, '_blank');
+        }
+
+        // Initialize Firebase designs loading when user is authenticated
+        firebase.auth().onAuthStateChanged(async function(user) {
+            if (user) {
+                console.log('👤 Student authenticated, loading Firebase designs...');
+                // Wait a bit for DOM to be ready
+                setTimeout(() => {
+                    loadFirebaseDesignsForStudent();
+                }, 1000);
+            }
+        });
+        </script>
         <!-- Dropdown for mobile -->
 <div class="quarter-dropdown-custom">
     <button class="quarter-dropdown-btn" id="quarterDropdownBtn">Quarter 1</button>
@@ -441,57 +585,58 @@
     const db = firebase.database();
     const auth = firebase.auth();
 
-    auth.onAuthStateChanged(async function(user) {
-        if (user) {
-            const uid = user.uid;
-            // Get student info
-            const studentSnap = await db.ref('students/' + uid).once('value');
-            const student = studentSnap.val();
-            if (!student || !student.section) return;
+    // DISABLED: Using new Firebase design gallery instead
+    // auth.onAuthStateChanged(async function(user) {
+    //     if (user) {
+    //         const uid = user.uid;
+    //         // Get student info
+    //         const studentSnap = await db.ref('students/' + uid).once('value');
+    //         const student = studentSnap.val();
+    //         if (!student || !student.section) return;
 
-            // Find teacher for this section
-            let teacherUID = null;
-            const teachersSnap = await db.ref('teachers').once('value');
-            teachersSnap.forEach(tsnap => {
-                const t = tsnap.val();
-                if (t.section && t.section.trim().toLowerCase() === student.section.trim().toLowerCase()) {
-                    teacherUID = tsnap.key;
-                }
-            });
+    //         // Find teacher for this section
+    //         let teacherUID = null;
+    //         const teachersSnap = await db.ref('teachers').once('value');
+    //         teachersSnap.forEach(tsnap => {
+    //             const t = tsnap.val();
+    //             if (t.section && t.section.trim().toLowerCase() === student.section.trim().toLowerCase()) {
+    //                 teacherUID = tsnap.key;
+    //             }
+    //         });
 
-            if (!teacherUID) {
-                document.querySelectorAll('.lessons-container').forEach(c => c.innerHTML = "<div>No teacher found for your section.</div>");
-                return;
-            }
+    //         if (!teacherUID) {
+    //             document.querySelectorAll('.lessons-container').forEach(c => c.innerHTML = "<div>No teacher found for your section.</div>");
+    //             return;
+    //         }
 
-            for (let q = 1; q <= 4; q++) {
-                const lessonsSnap = await db.ref('teachers/' + teacherUID + '/sections/' + student.section + '/lessons/subject_math/quarter-' + q).once('value');
-                const container = document.querySelector(`#quarter-${q} .lessons-container`);
-                if (!container) continue;
-                container.innerHTML = '';
-                if (!lessonsSnap.exists()) {
+    //         for (let q = 1; q <= 4; q++) {
+    //             const lessonsSnap = await db.ref('teachers/' + teacherUID + '/sections/' + student.section + '/lessons/subject_math/quarter-' + q).once('value');
+    //             const container = document.querySelector(`#quarter-${q} .lessons-container`);
+    //             if (!container) continue;
+    //             container.innerHTML = '';
+    //             if (!lessonsSnap.exists()) {
                     
-                    continue;
-                }
-                lessonsSnap.forEach(lessonSnap => {
-                    const lesson = lessonSnap.val();
-                    const name = lesson.title || lessonSnap.key;
-                    const div = document.createElement('div');
-                    div.className = 'lesson-item';
-                    div.setAttribute('data-presentation', name);
-                    div.innerHTML = `
-                        <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
-                        <div class="lesson-title">
-                            <h3>${name}</h3>
-                            <p>${lesson.description || ''}</p>
-                            <span class="lesson-badge" onclick="window.location.href='present.html?subject=subject_math&quarter=${q}&name=${encodeURIComponent(name)}'" style="cursor:pointer;">View</span>
-                        </div>
-                    `;
-                    container.appendChild(div);
-                });
-            }
-        }
-    });
+    //                 continue;
+    //             }
+    //             lessonsSnap.forEach(lessonSnap => {
+    //                 const lesson = lessonSnap.val();
+    //                 const name = lesson.title || lessonSnap.key;
+    //                 const div = document.createElement('div');
+    //                 div.className = 'lesson-item';
+    //                 div.setAttribute('data-presentation', name);
+    //                 div.innerHTML = `
+    //                     <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
+    //                     <div class="lesson-title">
+    //                         <h3>${name}</h3>
+    //                         <p>${lesson.description || ''}</p>
+    //                         <span class="lesson-badge" onclick="window.location.href='present.html?subject=subject_math&quarter=${q}&name=${encodeURIComponent(name)}'" style="cursor:pointer;">View</span>
+    //                     </div>
+    //                 `;
+    //                 container.appendChild(div);
+    //             });
+    //         }
+    //     }
+    // });
 
     
 // Listen for auth state
@@ -662,75 +807,77 @@ function openLesson(lessonTitle, quarter, source, teacherUID) {
 }
 
 // Initialize lesson loading when user is authenticated
-firebase.auth().onAuthStateChanged(async function(user) {
-    if (user) {
-        await loadStudentLessons();
-    }
-});
+// DISABLED: Using new Firebase design gallery instead
+// firebase.auth().onAuthStateChanged(async function(user) {
+//     if (user) {
+//         await loadStudentLessons();
+//     }
+// });
     </script>
 
 <script>
 
 
-auth.onAuthStateChanged(async function(user) {
-    if (user) {
-        const uid = user.uid;
-        // Get student info
-        const studentSnap = await db.ref('students/' + uid).once('value');
-        const student = studentSnap.val();
-        if (!student || !student.section) return;
+// DISABLED: Using new Firebase design gallery instead
+// auth.onAuthStateChanged(async function(user) {
+//     if (user) {
+//         const uid = user.uid;
+//         // Get student info
+//         const studentSnap = await db.ref('students/' + uid).once('value');
+//         const student = studentSnap.val();
+//         if (!student || !student.section) return;
 
-        // Find teacher for this section
-        let teacherUID = null;
-        const teachersSnap = await db.ref('teachers').once('value');
-        teachersSnap.forEach(tsnap => {
-            const t = tsnap.val();
-            if (t.section && t.section.trim().toLowerCase() === student.section.trim().toLowerCase()) {
-                teacherUID = tsnap.key;
-            }
-        });
+//         // Find teacher for this section
+//         let teacherUID = null;
+//         const teachersSnap = await db.ref('teachers').once('value');
+//         teachersSnap.forEach(tsnap => {
+//             const t = tsnap.val();
+//             if (t.section && t.section.trim().toLowerCase() === student.section.trim().toLowerCase()) {
+//                 teacherUID = tsnap.key;
+//             }
+//         });
 
-        for (let q = 1; q <= 4; q++) {
-            const container = document.querySelector(`#quarter-${q} .lessons-container`);
-            if (!container) continue;
+//         for (let q = 1; q <= 4; q++) {
+//             const container = document.querySelector(`#quarter-${q} .lessons-container`);
+//             if (!container) continue;
 
-            let lessons = [];
+//             let lessons = [];
 
-            // Only fetch lessons from teacher whose section matches
-            if (teacherUID) {
-                const teacherSnap = await db.ref('teachers/' + teacherUID + '/sections/' + student.section + '/lessons/' + subjectPage + '/quarter-' + q).once('value');
-                if (teacherSnap.exists()) {
-                    teacherSnap.forEach(child => {
-                        const data = child.val();
-                        lessons.push({
-                            title: data.title || child.key,
-                            description: data.description || ''
-                        });
-                    });
-                }
-            }
+//             // Only fetch lessons from teacher whose section matches
+//             if (teacherUID) {
+//                 const teacherSnap = await db.ref('teachers/' + teacherUID + '/sections/' + student.section + '/lessons/' + subjectPage + '/quarter-' + q).once('value');
+//                 if (teacherSnap.exists()) {
+//                     teacherSnap.forEach(child => {
+//                         const data = child.val();
+//                         lessons.push({
+//                             title: data.title || child.key,
+//                             description: data.description || ''
+//                         });
+//                     });
+//                 }
+//             }
 
-            // Sort all lessons by title
-            lessons.sort((a, b) => a.title.localeCompare(b.title));
+//             // Sort all lessons by title
+//             lessons.sort((a, b) => a.title.localeCompare(b.title));
 
-            // Render
-            if (lessons.length === 0) {
+//             // Render
+//             if (lessons.length === 0) {
                 
-            } else {
-                container.innerHTML = lessons.map(lesson => `
-                    <div class="lesson-item" data-presentation="${lesson.title}">
-                        <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
-                        <div class="lesson-title">
-                            <h3>${lesson.title}</h3>
-                            <p>${lesson.description}</p>
-                            <span class="lesson-badge" onclick="window.location.href='present.html?subject=${subjectPage}&quarter=${q}&name=${encodeURIComponent(lesson.title)}'" style="cursor:pointer;">View</span>
-                        </div>
-                    </div>
-                `).join('');
-            }
-        }
-    }
-});
+//             } else {
+//                 container.innerHTML = lessons.map(lesson => `
+//                     <div class="lesson-item" data-presentation="${lesson.title}">
+//                         <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
+//                         <div class="lesson-title">
+//                             <h3>${lesson.title}</h3>
+//                             <p>${lesson.description}</p>
+//                             <span class="lesson-badge" onclick="window.location.href='present.html?subject=${subjectPage}&quarter=${q}&name=${encodeURIComponent(lesson.title)}'" style="cursor:pointer;">View</span>
+//                         </div>
+//                     </div>
+//                 `).join('');
+//             }
+//         }
+//     }
+// });
 </script>
 
 <!-- Edit Profile Modal -->

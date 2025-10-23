@@ -25,6 +25,7 @@ import { useProject } from '../project';
 import { FileMenu } from './file-menu';
 import { DownloadButton } from './download-button';
 import { PostProcessButton } from './post-process-button';
+import { FirebaseSaveButton } from './firebase-save-button';
 import { UserMenu } from './user-menu';
 import { CloudWarning } from '../cloud-warning';
 
@@ -121,87 +122,105 @@ async function presentSlideshow(store) {
   win.document.getElementById('closeBtn').onclick = () => win.close();
 }
 
-export default observer(({ store }) => {
+export default observer(({ store, isViewOnly = false }) => {
   const project = useProject();
 
   return (
     <NavbarContainer className="bp5-navbar topbar">
       <NavInner>
         <Navbar.Group align={Alignment.LEFT}>
-          <FileMenu store={store} project={project} />
+          {!isViewOnly && <FileMenu store={store} project={project} />}
           <div
             style={{
-              paddingLeft: '20px',
+              paddingLeft: isViewOnly ? '0' : '20px',
               maxWidth: '200px',
             }}
           >
-            <EditableText
-              value={window.project.name}
-              placeholder="Design name"
-              onChange={(name) => {
-                window.project.name = name;
-                window.project.requestSave();
-              }}
-            />
+            {isViewOnly ? (
+              <div style={{ fontSize: '18px', fontWeight: '600', color: '#1976d2' }}>
+                🎨 Design Viewer
+              </div>
+            ) : (
+              <EditableText
+                value={window.project.name}
+                placeholder="Design name"
+                onChange={(name) => {
+                  window.project.name = name;
+                  window.project.requestSave();
+                }}
+              />
+            )}
           </div>
         </Navbar.Group>
         <Navbar.Group align={Alignment.RIGHT}>
-          {/* <Status project={project} /> */}
-
-          {/* Removed 'For developers' button */}
-          {/* 
-          <AnchorButton
-            minimal
-            href="https://github.com/lavrton/polotno-studio"
-            target="_blank"
-            icon={
-              <FaGithub className="bp5-icon" style={{ fontSize: '20px' }} />
-            }
-          ></AnchorButton>
-          <AnchorButton
-            minimal
-            href="https://twitter.com/lavrton"
-            target="_blank"
-            icon={
-              <FaTwitter className="bp5-icon" style={{ fontSize: '20px' }} />
-            }
-          ></AnchorButton> */}
-          <NavbarDivider />
-          {/* Fullscreen toggle */}
-          <AnchorButton
-            minimal
-            onClick={() => {
-              if (document.fullscreenElement) exitFullscreen(); else enterFullscreen();
-            }}
-          >
-            {document.fullscreenElement ? 'Exit Fullscreen' : 'Fullscreen'}
-          </AnchorButton>
-          {/* Present (slideshow) */}
-          <AnchorButton
-            minimal
-            onClick={() => presentSlideshow(store)}
-          >
-            Present
-          </AnchorButton>
-          <PostProcessButton store={store} />
-          <DownloadButton store={store} />
-          <NavbarDivider />
-          <AnchorButton
-            minimal
-            icon={<Icon icon={IconNames.HELP} />}
-            onClick={() => {
-              // Trigger tutorial
-              const tutorialButton = document.querySelector('[data-tutorial-trigger]');
-              if (tutorialButton) {
-                tutorialButton.click();
-              }
-            }}
-            title="Start Tutorial"
-          >
-            Help
-          </AnchorButton>
-          <UserMenu store={store} project={project} />
-          {/* <NavbarHeading>Polotno Studio</NavbarHeading> */}
+          {isViewOnly ? (
+            <>
+              {/* View-only mode controls */}
+              <AnchorButton
+                minimal
+                onClick={() => {
+                  if (document.fullscreenElement) exitFullscreen(); else enterFullscreen();
+                }}
+              >
+                {document.fullscreenElement ? 'Exit Fullscreen' : 'Fullscreen'}
+              </AnchorButton>
+              <AnchorButton
+                minimal
+                onClick={() => presentSlideshow(store)}
+              >
+                Present
+              </AnchorButton>
+              <DownloadButton store={store} />
+              <NavbarDivider />
+              <AnchorButton
+                minimal
+                href="gallery.html"
+                style={{ color: '#1976d2', fontWeight: '500' }}
+              >
+                ← Back to Gallery
+              </AnchorButton>
+            </>
+          ) : (
+            <>
+              {/* <Status project={project} /> */}
+              <NavbarDivider />
+              {/* Fullscreen toggle */}
+              <AnchorButton
+                minimal
+                onClick={() => {
+                  if (document.fullscreenElement) exitFullscreen(); else enterFullscreen();
+                }}
+              >
+                {document.fullscreenElement ? 'Exit Fullscreen' : 'Fullscreen'}
+              </AnchorButton>
+              {/* Present (slideshow) */}
+              <AnchorButton
+                minimal
+                onClick={() => presentSlideshow(store)}
+              >
+                Present
+              </AnchorButton>
+              <PostProcessButton store={store} />
+              <DownloadButton store={store} />
+              <FirebaseSaveButton store={store} />
+              <NavbarDivider />
+              <AnchorButton
+                minimal
+                icon={<Icon icon={IconNames.HELP} />}
+                onClick={() => {
+                  // Trigger tutorial
+                  const tutorialButton = document.querySelector('[data-tutorial-trigger]');
+                  if (tutorialButton) {
+                    tutorialButton.click();
+                  }
+                }}
+                title="Start Tutorial"
+              >
+                Help
+              </AnchorButton>
+              <UserMenu store={store} project={project} />
+            </>
+          )}
         </Navbar.Group>
       </NavInner>
     </NavbarContainer>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Gallery Links - Edutaktika</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .test-button:hover {
+            background: #1565c0;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Gallery Links Test</h1>
+        <p>Test the gallery links to ensure they point to the Editor.</p>
+        
+        <div class="test-info success">
+            <h3>✅ What Should Happen:</h3>
+            <ul>
+                <li><strong>Gallery links:</strong> Should go to <code>Editor/index.html?design=URL&view=true</code></li>
+                <li><strong>No more viewer.html:</strong> Old viewer file has been removed</li>
+                <li><strong>Editor view-only mode:</strong> Should load with editing tools hidden</li>
+                <li><strong>Console logs:</strong> Should show debugging information</li>
+            </ul>
+        </div>
+        
+        <div class="test-info warning">
+            <h3>⚠️ Troubleshooting:</h3>
+            <ul>
+                <li><strong>Clear browser cache:</strong> Ctrl+F5 or Cmd+Shift+R</li>
+                <li><strong>Check console:</strong> F12 → Console tab for debugging info</li>
+                <li><strong>Verify URLs:</strong> Make sure links point to Editor, not viewer</li>
+                <li><strong>Check network:</strong> F12 → Network tab to see where requests go</li>
+            </ul>
+        </div>
+        
+        <div class="test-info">
+            <h3>Test Steps:</h3>
+            <ol>
+                <li>Open <code>gallery.html</code> in browser</li>
+                <li>Open browser console (F12)</li>
+                <li>Look for "Gallery loaded - Editor-based viewer v2.0" message</li>
+                <li>Click on a design card</li>
+                <li>Check console for "Opening design in Editor view-only mode" message</li>
+                <li>Verify you're taken to <code>Editor/index.html?design=URL&view=true</code></li>
+            </ol>
+        </div>
+        
+        <div>
+            <a href="gallery.html" class="test-button">🧪 Test Gallery</a>
+            <a href="Editor/index.html" class="test-button">✏️ Test Editor</a>
+            <a href="test-editor-viewer.html" class="test-button">🔍 Test Editor Viewer</a>
+        </div>
+    </div>
+</body>
+</html>
