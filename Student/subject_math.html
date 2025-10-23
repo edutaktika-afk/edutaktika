@@ -267,18 +267,15 @@
     <div class="container">
         <!-- Add Firebase design loading functionality -->
         <script>
-        // Firebase design loading for students (similar to teacher side)
+        // Firebase design loading for students (simplified - show all designs first)
         async function loadFirebaseDesignsForStudent() {
-            const user = firebase.auth().currentUser;
-            if (!user) return;
-
             try {
                 console.log('🔄 Loading Firebase designs for student...');
                 
                 // Get Firebase reference
                 const db = firebase.database();
                 
-                // Fetch designs from the database
+                // Fetch designs from the database (like gallery.html)
                 const snapshot = await db.ref('designs').once('value');
                 const designsData = snapshot.val();
 
@@ -287,12 +284,35 @@
                     return;
                 }
 
-                // Load designs for each quarter
-                for (let q = 1; q <= 4; q++) {
-                    const container = document.querySelector(`#quarter-${q} .lessons-container`);
-                    if (!container) continue;
+                const designs = [];
+                
+                // Convert database data to gallery format (like gallery.html)
+                for (const [designId, designData] of Object.entries(designsData)) {
+                    if (designData && designData.json && designData.name) {
+                        designs.push({
+                            id: designId,
+                            name: designData.name,
+                            description: designData.description || 'No description available',
+                            jsonUrl: designId,
+                            thumbUrl: designData.thumbnail || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%234CAF50' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3E${designData.name}%3C/text%3E%3C/svg%3E`,
+                            created: designData.createdAt ? new Date(designData.createdAt).toLocaleDateString() : 'Unknown',
+                            subject: designData.subject,
+                            quarter: designData.quarter
+                        });
+                    }
+                }
 
-                    await loadFirebaseDesignsForStudentQuarter(container, q, designsData);
+                if (designs.length === 0) {
+                    console.log('No valid designs found');
+                    return;
+                }
+
+                console.log(`📊 Loaded ${designs.length} designs from Firebase`);
+                
+                // Show all designs in Quarter 1 for now (we'll add filtering later)
+                const container = document.querySelector('#quarter-1 .lessons-container');
+                if (container) {
+                    renderDesignsForStudent(designs, container);
                 }
                 
             } catch (error) {
@@ -300,63 +320,7 @@
             }
         }
 
-        // Load Firebase designs for a specific quarter (student version)
-        async function loadFirebaseDesignsForStudentQuarter(container, quarterNumber, designsData) {
-            try {
-                console.log(`🔄 Loading Firebase designs for student quarter ${quarterNumber}...`);
-                
-                // Show loading state
-                container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;"><i class="fa fa-spinner fa-spin"></i> Loading designs...</div>';
-                
-                const designs = [];
-                
-                // Convert database data to gallery format
-                for (const [designId, designData] of Object.entries(designsData)) {
-                    if (designData && designData.json && designData.name) {
-                        // Filter by subject (math) and quarter
-                        const isMathDesign = designData.subject === 'math';
-                        const isCorrectQuarter = designData.quarter === quarterNumber.toString();
-                        
-                        console.log(`📋 Design: ${designData.name}`, {
-                            subject: designData.subject,
-                            quarter: designData.quarter,
-                            isMathDesign,
-                            isCorrectQuarter,
-                            targetQuarter: quarterNumber
-                        });
-                        
-                        if (isMathDesign && isCorrectQuarter) {
-                            designs.push({
-                                id: designId,
-                                name: designData.name,
-                                description: designData.description || 'No description available',
-                                jsonUrl: designId,
-                                thumbUrl: designData.thumbnail || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%234CAF50' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3E${designData.name}%3C/text%3E%3C/svg%3E`,
-                                created: designData.createdAt ? new Date(designData.createdAt).toLocaleDateString() : 'Unknown',
-                                subject: designData.subject,
-                                quarter: designData.quarter
-                            });
-                        }
-                    }
-                }
-
-                if (designs.length === 0) {
-                    container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No designs found for this quarter.<br><small>Your teacher will add designs here.</small></div>';
-                    return;
-                }
-
-                // Sort by creation date (newest first)
-                designs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                
-                console.log(`📊 Loaded ${designs.length} designs from Firebase for student quarter ${quarterNumber}`);
-                console.log('🎯 Found designs:', designs.map(d => ({ name: d.name, subject: d.subject, quarter: d.quarter })));
-                renderDesignsForStudent(designs, container);
-                
-            } catch (error) {
-                console.error('❌ Error loading Firebase designs for student quarter:', error);
-                container.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">Error loading designs. Please refresh the page.</div>';
-            }
-        }
+        // Simplified - we'll add quarter filtering later
 
         // Render designs for student (view-only)
         function renderDesignsForStudent(designs, container) {
@@ -399,15 +363,7 @@
         }
 
         // Initialize Firebase designs loading when user is authenticated
-        firebase.auth().onAuthStateChanged(async function(user) {
-            if (user) {
-                console.log('👤 Student authenticated, loading Firebase designs...');
-                // Wait a bit for DOM to be ready
-                setTimeout(() => {
-                    loadFirebaseDesignsForStudent();
-                }, 1000);
-            }
-        });
+        // Firebase design loading is now handled after Firebase initialization
         </script>
         <!-- Dropdown for mobile -->
 <div class="quarter-dropdown-custom">
@@ -584,6 +540,11 @@
     }
     const db = firebase.database();
     const auth = firebase.auth();
+
+    // Load Firebase designs after Firebase is initialized
+    setTimeout(() => {
+        loadFirebaseDesignsForStudent();
+    }, 1000);
 
     // DISABLED: Using new Firebase design gallery instead
     // auth.onAuthStateChanged(async function(user) {
