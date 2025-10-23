@@ -84,6 +84,25 @@ body{padding:0 !important;display:flex;align-items:center;justify-content:center
 
 /* Prevent accidental page scroll in iframes */
 ::-webkit-scrollbar{width:0;height:0}
+#doneBtn {
+  display:none;
+  padding:12px 26px;
+  font-size:1rem;
+  background:#2563eb;
+  color:#fff;
+  border:none;
+  border-radius:14px;
+  box-shadow:0 4px 18px rgba(37,99,235,0.13);
+  font-weight:700;
+  cursor:pointer;
+  display:block;
+}
+/* Add to your CSS file or <style> section */
+.quiz-controls {
+    display: flex;
+    gap: 10px; /* Adjust spacing as needed */
+    align-items: center;
+}
 </style>
 </head>
 <body>
@@ -96,8 +115,9 @@ body{padding:0 !important;display:flex;align-items:center;justify-content:center
         <div id="questionText"></div>
         <div class="options" id="optionsBox"></div>
         <div class="controls">
+          <button id="prevBtn" style="display:none;background:#e4edf4;color:#174369;border:0;padding:12px 18px;border-radius:14px">Previous</button>
           <button id="nextBtn">Next</button>
-          <button id="finishBtn">Finish</button>
+          <button id="doneBtn">Done</button>
         </div>
       </div>
     </div>
@@ -108,10 +128,11 @@ body{padding:0 !important;display:flex;align-items:center;justify-content:center
     <div class="modal-card">
       <h2>Thank You!</h2>
       <p id="finalMsg" style="margin:0;font-size:1.05rem;color:#42596b">Your answers have been submitted.</p>
-      <button class="primary" id="restartBtn">Play Again</button>
+      <button class="primary" id="restartBtn">Done</button>
     </div>
   </div>
 
+  
   <!-- Editor Modal -->
   <div id="editorModal" aria-hidden="true">
     <div id="editorCard">
@@ -159,8 +180,8 @@ let userAnswers=new Array(questions.length).fill(null);
 /* ========== ELEMENTS ========== */
 const questionText=qs('#questionText');
 const optionsBox=qs('#optionsBox');
+const prevBtn = document.getElementById('prevBtn');
 const nextBtn=qs('#nextBtn');
-const finishBtn=qs('#finishBtn');
 const bar=qs('#bar');
 
 function qs(s){return document.querySelector(s);}
@@ -182,21 +203,33 @@ function renderQuestion(){
   });
   updateNav();
   updateBar();
+
+  // Show Done button only on last question and if answered
+  const doneBtn = document.getElementById('doneBtn');
+  if (doneBtn) {
+    doneBtn.style.display = (current === questions.length - 1 && userAnswers[current] != null) ? 'block' : 'none';
+  }
+
   if(window.__quizFit) setTimeout(window.__quizFit,0);
 }
-function selectOption(i,el){
-  if(userAnswers[current]!=null) return; // prevent change once selected
-  userAnswers[current]=i;
-  [...optionsBox.children].forEach(c=>c.removeAttribute('selected'));
-  el.setAttribute('selected','true');
+function selectOption(i, el){
+  userAnswers[current] = i;
+  // update visual selected state
+  [...optionsBox.children].forEach(c => c.removeAttribute('selected'));
+  if (el && el.setAttribute) el.setAttribute('selected','true');
   updateNav();
+
+  // Show Done button if on last question and answered
+  const doneBtn = document.getElementById('doneBtn');
+  if (doneBtn) {
+    doneBtn.style.display = (current === questions.length - 1 && userAnswers[current] != null) ? 'block' : 'none';
+  }
 }
 function updateNav(){
-  const answeredAll=userAnswers.every(v=>v!=null);
-  const answeredCurrent=userAnswers[current]!=null;
-  nextBtn.style.display = (current<questions.length-1 && answeredCurrent)?'inline-block':'none';
-  finishBtn.style.display = (current===questions.length-1 && answeredCurrent)?'inline-block':'none';
-  if(!answeredCurrent){ nextBtn.style.display='none'; finishBtn.style.display='none'; }
+  const answeredCurrent = userAnswers[current] != null;
+  nextBtn.style.display = (current < questions.length - 1 && answeredCurrent) ? 'inline-block' : 'none';
+  prevBtn.style.display = (current > 0) ? 'inline-block' : 'none';
+  if (!answeredCurrent) { nextBtn.style.display = 'none'; }
 }
 function updateBar(){
   const pct=((current)/Math.max(questions.length-1,1))*100;
@@ -204,18 +237,18 @@ function updateBar(){
 }
 
 /* ========== NAV EVENTS ========== */
-nextBtn.addEventListener('click',()=>{
-  if(userAnswers[current]==null) return;
+prevBtn.addEventListener('click', () => {
+  if (current > 0) {
+    current--;
+    renderQuestion();
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  if (userAnswers[current] == null) return;
   current++;
   renderQuestion();
 });
-finishBtn.addEventListener('click',finishQuiz);
-
-function finishQuiz(){
-  // lock options
-  [...optionsBox.children].forEach(o=>o.disabled=true);
-  openFinal();
-}
 
 /* ========== FINAL MODAL ========== */
 const finalModal=qs('#finalModal');
@@ -227,7 +260,25 @@ qs('#restartBtn').addEventListener('click',()=>{
   renderQuestion();
 });
 function openFinal(){
-  finalMsg.textContent='You answered '+userAnswers.filter(v=>v!=null).length+' question'+(questions.length===1?'':'s')+'.';
+  // Calculate score
+  let score = 0;
+  for (let i = 0; i < questions.length; i++) {
+    if (userAnswers[i] === questions[i].correct) score++;
+  }
+  finalMsg.textContent = `You answered ${userAnswers.filter(v=>v!=null).length} question${questions.length===1?'':'s'}.\nScore: ${score} / ${questions.length}`;
+
+  // Send score and answers to parent for saving
+window.parent.postMessage({
+    type: 'quizResult',
+    payload: {
+      score: score,
+      maxScore: questions.length,
+      answers: userAnswers,
+      quizId: window.location.pathname.split('/').pop(),
+      slideIndex: parentTestIndex // <-- Always use this!
+    }
+  }, '*');
+
   finalModal.style.display='flex';
   finalModal.setAttribute('aria-hidden','false');
 }
@@ -354,6 +405,124 @@ function escapeHtml(s){return s.replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;',
 
 /* ========== INIT ========== */
 renderQuestion();
+
+/* Hide edit button by default. Only show when opened from quizEditor (or when explicitly allowed). */
+(function controlEditButtonVisibility() {
+  const btn = document.getElementById('editOpen');
+  if (!btn) return;
+
+  function show() { btn.style.display = ''; }
+  function hide() { btn.style.display = 'none'; }
+
+  // default: hide
+  hide();
+
+  try {
+    const params = new URLSearchParams(location.search);
+
+    // explicit editor flags in URL (quizEditor can add ?editor=true or ?edit=true or ?mode=edit)
+    if (params.get('editor') === 'true' || params.get('edit') === 'true' || params.get('mode') === 'edit') {
+      show();
+      return;
+    }
+
+    // referrer check (if embedder is quizEditor page)
+    if (document.referrer && document.referrer.toLowerCase().includes('quizeditor')) {
+      show();
+      return;
+    }
+
+    // try to detect parent/opener location containing "quizEditor" (guarded)
+    if (window.parent && window.parent !== window) {
+      try {
+        if (window.parent.location && String(window.parent.location.href).toLowerCase().includes('quizeditor')) {
+          show();
+          return;
+        }
+      } catch (e) { /* cross-origin - ignore */ }
+    }
+    if (window.opener) {
+      try {
+        if (window.opener.location && String(window.opener.location.href).toLowerCase().includes('quizeditor')) {
+          show();
+          return;
+        }
+      } catch (e) { /* cross-origin - ignore */ }
+    }
+  } catch (e) {
+    // defensive: keep hidden on error
+    console.warn('controlEditButtonVisibility error', e);
+  }
+
+  // Parent can explicitly allow/hide via postMessage:
+  // { type: 'allowEdit', allow: true }  => show button
+  // { type: 'hideEditUI' }              => hide button
+  window.addEventListener('message', (ev) => {
+    try {
+      const d = ev.data || {};
+      if (d && d.type === 'allowEdit' && d.allow === true) show();
+      if (d && d.type === 'hideEditUI') hide();
+    } catch (err) { /* ignore */ }
+  }, false);
+})();
+
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'game-score') {
+    // Save event.data.score, event.data.maxScore, event.data.answers to Firebase
+    // Example:
+    // db.ref(`students/${user.uid}/summary/${event.data.gameId}`).set({
+    //   score: event.data.score,
+    //   maxScore: event.data.maxScore,
+    //   answers: event.data.answers,
+    //   completedAt: Date.now()
+    // });
+  }
+});
+  
+document.getElementById('doneBtn').onclick = function() {
+  // Calculate score
+  let score = 0;
+  for (let i = 0; i < questions.length; i++) {
+    if (userAnswers[i] === questions[i].correct) score++;
+  }
+
+  // Send score and answers to parent for saving in Firebase
+window.parent.postMessage({
+    type: 'quizResult',
+    payload: {
+      score: score,
+      maxScore: questions.length,
+      answers: userAnswers,
+      quizId: window.location.pathname.split('/').pop(),
+      slideIndex: parentTestIndex // <-- Always use this!
+    }
+  }, '*');
+
+  // Optionally show final modal
+  openFinal();
+  this.disabled = true;
+};
+
+let parentTestIndex = 0;
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'setTestIndex') {
+    parentTestIndex = event.data.index;
+  }
+});
+
+// In game4.html or your quiz editor
+let originalQuestions = [...window.defaultQuestions]; // Do not modify this
+let editableQuestions = JSON.parse(JSON.stringify(originalQuestions)); // Safe copy for editing
+
+// When saving
+saveQuestionsToQuiz(editableQuestions); // Save only the edited copy
+
+// When loading
+if (quizHasCustomQuestions) {
+    loadQuestionsFromQuiz();
+} else {
+    loadQuestionsFromFile();
+}
 </script>
 </body>
 </html>

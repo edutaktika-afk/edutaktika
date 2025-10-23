@@ -1,0 +1,706 @@
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        firebase.auth().onAuthStateChanged(async function(user) {
+            if (!user) {
+                window.location.href = "logreg.html";
+                return;
+            }
+            const uid = user.uid;
+            const snap = await firebase.database().ref('teachers/' + uid).once('value');
+            const teacher = snap.val();
+            if (!teacher || teacher.role !== "teacher") {
+                document.getElementById('mainContent').style.display = "none";
+                alert("Access denied.");
+                await firebase.auth().signOut();
+                window.location.href = "logreg.html";
+            } else {
+                document.getElementById('mainContent').style.display = "block";
+            }
+        });
+    });
+    </script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Quiz | Edutaktika</title>
+  <link rel="stylesheet" href="../CSS/fonts.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/header.css">
+  <link rel="stylesheet" href="../CSS/footer.css">
+  <link rel="stylesheet" href="../CSS/dropdown.css">
+  <link rel="stylesheet" href="../CSS/burger.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="icon" type="image/png" href="../images/icons/home.png" />
+  <style>
+    .profile-sidebar {
+        margin-top: 20px;
+        max-height: 95vh;
+        overflow-y: auto;
+        scrollbar-width: none;         /* Firefox */
+        -ms-overflow-style: none;      /* IE and Edge */
+    }
+    .profile-sidebar::-webkit-scrollbar {
+        display: none;                 /* Chrome, Safari, Opera */
+    }
+    :root {
+      --primary: #ffe600;
+      --primary-contrast: #000;
+      --accent: #059981;
+      --text: #2d3923;
+      --muted: #777;
+      --border: #b2b2b2;
+      --bg: #f8f8f8;
+    }
+    body {
+      font-family: 'Manrope', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 0;
+      background: #fff;
+      color: var(--text);
+    }
+    .container {
+      max-width: 980px;
+      margin: 30px auto;
+      padding: 0 16px;
+    }
+    .page-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .page-title h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      letter-spacing: .5px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 22px;
+      border-left: 4px solid var(--primary);
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 820px){
+      .row, .row-3 { grid-template-columns: 1fr; }
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 6px;
+    }
+    input[type="text"], input[type="number"], input[type="email"], input[type="password"],
+    input[type="search"], input[type="date"], select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      font-size: 1rem;
+      outline: none;
+      transition: border .15s, background .15s;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      background: #fff;
+    }
+    .hint { color: var(--muted); font-size: .92rem; margin-top: 4px; }
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 18px;
+    }
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-secondary { background: #eee; color: #333; }
+    .btn-secondary:hover { background: #e3e3e3; }
+    .btn-primary { background: var(--primary); color: var(--primary-contrast); }
+    .btn-primary:hover { background: #ffd600; }
+    .inline {
+      display: flex; gap: 10px; align-items: center;
+    }
+    .switch {
+      position: relative; width: 46px; height: 26px; display: inline-block;
+    }
+    .switch input { display:none; }
+    .slider {
+      position:absolute; cursor:pointer; inset:0; background:#d0d0d0; border-radius: 999px; transition:.2s;
+    }
+    .slider:before {
+      content:""; position:absolute; height:20px; width:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.25);
+    }
+    input:checked + .slider { background: var(--accent); }
+    input:checked + .slider:before { transform: translateX(20px); }
+    .readonly {
+      background: #f3f3f3 !important; color: #555;
+    }
+    .badge {
+      display:inline-block;background:#eee;color:#333;border-radius:6px;padding:4px 8px;font-size:.9rem;font-weight:700;
+    }
+    .topbar {
+      display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;
+    }
+    .topbar .left { display:flex; align-items:center; gap:10px; }
+    .topbar .right { display:flex; gap:10px; }
+  </style>
+    <style>
+    /* Tests section styling */
+    .tests-section { margin-top:14px; }
+    .tests-header {
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .tests-list {
+      list-style:none; padding:0; margin:10px 0 0;
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .test-item {
+      display:grid; grid-template-columns: auto 1fr auto;
+      gap:12px; align-items:center;
+      background:#fff; border:1px solid var(--border);
+      border-radius:10px; padding:10px 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+    .test-label {
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:90px; padding:6px 12px; border-radius:999px;
+      background: var(--primary); color: var(--primary-contrast);
+      font-weight:700; letter-spacing:.3px;
+    }
+    .test-type-select {
+      width:100%; padding:8px 10px;
+      border:1px solid var(--border); border-radius:8px; background:var(--bg);
+    }
+    .icon-btn {
+      border:none; background:#eee; color:#333;
+      border-radius:8px; padding:8px 10px; cursor:pointer;
+    }
+    .icon-btn:hover { background:#e3e3e3; }
+
+    @media (max-width: 560px) {
+      .test-item { grid-template-columns: 1fr; }
+      .test-label { justify-content:flex-start; }
+    }
+  </style>
+</head>
+<body>
+    <header>
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <!-- Replace your logo-text div with this for per-letter bounce -->
+                <div class="logo-text">
+                    <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="homepage.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="subject_math.html">Math</a></li>
+                            <li><a href="subject_english.html">English</a></li>
+                            <li><a href="subject_science.html">Science</a></li>
+                        </ul>
+                        </li>
+                    <li><a href="studentlist.html">Student</a></li>
+                    <li><a href="grading.html">Grading</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Assessments <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="assessment-builder.html">Create Assessment</a></li>
+                            <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                            <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="leaderboard_math.html">Math</a></li>
+                                <li><a href="leaderboard_english.html">English</a></li>
+                                <li><a href="leaderboard_science.html">Science</a></li>
+                            </ul>
+                        </li>
+                    <li>
+                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <!-- Overlay for navbar -->
+    <div class="sidebar-overlay" id="navOverlay"></div>
+    <!-- Overlay for profile sidebar -->
+    <div class="sidebar-overlay" id="profileSidebarOverlay"></div>
+    <!-- Profile Sidebar (Dynamic with Firebase) -->
+    <div id="profileSidebar" class="profile-sidebar">
+        <div class="sidebar-content">
+            <button class="close-btn" id="closeSidebar">&times;</button>
+            <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+                <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+                <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+            </div>
+            <div class="profile-name" id="profileName">Loading...</div>
+            <br>
+            <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+                <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+                Teacher
+            </div>
+                <div>
+                    <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                    <strong>ID:</strong> <span id="profileId">-</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                    <strong>First Name:</strong> <span id="profileFirstName">-</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                    <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                    <strong>Last Name:</strong> <span id="profileLastName">-</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                    <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                    <strong>Section:</strong> <span id="profileSection">-</span>
+                </div>
+                <div>
+        <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+        <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+    </div>
+    <div>
+        <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+        <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+    </div>
+    <div>
+        <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+        <strong>City:</strong> <span id="profileAddressCity">-</span>
+    </div>
+    <div>
+        <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+        <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+    </div>
+    <div>
+        <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+        <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+    </div>
+    <div>
+        <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+        <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+    </div>
+            </div>
+            <div class="logout-switch-row">
+                <div class="logout-switch" id="logoutSwitch">
+                    <div class="logout-switch-circle"></div>
+                </div>
+                <span class="logout-label" id="logoutLabel">LOGOUT</span>
+            </div>
+        </div>
+    </div>
+
+            <!-- Firebase App (the core Firebase SDK) -->
+            <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+            <script src="../assets/js/Teacher Side/profile.js"></script>
+
+            <script src="../assets/js/Teacher Side/header.js"></script>
+
+  <div class="container">
+    <div class="topbar">
+      <div class="left">
+        <button type="button" class="btn btn-secondary" onclick="history.back()">&larr; Back</button>
+        <span class="badge">Teacher</span>
+      </div>
+      <div class="right">
+        <a class="btn btn-secondary" id="subjectShortcut" href="subject_math.html">Math</a>
+      </div>
+    </div>
+
+    <div class="page-title">
+      <h1>Create New Quiz</h1>
+    </div>
+
+    <div class="card">
+      <form id="createQuizForm" autocomplete="off">
+        <div class="row">
+          <div>
+            <label for="quiz_title">Title</label>
+            <input type="text" id="quiz_title" required placeholder="e.g., Time & Time Zones"/>
+            <div class="hint">Give your quiz a clear, unique title.</div>
+          </div>
+          <div>
+            <label for="quiz_quarter">Quarter</label>
+            <select id="quiz_quarter" required>
+              <option value="">Select Quarter</option>
+              <option value="1">Quarter 1</option>
+              <option value="2">Quarter 2</option>
+              <option value="3">Quarter 3</option>
+              <option value="4">Quarter 4</option>
+            </select>
+          </div>
+        </div>
+
+<!-- Tests: Add Test 1, then Test 2, etc. Each test has its own type -->
+        <div class="tests-section">
+          <div class="tests-header">
+            <label>Tests and Types</label>
+            <button type="button" class="btn btn-secondary" id="btnAddTest">Add Test 1</button>
+          </div>
+
+          <ul id="tests_list" class="tests-list">
+            <!-- Items will be injected here -->
+          </ul>
+        </div>
+
+
+
+        <div style="margin-top:14px;">
+          <label for="quiz_desc">Description</label>
+          <textarea id="quiz_desc" placeholder="Short summary (optional)"></textarea>
+        </div>
+
+        <div class="row" style="margin-top:14px;">
+          <div>
+            <label for="quiz_password">Quiz Password</label>
+            <div class="inline">
+              <input type="text" id="quiz_password" placeholder="6-digit code" maxlength="12"/>
+              <button type="button" class="btn btn-secondary" id="btnGenPass">Generate</button>
+            </div>
+            <div class="hint">Students need this to unlock the quiz.</div>
+          </div>
+          <div>
+            <label>Locked</label>
+            <label class="switch">
+              <input type="checkbox" id="quiz_locked" checked />
+              <span class="slider"></span>
+            </label>
+            <div class="hint">Keep locked until you’re ready.</div>
+          </div>
+        </div>
+
+        <div class="row-3" style="margin-top:14px;">
+          <div>
+            <label>Subject</label>
+            <select id="subject_select" required>
+              <option value="subject_math">Math</option>
+              <option value="subject_english">English</option>
+              <option value="subject_science">Science</option>
+            </select>
+          </div>
+          <div>
+            <label>Section</label>
+            <input type="text" id="section_display" class="readonly" readonly value="Loading..." />
+          </div>
+          <div>
+            <label>Grade Level</label>
+            <input type="text" id="grade_display" class="readonly" readonly value="Loading..." />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn btn-secondary" onclick="history.back()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Quiz</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+ 
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const subjectPage = params.get('subject') || 'subject_math';
+
+    function genPassword() {
+      return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    document.getElementById('btnGenPass').onclick = () => {
+      document.getElementById('quiz_password').value = genPassword();
+    };
+
+    // Auth + preload teacher info
+    auth.onAuthStateChanged(async user => {
+      if (!user) { location.href = 'logreg.html'; return; }
+
+      const snap = await db.ref('teachers/' + user.uid).once('value');
+      const t = snap.val();
+
+      if (!t || (t.role && t.role !== 'teacher')) {
+        alert('Access denied.');
+        await auth.signOut();
+        location.href = 'logreg.html';
+        return;
+      }
+
+      document.getElementById('section_display').value = t.section || '';
+      document.getElementById('grade_display').value = t.gradelevel || '';
+      if (!document.getElementById('quiz_password').value) {
+        document.getElementById('quiz_password').value = genPassword();
+      }
+    });
+
+    // Subject selection (supports 3 subjects)
+    const subjectParam = params.get('subject');
+
+    const SUBJECTS = {
+      subject_math:     { name: 'Math',    page: 'subject_math.html' },
+      subject_english:  { name: 'English', page: 'subject_english.html' },
+      subject_science:  { name: 'Science', page: 'subject_science.html' }
+    };
+    const SUBJECT_KEYS = Object.keys(SUBJECTS);
+
+    let subjectKey = SUBJECT_KEYS.includes(subjectParam) ? subjectParam : 'subject_math';
+
+    const subjectSelect = document.getElementById('subject_select');
+    const subjectShortcut = document.getElementById('subjectShortcut');
+
+    function updateSubjectUI() {
+      const { name, page } = SUBJECTS[subjectKey];
+      if (subjectSelect) subjectSelect.value = subjectKey;
+      if (subjectShortcut) { subjectShortcut.href = page; subjectShortcut.textContent = name; }
+    }
+
+    subjectSelect.addEventListener('change', (e) => {
+      subjectKey = e.target.value;
+      updateSubjectUI();
+    });
+
+    updateSubjectUI();
+
+    // Tests: Add Test 1 -> Test 2 -> ...
+    const TEST_TYPES = ['Multiple Choice','True or False','Identification','Matching Type','Short Answer','Sorting','Multiple Choice (2)'];
+    const testsList = document.getElementById('tests_list');
+    const btnAddTest = document.getElementById('btnAddTest');
+    let testCount = 0;
+
+    function makeTypeSelect(defaultType) {
+      const sel = document.createElement('select');
+      sel.className = 'test-type-select';
+      TEST_TYPES.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t; opt.textContent = t;
+        sel.appendChild(opt);
+      });
+      if (defaultType && TEST_TYPES.includes(defaultType)) sel.value = defaultType;
+      return sel;
+    }
+
+    // Map quiz test types to Games/Quiz pages
+const TEST_TYPE_TO_PAGE = {
+  'Multiple Choice': '../Games/Quiz/game4.html',
+  'True or False': '../Games/Quiz/trueorfals.html',
+  'Identification': '../Games/Quiz/game2.html',
+  'Multiple Choice (2)': '../Games/Quiz/game1.html'
+};
+
+function buildGameUrl(page, { subjectKey, quarter, title, testIndex }) {
+  const qs = new URLSearchParams({
+    subject: subjectKey,
+    quarter: String(quarter || ''),
+    title: title || '',
+    test: String(testIndex + 1)
+  }).toString();
+  return `${page}?${qs}`;
+}
+
+    function addTest(defaultType = 'Multiple Choice') {
+      testCount += 1;
+
+      const li = document.createElement('li');
+      li.className = 'test-item';
+
+      const label = document.createElement('span');
+      label.className = 'test-label';
+      label.textContent = `Test ${testCount}`;
+
+      const typeSel = makeTypeSelect(defaultType);
+
+      const actions = document.createElement('div');
+      actions.style.display = 'flex';
+      actions.style.gap = '8px';
+      actions.style.alignItems = 'center';
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'icon-btn';
+      removeBtn.innerHTML = '<i class="fas fa-trash"></i>';
+      removeBtn.title = 'Remove';
+      removeBtn.onclick = () => {
+        li.remove();
+        renumberTests();
+      };
+
+      actions.appendChild(removeBtn);
+
+      li.appendChild(label);
+      li.appendChild(typeSel);
+      li.appendChild(actions);
+      testsList.appendChild(li);
+
+      updateAddButtonLabel();
+    }
+
+    function renumberTests() {
+      const items = Array.from(testsList.querySelectorAll('li'));
+      items.forEach((li, idx) => {
+        const lbl = li.querySelector('.test-label');
+        if (lbl) lbl.textContent = `Test ${idx + 1}`;
+      });
+      testCount = items.length;
+      updateAddButtonLabel();
+    }
+
+    function updateAddButtonLabel() {
+      btnAddTest.textContent = `Add Test ${testCount + 1}`;
+    }
+
+    btnAddTest?.addEventListener('click', () => addTest());
+    if (testsList && testsList.children.length === 0) addTest('Multiple Choice');
+
+    // Create quiz
+    document.getElementById('createQuizForm').onsubmit = async (e) => {
+      e.preventDefault();
+
+      const user = auth.currentUser;
+      if (!user) { alert('Please log in.'); return; }
+
+      const title = document.getElementById('quiz_title').value.trim();
+      const quarter = document.getElementById('quiz_quarter').value;
+      const description = document.getElementById('quiz_desc').value.trim();
+      const password = (document.getElementById('quiz_password').value || '').trim();
+      const isLocked = document.getElementById('quiz_locked').checked;
+
+      // Collect tests, include game page + URL
+      const tests = Array.from(document.querySelectorAll('#tests_list li')).map((li, idx) => {
+        const type = li.querySelector('select')?.value || 'Multiple Choice';
+        const page = TEST_TYPE_TO_PAGE[type] || '../Games/Quiz/custom.html';
+        const gameUrl = buildGameUrl(page, { subjectKey, quarter, title, testIndex: idx });
+        return { name: `Test ${idx + 1}`, type, gameUrl };
+      });
+
+      if (!title || !quarter) { alert('Quarter and Title are required!'); return; }
+      if (tests.length === 0) { alert('Add at least one test.'); return; }
+
+      const tSnap = await db.ref('teachers/' + user.uid).once('value');
+      const teacher = tSnap.val() || {};
+      const section = teacher.section;
+      const gradeLevel = teacher.gradelevel;
+      const teacherName = `${teacher.firstname || ''} ${teacher.lastname || ''}`.trim();
+
+      if (!section || !gradeLevel) { alert('Your section and grade level must be set in your profile.'); return; }
+
+      const slidesBlank = JSON.stringify([{ version: "5.2.4", objects: [], backgroundColor: "#fff" }]);
+      const nowISO = new Date().toISOString();
+
+      const quizData = {
+        title,
+        description,
+        quarter,
+        section,
+        gradeLevel,
+        createdAt: nowISO,
+        savedAt: nowISO,
+        createdBy: user.uid,
+        teacherName,
+        password: password || Math.floor(100000 + Math.random() * 900000).toString(),
+        isLocked,
+        hasPassword: true,
+        subject: subjectKey,
+        tests,                                   // includes gamePage and gameUrl for each test
+        parts: tests.map(t => `${t.name}: ${t.type}`),
+        slides: slidesBlank
+      };
+
+      try {
+        await db.ref(`teachers/${user.uid}/sections/${section}/quizzes/${subjectKey}/${quarter}/${title}`).set(quizData);
+
+        const studentsSnap = await db.ref('students').once('value');
+        const promises = [];
+        let count = 0;
+
+        if (studentsSnap.exists()) {
+          studentsSnap.forEach(stSnap => {
+            const st = stSnap.val() || {};
+            const studentUID = stSnap.key;
+            const sSection = (st.section || '').toString().trim().toLowerCase();
+            const tSection = (section || '').toString().trim().toLowerCase();
+            const sGrade = (st.gradelevel || '').toString().trim();
+            const tGrade = (gradeLevel || '').toString().trim();
+
+            if (sSection === tSection && sGrade === tGrade) {
+              count++;
+              const studentQuizData = {
+                ...quizData,
+                assignedBy: user.uid,
+                assignedAt: nowISO,
+                status: 'available',
+                attempts: 0,
+                bestScore: 0,
+                lastAttemptAt: null
+              };
+              promises.push(
+                db.ref(`students/${studentUID}/quizzes/${subjectKey}/${quarter}/${title}`).set(studentQuizData)
+              );
+            }
+          });
+        }
+
+        await Promise.all(promises);
+
+        alert(`Quiz created!
+        
+Password: ${quizData.password}
+Assigned to ${count} student${count !== 1 ? 's' : ''}.
+Subject: ${SUBJECTS[subjectKey].name} • Quarter ${quarter}`);
+
+      const qp = new URLSearchParams({
+        subject: subjectKey,
+        quarter,
+        title
+      }).toString();
+      location.href = 'quizEditor.html?' + qp;
+      } catch (err) {
+        console.error(err);
+        alert('Error creating quiz: ' + err.message);
+      }
+    };
+
+  </script>
+</body>
+</html>
