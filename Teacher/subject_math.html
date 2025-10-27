@@ -692,52 +692,9 @@ document.getElementById('createQuizBtn').onclick = function() {
 
 <script src="../assets/js/Teacher Side/editProfile.js"></script>
 <script>
-// Wait for authentication
-firebase.auth().onAuthStateChanged(async function(user) {
-    if (user) {
-        const teacherUID = user.uid;
-        // Get teacher's section
-        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
-        const teacher = teacherSnap.val();
-        if (!teacher || !teacher.section) {
-            alert("Your section is not set. Please update your profile.");
-            
-            return;
-        }
-        const section = teacher.section;
-
-        // For each quarter, load only this teacher's section lessons
-        for (let q = 1; q <= 4; q++) {
-            db.ref('teachers/' + teacherUID + '/sections/' + section + '/lessons/' + subjectPage + '/quarter-' + q)
-                .once('value', function(snapshot) {
-                    const container = document.querySelector(`#quarter-${q} .lessons-container`);
-                    if (!container) return;
-                    container.innerHTML = '';
-                    if (!snapshot.exists()) {
-                        
-                        return;
-                    }
-                    snapshot.forEach(function(child) {
-                        const data = child.val();
-                        const name = child.key;
-                        const item = document.createElement('div');
-                        item.className = 'lesson-item';
-                        item.setAttribute('data-presentation', name);
-                        item.innerHTML = `
-                            <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
-                            <div class="lesson-title">
-                                <h3>${data.title || name}</h3>
-                                <p>${data.description ? data.description : ''}</p>
-                                <span class="lesson-badge" onclick="viewPresentation('${q}','${name}','view','${subjectPage}')" style="cursor:pointer;">View</span>
-                                <button class="lesson-badge" onclick="viewPresentation('${q}','${name}','edit','${subjectPage}')" style="cursor:pointer;">Edit</button>
-                            </div>
-                        `;
-                        container.appendChild(item);
-                    });
-                });
-        }
-    }
-});
+// DISABLED: Old lesson loading system - now using Firebase designs only
+// This function has been disabled to prevent old lessons from showing up
+// Firebase designs are now loaded via loadFirebaseDesignsForQuarter() function
 
 
 </script>
@@ -933,60 +890,9 @@ document.getElementById('createLessonForm').onsubmit = async function(e) {
 
 <script>
 
-// Enhanced teacher lesson loading function
-async function loadTeacherLessons() {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-
-    const teacherUID = user.uid;
-    const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
-    const teacher = teacherSnap.val();
-    const section = teacher && teacher.section ? teacher.section : null;
-
-    if (!section) {
-        console.log('Teacher section not found');
-        return;
-    }
-
-    console.log('Loading lessons for teacher:', teacherUID, 'section:', section);
-
-    for (let q = 1; q <= 4; q++) {
-        const container = document.querySelector(`#quarter-${q} .lessons-container`);
-        if (!container) continue;
-
-        let lessons = [];
-
-        // Fetch teacher's own lessons from Editor
-        try {
-            const teacherLessonsSnap = await db.ref(`teachers/${teacherUID}/sections/${section}/lessons/${subjectPage}/quarter-${q}`).once('value');
-            if (teacherLessonsSnap.exists()) {
-                teacherLessonsSnap.forEach(child => {
-                    const data = child.val();
-                    lessons.push({
-                        title: data.title || child.key,
-                        description: data.description || 'No description available',
-                        quarter: q,
-                        savedAt: data.savedAt || '',
-                        source: 'teacher'
-                    });
-                });
-            }
-        } catch (error) {
-            console.error('Error loading teacher lessons:', error);
-        }
-
-        // Sort lessons by creation date (newest first)
-        lessons.sort((a, b) => {
-            if (a.savedAt && b.savedAt) {
-                return new Date(b.savedAt) - new Date(a.savedAt);
-            }
-            return a.title.localeCompare(b.title);
-        });
-
-        // Load Firebase designs instead of old lessons
-        await loadFirebaseDesignsForQuarter(container);
-    }
-}
+// DISABLED: Enhanced teacher lesson loading function - now using Firebase designs only
+// This function has been disabled to prevent old lessons from showing up
+// Firebase designs are now loaded via loadFirebaseDesignsForQuarter() function
 
 // Initialize Firebase designs loading when user is authenticated
 firebase.auth().onAuthStateChanged(async function(user) {
@@ -994,7 +900,13 @@ firebase.auth().onAuthStateChanged(async function(user) {
         console.log('👤 User authenticated, loading Firebase designs...');
         // Wait a bit for DOM to be ready
         setTimeout(() => {
-            loadFirebaseDesigns();
+            // Load Firebase designs for all quarters
+            for (let q = 1; q <= 4; q++) {
+                const container = document.querySelector(`#quarter-${q} .lessons-container`);
+                if (container) {
+                    loadFirebaseDesignsForQuarter(container);
+                }
+            }
         }, 1000);
     }
 });
