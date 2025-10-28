@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Positioned Buttons - Edutaktika</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .test-button:hover {
+            background: #1565c0;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        .error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Positioned Buttons Test</h1>
+        <p>Test that buttons with specific positioning are hidden in view-only mode.</p>
+        
+        <div class="test-info success">
+            <h3>✅ What Should Be Hidden:</h3>
+            <ul>
+                <li><strong>Positioned Buttons:</strong> <code>position: absolute; top: 15px; right: 534.667px</code></li>
+                <li><strong>All Absolute Positioning:</strong> Any buttons with <code>top: 15px</code></li>
+                <li><strong>Editing Controls:</strong> Up/down arrows, duplicate, delete, add buttons</li>
+                <li><strong>License Banner:</strong> Polotno limitation message</li>
+            </ul>
+        </div>
+        
+        <div class="test-info error">
+            <h3>❌ Specific Targeting:</h3>
+            <ul>
+                <li><strong>CSS Selectors:</strong> <code>[style*="position: absolute"][style*="top: 15px"]</code></li>
+                <li><strong>JavaScript Detection:</strong> Dynamic hiding of positioned elements</li>
+                <li><strong>Multiple Methods:</strong> CSS + JavaScript for maximum effectiveness</li>
+                <li><strong>Mutation Observer:</strong> Watches for new buttons and hides them</li>
+            </ul>
+        </div>
+        
+        <div class="test-info warning">
+            <h3>⚠️ Test Steps:</h3>
+            <ol>
+                <li>Open the deployed editor: <code>deploy/editor/index.html</code></li>
+                <li>Look for buttons positioned at <code>top: 15px</code></li>
+                <li>Check that they are completely hidden</li>
+                <li>Verify topbar navigation buttons are still visible</li>
+                <li>Test that license banner is also hidden</li>
+            </ol>
+        </div>
+        
+        <div>
+            <a href="deploy/editor/index.html" class="test-button">🧪 Test Deployed Editor</a>
+            <a href="gallery.html" class="test-button">🎨 Test Gallery</a>
+            <a href="test-comprehensive-hiding.html" class="test-button">🔍 Test Comprehensive Hiding</a>
+        </div>
+    </div>
+</body>
+</html>

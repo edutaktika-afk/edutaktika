@@ -12,9 +12,6 @@ import { setTranslations } from 'polotno/config';
 
 import { loadFile } from './file';
 
-import { QrSection } from './sections/qr-section';
-import { QuotesSection } from './sections/quotes-section';
-// import { IconsSection } from './sections/icons-section'; // REMOVED - Icons tab disabled
 import { ShapesSection } from './sections/shapes-section';
 import { StableDiffusionSection } from './sections/stable-diffusion-section';
 import { MyDesignsSection } from './sections/my-designs-section';
@@ -132,7 +129,7 @@ if (textTemplatesIndex !== -1) {
   DEFAULT_SECTIONS.splice(1, 0, TextSection);
 }
 // add two more sections
-DEFAULT_SECTIONS.push(QuotesSection, QrSection);
+// DEFAULT_SECTIONS.push(QuotesSection, QrSection); // REMOVED - Quotes and QR code sections
 // DEFAULT_SECTIONS.unshift(UploadSection);
 DEFAULT_SECTIONS.unshift(MyDesignsSection);
 

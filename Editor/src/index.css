@@ -173,3 +173,61 @@ dialog {
 .polotno-pages-timeline button:hover {
   background: #e0e0e0 !important;
 }
+
+/* ========================================
+   ADDITIONAL ANIMATION ENHANCEMENTS
+   ======================================== */
+
+/* Smooth entrance animations */
+.polotno-app-container {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Button press animations */
+.bp5-button:active {
+  transform: scale(0.98);
+}
+
+/* Smooth scroll behavior */
+.polotno-side-panel-content {
+  scroll-behavior: smooth;
+}
+
+/* Loading states */
+.bp5-spinner {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Card hover effects */
+.bp5-card {
+  transition: all 0.3s ease;
+}
+
+.bp5-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Menu items */
+.bp5-menu-item {
+  transition: all 0.2s ease;
+}
+
+.bp5-menu-item:hover {
+  background-color: #f5f8fa;
+  transform: translateX(4px);
+}
+
+/* Toolbar animations */
+.polotno-toolbar {
+  animation: slideInTop 0.3s ease-out;
+}
+
+/* Zoom buttons */
+.polotno-toolbar-zoom {
+  transition: all 0.2s ease;
+}
+
+.polotno-toolbar-zoom:hover {
+  transform: scale(1.1);
+}

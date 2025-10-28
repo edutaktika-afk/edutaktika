@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Gallery - Edutaktika</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #1976d2;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .toggle-mode {
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .toggle-mode button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-mode button:hover {
+            background: #1565c0;
+        }
+
+        .config-section {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .config-section h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        .config-section textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .config-section input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(45deg, #e3f2fd 0%, #90caf9 100%);
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-title {
+            color: #1976d2;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .card-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .card-button:hover {
+            background: #1565c0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state h2 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .editor-link:hover {
+            background: #45a049 !important;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .gallery {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Design Gallery</h1>
+            <p class="subtitle">Browse and view Polotno designs</p>
+            <div style="background: #e8f5e8; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 0.9em;">
+                <strong>✨ Auto-Presentation:</strong> Designs now open directly in presentation mode! Click "View Design" to instantly start your lesson presentation.
+                <br><small style="color: #666;">Version 2.1 - Auto-presentation mode</small>
+            </div>
+            <div style="margin-top: 20px;">
+                <a href="deploy/editor/index.html" class="editor-link" style="display: inline-block; padding: 12px 24px; background: #4caf50; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; transition: background 0.3s;">
+                    ✏️ Create New Design
+                </a>
+            </div>
+        </header>
+
+        <div class="toggle-mode">
+            <button id="toggleModeBtn" onclick="toggleMode()">
+                Switch to Auto Mode (Firebase SDK)
+            </button>
+            <p style="margin-top: 10px; color: #666; font-size: 0.9em;">
+                <strong>Manual Mode:</strong> Edit the designs array below | 
+                <strong>Auto Mode:</strong> Fetch from Firebase Realtime Database
+            </p>
+        </div>
+
+        <div id="manualConfig" class="config-section">
+            <h3>📝 Manual Configuration</h3>
+            <p style="color: #666; margin-bottom: 10px;">Edit the designs array with your Firebase Realtime Database URLs:</p>
+            <textarea id="manualDesigns">const designs = [
+  {
+    name: "Math Poster",
+    jsonUrl: "https://edutaktika-default-rtdb.firebaseio.com/designs/math-poster-1234567890.json",
+    thumbUrl: null
+  },
+  {
+    name: "Spelling Bee",
+    jsonUrl: "https://edutaktika-default-rtdb.firebaseio.com/designs/spelling-bee-1234567890.json",
+    thumbUrl: null
+  }
+];
+
+// Example with sample design (replace with your actual Firebase Realtime Database URLs):
+// const designs = [
+//   {
+//     name: "Sample Design",
+//     jsonUrl: "https://edutaktika-default-rtdb.firebaseio.com/designs/sample-design-1234567890.json",
+//     thumbUrl: null
+//   }
+// ];</textarea>
+            <button onclick="loadManualDesigns()" style="margin-top: 10px; padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em;">
+                Load Designs
+            </button>
+        </div>
+
+        <div id="autoConfig" class="config-section" style="display: none;">
+            <h3>🔥 Firebase Auto Mode</h3>
+            <p style="color: #666; margin-bottom: 10px;">Automatically load all designs from the existing Firebase database:</p>
+            <div style="margin-bottom: 15px; padding: 15px; background: #e8f5e8; border-radius: 8px; font-size: 0.9em;">
+                <strong>✅ Firebase Ready:</strong> Using existing edutaktika Firebase project<br>
+                <strong>Database:</strong> https://edutaktika-default-rtdb.firebaseio.com/designs/
+            </div>
+            <button onclick="loadFirebaseDesigns()" style="margin-top: 10px; padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em;">
+                Load from Firebase
+            </button>
+        </div>
+
+        <div id="galleryContainer">
+            <div class="empty-state">
+                <h2>👋 Welcome!</h2>
+                <p>Configure your designs above and click the load button to view your gallery.</p>
+                <p style="margin-top: 10px;"><strong>Manual Mode:</strong> Edit the designs array and click "Load Designs"</p>
+                <p><strong>Auto Mode:</strong> Click "Load from Firebase" to fetch all designs from the database</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script type="module">
+        let currentMode = 'manual'; // 'manual' or 'auto'
+
+        window.toggleMode = function() {
+            currentMode = currentMode === 'manual' ? 'auto' : 'manual';
+            const manualConfig = document.getElementById('manualConfig');
+            const autoConfig = document.getElementById('autoConfig');
+            const toggleBtn = document.getElementById('toggleModeBtn');
+
+            if (currentMode === 'auto') {
+                manualConfig.style.display = 'none';
+                autoConfig.style.display = 'block';
+                toggleBtn.textContent = 'Switch to Manual Mode';
+            } else {
+                manualConfig.style.display = 'block';
+                autoConfig.style.display = 'none';
+                toggleBtn.textContent = 'Switch to Auto Mode (Firebase SDK)';
+            }
+        };
+
+        window.loadManualDesigns = function() {
+            const textarea = document.getElementById('manualDesigns');
+            const code = textarea.value;
+            
+            try {
+                // Extract the array from the code
+                const match = code.match(/const designs = (\[[\s\S]*\]);/);
+                if (!match) {
+                    throw new Error('Invalid format. Please use: const designs = [...];');
+                }
+                
+                const designs = eval(match[1]);
+                displayGallery(designs);
+            } catch (error) {
+                showError('Error parsing designs: ' + error.message);
+            }
+        };
+
+        window.loadFirebaseDesigns = async function() {
+            showLoading();
+
+            try {
+                // Use the existing Firebase configuration
+                const firebaseConfig = {
+                    apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+                    authDomain: "edutaktika.firebaseapp.com",
+                    databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+                    projectId: "edutaktika",
+                    storageBucket: "edutaktika.appspot.com",
+                    messagingSenderId: "676848575316",
+                    appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+                    measurementId: "G-X3GT5TNN87"
+                };
+
+                // Initialize Firebase
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                const db = firebase.database();
+
+                // Fetch designs from the database
+                const snapshot = await db.ref('designs').once('value');
+                const designsData = snapshot.val();
+
+                if (!designsData) {
+                    showError('No designs found in the database. Make sure you have designs saved from the Editor.');
+                    return;
+                }
+
+                const designs = [];
+                
+                // Convert database data to gallery format
+                for (const [designId, designData] of Object.entries(designsData)) {
+                    if (designData && designData.json && designData.name) {
+                        designs.push({
+                            name: designData.name,
+                            jsonUrl: `https://edutaktika-default-rtdb.firebaseio.com/designs/${designId}.json`,
+                            thumbUrl: designData.thumbnail || null,
+                            designId: designId,
+                            createdAt: designData.createdAt || null
+                        });
+                    }
+                }
+
+                if (designs.length === 0) {
+                    showError('No valid designs found in the database.');
+                    return;
+                }
+
+                // Sort by creation date (newest first)
+                designs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                displayGallery(designs);
+            } catch (error) {
+                showError('Firebase Error: ' + error.message);
+            }
+        };
+
+        function formatName(str) {
+            return str
+                .replace(/[-_]/g, ' ')
+                .replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        function displayGallery(designs) {
+            const container = document.getElementById('galleryContainer');
+            
+            if (!designs || designs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>📭 No Designs Found</h2>
+                        <p>No designs available to display.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = `
+                <div class="gallery">
+                    ${designs.map(design => `
+                        <div class="card" onclick="openViewer('${encodeURIComponent(design.jsonUrl)}')">
+                            <img 
+                                class="card-image" 
+                                src="${design.thumbUrl || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\'%3E%3Crect fill=\'%23e3f2fd\' width=\'300\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'20\' fill=\'%231976d2\'%3E${design.name}%3C/text%3E%3C/svg%3E'}" 
+                                alt="${design.name}"
+                                onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\'%3E%3Crect fill=\'%23e3f2fd\' width=\'300\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'20\' fill=\'%231976d2\'%3ENo Preview%3C/text%3E%3C/svg%3E'"
+                            >
+                            <div class="card-content">
+                                <div class="card-title">${design.name}</div>
+                                <a href="deploy/editor/index.html?design=${encodeURIComponent(design.jsonUrl)}&view=true&present=true" class="card-button" onclick="event.stopPropagation()">
+                                    View Design →
+                                </a>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        function showLoading() {
+            document.getElementById('galleryContainer').innerHTML = `
+                <div class="loading">
+                    <p>🔄 Loading designs from Firebase Realtime Database...</p>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            document.getElementById('galleryContainer').innerHTML = `
+                <div class="error">
+                    <strong>⚠️ Error:</strong> ${message}
+                </div>
+                <div class="empty-state">
+                    <h2>Need Help?</h2>
+                    <p>Make sure you have designs saved from the Editor and they are accessible in the Firebase Realtime Database.</p>
+                </div>
+            `;
+        }
+
+        window.openViewer = function(jsonUrl) {
+            console.log('🎨 Opening design in presentation mode:', jsonUrl);
+            const editorUrl = `deploy/editor/index.html?design=${jsonUrl}&view=true&present=true`;
+            console.log('🔗 Editor URL:', editorUrl);
+            window.location.href = editorUrl;
+        };
+
+        // Load manual designs by default on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🎨 Gallery loaded - Editor-based viewer v2.0');
+            console.log('🔗 All design links now point to Editor in view-only mode');
+            // Optionally auto-load manual designs
+            // loadManualDesigns();
+        });
+    </script>
+</body>
+</html>
+

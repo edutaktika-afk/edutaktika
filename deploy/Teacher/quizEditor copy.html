@@ -1,0 +1,2177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz Editor | Edutaktika</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary: #2e8b57;
+            --secondary: #ffd700;
+            --accent: #ff69b4;
+            --background: #f0f8ff;
+            --card-bg: #ffffff;
+            --text-main: #22223b;
+            --text-light: #9a8c98;
+            --shadow: 0 4px 24px rgba(46, 139, 87, 0.08);
+            --radius: 18px;
+        }
+
+        /* Base Styles */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+            background: var(--background);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header/Breadcrumbs */
+        .breadcrumbs {
+            width: 100vw;
+            left: 0;
+            top: 0;
+            position: relative;
+            box-sizing: border-box;
+            padding: 8px 24px;
+            color: #888;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 18px;
+            background: rgb(255, 255, 255);
+            z-index: 100;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .breadcrumbs .logo {
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
+        .right-breadcrumb-btns {
+            margin-left: auto;
+            margin-right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .right-breadcrumb-btns button {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .right-breadcrumb-btns button:hover {
+            background: #1e5f3f;
+            transform: translateY(-1px);
+        }
+
+        .right-breadcrumb-btns button#present-btn {
+            background: var(--accent);
+        }
+
+        /* Burger Menu */
+        #burger-menu-btn {
+            background: none;
+            border: none;
+            padding: 0 10px 0 0;
+            cursor: pointer;
+            font-size: 1.7rem;
+            color: var(--primary);
+            outline: none;
+        }
+
+        #burger-dropdown {
+            display: none;
+            position: absolute;
+            top: 54px;
+            left: 16px;
+            min-width: 160px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        #burger-dropdown a {
+            display: block;
+            padding: 12px 24px;
+            color: var(--text-main);
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        #burger-dropdown a:hover {
+            background: #f5f5f5;
+        }
+
+        /* Main Layout */
+        .editor-layout {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 70px);
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .main-area {
+            display: flex;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            min-width: 200px;
+            width: 220px;
+            max-width: 280px;
+            height: 100%;
+            overflow-y: auto;
+            background: #e8f5e8;
+            border-right: 1px solid #d0d0d0;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            z-index: 10;
+        }
+
+        .sidebar-group {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar button {
+            display: block;
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar button:hover {
+            background: #1e5f3f;
+            transform: translateY(-1px);
+        }
+
+        /* Canvas Area */
+        .editor-content {
+            flex: 1 1 auto;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 0;
+            overflow: hidden;
+            background: var(--background);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .canvas-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1 1 auto;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .canvas-wrapper {
+            width: 80%;
+            max-width: 800px;
+            aspect-ratio: 16/9;
+            background: #fff;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden; /* Ensure games don't overflow */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            max-width: 800px;
+            max-height: 450px;
+            display: block;
+            outline: none;
+            position: relative;
+            z-index: 1; /* Lower z-index than iframe */
+        }
+
+        /* Game Iframe Styles */
+/* Update the Game Iframe Styles to fill the entire canvas */
+#game-iframe {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important; /* Remove the scale and centering transform */
+    width: 100% !important; /* Fill entire canvas width */
+    height: 100% !important; /* Fill entire canvas height */
+    border: none !important;
+    z-index: 10 !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important; /* Cover the entire area */
+    overflow: hidden !important;
+    border-radius: 0 !important; /* Remove border radius to fill corners */
+    box-shadow: none !important; /* Remove shadow for full coverage */
+    -webkit-overflow-scrolling: touch !important;
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+}
+
+#game-iframe::-webkit-scrollbar {
+    display: none !important;
+}
+
+        /* Slide Navigation */
+        .slide-nav {
+            position: fixed;
+            bottom: 0px;
+            left: 59%;
+            transform: translateX(-50%);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: transparent;
+            padding: 8px 24px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            max-width: 80vw;
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border for definition */
+        }
+
+        #slide-preview-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            overflow-x: auto;
+            overflow-y: hidden; /* Prevent vertical scrollbar */
+            max-width: 50vw;
+            padding: 0 8px;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* Internet Explorer 10+ */
+        }
+
+        #slide-preview-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .slide-thumb {
+            width: 60px;
+            height: 40px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .slide-thumb.active {
+            border-color: var(--primary);
+            box-shadow: 0 4px 16px rgba(46, 139, 87, 0.2);
+        }
+
+        .slide-thumb:hover {
+            transform: translateY(-2px);
+        }
+
+        #slide-indicator {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .zoom-controls label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        #canvas-scale {
+            width: 120px;
+        }
+
+        #canvas-scale-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--primary);
+            min-width: 40px;
+        }
+
+        #reset-zoom-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        #reset-zoom-btn:hover {
+            background: #1e5f3f;
+        }
+
+        /* Game Modal */
+        #game-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #game-modal > div {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 16px 64px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        #game-modal h2 {
+            margin-top: 0;
+            margin-bottom: 24px;
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .game-option {
+            display: block;
+            width: 100%;
+            margin-bottom: 12px;
+            padding: 16px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .game-option:hover {
+            background: #1e5f3f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(46, 139, 87, 0.3);
+        }
+
+        .cancel-button {
+            margin-top: 24px;
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .cancel-button:hover {
+            background: #ff4444;
+            color: white;
+            border-color: #ff4444;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 180px;
+                min-width: 180px;
+            }
+            
+            .canvas-wrapper {
+                width: 90%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-area {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+                flex-direction: row;
+                overflow-x: auto;
+                gap: 16px;
+                padding: 16px;
+            }
+            
+            .sidebar-group {
+                min-width: 200px;
+                flex-shrink: 0;
+            }
+            
+            .canvas-wrapper {
+                width: 95%;
+                max-width: none;
+            }
+            
+            .slide-nav {
+                max-width: 95vw;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            #slide-preview-bar {
+                max-width: 70vw;
+            }
+            
+            .zoom-controls {
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .breadcrumbs {
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 8px 16px;
+            }
+            
+            .right-breadcrumb-btns {
+                margin-right: 0;
+                gap: 8px;
+            }
+            
+            .right-breadcrumb-btns button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .slide-nav {
+                padding: 12px 16px;
+                bottom: 10px;
+            }
+            
+            .slide-thumb {
+                width: 60px;
+                height: 38px;
+            }
+        }
+
+        /* Animation Keyframes */
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Utility Classes */
+        .fade-in {
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Canvas Scaling */
+        .canvas-wrapper.scaled {
+            transform-origin: center center;
+        }
+    </style>
+
+    <style>
+/* Enhanced save button with loading state */
+#save-btn.saving {
+    background: #888 !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+}
+
+#save-btn.saving:before {
+    content: '⏳ ';
+    margin-right: 4px;
+}
+
+/* Custom prompt styling (if you want to enhance the browser prompt) */
+.custom-prompt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-prompt {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 16px 64px rgba(0,0,0,0.2);
+}
+
+.custom-prompt h3 {
+    margin-top: 0;
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+.custom-prompt textarea {
+    width: 100%;
+    height: 80px;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.custom-prompt textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.custom-prompt-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    justify-content: flex-end;
+}
+
+.custom-prompt-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.custom-prompt-buttons .save-btn {
+    background: var(--primary);
+    color: white;
+}
+
+.custom-prompt-buttons .save-btn:hover {
+    background: #1e5f3f;
+}
+
+.custom-prompt-buttons .cancel-btn {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.custom-prompt-buttons .cancel-btn:hover {
+    background: #e74c3c;
+    color: white;
+}
+</style>
+</head>
+
+<body>
+    <!-- Firebase Configuration -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+            authDomain: "edutaktika.firebaseapp.com",
+            databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+            projectId: "edutaktika",
+            storageBucket: "edutaktika.appspot.com",
+            messagingSenderId: "676848575316",
+            appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+            measurementId: "G-X3GT5TNN87"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+    </script>
+
+    <!-- Header/Breadcrumbs -->
+    <div class="breadcrumbs">
+        <div style="display:flex;align-items:center;gap:12px;">
+            <button id="burger-menu-btn" aria-label="Open menu">
+                <i class="fa fa-bars"></i>
+            </button>
+            <span class="logo">Edutaktika</span>
+        </div>
+        
+        <div class="right-breadcrumb-btns">
+            <button id="save-btn"><i class="fa fa-save"></i> Save</button>
+            <button id="export-btn"><i class="fa fa-download"></i> Export</button>
+            <button id="import-btn"><i class="fa fa-upload"></i> Import</button>
+            <button id="present-btn"><i class="fa fa-play"></i> Present</button>
+        </div>
+        
+        <div id="burger-dropdown">
+            <a href="#" id="burger-export"><i class="fa fa-download"></i> Export</a>
+            <a href="#" id="burger-import"><i class="fa fa-upload"></i> Import</a>
+            <a href="homepage.html"><i class="fa fa-home"></i> Home</a>
+            <a href="#"><i class="fa fa-presentation-screen"></i> My Quizzes</a>
+            <a href="#"><i class="fa fa-cog"></i> Settings</a>
+        </div>
+    </div>
+
+    <!-- Main Editor Layout -->
+    <div class="editor-layout">
+        <div class="main-area">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-group">
+                    <div class="sidebar-label">Games & Activities</div>
+                    <button id="add-game-btn">
+                        <i class="fa fa-gamepad"></i> Add Game
+                    </button>
+                </div>
+<div class="sidebar-group" id="quiz-tests-group">
+    <div class="sidebar-label">Quiz Tests</div>
+    <ul id="quiz-tests-list" style="list-style:none;padding:0;margin-bottom:12px;"></ul>
+</div>
+            </aside>
+            
+
+            <!-- Canvas Area -->
+            <div class="editor-content">
+                <div class="canvas-area">
+                    <div class="canvas-wrapper">
+                        <canvas id="canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide Navigation -->
+    <div class="slide-nav">
+        <div id="slide-preview-bar"></div>
+        <span id="slide-indicator">Slide 1/1</span>
+        <div class="zoom-controls">
+            <label for="canvas-scale">Zoom:</label>
+            <input type="range" id="canvas-scale" min="0.1" max="1" step="0.01" value="0.9">
+            <span id="canvas-scale-value">80%</span>
+            <button id="reset-zoom-btn" title="Reset Zoom">
+                <i class="fa fa-refresh"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Game Selection Modal -->
+    <div id="game-modal">
+        <div class="fade-in">
+            <h2><i class="fa fa-gamepad"></i> Choose a Game</h2>
+            <button class="game-option" data-game="../Games/Quiz/game1.html">
+                <i class="fa fa-puzzle-piece"></i> Game 1
+            </button>
+            <button class="game-option" data-game="../Games/Quiz/game2.html">
+                <i class="fa fa-puzzle-piece"></i>Game 2  
+            </button>
+            <button class="game-option" data-game="../Games/Quiz/game3.html">
+                <i class="fa fa-puzzle-piece"></i>Game 3  
+            </button>
+            <button class="game-option" data-game="../Games/Quiz/game4.html">
+                <i class="fa fa-puzzle-piece"></i>Multiple Choice Quiz  
+            </button>
+            <button class="game-option" data-game="../Games/Quiz/game5.html">
+                <i class="fa fa-puzzle-piece"></i>Matching Pairs Quiz  
+            </button>
+            <button class="game-option" data-game="../Games/Quiz/sorting.html">
+                <i class="fa fa-drag-left-right"></i> Sorting Quiz
+            </button>
+            <button class="game-option" data-game="../Games/Quiz/trueorfals.html">
+                <i class="fa fa-drag-left-right"></i> True or False Quiz
+            </button>
+            <button class="cancel-button" onclick="document.getElementById('game-modal').style.display='none'">
+                <i class="fa fa-times"></i> Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Global Variables
+        let quizTests = [];
+        let slides = [];
+        let currentSlide = 0;
+        let gameUrl = null;
+        let gameSlideIndex = null;
+        let lastDescription = "";
+        let isAutoSaveEnabled = true;
+        let autoSaveInterval = 30000; // 30 seconds
+        let autoSaveTimeout;
+        let lastCanvasState = '';
+
+        // Initialize Fabric.js Canvas
+        const canvas = new fabric.Canvas('canvas', {
+            backgroundColor: '#fff',
+            width: 800,
+            height: 450
+        });
+
+        // Utility Functions
+        function getParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
+
+        // Burger Menu Functionality
+        const burgerBtn = document.getElementById('burger-menu-btn');
+        const burgerDropdown = document.getElementById('burger-dropdown');
+
+        burgerBtn.addEventListener('click', function(e) {
+            const isVisible = burgerDropdown.style.display === 'block';
+            burgerDropdown.style.display = isVisible ? 'none' : 'block';
+            e.stopPropagation();
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!burgerDropdown.contains(e.target) && e.target !== burgerBtn) {
+                burgerDropdown.style.display = 'none';
+            }
+        });
+
+        // Burger menu actions
+        document.getElementById('burger-export').onclick = function(e) {
+            e.preventDefault();
+            document.getElementById('export-btn').click();
+            burgerDropdown.style.display = 'none';
+        };
+
+        document.getElementById('burger-import').onclick = function(e) {
+            e.preventDefault();
+            document.getElementById('import-btn').click();
+            burgerDropdown.style.display = 'none';
+        };
+
+        // Canvas Scaling
+        const scaleInput = document.getElementById('canvas-scale');
+        const scaleValue = document.getElementById('canvas-scale-value');
+        const canvasWrapper = document.querySelector('.canvas-wrapper');
+
+        function updateCanvasScale() {
+            const scale = parseFloat(scaleInput.value);
+            canvasWrapper.style.transform = `scale(${scale})`;
+            canvasWrapper.classList.add('scaled');
+            scaleValue.textContent = Math.round(scale * 100) + '%';
+        }
+
+        scaleInput.addEventListener('input', updateCanvasScale);
+        document.getElementById('reset-zoom-btn').onclick = function() {
+            scaleInput.value = 0.8;
+            updateCanvasScale();
+        };
+
+        // Initialize scale
+        updateCanvasScale();
+
+        // Responsive Canvas
+        function resizeCanvas() {
+            const wrapper = document.querySelector('.canvas-wrapper');
+            const rect = wrapper.getBoundingClientRect();
+            canvas.setWidth(rect.width);
+            canvas.setHeight(rect.height);
+            canvas.calcOffset && canvas.calcOffset();
+            canvas.renderAll();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+// Replace the showGameIframe function (around line 560) with this corrected version:
+function showGameIframe() {
+    console.log('showGameIframe called for slide:', currentSlide);
+    console.log('Current slide data:', slides[currentSlide]);
+    
+    const wrapper = document.querySelector('.canvas-wrapper');
+    let existing = document.getElementById('game-iframe');
+    
+    // Remove if not on a game slide
+    if (!slides[currentSlide] || !slides[currentSlide].game) {
+        console.log('No game on current slide, removing iframe');
+        if (existing) existing.remove();
+        return;
+    }
+    
+    console.log('Game found on slide, creating/updating iframe');
+    
+    // Show if on a game slide
+    if (!existing) {
+        console.log('Creating new iframe');
+        
+        const iframe = document.createElement('iframe');
+        iframe.id = 'game-iframe';
+        
+        // Add edit mode parameter to game URL for quiz-specific editing
+        let gameUrl = slides[currentSlide].game.url;
+        const separator = gameUrl.includes('?') ? '&' : '?';
+        const quizId = getQuizId();
+        gameUrl += separator + `edit=true&mode=quiz&quizId=${encodeURIComponent(quizId)}`;
+        
+        console.log('Game URL:', gameUrl);
+        
+        iframe.src = gameUrl;
+        iframe.style.cssText = `
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            border: none !important;
+            z-index: 10 !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            overflow: hidden !important;
+            object-fit: cover !important;
+            border-radius: 0 !important;
+            background: white !important;
+        `;
+        iframe.scrolling = 'no';
+        iframe.allow = 'fullscreen';
+
+        // Listen for game data updates from iframe
+        if (!window.gameMessageListenerAdded) {
+            window.addEventListener('message', handleGameMessage, false);
+            window.gameMessageListenerAdded = true;
+        }
+
+        // Ensure wrapper is properly configured
+        wrapper.style.position = 'relative';
+        wrapper.style.overflow = 'hidden';
+        
+        // Hide canvas when game is active
+        const canvas = document.getElementById('canvas');
+        if (canvas) {
+            canvas.style.display = 'none';
+        }
+        
+        wrapper.appendChild(iframe);
+        
+        console.log('Iframe created and added to wrapper');
+        
+        // FIXED: Load existing game data if available with better timing
+        iframe.onload = function() {
+            console.log('Iframe loaded, checking for existing game data');
+            
+            // Give the game time to initialize
+            setTimeout(() => {
+                if (slides[currentSlide].game.data) {
+                    console.log('Sending existing game data to iframe:', slides[currentSlide].game.data);
+                    
+                    // Parse game data if it's a string
+                    let gameData = slides[currentSlide].game.data;
+                    if (typeof gameData === 'string') {
+                        try {
+                            gameData = JSON.parse(gameData);
+                        } catch (e) {
+                            console.error('Error parsing game data:', e);
+                        }
+                    }
+                    
+                    iframe.contentWindow.postMessage({
+                        type: 'loadQuizGameData',
+                        gameData: gameData,
+                        quizId: getQuizId(),
+                        isEditMode: true
+                    }, '*');
+                } else {
+                    console.log('No existing game data found');
+                    // Send request for game to load in edit mode
+                    iframe.contentWindow.postMessage({
+                        type: 'requestQuizGameData',
+                        quizId: getQuizId()
+                    }, '*');
+                }
+            }, 1000); // Increased delay to ensure game is fully loaded
+        };
+    } else {
+        console.log('Updating existing iframe');
+        
+        // Update existing iframe with edit parameters
+        let gameUrl = slides[currentSlide].game.url;
+        const separator = gameUrl.includes('?') ? '&' : '?';
+        const quizId = getQuizId();
+        gameUrl += separator + `edit=true&mode=quiz&quizId=${encodeURIComponent(quizId)}`;
+        
+        existing.src = gameUrl;
+        existing.style.display = 'block';
+        
+        // Hide canvas when game is active
+        const canvas = document.getElementById('canvas');
+        if (canvas) {
+            canvas.style.display = 'none';
+        }
+        
+        // Send existing game data after a delay
+        setTimeout(() => {
+            if (slides[currentSlide].game.data) {
+                let gameData = slides[currentSlide].game.data;
+                if (typeof gameData === 'string') {
+                    try {
+                        gameData = JSON.parse(gameData);
+                    } catch (e) {
+                        console.error('Error parsing game data:', e);
+                    }
+                }
+                
+                existing.contentWindow.postMessage({
+                    type: 'loadQuizGameData',
+                    gameData: gameData,
+                    quizId: getQuizId(),
+                    isEditMode: true
+                }, '*');
+            }
+        }, 500);
+    }
+}
+        
+// FIXED: Enhanced message handler to properly capture and save game data
+function handleGameMessage(event) {
+    console.log('📨 Quiz Editor received message:', event.data);
+    
+    const data = event.data;
+    
+    if (data.type === 'saveQuizGameData' || data.type === 'gameDataUpdate') {
+        console.log('💾 SAVING quiz-specific game data:', data.gameData);
+        
+        // Update the current slide's game data
+        if (slides[currentSlide] && slides[currentSlide].game) {
+            // CRITICAL: Store the ACTUAL game data (values, questions, etc.)
+            slides[currentSlide].game.data = data.gameData;
+            slides[currentSlide].game.lastModified = new Date().toISOString();
+            slides[currentSlide].game.quizId = getQuizId();
+            slides[currentSlide].game.isQuizSpecific = true;
+            slides[currentSlide].game.customized = true;
+            
+            console.log('✅ Game data saved to slide:', {
+                slideIndex: currentSlide,
+                hasData: !!slides[currentSlide].game.data,
+                dataPreview: typeof slides[currentSlide].game.data === 'object' ? 
+                            JSON.stringify(slides[currentSlide].game.data).substring(0, 100) + '...' :
+                            slides[currentSlide].game.data
+            });
+            
+            // Force immediate save to ensure data persistence
+            saveCurrentSlide();
+            triggerImmediateAutoSave();
+            showAutoSaveIndicator('🎮 Game edits saved!');
+        }
+    } else if (data.type === 'requestQuizGameData') {
+        console.log('🔄 Game requesting existing data for slide:', currentSlide);
+        
+        const iframe = document.getElementById('game-iframe');
+        if (iframe && slides[currentSlide] && slides[currentSlide].game) {
+            let gameData = slides[currentSlide].game.data;
+            
+            // Don't parse if it's already an object
+            if (typeof gameData === 'string' && gameData) {
+                try {
+                    gameData = JSON.parse(gameData);
+                } catch (e) {
+                    console.error('Error parsing game data:', e);
+                    gameData = null;
+                }
+            }
+            
+            console.log('📤 Sending existing data to game:', gameData);
+            
+            iframe.contentWindow.postMessage({
+                type: 'loadQuizGameData',
+                gameData: gameData,
+                quizId: getQuizId(),
+                isEditMode: true
+            }, '*');
+        } else {
+            console.log('❌ No existing game data found');
+            
+            // Send empty data to let game know it can start fresh
+            iframe.contentWindow.postMessage({
+                type: 'loadQuizGameData',
+                gameData: null,
+                quizId: getQuizId(),
+                isEditMode: true
+            }, '*');
+        }
+    } else if (data.type === 'currentGameData') {
+        // Handle response from requestCurrentGameData
+        console.log('📥 Received current game data from game:', data.gameData);
+        
+        if (slides[currentSlide] && slides[currentSlide].game) {
+            slides[currentSlide].game.data = data.gameData;
+            slides[currentSlide].game.lastModified = new Date().toISOString();
+            slides[currentSlide].game.customized = true;
+            
+            console.log('✅ Current game state captured and saved');
+            
+            saveCurrentSlide();
+            triggerImmediateAutoSave();
+            showAutoSaveIndicator('🎮 Current game state saved');
+        }
+    }
+}
+
+
+        // Generate unique quiz ID for this editing session
+        function getQuizId() {
+            const subject = getParam('subject') || 'general';
+            const quarter = getParam('quarter') || 'auto';
+            const name = getParam('name') || 'untitled';
+            const user = firebase.auth().currentUser;
+            const userId = user ? user.uid : 'anonymous';
+            
+            return `${userId}_${subject}_${quarter}_${name}`;
+        }
+
+        // Add Game Button Functionality
+        document.getElementById('add-game-btn').addEventListener('click', function() {
+            document.getElementById('game-modal').style.display = 'flex';
+        });
+
+        // Enhanced game option selection with quiz-specific data structure
+        document.querySelectorAll('.game-option').forEach(btn => {
+            btn.onclick = function() {
+                console.log('Game option clicked:', this.dataset.game); // Debug log
+                
+                saveCurrentSlide();
+                
+                const selectedGameUrl = this.dataset.game; // Use different variable name
+                const quizId = getQuizId();
+                
+                // Create game object with quiz-specific data structure
+                const gameData = {
+                    url: selectedGameUrl,
+                    type: getGameType(selectedGameUrl),
+                    quizId: quizId,
+                    createdAt: new Date().toISOString(),
+                    lastModified: new Date().toISOString(),
+                    data: null, // Will store quiz-specific customizations
+                    isQuizSpecific: true
+                };
+                
+                const currentSlideData = slides[currentSlide] || canvas.toJSON();
+                currentSlideData.game = gameData;
+                
+                slides[currentSlide] = currentSlideData;
+                
+                // Update global game variables
+                gameUrl = selectedGameUrl; // Fix: assign to global variable
+                gameSlideIndex = currentSlide;
+                
+                console.log('Game data created:', gameData); // Debug log
+                console.log('Current slide updated:', slides[currentSlide]); // Debug log
+                
+                // Immediately show the game iframe
+                showGameIframe();
+                updateSlideIndicator();
+                renderSlidePreviews(); // Update previews to show game icon
+                
+                document.getElementById('game-modal').style.display = 'none';
+                showAutoSaveIndicator('Game embedded - ready for quiz-specific editing');
+            };
+        });
+
+        // Helper function to determine game type
+        function getGameType(url) {
+            if (url.includes('game1.html')) return 'multiple-choice-quiz';
+            if (url.includes('game2.html')) return 'drag-drop-quiz';
+            return 'unknown';
+        }
+
+        // Slide Management Functions
+function saveCurrentSlide() {
+    if (currentSlide < slides.length) {
+        const slideData = canvas.toJSON();
+        
+        // Preserve existing game data if it exists
+        if (slides[currentSlide] && slides[currentSlide].game) {
+            slideData.game = slides[currentSlide].game;
+        }
+        
+        slides[currentSlide] = slideData;
+    }
+}
+
+function loadSlide(index) {
+    console.log('Loading slide:', index); // Debug log
+    
+    if (index >= 0 && index < slides.length && slides[index]) {
+        canvas.loadFromJSON(slides[index], function() {
+            canvas.renderAll();
+            
+            // Show/hide canvas and game based on slide content
+            const canvasElement = document.getElementById('canvas');
+            const hasGame = slides[index].game;
+            
+            if (hasGame) {
+                console.log('Slide has game, hiding canvas and showing game'); // Debug log
+                canvasElement.style.display = 'none';
+                showGameIframe();
+            } else {
+                console.log('Slide has no game, showing canvas'); // Debug log
+                canvasElement.style.display = 'block';
+                // Remove any existing game iframe
+                const existing = document.getElementById('game-iframe');
+                if (existing) existing.remove();
+            }
+        });
+    } else {
+        // Create new slide
+        console.log('Creating new slide'); // Debug log
+        canvas.clear();
+        canvas.backgroundColor = '#fff';
+        canvas.renderAll();
+        
+        if (!slides[index]) {
+            slides[index] = canvas.toJSON();
+        }
+        
+        // Show canvas for new slide
+        const canvasElement = document.getElementById('canvas');
+        canvasElement.style.display = 'block';
+        
+        // Remove any existing game iframe
+        const existing = document.getElementById('game-iframe');
+        if (existing) existing.remove();
+    }
+    
+    currentSlide = index;
+    updateSlideIndicator();
+}
+
+function addSlide() {
+    saveCurrentSlide();
+    const newIndex = slides.length;
+    slides.push(canvas.toJSON());
+    loadSlide(newIndex);
+    updateSlideIndicator();
+    renderSlidePreviews();
+}
+
+function deleteSlide(index) {
+    if (slides.length <= 1) {
+        alert('Cannot delete the last slide.');
+        return;
+    }
+    
+    slides.splice(index, 1);
+    
+    if (currentSlide >= slides.length) {
+        currentSlide = slides.length - 1;
+    }
+    
+    loadSlide(currentSlide);
+    renderSlidePreviews();
+}
+
+function updateSlideIndicator() {
+    const indicator = document.getElementById('slide-indicator');
+    if (indicator) {
+        indicator.textContent = `Slide ${currentSlide + 1}/${Math.max(slides.length, 1)}`;
+    }
+}
+
+function setActiveThumb(index) {
+    const all = document.querySelectorAll('.slide-thumb');
+    all.forEach((el, i) => {
+        if (i === index) el.classList.add('active');
+        else el.classList.remove('active');
+    });
+}
+
+function renderSlidePreviews() {
+    const previewBar = document.getElementById('slide-preview-bar');
+    if (!previewBar) return;
+
+    // Keep current scroll position if needed
+    const previousScroll = previewBar.scrollLeft || 0;
+    previewBar.innerHTML = '';
+
+    // Add "Add" button
+    const addBtn = document.createElement('button');
+    addBtn.innerHTML = '<i class="fa fa-plus"></i>';
+    addBtn.style.cssText = `
+        width: 40px;
+        height: 40px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        flex-shrink: 0;
+        margin-right: 8px;
+    `;
+    addBtn.title = 'Add New Slide';
+    addBtn.onclick = addSlide;
+    previewBar.appendChild(addBtn);
+
+    slides.forEach((slide, index) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'slide-thumb';
+        thumb.dataset.index = index;
+
+        // active state
+        if (index === currentSlide) thumb.classList.add('active');
+
+        // add hover classes for nicer UX
+        thumb.addEventListener('mouseenter', () => thumb.classList.add('hover'));
+        thumb.addEventListener('mouseleave', () => thumb.classList.remove('hover'));
+
+        // indicator if slide has a game
+        if (slide && slide.game) {
+            const gameIcon = document.createElement('i');
+            gameIcon.className = 'fa fa-gamepad';
+            gameIcon.style.cssText = `
+                position: absolute;
+                top: 2px;
+                right: 2px;
+                color: var(--primary);
+                font-size: 12px;
+                background: white;
+                border-radius: 50%;
+                width: 16px;
+                height: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            thumb.appendChild(gameIcon);
+        }
+
+        const slideNumber = document.createElement('span');
+        slideNumber.textContent = index + 1;
+        slideNumber.style.cssText = `
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+        `;
+        thumb.appendChild(slideNumber);
+
+        // Single-click handler: save current, set active immediately, then load target slide
+        thumb.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetIndex = Number(thumb.dataset.index);
+
+            // Persist current slide first
+            try { saveCurrentSlide(); } catch (err) { console.warn('saveCurrentSlide failed', err); }
+
+            // Update active UI immediately so user sees feedback
+            setActiveThumb(targetIndex);
+
+            // Load the slide (will hide/show canvas or iframe as needed)
+            loadSlide(targetIndex);
+
+            // update indicator and keep previews in sync
+            updateSlideIndicator();
+        });
+
+        // context menu to delete
+        thumb.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            if (confirm(`Delete slide ${index + 1}?`)) deleteSlide(index);
+        });
+
+        previewBar.appendChild(thumb);
+    });
+
+    // restore scroll position
+    previewBar.scrollLeft = previousScroll;
+}
+
+// Replace loadSlide to ensure active thumb update and immediate UI toggle
+function loadSlide(index) {
+    console.log('Loading slide:', index);
+    if (index < 0 || index >= slides.length) return;
+
+    // set currentSlide immediately for other logic that may read it
+    currentSlide = index;
+    setActiveThumb(index);
+    updateSlideIndicator();
+
+    // load canvas JSON (async)
+    canvas.loadFromJSON(slides[index], function() {
+        canvas.renderAll();
+
+        const hasGame = slides[index] && slides[index].game && slides[index].game.url && slides[index].game.url.trim() !== '';
+        const canvasEl = document.getElementById('canvas');
+
+        if (hasGame) {
+            if (canvasEl) canvasEl.style.display = 'none';
+            showGameIframe();
+        } else {
+            if (canvasEl) canvasEl.style.display = 'block';
+            const existing = document.getElementById('game-iframe');
+            if (existing) existing.remove();
+        }
+    });
+}
+        // Auto-save trigger function (enhanced)
+function triggerImmediateAutoSave() {
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+        saveCurrentSlide(); // Ensure current slide is saved before auto-save
+        autoSaveCanvas();
+    }, 1000); // Save after 1 second delay
+}
+
+// Enhanced auto-save that captures everything
+async function autoSaveCanvas() {
+    if (!isAutoSaveEnabled) return;
+
+    try {
+        saveCurrentSlide();
+
+        const user = firebase.auth().currentUser;
+        if (!user) return;
+
+        const teacherUID = user.uid;
+        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+        const teacher = teacherSnap.val();
+        const section = teacher && teacher.section ? teacher.section : null;
+        const gradeLevel = teacher && teacher.gradelevel ? teacher.gradelevel : null;
+
+        if (!section || !gradeLevel) return;
+
+        let quarter = getParam('quarter') || 'auto';
+        let name = getParam('name') || getParam('title') || 'untitled';
+        let subject = getParam('subject') || 'general';
+
+        // Fetch the latest tests array from Firebase before saving
+        let quizTests = [];
+        try {
+            const quizSnap = await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).once('value');
+            const quiz = quizSnap.val();
+            if (quiz && Array.isArray(quiz.tests)) {
+                quizTests = quiz.tests;
+            }
+        } catch (e) {
+            quizTests = [];
+        }
+
+        const quizParts = quizTests.map(t => `${t.name}: ${t.type}`);
+
+        // Prepare slides data
+        const processedSlides = slides.map(slide => {
+            if (slide.game && slide.game.data) {
+                return {
+                    ...slide,
+                    game: {
+                        ...slide.game,
+                        data: typeof slide.game.data === 'string' ? slide.game.data : JSON.stringify(slide.game.data),
+                        isQuizSpecific: true,
+                        autoSaved: true
+                    }
+                };
+            }
+            return slide;
+        });
+
+        const currentCanvasState = JSON.stringify(processedSlides);
+
+        if (currentCanvasState === lastCanvasState) return;
+
+        let existingDescription = lastDescription || '';
+        try {
+            const existingQuizSnap = await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).once('value');
+            if (existingQuizSnap.exists()) {
+                const existingQuiz = existingQuizSnap.val();
+                existingDescription = existingQuiz.description || lastDescription || '';
+            }
+        } catch (error) {
+            console.log('Could not fetch existing description:', error);
+        }
+
+        const teacherName = `${teacher.firstname || ''} ${teacher.lastname || ''}`.trim();
+        const quizPassword = Math.floor(100000 + Math.random() * 900000).toString();
+        const now = new Date().toISOString();
+
+        const teacherAutoSaveData = {
+            slides: currentCanvasState,
+            savedAt: now,
+            title: name,
+            quarter: quarter,
+            subject: subject,
+            description: existingDescription,
+            autoSaved: true,
+            section: section,
+            gradeLevel: gradeLevel,
+            createdBy: teacherUID,
+            teacherName: teacherName,
+            password: quizPassword,
+            isLocked: true,
+            hasPassword: true,
+            hasCustomGames: processedSlides.some(slide => slide.game && slide.game.data),
+            gameCount: processedSlides.filter(slide => slide.game).length,
+            customGameCount: processedSlides.filter(slide => slide.game && slide.game.data).length,
+            quizId: getQuizId(),
+            tests: quizTests, // <-- Always include the latest tests array!
+            parts: quizParts
+        };
+
+        await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).set(teacherAutoSaveData);
+
+        lastCanvasState = currentCanvasState;
+        showAutoSaveIndicator('Auto-saved under current title');
+
+        // --- START: student auto-save (use teacherAutoSaveData) ---
+        try {
+            const studentsSnap = await db.ref('students').once('value');
+            const studentUpdatePromises = [];
+            let studentsUpdated = 0;
+
+            if (studentsSnap.exists()) {
+                studentsSnap.forEach(studentSnap => {
+                    const student = studentSnap.val();
+                    const studentUID = studentSnap.key;
+
+                    const studentSection = (student.section || '').toString().trim().toLowerCase();
+                    const teacherSectionLower = (section || '').toString().trim().toLowerCase();
+                    const studentGrade = (student.gradelevel || '').toString().trim();
+                    const teacherGrade = (gradeLevel || '').toString().trim();
+
+                    if (studentSection === teacherSectionLower && studentGrade === teacherGrade) {
+                        studentsUpdated++;
+
+                        const studentQuizData = {
+                            ...teacherAutoSaveData,
+                            assignedBy: teacherUID,
+                            assignedAt: now,
+                            status: 'available',
+                            attempts: 0,
+                            bestScore: 0,
+                            lastAttemptAt: null,
+                            studentUID: studentUID,
+                            allowEdit: false // students cannot edit the quiz
+                        };
+
+                        studentUpdatePromises.push(
+                            db.ref(`students/${studentUID}/quizzes/${subject}/${quarter}/${name}`).set(studentQuizData)
+                        );
+                    }
+                });
+
+                await Promise.all(studentUpdatePromises);
+                console.log(`Auto-saved quiz for ${studentsUpdated} students.`);
+            }
+        } catch (studentSaveErr) {
+            console.error('Error auto-saving to students:', studentSaveErr);
+        }
+        // --- END: student auto-save ---
+    } catch (error) {
+        console.error('Auto-save failed:', error);
+        showAutoSaveIndicator('Auto-save Failed', true);
+    }
+}
+
+// Enhanced canvas event listeners for comprehensive auto-save
+function setupCanvasAutoSave() {
+    // Canvas object events
+    canvas.on('object:added', triggerImmediateAutoSave);
+    canvas.on('object:removed', triggerImmediateAutoSave);
+    canvas.on('object:modified', triggerImmediateAutoSave);
+    canvas.on('object:moving', debounce(triggerImmediateAutoSave, 2000));
+    canvas.on('object:scaling', debounce(triggerImmediateAutoSave, 2000));
+    canvas.on('object:rotating', debounce(triggerImmediateAutoSave, 2000));
+    canvas.on('text:changed', debounce(triggerImmediateAutoSave, 1000));
+    
+    // Background changes
+    canvas.on('after:render', debounce(triggerImmediateAutoSave, 3000));
+    
+    // Selection changes (less frequent)
+    canvas.on('selection:created', debounce(triggerImmediateAutoSave, 5000));
+    canvas.on('selection:updated', debounce(triggerImmediateAutoSave, 5000));
+    canvas.on('selection:cleared', debounce(triggerImmediateAutoSave, 5000));
+}
+
+// Debounce utility function to prevent excessive auto-saves
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+async function loadQuizData() {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const section = window.teacherSection || '';
+    const subject = getParam('subject');
+    const quarter = getParam('quarter');
+    const name = getParam('name') || getParam('title');
+    if (!section || !subject || !quarter || !name) return;
+
+    try {
+        const quizRef = db.ref(`teachers/${user.uid}/sections/${section}/quizzes/${subject}/${quarter}/${name}`);
+        const quizSnap = await quizRef.once('value');
+        const quiz = quizSnap.val() || {};
+
+        // Load tests array (keep separate)
+        quizTests = Array.isArray(quiz.tests) ? quiz.tests.slice() : [];
+
+        // If slides exist in DB, parse and use them (preserve games)
+        let loadedSlides = [];
+        if (quiz.slides) {
+            try {
+                loadedSlides = typeof quiz.slides === 'string' ? JSON.parse(quiz.slides) : quiz.slides;
+                if (!Array.isArray(loadedSlides)) loadedSlides = [];
+                // Normalize each slide: ensure game.data is parsed (object) if stored as string
+                loadedSlides = loadedSlides.map(s => {
+                    const slide = Object.assign({}, s);
+                    if (slide.game) {
+                        // keep url/type etc, parse data if string
+                        if (typeof slide.game.data === 'string' && slide.game.data) {
+                            try { slide.game.data = JSON.parse(slide.game.data); }
+                            catch (e) { /* keep string if parse fails */ }
+                        }
+                    }
+                    return slide;
+                });
+            } catch (e) {
+                console.warn('Failed to parse saved slides:', e);
+                loadedSlides = [];
+            }
+        }
+
+        // If no saved slides but tests exist, create blank slide per test (no default games)
+        if ((loadedSlides.length === 0) && quizTests.length > 0) {
+            loadedSlides = quizTests.map((t) => {
+                const blank = canvas.toJSON();
+                blank.testName = t.name || '';
+                blank.testType = t.type || '';
+                // do NOT attach any default game
+                return blank;
+            });
+        }
+
+        // If still no slides, keep a single blank slide
+        if (loadedSlides.length === 0) {
+            loadedSlides = [canvas.toJSON()];
+        }
+
+        // Assign to global slides and render UI (do NOT overwrite existing games later)
+        slides = loadedSlides.slice();
+
+        // --- Ensure slides count equals tests and attach test/meta/game info to each slide ---
+        (function ensureSlidesMatchTests() {
+            // Ensure at least one slide
+            const targetCount = Math.max((Array.isArray(quizTests) ? quizTests.length : 0), 1);
+
+            // Trim extra slides
+            if (slides.length > targetCount) slides = slides.slice(0, targetCount);
+
+            // Add blank slides if fewer than tests
+            while (slides.length < targetCount) {
+                slides.push(canvas.toJSON());
+            }
+
+            // Attach test metadata and optional game info from quizTests to each slide
+            for (let i = 0; i < targetCount; i++) {
+                const test = (quizTests && quizTests[i]) ? quizTests[i] : {};
+                const slide = slides[i] || canvas.toJSON();
+
+                // Keep existing testName/testType if present, else set from test
+                slide.testName = slide.testName || test.name || `Test ${i + 1}`;
+                slide.testType = slide.testType || test.type || '';
+
+                // If test includes a gameUrl or gameData, attach it but preserve existing slide.game.data
+                if (test.gameUrl || test.gameData) {
+                    slide.game = slide.game || {};
+                    slide.game.url = slide.game.url || test.gameUrl || null;
+                    slide.game.type = slide.game.type || test.gameType || (slide.game.url ? getGameType(slide.game.url) : null);
+                    slide.game.quizId = slide.game.quizId || getQuizId();
+                    if (!slide.game.data && test.gameData) {
+                        slide.game.data = (typeof test.gameData === 'string') ? tryParse(test.gameData) : test.gameData;
+                    }
+                    slide.game.isQuizSpecific = true;
+                }
+
+                slides[i] = slide;
+            }
+
+            function tryParse(v) {
+                try { return JSON.parse(v); } catch (e) { return v; }
+            }
+        })();
+
+        // render sidebar / previews and load first slide
+        renderQuizTestsSidebar();
+        renderSlidePreviews();
+        loadSlide(currentSlide || 0);
+    } catch (err) {
+        console.error('Error loading quiz data:', err);
+    }
+}
+
+
+// Enhanced initialization
+function initializeEditor() {
+    // Load from localStorage backup if available
+    const backupSlides = localStorage.getItem('quiz-autosave-slides');
+    if (backupSlides && slides.length === 0) {
+        try {
+            const parsedSlides = JSON.parse(backupSlides);
+            if (parsedSlides && parsedSlides.length > 0) {
+                slides = parsedSlides;
+                showAutoSaveIndicator('Restored from local backup');
+            }
+        } catch (error) {
+            console.error('Error loading backup slides:', error);
+        }
+    }
+    
+    // Create initial slide if none exist
+    if (slides.length === 0) {
+        slides.push(canvas.toJSON());
+    }
+    
+    loadSlide(0);
+    renderSlidePreviews();
+    updateSlideIndicator();
+    
+    // Setup comprehensive auto-save
+    setupCanvasAutoSave();
+    
+    // Periodic auto-save every 30 seconds
+    setInterval(() => {
+        if (isAutoSaveEnabled) {
+            triggerImmediateAutoSave();
+        }
+    }, autoSaveInterval);
+    
+    // Auto-save on page unload
+    window.addEventListener('beforeunload', (e) => {
+        saveCurrentSlide();
+        localStorage.setItem('quiz-autosave-slides', JSON.stringify(slides));
+        localStorage.setItem('quiz-autosave-timestamp', new Date().toISOString());
+    });
+}
+
+// Manual save trigger for testing
+function forceSave() {
+    console.log('Force saving...');
+    triggerImmediateAutoSave();
+}
+
+// Add keyboard shortcut for manual save (Ctrl+S)
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        forceSave();
+        showAutoSaveIndicator('Manual save triggered');
+    }
+});
+
+// Update the existing DOMContentLoaded event listener
+document.removeEventListener && document.removeEventListener('DOMContentLoaded', initializeEditor);
+document.addEventListener('DOMContentLoaded', function() {
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            try {
+                const teacherSnap = await db.ref('teachers/' + user.uid).once('value');
+                const teacher = teacherSnap.val();
+                window.teacherSection = teacher && teacher.section ? teacher.section : '';
+            } catch (e) {
+                console.warn('Could not load teacher profile', e);
+            }
+            // Load saved slides/tests from DB before initializing editor
+            await loadQuizData();
+        }
+        // Now initialize editor (will use slides loaded by loadQuizData)
+        initializeEditor();
+    });
+});
+
+
+// Fix the modal display issue
+document.getElementById('add-game-btn').addEventListener('click', function() {
+    console.log('Add game button clicked'); // Debug log
+    const modal = document.getElementById('game-modal');
+    modal.style.display = 'flex';
+    console.log('Modal display set to flex'); // Debug log
+});
+
+// Add a close modal function for the cancel button
+function closeGameModal() {
+    document.getElementById('game-modal').style.display = 'none';
+}
+
+// Make sure the cancel button works
+document.querySelector('.cancel-button').onclick = closeGameModal;
+
+// Also close modal when clicking outside
+document.getElementById('game-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeGameModal();
+    }
+});
+    
+    </script>]
+
+<script>
+    // Add this function for auto-save visual feedback
+function showAutoSaveIndicator(message, isError = false) {
+    // Create or update auto-save indicator
+    let indicator = document.getElementById('auto-save-indicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'auto-save-indicator';
+        indicator.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        `;
+        document.body.appendChild(indicator);
+    }
+    
+    indicator.textContent = message;
+    indicator.style.background = isError ? '#e74c3c' : 'var(--primary)';
+    indicator.style.opacity = '1';
+    indicator.style.transform = 'translateY(0) translateX(0)';
+    
+    // Fade out after 4 seconds
+    setTimeout(() => {
+        indicator.style.opacity = '0';
+        indicator.style.transform = 'translateY(-20px) translateX(10px)';
+    }, 4000);
+}
+</script>
+
+<script>
+    // Add this enhanced function to properly handle quiz-specific game data saving
+function saveQuizSpecificGameData() {
+    // Get the current game iframe if it exists
+    const gameIframe = document.getElementById('game-iframe');
+    if (!gameIframe || !slides[currentSlide] || !slides[currentSlide].game) {
+        return;
+    }
+
+    // Request current game data from the iframe
+    gameIframe.contentWindow.postMessage({
+        type: 'requestCurrentGameData',
+        quizId: getQuizId()
+    }, '*');
+}
+
+// Enhanced message handler to properly capture and save game data
+function handleGameMessage(event) {
+    console.log('📨 Quiz Editor received message:', event.data);
+    
+    const data = event.data;
+    
+    // Handle when game sends updated data (when user edits questions)
+    if (data.type === 'saveQuizGameData' || data.type === 'gameDataUpdate') {
+        console.log('💾 SAVING game data from iframe:', data.gameData);
+        
+        // Update the current slide's game data
+        if (slides[currentSlide] && slides[currentSlide].game) {
+            // Store the complete game data
+            slides[currentSlide].game.data = JSON.stringify(data.gameData);
+            slides[currentSlide].game.lastModified = new Date().toISOString();
+            slides[currentSlide].game.quizId = getQuizId();
+            slides[currentSlide].game.isQuizSpecific = true;
+            slides[currentSlide].game.customized = true;
+            slides[currentSlide].game.hasEditedQuestions = true;
+            
+            console.log('✅ Game data saved to canvas slide');
+            
+            // Force immediate save to ensure data persistence
+            saveCurrentSlide();
+            triggerImmediateAutoSave();
+            showAutoSaveIndicator('🎮 Game questions updated!');
+        }
+    }
+    
+    // Handle when game requests existing data (on load)
+    else if (data.type === 'requestQuizGameData') {
+        console.log('🔄 Game requesting existing quiz data');
+        
+        const iframe = document.getElementById('game-iframe');
+        if (iframe && slides[currentSlide] && slides[currentSlide].game && slides[currentSlide].game.data) {
+            let gameData = slides[currentSlide].game.data;
+            
+            // Parse if it's a string
+            if (typeof gameData === 'string') {
+                try {
+                    gameData = JSON.parse(gameData);
+                } catch (e) {
+                    console.error('Error parsing stored game data:', e);
+                    gameData = null;
+                }
+            }
+            
+            console.log('📤 Sending existing game data to iframe:', gameData);
+            
+            iframe.contentWindow.postMessage({
+                type: 'loadQuizGameData',
+                gameData: gameData,
+                quizId: getQuizId(),
+                isEditMode: true
+            }, '*');
+        } else {
+            console.log('❌ No existing game data, sending null');
+            iframe.contentWindow.postMessage({
+                type: 'loadQuizGameData',
+                gameData: null,
+                quizId: getQuizId(),
+                isEditMode: true
+            }, '*');
+        }
+    }
+    
+    // Handle response when we request current game data
+    else if (data.type === 'currentGameData') {
+        console.log('📥 Received current game data from iframe:', data.gameData);
+        
+        if (slides[currentSlide] && slides[currentSlide].game) {
+            // Store the current game state
+            slides[currentSlide].game.data = JSON.stringify(data.gameData);
+            slides[currentSlide].game.lastModified = new Date().toISOString();
+            slides[currentSlide].game.customized = true;
+            
+            console.log('✅ Current game state captured and saved');
+            
+            saveCurrentSlide();
+            triggerImmediateAutoSave();
+            showAutoSaveIndicator('🎮 Current game state saved');
+        }
+    }
+}
+
+// FIXED: Enhanced save function that properly captures and saves game data
+document.getElementById('save-btn').onclick = async function() {
+    console.log('💾 SAVE CLICKED - Capturing all game data...');
+    
+    const saveBtn = this;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '⏳ Saving...';
+    
+    try {
+        // STEP 1: If there's an active game, request its current data first
+        const gameIframe = document.getElementById('game-iframe');
+        if (gameIframe && slides[currentSlide] && slides[currentSlide].game) {
+            console.log('📨 Requesting final game state before save...');
+            
+            // Request current game state and wait for response
+            await new Promise((resolve) => {
+                let responseReceived = false;
+                
+                const messageHandler = (event) => {
+                    if (!responseReceived && 
+                        (event.data.type === 'saveQuizGameData' || 
+                         event.data.type === 'currentGameData')) {
+                        console.log('✅ Received final game data:', event.data.gameData);
+                        
+                        // Update the slide with the latest data
+                        if (slides[currentSlide] && slides[currentSlide].game) {
+                            slides[currentSlide].game.data = JSON.stringify(event.data.gameData);
+                            slides[currentSlide].game.lastModified = new Date().toISOString();
+                            slides[currentSlide].game.customized = true;
+                        }
+                        
+                        responseReceived = true;
+                        window.removeEventListener('message', messageHandler);
+                        resolve();
+                    }
+                };
+                
+                window.addEventListener('message', messageHandler);
+                
+                // Request the data
+                gameIframe.contentWindow.postMessage({
+                    type: 'requestCurrentGameData',
+                    quizId: getQuizId(),
+                    finalSave: true
+                }, '*');
+                
+                // Timeout after 3 seconds
+                setTimeout(() => {
+                    if (!responseReceived) {
+                        console.log('⏰ Timeout waiting for game data, proceeding with save');
+                        window.removeEventListener('message', messageHandler);
+                        resolve();
+                    }
+                }, 3000);
+            });
+        }
+        
+        // Continue with existing save logic...
+        let quarter = getParam('quarter');
+        let name = getParam('name');
+        let subject = getParam('subject');
+        
+        if (!name) {
+            name = prompt('Enter a Name for this quiz:', 'MyQuiz');
+            if (!name) return;
+            name = name.trim();
+            if (!name) return alert('Name cannot be empty.');
+        }
+        
+        if (!quarter) {
+            quarter = prompt('Which quarter? (1, 2, 3, or 4)', '1');
+            if (!quarter || !['1','2','3','4'].includes(quarter.trim())) {
+                return alert('Invalid quarter.');
+            }
+            quarter = quarter.trim();
+        }
+        
+        if (!subject) {
+            subject = prompt('Enter subject:', 'subject_math');
+            if (!subject) return alert('Subject is required.');
+            subject = subject.trim();
+        }
+
+        let description = prompt('Enter quiz description (optional):', lastDescription || '');
+        if (description === null) return;
+        description = description.trim();
+        lastDescription = description;
+
+        // Save current slide with all captured data
+        saveCurrentSlide();
+        
+        // Process slides ensuring game data is properly serialized
+        const processedSlides = slides.map((slide, index) => {
+            if (slide.game && slide.game.data) {
+                return {
+                    ...slide,
+                    game: {
+                        ...slide.game,
+                        data: typeof slide.game.data === 'string' ? slide.game.data : JSON.stringify(slide.game.data),
+                        savedAt: new Date().toISOString(),
+                        isQuizSpecific: true,
+                        customized: true
+                    }
+                };
+            }
+            return slide;
+        });
+        
+        const slidesJson = JSON.stringify(processedSlides);
+
+        // Continue with Firebase save
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            alert('Please log in to save quiz.');
+            return;
+        }
+
+        const teacherUID = user.uid;
+        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value'); 
+        const teacher = teacherSnap.val();
+        
+        if (!teacher || !teacher.section || !teacher.gradelevel) {
+            alert('Your section and grade level must be set. Please update your profile.');
+            return;
+        }
+        
+        const section = teacher.section;
+        const gradeLevel = teacher.gradelevel;
+        const teacherName = `${teacher.firstname || ''} ${teacher.lastname || ''}`.trim();
+        const quizPassword = Math.floor(100000 + Math.random() * 900000).toString();
+        const now = new Date().toISOString();
+
+        const teacherQuizData = {
+            slides: slidesJson,
+            savedAt: now,
+            title: name,
+            quarter: quarter,
+            description: description,
+            subject: subject,
+            section: section,
+            gradeLevel: gradeLevel,
+            createdBy: teacherUID,
+            teacherName: teacherName,
+            password: quizPassword,
+            isLocked: true,
+            hasPassword: true,
+            hasCustomGames: processedSlides.some(slide => slide.game && slide.game.data),
+            gameCount: processedSlides.filter(slide => slide.game).length,
+            customGameCount: processedSlides.filter(slide => slide.game && slide.game.data).length,
+            quizId: getQuizId(),
+            tests: quizTests
+        };
+
+        // Save to teacher's collection
+        await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).set(teacherQuizData);
+
+        // --- START: update all students in the same section and grade using teacherQuizData ---
+        const studentsSnap = await db.ref('students').once('value');
+        const studentUpdatePromises = [];
+        let studentsUpdated = 0;
+
+        if (studentsSnap.exists()) {
+            studentsSnap.forEach(studentSnap => {
+                const student = studentSnap.val();
+                const studentUID = studentSnap.key;
+                const studentSection = (student.section || '').toString().trim().toLowerCase();
+                const teacherSectionLower = (section || '').toString().trim().toLowerCase();
+                const studentGrade = (student.gradelevel || '').toString().trim();
+                const teacherGrade = (gradeLevel || '').toString().trim();
+
+                if (studentSection === teacherSectionLower && studentGrade === teacherGrade) {
+                    studentsUpdated++;
+
+                    const studentQuizData = {
+                        ...teacherQuizData,
+                        assignedBy: teacherUID,
+                        assignedAt: now,
+                        status: 'available',
+                        attempts: 0,
+                        bestScore: 0,
+                        lastAttemptAt: null,
+                        studentUID: studentUID
+                    };
+
+                    studentUpdatePromises.push(
+                        db.ref(`students/${studentUID}/quizzes/${subject}/${quarter}/${name}`).set(studentQuizData)
+                    );
+                }
+            });
+
+            await Promise.all(studentUpdatePromises);
+        }
+        // --- END: update students ---
+
+        const customGamesCount = teacherQuizData.customGameCount;
+        const successMessage = `✅ Quiz saved successfully!\n\n` +
+            `📝 Quiz: "${name}"\n` +
+            `🔐 Password: ${quizPassword}\n` +
+            `🎮 Customized games: ${customGamesCount}\n` +
+            `👥 Students updated: ${studentsUpdated}\n\n` +
+            `Your edited questions will now appear when students take the quiz!`;
+        
+        alert(successMessage);
+        
+    } catch (error) {
+        console.error('❌ Save error:', error);
+        alert('Error saving quiz: ' + error.message);
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fa fa-save"></i> Save';
+    }
+};
+
+function renderQuizTestsSidebar() {
+    const list = document.getElementById('quiz-tests-list');
+    if (!list) return; // safe no-op if element removed or not present
+
+    list.innerHTML = '';
+    if (Array.isArray(quizTests) && quizTests.length > 0) {
+        quizTests.forEach((test, idx) => {
+            const li = document.createElement('li');
+            li.textContent = `${test.name || `Test ${idx + 1}`}: ${test.type || 'Unknown'}`;
+            li.style.cssText = 'margin-bottom:8px;font-size:14px;color:var(--text-main);';
+            list.appendChild(li);
+        });
+    } else {
+        list.innerHTML = '<li style="color:#c00;">No tests found for this quiz.</li>';
+    }
+}
+</script>
+<script src="../assets/js/fetchQuiz.js"></script>
+
+</body>
+</html>

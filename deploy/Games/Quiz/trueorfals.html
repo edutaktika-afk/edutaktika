@@ -32,6 +32,11 @@
             width: 96vw;
             position: relative;
         }
+        /* top bar / progress */
+        .top-bar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:6px; }
+        #progress { color:var(--forest-green); font-weight:700; font-size:0.95rem; }
+        .hint { font-size:0.82rem; color:#666; }
+
         .question {
             font-size: 1.6rem;
             margin: 26px 0 28px;
@@ -55,16 +60,67 @@
             cursor: pointer;
             box-shadow: 0 2px 8px var(--peach);
             transition: .2s;
+            position: relative; /* allow checkmark pseudo */
         }
         .btn:hover {
             background: var(--peach);
             color: var(--white);
         }
+        /* Selected option styling */
+        .btn.selected {
+            outline: 3px solid rgba(46,139,87,0.18);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(46,139,87,0.12);
+        }
+        /* visible check badge on selected option */
+        .btn.selected::after{
+            content: "✓";
+            position: absolute;
+            right: 10px;
+            top: 6px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:800;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            font-size:0.9rem;
+        }
+
         #feedback {
             font-size: 1.15rem;
             margin: 16px 0 8px;
             min-height: 28px;
         }
+        /* Edit button prominent style (visible only in editor mode) */
+        .edit-open-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(90deg,#ffb86b,#ff6b6b);
+            color: #112;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-weight: 800;
+            box-shadow: 0 6px 22px rgba(255,107,107,0.18);
+            display: inline-flex;
+            gap:8px;
+            align-items:center;
+            cursor: pointer;
+            transition: transform .18s ease, box-shadow .18s ease;
+            z-index: 5000;
+        }
+        .edit-open-btn .dot {
+            width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,0.06);
+        }
+        .edit-open-btn.pulse { animation: pulse 1.7s infinite; }
+        @keyframes pulse { 0%{ transform: translateY(0);}50%{ transform: translateY(-3px);}100%{ transform: translateY(0);} }
+
         #final-modal, #edit-modal {
             display: none;
             position: fixed;
@@ -202,20 +258,24 @@
   <div class="game-container">
     <button id="edit-open-btn" class="small-btn">Edit</button>
     <h2 style="color:var(--primary);margin:0;">Math True or False</h2>
+
+    <!-- Add this inside .game-container, just above the .question div -->
+    <div class="top-bar" style="justify-content: center; margin-top: 5px;">
+      <span id="progress"></span>
+    </div>
+
     <div class="question" id="question"></div>
     <button class="btn" id="true-btn">True</button>
     <button class="btn" id="false-btn">False</button>
     <div id="feedback"></div>
-    <button id="next-btn">Next</button>
+    <div style="display:flex;justify-content:center;gap:12px;margin-top:10px;">
+      <button id="prev-btn" style="display:none;background:#e4edf4;color:#174369;border:0;padding:12px 28px;border-radius:12px;font-size:1.1rem;font-weight:600;">Previous</button>
+      <button id="next-btn" style="display:none;background:var(--primary);color:#fff;border:0;padding:12px 28px;font-size:1.1rem;font-weight:600;border-radius:12px;">Next</button>
+    </div>
+    <button id="done-btn" style="display:none;background:var(--primary);color:#fff;border:0;padding:14px 44px;font-size:1.25rem;font-weight:bold;border-radius:12px;margin-top:18px;box-shadow:0 4px 14px -3px rgba(0,0,0,.3);cursor:pointer;">Done</button>
   </div>
 
-  <div id="final-modal" aria-hidden="true">
-    <div>
-      <h2 style="font-size:2.1rem;color:var(--primary);margin:0 0 10px;">🏁 Finished!</h2>
-      <p id="final-score" style="font-size:1.15rem;margin:0 0 24px;"></p>
-      <button id="play-again-btn">Play Again</button>
-    </div>
-  </div>
+
 
   <!-- EDIT MODAL -->
   <div id="edit-modal" aria-hidden="true">
@@ -249,24 +309,42 @@ let current = 0;
 let score = 0;
 let answeredCurrent = false;
 let userAnswers = []; // NEW: store student selections
+let parentTestIndex = 0;
 
 const qEl = document.getElementById('question');
 const feedbackEl = document.getElementById('feedback');
 const trueBtn = document.getElementById('true-btn');
 const falseBtn = document.getElementById('false-btn');
 const nextBtn = document.getElementById('next-btn');
+const prevBtn = document.getElementById('prev-btn');
 const finalModal = document.getElementById('final-modal');
 const finalScore = document.getElementById('final-score');
+const progressEl = document.getElementById('progress');
+const doneBtn = document.getElementById('done-btn');
+
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'setTestIndex') {
+    parentTestIndex = event.data.index;
+  }
+});
 
 function loadQuestion(){
   const q = questions[current];
   qEl.textContent = q ? q.q : '';
   feedbackEl.textContent='';
   answeredCurrent=false;
-  nextBtn.style.display='none';
+  // Show progress (e.g. "Question 2 of 5")
+  progressEl.textContent = `Question ${current + 1} of ${questions.length}`;
+  // hide Next unless a choice is made and not on last question
+  nextBtn.style.display = (typeof userAnswers[current] !== 'undefined' && current < questions.length - 1) ? 'inline-block' : 'none';
+  prevBtn.style.display = (current > 0) ? 'inline-block' : 'none';
+  // Show Done button only on last question and if answered
+  doneBtn.style.display = (current === questions.length - 1 && typeof userAnswers[current] !== 'undefined') ? 'inline-block' : 'none';
   enableAnswerButtons(true);
+  updateSelectionUI();
 }
 
+// enable or disable answer buttons
 function enableAnswerButtons(on){
   trueBtn.disabled=!on;
   falseBtn.disabled=!on;
@@ -274,38 +352,52 @@ function enableAnswerButtons(on){
   falseBtn.style.opacity= on? '1':'0.55';
 }
 
-function showFinalModal(){
-  finalScore.textContent = "Thank you for completing the activity.";
-  finalModal.style.display='flex';
-  finalModal.setAttribute('aria-hidden','false');
+// update visual selection state for current question
+function updateSelectionUI(){
+  const sel = userAnswers[current];
+  if(sel === true){
+    trueBtn.classList.add('selected');
+    falseBtn.classList.remove('selected');
+  } else if(sel === false){
+    falseBtn.classList.add('selected');
+    trueBtn.classList.remove('selected');
+  } else {
+    trueBtn.classList.remove('selected');
+    falseBtn.classList.remove('selected');
+  }
 }
 
 function checkAnswer(ans){
-  if(answeredCurrent) return;
+  // allow changing selection until user moves to next question
+  userAnswers[current] = ans;
   answeredCurrent = true;
-  userAnswers[current] = ans;   // record selection
-  // NO correctness / score / feedback
-  enableAnswerButtons(false);
-  nextBtn.style.display='inline-block';
+  // Show Next only if not on last question
+  nextBtn.style.display = (current < questions.length - 1) ? 'inline-block' : 'none';
+  // Show Done button if on last question
+  if(current === questions.length - 1) {
+    doneBtn.style.display = 'inline-block';
+  }
+  enableAnswerButtons(true);
+  updateSelectionUI();
 }
 
 trueBtn.onclick=()=>checkAnswer(true);
 falseBtn.onclick=()=>checkAnswer(false);
 
 nextBtn.onclick=()=>{
-  if(!answeredCurrent) return;
+  if(typeof userAnswers[current] === 'undefined' || userAnswers[current] === null) return;
   current++;
   if(current < questions.length){
     loadQuestion();
-  }else{
-    showFinalModal();
   }
+  // No else: do nothing on last question, no modal, no play again
 };
 
-document.getElementById('play-again-btn').onclick=()=>{
-  finalModal.style.display='none';
-  current=0; score=0; userAnswers=[];
-  loadQuestion();
+prevBtn.onclick = () => {
+  if (current > 0) {
+    current--;
+    loadQuestion();
+  }
 };
 
 /* ---------- EDIT FEATURE ---------- */
@@ -379,6 +471,80 @@ function escapeHtml(s){
 /* Init */
 loadQuestion();
 
+/* ---------- EDIT BUTTON VISIBILITY: show ONLY when opened from quizEditor or explicitly allowed ---------- */
+;(function controlEditButtonVisibility(){
+  const editOpenBtn = document.getElementById('edit-open-btn');
+  if (!editOpenBtn) return;
+
+  function show() { editOpenBtn.style.display = ''; }
+  function hide() { editOpenBtn.style.display = 'none'; }
+
+  // default: hide for both teacher/student quizView
+  hide();
+
+  try {
+    const params = new URLSearchParams(location.search);
+    const explicitEditor = params.get('editor') === 'true' || params.get('edit') === 'true' || params.get('mode') === 'edit';
+
+    // If explicitly opened in editor mode via URL, show
+    if (explicitEditor) { show(); return; }
+
+    // If referrer contains "quizeditor" (best-effort), show
+    if (document.referrer && document.referrer.toLowerCase().includes('quizeditor')) { show(); return; }
+
+    // Try to detect opener/parent (may throw cross-origin) — show only if it appears to be the quizEditor
+    try {
+      if (window.parent && window.parent !== window && String(window.parent.location.href).toLowerCase().includes('quizeditor')) { show(); return; }
+    } catch (e) { /* ignore cross-origin */ }
+    try {
+      if (window.opener && String(window.opener.location.href).toLowerCase().includes('quizeditor')) { show(); return; }
+    } catch (e) { /* ignore cross-origin */ }
+
+  } catch (e) {
+    // keep hidden on any error
+    console.warn('controlEditButtonVisibility error', e);
+  }
+
+  // Allow parent to override visibility via postMessage:
+  // { type: 'allowEdit', allow: true }  -> show
+  // { type: 'hideEditUI' }              -> hide
+  window.addEventListener('message', (ev) => {
+    try {
+      const d = ev.data || {};
+      if (d && d.type === 'allowEdit' && d.allow === true) show();
+      if (d && d.type === 'hideEditUI') hide();
+    } catch (err) { /* ignore */ }
+  }, false);
+
+  // Ensure the edit button still opens editor if visible
+  editOpenBtn.addEventListener('click', (e) => {
+    // if hidden do nothing
+    if (getComputedStyle(editOpenBtn).display === 'none') return;
+    openEditor();
+  });
+})();
+  
+doneBtn.onclick = () => {
+  // Calculate score
+  let score = 0;
+  for (let i = 0; i < questions.length; i++) {
+    if (userAnswers[i] === questions[i].answer) score++;
+  }
+  // Send result to parent for saving in Firebase
+  window.parent.postMessage({
+    type: 'quizResult',
+    payload: {
+      score: score,
+      maxScore: questions.length,
+      answers: userAnswers,
+      quizId: window.location.pathname.split('/').pop(),
+      slideIndex: parentTestIndex // <-- Always use this!
+    }
+  }, '*');
+  // Optionally disable the button or show a message
+  doneBtn.disabled = true;
+  doneBtn.textContent = "Submitted!";
+};
 </script>
 </body>
 </html>
