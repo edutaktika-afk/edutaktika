@@ -636,6 +636,25 @@ function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','
 
 /* ========= INIT ========= */
 renderQuestion();
+
+let parentTestIndex = 0;
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'setTestIndex') {
+    parentTestIndex = event.data.index;
+  }
+});
+
+// When sending the score:
+window.parent.postMessage({
+  type: 'quizResult',
+  payload: {
+    score: score,
+    maxScore: questions.length,
+    answers: userAnswers,
+    quizId: window.location.pathname.split('/').pop(),
+    slideIndex: parentTestIndex // <-- Always use this!
+  }
+}, '*');
 </script>
 </body>
 </html>

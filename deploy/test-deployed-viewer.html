@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Deployed Viewer - Edutaktika</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        .test-button:hover {
+            background: #1565c0;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Deployed Viewer Test</h1>
+        <p>Test the deployed Editor with view-only mode functionality.</p>
+        
+        <div class="test-info success">
+            <h3>✅ What's Updated:</h3>
+            <ul>
+                <li><strong>Gallery links:</strong> Now point to <code>deploy/editor/index.html</code></li>
+                <li><strong>Deployed editor:</strong> Rebuilt with view-only mode</li>
+                <li><strong>View-only functionality:</strong> Should work in deployed version</li>
+                <li><strong>All features:</strong> Presentation, fullscreen, download, etc.</li>
+            </ul>
+        </div>
+        
+        <div class="test-info">
+            <h3>Test URLs:</h3>
+            <p>Try these test URLs to verify the deployed viewer works:</p>
+        </div>
+        
+        <div>
+            <a href="deploy/editor/index.html?design=https://edutaktika-default-rtdb.firebaseio.com/designs/test-design.json&view=true" class="test-button">
+                Test Design 1 (Deployed)
+            </a>
+            <a href="deploy/editor/index.html?design=https://edutaktika-default-rtdb.firebaseio.com/designs/sample-design.json&view=true" class="test-button">
+                Test Design 2 (Deployed)
+            </a>
+            <a href="deploy/editor/index.html?design=invalid-url&view=true" class="test-button">
+                Test Error Handling
+            </a>
+        </div>
+        
+        <div class="test-info warning">
+            <h3>⚠️ Expected Behavior:</h3>
+            <ul>
+                <li>✅ Editor loads in view-only mode</li>
+                <li>✅ Side panel and editing tools are hidden</li>
+                <li>✅ Top bar shows "Design Viewer" and view controls</li>
+                <li>✅ Fullscreen and Present buttons work</li>
+                <li>✅ Back to Gallery button works</li>
+                <li>✅ Download button works</li>
+            </ul>
+        </div>
+        
+        <div>
+            <a href="gallery.html" class="test-button">🧪 Test Gallery</a>
+            <a href="deploy/editor/index.html" class="test-button">✏️ Test Editor</a>
+            <a href="test-gallery-links.html" class="test-button">🔍 Test Gallery Links</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -66,4 +66,38 @@
     }
     go(1);
   };
+  function applyLeaderboardPagination(students, opts) {
+    const tbody = document.getElementById(opts.tbodyId);
+    tbody.innerHTML = '';
+    students.forEach((student, idx) => {
+        const avatar = student.avatar ? student.avatar : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent((student.fname||'') + (student.lname||''))}`;
+      tbody.innerHTML += `
+          <tr>
+              <td>${idx + 1}</td>
+              <td class="player-cell">
+                  <img src="${avatar}" alt="${student.fname||''}">
+                  <span>${(student.fname||'') + ' ' + (student.lname||'')}</span>
+              </td>
+              <td>${student.quizPoints || 0}</td> <!-- THIS LINE IS IMPORTANT -->
+              <td>${student.assessmentPoints || 0}</td>
+              <td>${student.combinedPoints || 0}</td>
+              <td>${student.badges || ''}</td>
+          </tr>
+      `;
+    });
+  };
+  console.log('Leaderboard students:', students.map(s => ({
+    name: (s.fname||'') + ' ' + (s.lname||''),
+    quizPoints: s.quizPoints,
+    quizzes: s.quizzes
+  })));
+  // Example in leaderboard_math.html
+  // After you finish loading and filtering students:
+  console.log('Students after grade filter:', students.length); // This should show your students array
+  // Now call pagination
+  applyLeaderboardPagination(students, {
+    tbodyId: 'leaderboard-body',
+    paginationId: 'pagination',
+    rowsPerPage: 10
+  });
 })();

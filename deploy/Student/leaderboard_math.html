@@ -1,4 +1,4 @@
- <script>
+<script>
     document.addEventListener("DOMContentLoaded", function() {
         firebase.auth().onAuthStateChanged(async function(user) {
             if (!user) {
@@ -309,114 +309,134 @@
        
 
         // 2. Fetch and display leaderboard (Math subject only)
-        async function loadLeaderboard() {
-            console.log('Loading leaderboard...');
-            // Get current user's grade level
-            const currentUser = firebase.auth().currentUser;
-            if (!currentUser) {
-                console.log('No current user found');
-                return;
-            }
-            console.log('Current user:', currentUser.uid);
-            
-            const userSnapshot = await db.ref('students/' + currentUser.uid).once('value');
-            const userData = userSnapshot.val();
-            const userGrade = userData ? userData.gradelevel : null;
-            
-            if (!userGrade) {
-                console.error('Could not determine user grade level');
-                console.log('User data:', userData);
-                return;
-            }
-            console.log('User grade:', userGrade);
-            
-            // Update title to show current user's grade
-            const titleEl = document.querySelector('.leaderboard-title');
-            if (titleEl) {
-                titleEl.textContent = `🌟 Math Leaderboard - Grade ${userGrade} 🌟`;
-            }
-            
-            // Update page title
-            document.title = `Math Leaderboard - Grade ${userGrade}`;
-            
-            // Base student snapshot
-            const snapshot = await db.ref('students').once('value');
-            let students = [];
-            snapshot.forEach(child => {
-                const s = child.val() || {};
-                s._key = child.key;
-                students.push(s);
-            });
-            console.log('Total students found:', students.length);
+        let students = []; // at the top
 
-            // Calculate Math-specific scores
-            students.forEach(s => {
-                // Math quiz points - only from math quizzes
-                let mathQuizPoints = 0;
-                if (s.quizzes) {
-                    Object.keys(s.quizzes).forEach(quizKey => {
-                        // Only count math-related quizzes
-                        if (quizKey.includes('math') || quizKey.includes('lesson1') || quizKey.includes('clock-quiz')) {
-                            const summary = s.quizzes[quizKey]?.summary;
-                            if (summary && typeof summary.best === 'number') {
-                                mathQuizPoints += summary.best;
-                            }
-                        }
-                    });
+async function loadLeaderboard() {
+    console.log('Loading leaderboard...');
+    // Get current user's grade level
+    const currentUser = firebase.auth().currentUser;
+    if (!currentUser) {
+        console.log('No current user found');
+        return;
+    }
+    console.log('Current user:', currentUser.uid);
+    
+    const userSnapshot = await db.ref('students/' + currentUser.uid).once('value');
+    const userData = userSnapshot.val();
+    const userGrade = userData ? userData.gradelevel : null;
+    
+    if (!userGrade) {
+        console.error('Could not determine user grade level');
+        console.log('User data:', userData);
+        return;
+    }
+    console.log('User grade:', userGrade);
+    
+    // Update title to show current user's grade
+    const titleEl = document.querySelector('.leaderboard-title');
+    if (titleEl) {
+        titleEl.textContent = `🌟 Math Leaderboard - Grade ${userGrade} 🌟`;
+    }
+    
+    // Update page title
+    document.title = `Math Leaderboard - Grade ${userGrade}`;
+    
+    // Base student snapshot
+    const snapshot = await db.ref('students').once('value');
+    snapshot.forEach(child => {
+        const s = child.val() || {};
+        s._key = child.key;
+        students.push(s);
+    });
+    console.log('Total students found:', students.length);
+
+    // Calculate Math-specific scores
+    students.forEach(s => {
+        let mathQuizPoints = 0;
+        if (s.quizzes && s.quizzes.math) {
+            Object.keys(s.quizzes.math).forEach(quarterKey => {
+                const quizzesInQuarter = s.quizzes.math[quarterKey];
+                Object.keys(quizzesInQuarter).forEach(quizId => {
+                    const summary = quizzesInQuarter[quizId]?.summary;
+                    if (summary && typeof summary.totalScore === 'number') {
+                        mathQuizPoints += summary.totalScore;
+                    }
+                });
+            });
+        }
+        s.quizPoints = mathQuizPoints;
+        // Math assessment points - only from math assessments
+        let mathAssessmentPoints = 0;
+        if (s.assessments) {
+            Object.keys(s.assessments).forEach(aid => {
+                // Only count math-related assessments
+                if (aid.includes('math') || aid === 'assessment1') {
+                    const summary = s.assessments[aid]?.summary;
+                    if (summary && typeof summary.best === 'number') {
+                        mathAssessmentPoints += summary.best;
+                    }
                 }
-                
-                // Math assessment points - only from math assessments
-                let mathAssessmentPoints = 0;
-                if (s.assessments) {
-                    Object.keys(s.assessments).forEach(aid => {
-                        // Only count math-related assessments
-                        if (aid.includes('math') || aid === 'assessment1') {
-                            const summary = s.assessments[aid]?.summary;
-                            if (summary && typeof summary.best === 'number') {
-                                mathAssessmentPoints += summary.best;
-                            }
-                        }
-                    });
-                }
-                
-                s.quizPoints = mathQuizPoints;
-                s.assessmentPoints = mathAssessmentPoints;
-                s.combinedPoints = s.quizPoints + s.assessmentPoints;
             });
+        }
+        
+        s.assessmentPoints = mathAssessmentPoints;
+        s.combinedPoints = s.quizPoints + s.assessmentPoints;
+    });
 
-            // Filter for current user's grade level only
-            students = students.filter(s => s.gradelevel == userGrade);
-            console.log('Students after grade filter:', students.length);
+    // Filter for current user's grade level only
+    students = students.filter(s => s.gradelevel == userGrade);
+    console.log('Students after grade filter:', students.length);
 
-            // Sort descending by combined, then assessment, then quiz, then name
-            students.sort((a,b) => b.combinedPoints - a.combinedPoints || b.assessmentPoints - a.assessmentPoints || b.quizPoints - a.quizPoints || ((a.fname||'')+(a.lname||'')).localeCompare((b.fname||'')+(b.lname||'')) );
+    // Sort descending by combined, then assessment, then quiz, then name
+    students.sort((a,b) => b.combinedPoints - a.combinedPoints || b.assessmentPoints - a.assessmentPoints || b.quizPoints - a.quizPoints || ((a.fname||'')+(a.lname||'')).localeCompare((b.fname||'')+(b.lname||'')) );
 
-            // Podium (top 3) based on combinedPoints
-            const podiumIndices = [1, 0, 2]; // 2nd, 1st, 3rd visually
-            const podiumClasses = ['silver', 'gold', 'bronze'];
-            const podiumRanks = [2, 1, 3];
-            let podiumHtml = '';
-            podiumIndices.forEach((studentIdx, i) => {
-                if (!students[studentIdx]) return;
-                const student = students[studentIdx];
-                const avatar = student.avatar ? student.avatar : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent((student.fname||'') + (student.lname||''))}`;
-                podiumHtml += `
-                <div class="podium-place ${podiumClasses[i]}">
-                    <div class="podium-rank">${podiumRanks[i]}</div>
-                    <img src="${avatar}" class="avatar" alt="${student.fname||''}">
-                    <div class="podium-name">${(student.fname||'') + ' ' + (student.lname||'')}</div>
-                    <div class="podium-score">${student.combinedPoints} total</div>
-                </div>`;
-            });
-            document.getElementById('podium').innerHTML = podiumHtml;
+    // Podium (top 3) based on combinedPoints
+    const podiumIndices = [1, 0, 2]; // 2nd, 1st, 3rd visually
+    const podiumClasses = ['silver', 'gold', 'bronze'];
+    const podiumRanks = [2, 1, 3];
+    let podiumHtml = '';
+    podiumIndices.forEach((studentIdx, i) => {
+        if (!students[studentIdx]) return;
+        const student = students[studentIdx];
+        const avatar = student.avatar ? student.avatar : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent((student.fname||'') + (student.lname||''))}`;
+        podiumHtml += `
+        <div class="podium-place ${podiumClasses[i]}">
+            <div class="podium-rank">${podiumRanks[i]}</div>
+            <img src="${avatar}" class="avatar" alt="${student.fname||''}">
+            <div class="podium-name">${(student.fname||'') + ' ' + (student.lname||'')}</div>
+            <div class="podium-score">${student.combinedPoints} total</div>
+        </div>`;
+    });
+    document.getElementById('podium').innerHTML = podiumHtml;
 
-applyLeaderboardPagination(students,{
-  tbodyId:'leaderboard-body',
-  paginationId:'pagination',
-  rowsPerPage:10
+
+const tbody = document.getElementById('leaderboard-body');
+tbody.innerHTML = '';
+students.forEach((student, idx) => {
+    const avatar = student.avatar ? student.avatar : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent((student.fname||'') + (student.lname||''))}`;
+    tbody.innerHTML += `
+        <tr>
+            <td>${idx + 1}</td>
+            <td class="player-cell">
+                <img src="${avatar}" alt="${student.fname||''}">
+                <span>${(student.fname||'') + ' ' + (student.lname||'')}</span>
+            </td>
+            <td>${student.quizPoints || 0}</td>
+            <td>${student.assessmentPoints || 0}</td>
+            <td>${student.combinedPoints || 0}</td>
+            <td>${student.badges || ''}</td>
+        </tr>
+    `;
 });
+
+applyLeaderboardPagination(students, {
+        tbodyId: 'leaderboard-body',
+        paginationId: 'pagination',
+        rowsPerPage: 10
+    });
         }
 
+        
         // loadLeaderboard() is now called after authentication is confirmed
         </script>
 

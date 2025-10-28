@@ -25,7 +25,11 @@
   "scripts": {
     "start": "vite",
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "build:local": "node scripts/build.js local",
+    "build:deployed": "node scripts/build.js deployed",
+    "build:analyze": "node scripts/build.js analyze",
+    "preview": "vite preview"
   },
   "eslintConfig": {
     "extends": "react-app"
