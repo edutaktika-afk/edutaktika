@@ -1005,7 +1005,7 @@ function renderDesigns(designs, container) {
                                     style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);"
                                     onmouseover="this.style.background='#1976D2'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(33, 150, 243, 0.4)'"
                                     onmouseout="this.style.background='#2196F3'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(33, 150, 243, 0.3)'">
-                                <i class="fas fa-eye" style="margin-right: 6px;"></i>View Design
+                                <i class="fas fa-presentation" style="margin-right: 6px;"></i>Present
                             </button>
                             <button onclick="event.stopPropagation(); openDesignEditor('${encodeURIComponent(design.jsonUrl)}')" 
                                     style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);"
@@ -1024,28 +1024,28 @@ function renderDesigns(designs, container) {
 
 // New design gallery functions with environment-aware URLs
 function openDesignViewer(jsonUrl) {
-    console.log('🎨 Opening design in presentation mode:', jsonUrl);
+    console.log('🎨 Opening design in view-only presentation mode:', jsonUrl);
     
     // Show loading state
     showButtonLoading('view');
     
     try {
-        // Use environment-aware editor URL
+        // Use environment-aware editor URL - ALWAYS view-only and presentation mode
         const editorBaseUrl = getEditorBaseUrl();
         const presentationUrl = `${editorBaseUrl}?design=${encodeURIComponent(jsonUrl)}&view=true&present=true`;
-        console.log('🔗 Editor Presentation URL:', presentationUrl);
+        console.log('🔗 Editor View-Only Presentation URL:', presentationUrl);
         
-        // Open in new window with better dimensions
-        const newWindow = window.open(presentationUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+        // Open in new window with better dimensions for presentation
+        const newWindow = window.open(presentationUrl, '_blank', 'width=1400,height=900,scrollbars=no,resizable=yes,toolbar=no,menubar=no,location=no,status=no');
         if (!newWindow) {
-            alert('Please allow popups for this site to view designs.');
+            alert('Please allow popups for this site to view designs in presentation mode.');
         } else {
             // Check if window loaded successfully
             setTimeout(() => {
                 if (newWindow.closed) {
                     console.log('❌ Editor window was closed');
                 } else {
-                    console.log('✅ Editor window opened successfully');
+                    console.log('✅ Editor opened in view-only presentation mode');
                 }
                 hideButtonLoading('view');
             }, 1000);
@@ -1118,19 +1118,9 @@ function hideButtonLoading(type) {
 
 // Environment-aware editor URL function
 function getEditorBaseUrl() {
-    // Check if we're running locally or on deployed server
-    const isLocal = window.location.hostname === 'localhost' || 
-                   window.location.hostname === '127.0.0.1' ||
-                   window.location.hostname === '0.0.0.0' ||
-                   window.location.protocol === 'file:';
-    
-    if (isLocal) {
-        // Local development - use the Editor folder
-        return '../Editor/index.html';
-    } else {
-        // Deployed production - use the deploy/editor folder
-        return '../deploy/editor/index.html';
-    }
+    // Always use the built Editor from deploy/editor folder
+    // This ensures we use the production build with Firebase SDK included
+    return '../deploy/editor/index.html';
 }
 
 // Load Firebase designs for a specific quarter
@@ -1239,7 +1229,7 @@ function renderDesignsForQuarter(designs, container) {
                                     style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);"
                                     onmouseover="this.style.background='#1976D2'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(33, 150, 243, 0.4)'"
                                     onmouseout="this.style.background='#2196F3'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(33, 150, 243, 0.3)'">
-                                <i class="fas fa-eye" style="margin-right: 6px;"></i>View Design
+                                <i class="fas fa-presentation" style="margin-right: 6px;"></i>Present
                             </button>
                             <button onclick="event.stopPropagation(); openDesignEditor('${encodeURIComponent(design.jsonUrl)}')" 
                                     style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);"

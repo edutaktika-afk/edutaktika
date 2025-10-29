@@ -267,9 +267,11 @@ const App = observer(({ store }) => {
           measurementId: "G-X3GT5TNN87"
         };
 
-        if (!firebase.apps.length) {
+        // Initialize Firebase if not already initialized
+        if (!firebase.apps || firebase.apps.length === 0) {
           firebase.initializeApp(firebaseConfig);
         }
+        
         const db = firebase.database();
         const snapshot = await db.ref(`designs/${designId}`).once('value');
         const data = snapshot.val();
