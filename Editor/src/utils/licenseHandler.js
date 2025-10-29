@@ -30,6 +30,9 @@ class LicenseBannerHandler {
     // Get config dynamically
     this.getConfig();
     
+    // ALWAYS hide banner regardless of mode - educational use
+    this.hideBanner();
+    
     // Hide banner immediately if in presentation or view-only mode
     if (config && config.license.hideInPresentation && config.isPresentation) {
       this.hideBanner();
@@ -46,6 +49,16 @@ class LicenseBannerHandler {
     if (config && config.license.customOverlay) {
       this.createCustomOverlay();
     }
+    
+    // Force hide any existing banners immediately
+    setTimeout(() => {
+      this.forceHideAllBanners();
+    }, 100);
+    
+    // Also hide after a longer delay to catch dynamically loaded banners
+    setTimeout(() => {
+      this.forceHideAllBanners();
+    }, 1000);
   }
   
   getConfig() {
@@ -186,29 +199,70 @@ class LicenseBannerHandler {
     this.addHideCSS();
   }
   
+  forceHideAllBanners() {
+    // Force hide any element that looks like a license banner
+    const allElements = document.querySelectorAll('*');
+    allElements.forEach(element => {
+      if (this.isLicenseBanner(element)) {
+        this.hideElement(element);
+      }
+    });
+    
+    // Also check for any red banners specifically
+    const redElements = document.querySelectorAll('div[style*="background-color: rgb(255, 0, 0)"], div[style*="background-color: #ff0000"], div[style*="background-color: red"]');
+    redElements.forEach(element => {
+      const text = element.textContent.toLowerCase();
+      if (text.includes('license') || text.includes('upgrade') || text.includes('limitation') || text.includes('polotno')) {
+        this.hideElement(element);
+      }
+    });
+  }
+  
   addHideCSS() {
     const style = document.createElement('style');
     style.id = 'license-banner-hider';
     style.textContent = `
-      /* Hide license banners */
+      /* Hide license banners - AGGRESSIVE RULES */
       .license-banner-hidden,
       [class*="license"],
       [class*="banner"],
       [class*="watermark"],
       .bp5-toast[class*="license"],
-      .bp5-overlay[class*="license"] {
+      .bp5-overlay[class*="license"],
+      /* Target specific Polotno license banner elements */
+      [style*="background-color: rgb(255, 0, 0)"],
+      [style*="background-color: #ff0000"],
+      [style*="background-color: red"],
+      /* Target any red banner at the top */
+      div[style*="position: fixed"][style*="top: 0"][style*="background-color: rgb(255, 0, 0)"],
+      div[style*="position: fixed"][style*="top: 0"][style*="background-color: #ff0000"],
+      div[style*="position: fixed"][style*="top: 0"][style*="background-color: red"],
+      /* Target any element with license text */
+      div:has-text("license"),
+      div:has-text("upgrade"),
+      div:has-text("limitation exceeded"),
+      div:has-text("Please upgrade"),
+      /* Target Polotno specific elements */
+      .polotno-license-banner,
+      .polotno-banner,
+      .polotno-watermark {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
         height: 0 !important;
         overflow: hidden !important;
         pointer-events: none !important;
+        position: absolute !important;
+        left: -9999px !important;
+        top: -9999px !important;
       }
       
       /* Hide in presentation mode */
       .env-presentation [class*="license"],
       .env-presentation [class*="banner"],
-      .env-presentation [class*="watermark"] {
+      .env-presentation [class*="watermark"],
+      .env-presentation [style*="background-color: rgb(255, 0, 0)"],
+      .env-presentation [style*="background-color: #ff0000"] {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
@@ -220,7 +274,19 @@ class LicenseBannerHandler {
       /* Hide in view-only mode */
       .env-view-only [class*="license"],
       .env-view-only [class*="banner"],
-      .env-view-only [class*="watermark"] {
+      .env-view-only [class*="watermark"],
+      .env-view-only [style*="background-color: rgb(255, 0, 0)"],
+      .env-view-only [style*="background-color: #ff0000"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+      }
+      
+      /* Force hide any red banner at the top of the page */
+      body > div[style*="position: fixed"][style*="top: 0"] {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
