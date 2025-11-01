@@ -16,7 +16,7 @@ import FaTimesCircle from '@meronex/icons/fa/FaTimesCircle';
 import { saveDesignBySubject, listDesignsBySubject } from '../supabase-api';
 import { shouldUseSupabase } from '../supabase';
 
-export const SupabaseSaveButton = observer(({ store }) => {
+export const SupabaseSaveButton = observer(({ store, project }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
   const [designName, setDesignName] = React.useState('');
@@ -62,6 +62,26 @@ export const SupabaseSaveButton = observer(({ store }) => {
     }
   }, [store.pages]);
 
+  // Load existing design metadata when editing
+  React.useEffect(() => {
+    if (project?.id) {
+      try {
+        const storedMetadata = sessionStorage.getItem('current-supabase-design');
+        if (storedMetadata) {
+          const metadata = JSON.parse(storedMetadata);
+          console.log('📋 Loading design metadata:', metadata);
+          setDesignName(metadata.name || project.name || generateDefaultName());
+          if (metadata.subject) setSelectedSubject(metadata.subject);
+          if (metadata.quarter) setSelectedQuarter(metadata.quarter);
+        } else if (project.name) {
+          setDesignName(project.name);
+        }
+      } catch (error) {
+        console.error('Error loading design metadata:', error);
+      }
+    }
+  }, [project?.id]);
+
   const handleSave = async () => {
     if (!designName.trim()) {
       setAlertMessage('Please enter a design name');
@@ -86,17 +106,23 @@ export const SupabaseSaveButton = observer(({ store }) => {
         canvas.toBlob(resolve, 'image/jpeg', 0.9);
       });
 
-      // Save to Supabase
+      // Save to Supabase (use existing ID if we're editing an existing design)
+      const existingDesignId = project?.id || sessionStorage.getItem('supabase-design-id');
+      const isEditing = !!existingDesignId;
+      
+      console.log(isEditing ? `🔄 Updating existing design: ${existingDesignId}` : '✨ Creating new design');
+      
       const result = await saveDesignBySubject({
         storeJSON: store.toJSON(),
         preview: blob,
         name: designName.trim(),
         subject: selectedSubject,
         quarter: selectedQuarter,
+        id: existingDesignId, // This will overwrite if provided
       });
 
       setAlertMessage(
-        `Design saved successfully!\n\n📚 Subject: ${selectedSubject.charAt(0).toUpperCase() + selectedSubject.slice(1)}\n📅 Quarter: ${selectedQuarter}\n🏷️ Design Name: ${designName.trim()}\n🆔 Design ID: ${result.id}`
+        `${isEditing ? '✅ Design updated successfully!' : '✨ New design created!'}\n\n📚 Subject: ${selectedSubject.charAt(0).toUpperCase() + selectedSubject.slice(1)}\n📅 Quarter: ${selectedQuarter}\n🏷️ Design Name: ${designName.trim()}\n🆔 Design ID: ${result.id}`
       );
       setAlertIntent(Intent.SUCCESS);
       setShowAlert(true);

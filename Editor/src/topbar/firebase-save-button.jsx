@@ -52,7 +52,7 @@ const cleanUndefinedValues = (obj) => {
   return obj;
 };
 
-export const FirebaseSaveButton = observer(({ store }) => {
+export const FirebaseSaveButton = observer(({ store, project }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
   const [designName, setDesignName] = React.useState('');

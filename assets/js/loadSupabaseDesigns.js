@@ -191,7 +191,7 @@ function renderSupabaseDesigns(designs, quarter, container, subject, isTeacher) 
     
     cardsHTML += `
       <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; cursor: pointer; position: relative;" 
-           onclick="openSupabaseDesignViewer('${design.id}', '${subject}')"
+           onclick="openSupabaseDesignViewer('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')"
            onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'"
            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
         <img 
@@ -205,14 +205,14 @@ function renderSupabaseDesigns(designs, quarter, container, subject, isTeacher) 
           <div class="card-title" style="font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 8px;">${design.name}</div>
           <div class="card-description" style="font-size: 0.9rem; color: #666; margin-bottom: 12px;">${description}</div>
           <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-            <button onclick="event.stopPropagation(); openSupabaseDesignViewer('${design.id}', '${subject}')" 
+            <button onclick="event.stopPropagation(); openSupabaseDesignViewer('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')" 
                     style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);"
                     onmouseover="this.style.background='#1976D2'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(33, 150, 243, 0.4)'"
                     onmouseout="this.style.background='#2196F3'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(33, 150, 243, 0.3)'">
               <i class="fas fa-eye" style="margin-right: 6px;"></i>View Design
             </button>
             ${isTeacher ? `
-            <button onclick="event.stopPropagation(); openSupabaseDesignEditor('${design.id}', '${subject}')" 
+            <button onclick="event.stopPropagation(); openSupabaseDesignEditor('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')" 
                     style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);"
                     onmouseover="this.style.background='#F57C00'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(255, 152, 0, 0.4)'"
                     onmouseout="this.style.background='#FF9800'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(255, 152, 0, 0.3)'">
@@ -236,8 +236,8 @@ function renderSupabaseDesigns(designs, quarter, container, subject, isTeacher) 
 /**
  * Open design viewer (students can only view)
  */
-async function openSupabaseDesignViewer(designId, subject) {
-  console.log('🎨 Opening Supabase design viewer:', designId, subject);
+async function openSupabaseDesignViewer(designId, subject, designName = 'Design', quarter = '1') {
+  console.log('🎨 Opening Supabase design viewer:', designId, subject, designName, quarter);
   
   try {
     if (!supabaseClient) {
@@ -266,6 +266,8 @@ async function openSupabaseDesignViewer(designId, subject) {
     sessionStorage.setItem('supabase-design-to-load', text);
     sessionStorage.setItem('supabase-design-id', designId);
     sessionStorage.setItem('supabase-design-subject', subject);
+    sessionStorage.setItem('supabase-design-name', designName);
+    sessionStorage.setItem('supabase-design-quarter', quarter);
 
     // Open in fullscreen viewer - try getEditorBase first, then fallback
     let editorBaseUrl = '../deploy/editor/index.html';
@@ -286,8 +288,8 @@ async function openSupabaseDesignViewer(designId, subject) {
 /**
  * Open design editor (teachers can edit)
  */
-async function openSupabaseDesignEditor(designId, subject) {
-  console.log('✏️ Opening Supabase design editor:', designId, subject);
+async function openSupabaseDesignEditor(designId, subject, designName = 'Design', quarter = '1') {
+  console.log('✏️ Opening Supabase design editor:', designId, subject, designName, quarter);
   
   try {
     if (!supabaseClient) {
@@ -316,6 +318,8 @@ async function openSupabaseDesignEditor(designId, subject) {
     sessionStorage.setItem('supabase-design-to-load', text);
     sessionStorage.setItem('supabase-design-id', designId);
     sessionStorage.setItem('supabase-design-subject', subject);
+    sessionStorage.setItem('supabase-design-name', designName);
+    sessionStorage.setItem('supabase-design-quarter', quarter);
 
     // Open in editor mode - try getEditorBase first, then fallback
     let editorBaseUrl = '../deploy/editor/index.html';
