@@ -205,8 +205,16 @@ const App = observer(({ store }) => {
     // Check for view-only mode
     const urlParams = new URLSearchParams(window.location.search);
     const designUrl = urlParams.get('design');
-    const viewMode = urlParams.get('view') === 'true' || designUrl;
+    const supabaseDesign = urlParams.get('supabaseDesign');
+    const viewMode = urlParams.get('view') === 'true' || designUrl || supabaseDesign;
     const presentMode = urlParams.get('present') === 'true';
+    
+    // Handle Supabase designs
+    if (supabaseDesign) {
+      setIsViewOnly(viewMode && urlParams.get('view') === 'true');
+      loadSupabaseDesign(supabaseDesign, urlParams.get('subject'));
+      return;
+    }
     
     if (viewMode && designUrl) {
       setIsViewOnly(true);
@@ -234,6 +242,71 @@ const App = observer(({ store }) => {
       project.firstLoad();
     }
   }, []);
+
+  const loadSupabaseDesign = async (designId, subject) => {
+    setIsLoading(true);
+    try {
+      console.log('🎨 Loading Supabase design:', designId, subject);
+      
+      // Try sessionStorage first (works if opened from same tab)
+      let designJSONString = sessionStorage.getItem('supabase-design-to-load');
+      let designData;
+      
+      if (designJSONString) {
+        console.log('✅ Found design in sessionStorage');
+        designData = JSON.parse(designJSONString);
+      } else {
+        // Fallback: download directly from Supabase
+        console.log('📥 Downloading design directly from Supabase');
+        
+        const { supabase } = await import('./supabase');
+        const { getSubjectFolder } = await import('./supabase');
+        
+        const subjectFolder = getSubjectFolder(subject);
+        console.log(`📁 Subject: "${subject}" → Folder: "${subjectFolder}"`);
+        console.log(`📁 Downloading from folder: ${subjectFolder}/${designId}.json`);
+        
+        if (!subjectFolder) {
+          throw new Error(`Invalid subject: "${subject}". Cannot determine folder.`);
+        }
+        
+        const { data, error } = await supabase.storage
+          .from('LessonStorage')
+          .download(`${subjectFolder}/${designId}.json`);
+
+        console.log('Download result:', { hasData: !!data, error });
+        
+        if (error) {
+          console.error('Download error details:', JSON.stringify(error, null, 2));
+          throw new Error(`Failed to download design: ${error.message || JSON.stringify(error)}`);
+        }
+        
+        if (!data) {
+          throw new Error('No data returned from Supabase storage');
+        }
+        
+        const text = await data.text();
+        console.log('Downloaded text length:', text.length);
+        designData = JSON.parse(text);
+        console.log('✅ Downloaded design from Supabase');
+      }
+      
+      // Ensure we have at least one page before loading the design
+      if (store.pages.length === 0) {
+        store.addPage();
+      }
+      
+      // Load the design into the store
+      store.loadJSON(designData);
+      console.log('✅ Design loaded into store successfully');
+      
+    } catch (error) {
+      console.error('❌ Error loading Supabase design:', error);
+      alert('Error loading design: ' + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const loadDesignForViewing = async (designUrl) => {
     setIsLoading(true);
