@@ -118,9 +118,17 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
     // Parse the metadata
     const allDesigns = kvData.value;
     
+    // Normalize subject name for comparison
+    let normalizedSubject = subject.toLowerCase();
+    if (normalizedSubject.startsWith('subject_')) {
+      normalizedSubject = normalizedSubject.replace('subject_', '');
+    }
+    
     // Filter by subject and quarter
     const filteredDesigns = allDesigns.filter(design => {
-      const matchesSubject = design.subject === subject.toLowerCase() || 
+      const matchesSubject = design.subject === normalizedSubject || 
+                            design.subject === SUBJECT_FOLDERS[normalizedSubject] ||
+                            design.subject === subject.toLowerCase() ||
                             design.subject === SUBJECT_FOLDERS[subject.toLowerCase()];
       const matchesQuarter = !quarter || design.quarter === quarter;
       return matchesSubject && matchesQuarter;

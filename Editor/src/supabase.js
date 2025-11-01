@@ -22,12 +22,23 @@ export const BUCKET_ASSETS = BUCKET_LESSON_STORAGE;
 
 // Subject folder mapping helper
 export const getSubjectFolder = (subject) => {
+  if (!subject) return '';
+  
+  // Normalize subject name - handle both "math" and "subject_math" formats
+  let normalized = subject.toLowerCase();
+  if (normalized.startsWith('subject_')) {
+    normalized = normalized.replace('subject_', '');
+  }
+  
   const folders = {
     science: FOLDER_SCIENCE,
     english: FOLDER_ENGLISH,
     math: FOLDER_MATH
   };
-  return folders[subject?.toLowerCase()] || '';
+  
+  const folder = folders[normalized];
+  console.log(`📁 getSubjectFolder: "${subject}" → normalized: "${normalized}" → folder: "${folder}"`);
+  return folder || '';
 };
 
 // Check if Supabase is properly configured
