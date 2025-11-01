@@ -296,6 +296,24 @@ const App = observer(({ store }) => {
         store.addPage();
       }
       
+      // Set project ID and name for overwriting capability
+      const designName = sessionStorage.getItem('supabase-design-name') || 'Design';
+      const quarter = sessionStorage.getItem('supabase-design-quarter') || '1';
+      project.id = designId;
+      project.name = designName;
+      project.status = 'saved';
+      
+      console.log(`📌 Loaded design: "${designName}" (ID: ${designId}, Subject: ${subject}, Quarter: ${quarter})`);
+      
+      // Store design metadata in session storage for later retrieval
+      const designMetadata = {
+        id: designId,
+        subject: subject,
+        quarter: quarter,
+        name: designName
+      };
+      sessionStorage.setItem('current-supabase-design', JSON.stringify(designMetadata));
+      
       // Load the design into the store
       store.loadJSON(designData);
       console.log('✅ Design loaded into store successfully');

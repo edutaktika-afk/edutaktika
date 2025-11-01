@@ -513,8 +513,8 @@ export default observer(({ store, isViewOnly = false }) => {
                 </AnchorButton>
                 <PostProcessButton store={store} />
                 <DownloadButton store={store} />
-                <FirebaseSaveButton store={store} />
-                <SupabaseSaveButton store={store} />
+                <FirebaseSaveButton store={store} project={project} />
+                <SupabaseSaveButton store={store} project={project} />
                 <NavbarDivider />
                 <AnchorButton
                   minimal
