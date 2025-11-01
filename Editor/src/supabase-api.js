@@ -1,0 +1,496 @@
+import { nanoid } from 'nanoid';
+import { storage } from './storage';
+import { supabase, BUCKET_DESIGNS, BUCKET_ASSETS, shouldUseSupabase, BUCKET_LESSON_STORAGE, getSubjectFolder } from './supabase';
+
+/**
+ * Supabase API Implementation
+ * 
+ * This file provides the same interface as api.js but uses Supabase
+ * for cloud storage instead of Puter or local storage.
+ * 
+ * Setup Required:
+ * 1. Create a Supabase project at https://supabase.com
+ * 2. Create two storage buckets: 'designs' and 'uploads'
+ * 3. Set up Row Level Security (RLS) policies as needed
+ * 4. Add environment variables to your .env file:
+ *    VITE_SUPABASE_URL=your_project_url
+ *    VITE_SUPABASE_ANON_KEY=your_anon_key
+ */
+
+/**
+ * Save file to Supabase Storage or local storage
+ */
+const writeFile = async function writeFile(fileName, data) {
+  if (shouldUseSupabase()) {
+    try {
+      // Supabase Storage accepts Blobs directly
+      const fileData = data instanceof Blob ? data : new Blob([data], { type: 'application/json' });
+
+      console.log(`Uploading to Supabase: bucket="${BUCKET_DESIGNS}", path="${fileName}"`);
+
+      // Upload to Supabase Storage
+      const { data: uploadData, error } = await supabase.storage
+        .from(BUCKET_DESIGNS)
+        .upload(fileName, fileData, {
+          upsert: true,
+          contentType: data instanceof Blob ? data.type : 'application/json'
+        });
+
+      if (error) {
+        console.error('Supabase upload error:', error);
+        throw error;
+      }
+
+      console.log(`Upload successful:`, uploadData);
+      return uploadData;
+    } catch (error) {
+      console.error('Failed to upload to Supabase, falling back to local storage:', error);
+      // Fall back to local storage
+      await storage.setItem(fileName, data);
+    }
+  } else {
+    await storage.setItem(fileName, data);
+  }
+};
+
+/**
+ * Read file from Supabase Storage or local storage
+ */
+const readFile = async function readFile(fileName) {
+  if (shouldUseSupabase()) {
+    try {
+      // Download from Supabase Storage
+      const { data, error } = await supabase.storage
+        .from(BUCKET_DESIGNS)
+        .download(fileName);
+
+      if (error) {
+        console.error('Supabase download error:', error);
+        // Fall back to local storage
+        return await storage.getItem(fileName);
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Failed to download from Supabase, falling back to local storage:', error);
+      return await storage.getItem(fileName);
+    }
+  }
+  return await storage.getItem(fileName);
+};
+
+/**
+ * Delete file from Supabase Storage or local storage
+ */
+const deleteFile = async function deleteFile(fileName) {
+  if (shouldUseSupabase()) {
+    try {
+      const { error } = await supabase.storage
+        .from(BUCKET_DESIGNS)
+        .remove([fileName]);
+
+      if (error) {
+        console.error('Supabase delete error:', error);
+        // Fall back to local storage
+        await storage.removeItem(fileName);
+      }
+    } catch (error) {
+      console.error('Failed to delete from Supabase, falling back to local storage:', error);
+      await storage.removeItem(fileName);
+    }
+  } else {
+    return await storage.removeItem(fileName);
+  }
+};
+
+/**
+ * Read key-value pair from Supabase or local storage
+ */
+const readKv = async function readKv(key) {
+  if (shouldUseSupabase()) {
+    // For Supabase, we'll store KV pairs in the database
+    // This requires setting up a 'designs_metadata' table
+    try {
+      const { data, error } = await supabase
+        .from('designs_metadata')
+        .select('value')
+        .eq('key', key)
+        .single();
+
+      if (error) {
+        console.error('Supabase read KV error:', error);
+        return await storage.getItem(key);
+      }
+
+      return data?.value;
+    } catch (error) {
+      console.error('Failed to read from Supabase, falling back to local storage:', error);
+      return await storage.getItem(key);
+    }
+  } else {
+    return await storage.getItem(key);
+  }
+};
+
+/**
+ * Write key-value pair to Supabase or local storage
+ */
+const writeKv = async function writeKv(key, value) {
+  if (shouldUseSupabase()) {
+    try {
+      const { error } = await supabase
+        .from('designs_metadata')
+        .upsert({ key, value }, { onConflict: 'key' });
+
+      if (error) {
+        console.error('Supabase write KV error:', error);
+        return await storage.setItem(key, value);
+      }
+    } catch (error) {
+      console.error('Failed to write to Supabase, falling back to local storage:', error);
+      return await storage.setItem(key, value);
+    }
+  } else {
+    return await storage.setItem(key, value);
+  }
+};
+
+/**
+ * Back up local designs to Supabase
+ */
+export async function backupFromLocalToCloud() {
+  const localDesigns = (await storage.getItem('designs-list')) || [];
+  for (const design of localDesigns) {
+    const storeJSON = await storage.getItem(`designs/${design.id}.json`);
+    const preview = await storage.getItem(`designs/${design.id}.jpg`);
+    await writeFile(`designs/${design.id}.json`, storeJSON);
+    await writeFile(`designs/${design.id}.jpg`, preview);
+  }
+  const cloudDesigns = (await readKv('designs-list')) || [];
+  cloudDesigns.push(...localDesigns);
+  await writeKv('designs-list', cloudDesigns);
+  await storage.removeItem('designs-list');
+  for (const design of localDesigns) {
+    await storage.removeItem(`designs/${design.id}.json`);
+    await storage.removeItem(`designs/${design.id}.jpg`);
+  }
+  return cloudDesigns.length;
+}
+
+/**
+ * List all designs
+ */
+export async function listDesigns() {
+  return (await readKv('designs-list')) || [];
+}
+
+/**
+ * Delete a design
+ */
+export async function deleteDesign({ id }) {
+  const list = await listDesigns();
+  const newList = list.filter((design) => design.id !== id);
+  await writeKv('designs-list', newList);
+  await deleteFile(`designs/${id}.json`);
+  await deleteFile(`designs/${id}.jpg`);
+}
+
+/**
+ * Load a design by ID
+ */
+export async function loadById({ id }) {
+  let storeJSON = await readFile(`designs/${id}.json`);
+  const list = await listDesigns();
+  const design = list.find((design) => design.id === id);
+  
+  // if it is blob, convert to JSON
+  if (storeJSON instanceof Blob) {
+    storeJSON = JSON.parse(await storeJSON.text());
+  } else if (typeof storeJSON === 'string') {
+    storeJSON = JSON.parse(storeJSON);
+  }
+
+  return { storeJSON, name: design?.name };
+}
+
+/**
+ * Save a design (main function)
+ */
+export async function saveDesign({ storeJSON, preview, name, id }) {
+  console.log('saving to Supabase');
+  if (!id) {
+    id = nanoid(10);
+  }
+
+  const previewPath = `designs/${id}.jpg`;
+  const storePath = `designs/${id}.json`;
+
+  await writeFile(previewPath, preview);
+  console.log('preview saved to Supabase');
+  await writeFile(storePath, JSON.stringify(storeJSON));
+
+  let list = await listDesigns();
+  const existing = list.find((design) => design.id === id);
+  if (existing) {
+    existing.name = name;
+  } else {
+    list.push({ id, name });
+  }
+
+  await writeKv('designs-list', list);
+  return { id, status: 'saved' };
+}
+
+/**
+ * Get preview URL
+ */
+export const getPreview = async ({ id }) => {
+  const preview = await readFile(`designs/${id}.jpg`);
+  
+  if (shouldUseSupabase()) {
+    // Return public URL from Supabase
+    try {
+      const { data } = supabase.storage
+        .from(BUCKET_DESIGNS)
+        .getPublicUrl(`designs/${id}.jpg`);
+      return data.publicUrl;
+    } catch (error) {
+      return URL.createObjectURL(preview);
+    }
+  }
+  
+  return URL.createObjectURL(preview);
+};
+
+/**
+ * List all assets
+ */
+export const listAssets = async () => {
+  const list = (await readKv('assets-list')) || [];
+  for (const asset of list) {
+    asset.src = await getAssetSrc({ id: asset.id });
+    asset.preview = await getAssetPreviewSrc({ id: asset.id });
+  }
+  return list;
+};
+
+/**
+ * Get asset source URL
+ */
+export const getAssetSrc = async ({ id }) => {
+  if (shouldUseSupabase()) {
+    try {
+      const { data } = supabase.storage
+        .from(BUCKET_ASSETS)
+        .getPublicUrl(`${id}`);
+      return data.publicUrl;
+    } catch (error) {
+      const file = await readFile(`uploads/${id}`);
+      return URL.createObjectURL(file);
+    }
+  } else {
+    const file = await readFile(`uploads/${id}`);
+    return URL.createObjectURL(file);
+  }
+};
+
+/**
+ * Get asset preview URL
+ */
+export const getAssetPreviewSrc = async ({ id }) => {
+  if (shouldUseSupabase()) {
+    try {
+      const { data } = supabase.storage
+        .from(BUCKET_ASSETS)
+        .getPublicUrl(`${id}-preview`);
+      return data.publicUrl;
+    } catch (error) {
+      const file = await readFile(`uploads/${id}-preview`);
+      console.log('file', file);
+      return URL.createObjectURL(file);
+    }
+  } else {
+    const file = await readFile(`uploads/${id}-preview`);
+    console.log('file', file);
+    return URL.createObjectURL(file);
+  }
+};
+
+/**
+ * Upload an asset
+ */
+export const uploadAsset = async ({ file, preview, type }) => {
+  const list = await listAssets();
+  const id = nanoid(10);
+  await writeFile(`uploads/${id}`, file);
+  await writeFile(`uploads/${id}-preview`, preview);
+  list.push({ id, type });
+  await writeKv('assets-list', list);
+
+  const src = await getAssetSrc({ id });
+  const previewSrc = await getAssetPreviewSrc({ id });
+  return { id, src, preview: previewSrc };
+};
+
+/**
+ * Delete an asset
+ */
+export const deleteAsset = async ({ id }) => {
+  const list = await listAssets();
+  const newList = list.filter((asset) => asset.id !== id);
+  await writeKv('assets-list', newList);
+};
+
+// ============================================================================
+// SUBJECT-AWARE FUNCTIONS FOR LESSON STORAGE
+// ============================================================================
+
+/**
+ * Save a design to a specific subject folder (SCIENCE, ENGLISH, MATH)
+ * @param {Object} params - Design parameters
+ * @param {Object} params.storeJSON - Design data
+ * @param {Blob} params.preview - Preview image
+ * @param {string} params.name - Design name
+ * @param {string} params.subject - Subject name (science, english, math)
+ * @param {string} [params.quarter] - Optional quarter number
+ * @param {string} [params.id] - Optional design ID
+ */
+export async function saveDesignBySubject({ storeJSON, preview, name, subject, quarter, id }) {
+  console.log(`💾 Saving to Supabase - Subject: "${subject}", Quarter: "${quarter}"`);
+  if (!id) {
+    id = nanoid(10);
+  }
+  
+  // Validate subject
+  if (!subject) {
+    console.error('❌ Error: No subject provided!');
+    throw new Error('Subject is required');
+  }
+
+  const subjectFolder = getSubjectFolder(subject);
+  console.log(`📁 Subject: "${subject}" → Folder: "${subjectFolder}"`);
+  
+  if (!subjectFolder) {
+    console.error(`❌ Error: Subject "${subject}" could not be mapped to a folder!`);
+    throw new Error(`Invalid subject: ${subject}. Must be one of: science, english, math`);
+  }
+  
+  const previewPath = `${subjectFolder}/${id}.jpg`;
+  const storePath = `${subjectFolder}/${id}.json`;
+  console.log(`📤 Upload paths: preview="${previewPath}", design="${storePath}"`);
+
+  await writeFile(previewPath, preview);
+  console.log(`✅ Preview saved to Supabase: ${previewPath}`);
+  await writeFile(storePath, JSON.stringify(storeJSON));
+  console.log(`✅ Design saved to Supabase: ${storePath}`);
+
+  let list = await listDesigns();
+  const existing = list.find((design) => design.id === id);
+  if (existing) {
+    existing.name = name;
+    existing.subject = subject;
+    existing.quarter = quarter;
+  } else {
+    list.push({ id, name, subject, quarter });
+  }
+
+  await writeKv('designs-list', list);
+  return { id, status: 'saved', subject, quarter };
+}
+
+/**
+ * Load a design by ID and subject
+ * @param {Object} params - Load parameters
+ * @param {string} params.id - Design ID
+ * @param {string} params.subject - Subject name (science, english, math)
+ */
+export async function loadByIdAndSubject({ id, subject }) {
+  const subjectFolder = getSubjectFolder(subject);
+  let storeJSON = await readFile(`${subjectFolder}/${id}.json`);
+  
+  // if it is blob, convert to JSON
+  if (storeJSON instanceof Blob) {
+    storeJSON = JSON.parse(await storeJSON.text());
+  } else if (typeof storeJSON === 'string') {
+    storeJSON = JSON.parse(storeJSON);
+  }
+
+  return { storeJSON, subject };
+}
+
+/**
+ * Delete a design from a specific subject folder
+ * @param {Object} params - Delete parameters
+ * @param {string} params.id - Design ID
+ * @param {string} params.subject - Subject name (science, english, math)
+ */
+export async function deleteDesignBySubject({ id, subject }) {
+  const subjectFolder = getSubjectFolder(subject);
+  const list = await listDesigns();
+  const newList = list.filter((design) => design.id !== id);
+  await writeKv('designs-list', newList);
+  await deleteFile(`${subjectFolder}/${id}.json`);
+  await deleteFile(`${subjectFolder}/${id}.jpg`);
+}
+
+/**
+ * Get preview URL for a design in a specific subject folder
+ * @param {Object} params - Preview parameters
+ * @param {string} params.id - Design ID
+ * @param {string} params.subject - Subject name (science, english, math)
+ */
+export const getPreviewBySubject = async ({ id, subject }) => {
+  const subjectFolder = getSubjectFolder(subject);
+  const preview = await readFile(`${subjectFolder}/${id}.jpg`);
+  
+  if (shouldUseSupabase()) {
+    try {
+      const { data } = supabase.storage
+        .from(BUCKET_LESSON_STORAGE)
+        .getPublicUrl(`${subjectFolder}/${id}.jpg`);
+      return data.publicUrl;
+    } catch (error) {
+      return URL.createObjectURL(preview);
+    }
+  }
+  
+  return URL.createObjectURL(preview);
+};
+
+/**
+ * List all files in a specific subject folder
+ * @param {string} subject - Subject name (science, english, math)
+ */
+export async function listDesignsBySubject(subject) {
+  const subjectFolder = getSubjectFolder(subject);
+  
+  if (shouldUseSupabase()) {
+    try {
+      const { data, error } = await supabase.storage
+        .from(BUCKET_LESSON_STORAGE)
+        .list(subjectFolder, {
+          limit: 100,
+          offset: 0,
+        });
+
+      if (error) {
+        console.error('Error listing files:', error);
+        return [];
+      }
+
+      // Filter out folders and return file names
+      return data
+        .filter(file => file.name !== null)
+        .map(file => ({
+          name: file.name,
+          id: file.name.replace(/\.(json|jpg)$/, ''),
+          type: file.name.endsWith('.json') ? 'json' : 'image',
+        }));
+    } catch (error) {
+      console.error('Failed to list files from Supabase:', error);
+      return [];
+    }
+  }
+  
+  return [];
+}

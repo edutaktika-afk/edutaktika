@@ -28,6 +28,7 @@ import { FileMenu } from './file-menu';
 import { DownloadButton } from './download-button';
 import { PostProcessButton } from './post-process-button';
 import { FirebaseSaveButton } from './firebase-save-button';
+import { SupabaseSaveButton } from './supabase-save-button';
 import { UserMenu } from './user-menu';
 import { CloudWarning } from '../cloud-warning';
 import EnvironmentSwitcher from '../components/EnvironmentSwitcher';
@@ -513,6 +514,7 @@ export default observer(({ store, isViewOnly = false }) => {
                 <PostProcessButton store={store} />
                 <DownloadButton store={store} />
                 <FirebaseSaveButton store={store} />
+                <SupabaseSaveButton store={store} />
                 <NavbarDivider />
                 <AnchorButton
                   minimal
