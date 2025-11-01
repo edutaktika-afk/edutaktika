@@ -15,7 +15,6 @@
     <link rel="stylesheet" href="../CSS/dropdown.css">
     <link rel="stylesheet" href="../CSS/burger.css">
     <link rel="icon" type="image/png" href="../images/icons/chemistry.png" />
-    <script src="../assets/js/editorEnv.js"></script>
     <title>Science</title>
     <style>
     .profile-sidebar {
@@ -253,24 +252,17 @@
         </div>
 
                <script>
-
-                // Create Lesson button: go to Editor.html (new lesson)
-document.getElementById('createLessonBtn').onclick = function() {
-    window.location.href = 'Editor.html';
-};
-
-// Quiz Section button: go to quiz section page (replace with your quiz page)
-// Quiz Section button: go to quiz section page (replace with your quiz page)
-document.getElementById('createQuizBtn').onclick = function() {
-    window.location.href = 'create-quiz.html';
-};
-               (function(){
-                   const btn = document.getElementById('createLessonBtn');
-                   if(!btn) return;
-                   btn.addEventListener('click', ()=>{
-                       window.location.href = buildEditorUrl({ subject: 'subject_science' });
-                   });
-               })();
+                // Quiz Section button: go to quiz section page
+                document.getElementById('createQuizBtn').onclick = function() {
+                    window.location.href = 'create-quiz.html';
+                };
+                
+                // Create Lesson button: go to new Polotno editor (using Create Design logic)
+                document.getElementById('createLessonBtn').onclick = function() {
+                    const editorBaseUrl = getEditorBase();
+                    console.log('🎨 Opening editor for lesson creation:', editorBaseUrl);
+                    window.location.href = editorBaseUrl;
+                };
                </script>
 
                <!-- Dropdown for mobile -->
@@ -862,10 +854,7 @@ function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
 <script>
     // Place this script after your modal HTML
 
-// Show modal on Create Lesson click
-document.getElementById('createLessonBtn').onclick = function() {
-    document.getElementById('createLessonModal').style.display = 'flex';
-};
+// Create Lesson button now handled at the top of the page (removed duplicate modal handler)
 
 // Hide modal function
 function closeCreateLessonModal() {

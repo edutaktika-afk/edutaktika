@@ -8,7 +8,9 @@
     return h === 'localhost' || h === '127.0.0.1';
   }
   function getEditorBase(){
-    const base = isLocalHost() ? 'http://localhost:5173/' : '/editor/index.html';
+    // For development: use local dev server
+    // For production: use the built editor from deploy/editor folder
+    const base = isLocalHost() ? 'http://localhost:5173/' : '../deploy/editor/index.html';
     if (!global.__EDITOR_ENV_LOGGED__) {
       console.debug('[editor-env]', { hostname: location.hostname, chosen: base, local: isLocalHost() });
       global.__EDITOR_ENV_LOGGED__ = true;
