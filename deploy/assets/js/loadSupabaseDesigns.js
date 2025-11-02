@@ -88,7 +88,7 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
         }));
       
       if (error) {
-        console.log(`⚠️ New path failed, trying old path: ${oldPath}`);
+        console.log(`⚠️ New path failed (${error.message}), trying old path: ${oldPath}`);
         ({ data: files, error } = await supabaseClient.storage
           .from(BUCKET_NAME)
           .list(oldPath, {
@@ -98,15 +98,18 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
         fullPath = oldPath;
       } else {
         fullPath = newPath;
+        console.log(`✅ Successfully listed files from: ${fullPath}`);
       }
 
       if (error) {
-        console.error('Error listing files:', error);
+        console.error('❌ Error listing files:', error);
         if (container) {
           container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Error loading designs from Supabase.</div>';
         }
         return [];
       }
+      
+      console.log(`📁 Found ${files.length} total files in ${fullPath}`);
 
       // Filter JSON files only
       const jsonFiles = files.filter(file => file.name.endsWith('.json'));
@@ -143,6 +146,8 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
     // Parse the metadata
     const allDesigns = kvData.value;
     
+    console.log(`📦 Total designs in metadata: ${allDesigns.length}`);
+    
     // Normalize subject name for comparison
     let normalizedSubject = subject.toLowerCase();
     if (normalizedSubject.startsWith('subject_')) {
@@ -155,7 +160,15 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
                             design.subject === SUBJECT_FOLDERS[normalizedSubject] ||
                             design.subject === subject.toLowerCase() ||
                             design.subject === SUBJECT_FOLDERS[subject.toLowerCase()];
-      const matchesQuarter = !quarter || design.quarter === quarter;
+      // Convert both to strings for reliable comparison
+      const matchesQuarter = !quarter || String(design.quarter) === String(quarter);
+      
+      if (!matchesSubject) {
+        console.log(`🚫 Filtered out design "${design.name}": subject "${design.subject}" doesn't match "${normalizedSubject}"`);
+      } else if (!matchesQuarter) {
+        console.log(`🚫 Filtered out design "${design.name}": quarter "${design.quarter}" doesn't match "${quarter}"`);
+      }
+      
       return matchesSubject && matchesQuarter;
     });
 
