@@ -185,7 +185,7 @@ document.addEventListener("DOMContentLoaded", function() {
             align-items: center; justify-content: center;
         }
         .admin-modal-card {
-            background: linear-gradient(180deg, #ffe6f7 0%, #e0eaff 100%);
+            background: linear-gradient(135deg, #ffe6f7 0%, #e0eaff 100%);
             border-radius: 28px;
             box-shadow: 0 4px 24px rgba(79,140,255,0.10);
             max-width: 400px;
@@ -406,6 +406,25 @@ td:hover .action-btns .reject,
     position: relative;
     z-index: 2;
 }
+    .teacher-tab-btn {
+    padding: 10px 32px;
+    border: none;
+    border-radius: 8px;
+    background: #e0e0e0;
+    color: #222;
+    font-weight: 600;
+    font-size: 1.08em;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+    box-shadow: 0 2px 8px #0001;
+}
+.teacher-tab-btn.active {
+    background: #2e8b57;
+    color: #fff;
+}
+.teacher-tab-btn:not(.active):hover {
+    background: #bdbdbd;
+}
     </style>
 </head>
 <body>
@@ -443,7 +462,7 @@ td:hover .action-btns .reject,
                     <i class="fas fa-user-graduate"></i> Student Management
                 </button>
                 <button id="tabTeachers" class="nav-tab" onclick="showTab('teachers')" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease;">
-                    <i class="fas fa-chalkboard-teacher"></i> Teacher Approvals
+                    <i class="fas fa-chalkboard-teacher"></i> Teacher Management
                 </button>
             </div>
         </div>
@@ -531,18 +550,13 @@ td:hover .action-btns .reject,
                         <div>
                             <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Grade Level</label>
                             <select id="gradeFilter" style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; background: white;">
-                                <option value="">All Grades</option>
-                                <option value="Grade 5">Grade 5</option>
-                                <option value="Grade 6">Grade 6</option>
+                                <!-- Options will be populated by JS -->
                             </select>
                         </div>
                         <div>
                             <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Section</label>
                             <select id="sectionFilter" style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; background: white;">
-                                <option value="">All Sections</option>
-                                <option value="A">Section A</option>
-                                <option value="B">Section B</option>
-                                <option value="C">Section C</option>
+                                <!-- Options will be populated by JS -->
                             </select>
                         </div>
                     </div>
@@ -572,32 +586,65 @@ td:hover .action-btns .reject,
         </div>
 
         <!-- Teacher Approvals Tab -->
-        <div id="contentTeachers" class="tab-content" style="display: none;">
-            <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-                <h2 style="color: #2e8b57; margin-bottom: 25px; font-size: 1.8rem; font-weight: 700;">
-                    <i class="fas fa-chalkboard-teacher" style="margin-right: 10px;"></i>Teacher Account Approvals
-                </h2>
-                <div style="overflow-x: auto;">
-                    <table id="teachersTable" style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                        <thead>
-                            <tr style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white;">
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">ID</th>
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">Name</th>
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">Email</th>
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">Grade Level</th>
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">Section</th>
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">Students</th>
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">Status</th>
-                                <th style="padding: 15px; text-align: center; font-weight: 600;">Action</th>
-                                <th style="padding: 15px; text-align: center; font-weight: 600;">Delete</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Rows will be inserted here by JS -->
-                        </tbody>
-                    </table>
+        <div id="contentTeachers" class="tab-content" style="display:none;">
+            <div style="display: flex; justify-content: center; gap: 18px; margin-bottom: 24px;">
+                <button id="btnApprovals" class="teacher-tab-btn active" onclick="showTeacherSubTab('approvals')">Approvals</button>
+                <button id="btnApproved" class="teacher-tab-btn" onclick="showTeacherSubTab('approved')">Approved</button>
+            </div>
+            <div id="teacherApprovals" class="teacher-subtab" style="display:block;">
+                <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+                    <h2 style="color: #2e8b57; margin-bottom: 25px; font-size: 1.8rem; font-weight: 700;">
+                        <i class="fas fa-chalkboard-teacher" style="margin-right: 10px;"></i>Pending teacher approvals
+                    </h2>
+                    <div style="overflow-x: auto;">
+                        <table id="teachersTableApprovals" style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                            <thead>
+                                <tr style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white;">
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">ID</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Name</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Email</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Grade Level</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Section</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Students</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Status</th>
+                                    <th style="padding: 15px; text-align: center; font-weight: 600;">Action</th>
+                                    <th style="padding: 15px; text-align: center; font-weight: 600;">Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teachersTableApprovalsBody">
+                                <!-- Approval rows will be inserted here by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+            <div id="teacherApproved" class="teacher-subtab" style="display:none;">
+    <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+        <h2 style="color: #2e8b57; margin-bottom: 25px; font-size: 1.8rem; font-weight: 700;">
+            <i class="fas fa-chalkboard-teacher" style="margin-right: 10px;"></i>Approved teachers
+        </h2>
+        <div style="overflow-x: auto;">
+            <table id="teachersTableApproved" style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white;">
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">ID</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">Name</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">Email</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">Grade Level</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">Section</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">Students</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">Status</th>
+                        <th style="padding: 15px; text-align: center; font-weight: 600;">Action</th>
+                        <th style="padding: 15px; text-align: center; font-weight: 600;">Delete</th>
+                    </tr>
+                </thead>
+                <tbody id="teachersTableApprovedBody">
+                    <!-- Approved rows will be inserted here by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
         </div>
     </div>
 
@@ -618,15 +665,183 @@ td:hover .action-btns .reject,
         </div>
     </div>
 
-    <!-- Add AFTER the existing review modal (#reviewModal) -->
-<div class="admin-modal-bg" id="adminCreatedModal" aria-hidden="true" role="dialog">
+    <!-- Improved Admin Registration Modal (better design & style) -->
+<style>
+  .admin-modal-bg {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.35);
+    align-items: center; justify-content: center;
+  }
+  .admin-modal-card {
+    background: linear-gradient(135deg, #f8fff8 0%, #e0f7fa 100%);
+    border-radius: 22px;
+    box-shadow: 0 8px 32px rgba(46, 139, 87, 0.12);
+    max-width: 420px;
+    width: 95%;
+    padding: 36px 28px 24px 28px;
+    text-align: center;
+    position: relative;
+    font-family: 'Manrope', 'Baloo 2', Arial, sans-serif;
+    animation: sidebarDrop 0.5s cubic-bezier(.77,0,.18,1);
+  }
+  .admin-modal-card .close-btn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: none;
+    border: none;
+    font-size: 1.7rem;
+    color: #ff69b4;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .admin-modal-card .close-btn:hover {
+    color: #2e8b57;
+  }
+  .admin-modal-card .modal-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2e8b57;
+    margin-bottom: 18px;
+    letter-spacing: 1px;
+  }
+  .admin-modal-card .profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 10px;
+    width: 100%;
+    max-width: 420px;
+    background: #f7f9fb;
+    border-radius: 14px;
+    padding: 18px 0 10px 0;
+  }
+  .admin-modal-card .profile-info > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0 0 0 0;
+    font-size: 1.05rem;
+    color: #3f4d34;
+    margin: 0;
+    min-height: 32px;
+  }
+  .admin-modal-card .modal-label {
+    min-width: 110px;
+    color: #2e8b57;
+    font-weight: 600;
+    font-size: 1.07rem;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+  }
+  .admin-modal-card input[type="text"],
+  .admin-modal-card input[type="email"],
+  .admin-modal-card input[type="password"] {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 11px 12px;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    background: #f6f7fb;
+    font-size: 15px;
+    transition: border-color 0.2s, background 0.2s;
+    outline: none;
+  }
+  .admin-modal-card input:focus {
+    border-color: #2e8b57;
+    background: #e8f5e9;
+  }
+  .admin-modal-card input[type="checkbox"] {
+    accent-color: #2e8b57;
+    width: 18px; height: 18px;
+    margin-right: 8px;
+  }
+  .admin-modal-card button[type="submit"] {
+    width: 100%;
+    padding: 13px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.08rem;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 2px 10px #2e8b5733;
+    letter-spacing: 1px;
+    transition: background 0.2s;
+  }
+  .admin-modal-card button[type="submit"]:hover {
+    background: linear-gradient(135deg, #3cb371 0%, #2e8b57 100%);
+  }
+  #modalErrorMsg {
+    color: #d32f2f;
+    min-height: 18px;
+    margin: 8px 0 0 0;
+    font-size: 1rem;
+    text-align: left;
+  }
+  @media (max-width: 600px) {
+    .admin-modal-card {
+      padding: 18px 4vw 18px 4vw;
+      min-width: 0;
+    }
+    .admin-modal-card .profile-info {
+      padding: 10px 0 0 0;
+    }
+    .admin-modal-card .modal-label {
+      min-width: 80px;
+      font-size: 1rem;
+    }
+  }
+</style>
+<div class="admin-modal-bg" id="addAdminModal" style="display:none;" aria-hidden="true" role="dialog">
   <div class="admin-modal-card">
-    <button class="close-btn" onclick="closeAdminCreatedModal()">&times;</button>
-    <div class="modal-title">Admin Created</div>
-    <div class="modal-content">
-      <div id="adminCreatedText">The admin account has been created successfully.</div>
-    </div>
-    <button class="logout-btn" id="adminCreatedOk">OK</button>
+    <button class="close-btn" onclick="closeAddAdminModal()" aria-label="Close">&times;</button>
+    <div class="modal-title">Admin Registration</div>
+    <form id="adminModalRegForm" autocomplete="off" novalidate>
+      <div class="profile-info">
+        <div>
+          <span class="modal-label">First Name</span>
+          <input type="text" id="modalFirstName" name="firstName" placeholder="First Name" required>
+        </div>
+        <div>
+          <span class="modal-label">Middle Name</span>
+          <input type="text" id="modalMiddleName" name="middleName" placeholder="Middle Name">
+        </div>
+        <div>
+          <span class="modal-label">Last Name</span>
+          <input type="text" id="modalLastName" name="lastName" placeholder="Last Name" required>
+        </div>
+        <div>
+          <span class="modal-label">Email</span>
+          <input type="email" id="modalAdminEmailInput" name="adminEmail" placeholder="Email Address" required>
+        </div>
+        <div>
+          <span class="modal-label">Password</span>
+          <input type="password" id="modalAdminPassword" name="adminPassword" placeholder="Password" required>
+        </div>
+        <div>
+          <span class="modal-label">Confirm</span>
+          <input type="password" id="modalConfirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+        </div>
+        <div style="margin-top:8px;">
+          <label style="font-weight:500;display:flex;align-items:center;">
+            <input type="checkbox" id="modalTermsCheckbox" name="termsCheckbox" style="margin-right:8px;">
+            I agree to the Terms and Conditions
+          </label>
+        </div>
+      </div>
+      <div id="modalErrorMsg"></div>
+      <button type="submit" class="logout-btn">Register</button>
+    </form>
   </div>
 </div>
 
@@ -681,8 +896,12 @@ function loadTeachers() {
 
         // Then fetch all teachers
         db.ref('teachers').once('value').then(snapshot => {
-            const tbody = document.querySelector('#teachersTable tbody');
-            tbody.innerHTML = '';
+            // Use the correct tbody IDs
+            const approvalsTbody = document.getElementById('teachersTableApprovalsBody');
+            const approvedTbody = document.getElementById('teachersTableApprovedBody');
+            if (approvalsTbody) approvalsTbody.innerHTML = '';
+            if (approvedTbody) approvedTbody.innerHTML = '';
+
             snapshot.forEach(child => {
                 const t = child.val();
                 // Count students in the same section as this teacher
@@ -713,13 +932,17 @@ function loadTeachers() {
                         <button class="delete" onclick="deleteTeacher('${child.key}')">Delete</button>
                     </td>
                 `;
-                tbody.appendChild(tr);
+                if (t.approved) {
+                    if (approvedTbody) approvedTbody.appendChild(tr);
+                } else {
+                    if (approvalsTbody) approvalsTbody.appendChild(tr);
+                }
             });
         });
     });
 }
 
-    // Approve teacher
+// Approve teacher
     function approveTeacher(key) {
         const btn = document.querySelector(`button.approve[onclick="approveTeacher('${key}')"]`);
         const tr = btn ? btn.closest('tr') : null;
@@ -774,7 +997,7 @@ function loadTeachers() {
                 <div><span class="modal-label">Middle Name:</span> <span>${t.mname || ''}</span></div>
                 <div><span class="modal-label">Last Name:</span> <span>${t.lname || ''}</span></div>
                 <div><span class="modal-label">Email:</span> <span>${t.email || ''}</span></div>
-                <div><span class="modal-label">Grade Level:</span> <span>${t.grade || ''}</span></div>
+                <div><span class="modal-label">Grade Level:</span> <span>${t.gradelevel || ''}</span></div>
                 <div><span class="modal-label">Section:</span> <span>${t.section || ''}</span></div>
                 <div><span class="modal-label">Address:</span> <span>${t.address || ''}</span></div>
                 <div><span class="modal-label">Gender:</span> <span>${t.gender || ''}</span></div>
@@ -792,7 +1015,159 @@ function loadTeachers() {
         document.getElementById('reviewModal').style.display = 'none';
     }
 
-    // Success modal helpers
+
+function loadStudents() {
+    db.ref('students').once('value').then(snapshot => {
+        const students = [];
+        const sectionsSet = new Set();
+        const gradesSet = new Set();
+
+        snapshot.forEach(child => {
+            const s = child.val();
+            students.push(s);
+            if (s.section) sectionsSet.add(s.section);
+            if (s.gradelevel) gradesSet.add(s.gradelevel); // <-- use gradelevel
+        });
+
+        // Populate dynamic section filter
+        const sectionFilter = document.getElementById('sectionFilter');
+        if (sectionFilter) {
+            sectionFilter.innerHTML = '<option value="">All Sections</option>';
+            Array.from(sectionsSet).sort().forEach(section => {
+                sectionFilter.innerHTML += `<option value="${section}">Section ${section}</option>`;
+            });
+        }
+
+        // Populate dynamic grade filter
+        const gradeFilter = document.getElementById('gradeFilter');
+        if (gradeFilter) {
+            gradeFilter.innerHTML = '<option value="">All Grades</option>';
+            Array.from(gradesSet).sort().forEach(grade => {
+                gradeFilter.innerHTML += `<option value="${grade}">${grade}</option>`;
+            });
+        }
+
+        // Filtering logic
+        function renderTable() {
+            const search = (document.getElementById('studentSearch')?.value || '').toLowerCase();
+            const grade = gradeFilter?.value || '';
+            const section = sectionFilter?.value || '';
+
+            // Group students by gradelevel and section
+            const grouped = {};
+            students.forEach(s => {
+                if (
+                    (grade === '' || s.gradelevel === grade) &&
+                    (section === '' || s.section === section) &&
+                    (
+                        !search ||
+                        (s.fname && s.fname.toLowerCase().includes(search)) ||
+                        (s.lname && s.lname.toLowerCase().includes(search)) ||
+                        (s.email && s.email.toLowerCase().includes(search)) ||
+                        (s.id && s.id.toLowerCase().includes(search))
+                    )
+                ) {
+                    if (!grouped[s.gradelevel]) grouped[s.gradelevel] = {};
+                    if (!grouped[s.gradelevel][s.section]) grouped[s.gradelevel][s.section] = [];
+                    grouped[s.gradelevel][s.section].push(s);
+                }
+            });
+
+            // Render table
+            const tbody = document.getElementById('studentsTableBody');
+            if (tbody) tbody.innerHTML = '';
+            Object.keys(grouped).sort().forEach(gradeKey => {
+                Object.keys(grouped[gradeKey]).sort().forEach(sectionKey => {
+                    // Add a group row for grade/section
+                    const groupTr = document.createElement('tr');
+                    groupTr.style.background = '#e0ffe6';
+                    groupTr.innerHTML = `<td colspan="8" style="text-align:center;font-weight:bold;">
+                        Grade: ${gradeKey} &nbsp; / &nbsp; Section: ${sectionKey}
+                    </td>`;
+                    tbody.appendChild(groupTr);
+
+                    grouped[gradeKey][sectionKey].forEach(s => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${s.id || ''}</td>
+                            <td>${(s.fname || '') + ' ' + (s.lname || '')}</td>
+                            <td>${s.email || ''}</td>
+                            <td>${s.gradelevel || ''}</td>
+                            <td>${s.section || ''}</td>
+                            <td>${s.subject || ''}</td>
+                            <td>${s.registeredAt ? new Date(s.registeredAt).toLocaleString() : ''}</td>
+                            <td>
+                                <button class="delete" onclick="deleteStudent('${s.id}')">Delete</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+            });
+        }
+
+        // Attach filter events
+        document.getElementById('studentSearch')?.addEventListener('input', renderTable);
+        gradeFilter?.addEventListener('change', renderTable);
+        sectionFilter?.addEventListener('change', renderTable);
+
+        renderTable();
+    });
+}
+
+
+// ...existing code...
+
+function loadCurrentAdmin() {
+    // Already handled in your DOMContentLoaded event for the current admin
+}
+
+// Load all admins and display in the table
+function loadAdmins() {
+    const tbody = document.getElementById('adminsTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+
+    db.ref('admins').once('value').then(snapshot => {
+        tbody.innerHTML = '';
+        if (!snapshot.exists()) {
+            tbody.innerHTML = '<tr><td colspan="4">No admins found.</td></tr>';
+            return;
+        }
+        snapshot.forEach(child => {
+            const a = child.val();
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${(a.fname || '') + ' ' + (a.lname || '')}</td>
+                <td>${a.email || ''}</td>
+                <td>${a.createdAt ? new Date(a.createdAt).toLocaleString() : ''}</td>
+                <td>
+                    <button class="delete" onclick="deleteAdmin('${a.uid}')">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    });
+}
+
+// Delete admin function (optional, add safety check)
+function deleteAdmin(uid) {
+    if (confirm('Are you sure you want to delete this admin?')) {
+        db.ref('admins/' + uid).remove()
+            .then(() => {
+                alert('Admin deleted.');
+                loadAdmins();
+            })
+            .catch(err => alert('Error deleting admin: ' + err.message));
+    }
+}
+
+// ...existing code...
+
+// Initial load
+loadAdmins();
+
+// Success modal helpers
 function openAdminCreatedModal(text){
   const m=document.getElementById('adminCreatedModal');
   document.getElementById('adminCreatedText').textContent = text || 'The admin account has been created successfully.';
@@ -816,103 +1191,7 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
 
 
     <!-- Insert Admin Registration form here (place just inside #mainContent, e.g. before the <h2>) -->
-<section id="addAdminSection" style="display:none;max-width:920px;margin:18px auto;padding:0 18px;position:relative;">
-  <style>
-    /* Scoped styles for the inline admin form */
-    #addAdminSection .reg-container {
-      background: #fff;
-      padding: 28px;
-      border-radius: 14px;
-      box-shadow: 0 6px 28px rgba(0,0,0,0.06);
-      width: 420px;
-      margin: 0 auto 22px auto;
-      border: 2px solid #218838;
-      box-sizing: border-box;
-      max-height: calc(100vh - 140px);
-      overflow: auto;
-    }
-    /* close button for inline form */
-    #closeInlineAdminBtn {
-      position: absolute;
-      right: calc(50% - 210px); /* align near the form right edge */
-      top: 8px;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 6px 10px;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      display: none; /* shown when section is visible */
-    }
-    #addAdminSection h2 { text-align:center; margin-bottom:18px; color:#218838; }
-    #addAdminSection label { display:block; margin-bottom:8px; font-weight:600; color:#218838; }
-    #addAdminSection .input-wrapper { position:relative; }
-    #addAdminSection input[type="text"],
-    #addAdminSection input[type="email"],
-    #addAdminSection input[type="password"] {
-      width:100%; padding:12px; margin-bottom:14px; border-radius:8px; border:2px solid #218838;
-      background:#f6f7fb; box-sizing:border-box; font-size:15px;
-    }
-    #addAdminSection input:focus { outline:none; background:#e8f5e9; border-color:#17692c; }
-    #addAdminSection .toggle-password { position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer; width:26px; height:26px; display:flex; align-items:center; justify-content:center; }
-    #addAdminSection .field-error { color:#d32f2f; font-size:13px; margin-top:-10px; margin-bottom:8px; min-height:18px; }
-    #addAdminSection button[type="submit"] { width:100%; padding:12px; border-radius:8px; border:none; background:#218838; color:#fff; font-weight:700; cursor:pointer; font-size:16px; }
-    #addAdminSection .success { color:#2e7d32; text-align:center; margin-top:10px; }
-    #addAdminSection .error { color:#c62828; text-align:center; margin-top:10px; }
-  </style>
 
-  <button id="closeInlineAdminBtn" aria-label="Close admin form">&times; Close</button>
-   <div class="reg-container" role="region" aria-labelledby="adminFormTitle">
-     <h2 id="adminFormTitle">Admin Registration</h2>
-
-     <form id="inlineAdminRegForm" autocomplete="off" novalidate>
-      <label for="firstName">First Name</label>
-      <input type="text" id="firstName" name="firstName">
-      <div id="errorFirstName" class="field-error"></div>
-
-      <label for="middleName">Middle Name</label>
-      <input type="text" id="middleName" name="middleName">
-      <div id="errorMiddleName" class="field-error"></div>
-
-      <label for="lastName">Last Name</label>
-      <input type="text" id="lastName" name="lastName">
-      <div id="errorLastName" class="field-error"></div>
-
-      <label for="adminEmailInput">Email</label>
-      <input type="email" id="adminEmailInput" name="adminEmail">
-      <div id="errorAdminEmail" class="field-error"></div>
-
-      <label for="adminPassword">Password</label>
-      <div class="input-wrapper">
-        <input type="password" id="adminPassword" name="adminPassword" style="padding-right:44px;">
-        <span class="toggle-password" onclick="togglePassword('adminPassword', this)" aria-hidden="true">
-          <svg class="eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#ec407a" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="#ec407a" stroke-width="2"/></svg>
-          <svg class="eye-off hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path stroke="#ec407a" stroke-width="2" d="M3 3l18 18"/><path stroke="#ec407a" stroke-width="2" d="M10.73 10.73A3 3 0 0 0 12 15a3 3 0 0 0 2.27-4.27"/><path stroke="#ec407a" stroke-width="2" d="M1 12s4-7 11-7c2.54 0 4.68.7 6.41 1.7M21 12s-4 7-11 7c-2.54 0-4.68-.7-6.41-1.7"/></svg>
-        </span>
-      </div>
-      <div id="errorAdminPassword" class="field-error"></div>
-
-      <label for="confirmPassword">Confirm Password</label>
-      <div class="input-wrapper">
-        <input type="password" id="confirmPassword" name="confirmPassword" style="padding-right:44px;">
-        <span class="toggle-password" onclick="togglePassword('confirmPassword', this)" aria-hidden="true">
-          <svg class="eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#ec407a" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="#ec407a" stroke-width="2"/></svg>
-          <svg class="eye-off hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24"><path stroke="#ec407a" stroke-width="2" d="M3 3l18 18"/><path stroke="#ec407a" stroke-width="2" d="M10.73 10.73A3 3 0 0 0 12 15a3 3 0 0 0 2.27-4.27"/><path stroke="#ec407a" stroke-width="2" d="M1 12s4-7 11-7c2.54 0 4.68.7 6.41 1.7M21 12s-4 7-11 7c-2.54 0-4.68-.7-6.41-1.7"/></svg>
-        </span>
-      </div>
-      <div id="errorConfirmPassword" class="field-error"></div>
-
-      <label style="font-weight:500;">
-        <input type="checkbox" id="termsCheckbox" name="termsCheckbox" style="margin-right:8px;">
-        I agree to the Terms and Conditions
-      </label>
-      <div id="errorTerms" class="field-error"></div>
-
-      <button type="submit">Register</button>
-      <div id="message" role="status" aria-live="polite"></div>
-     </form>
-   </div>
- </section>
 <!-- end insert -->
 
 <script>
@@ -1055,5 +1334,136 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
   });
 })();
 </script>
+
+<script src="../assets/js/Admin/showTab.js"></script>
+
+<!-- Admin Registration Modal (converted from addAdminSection) -->
+<div class="admin-modal-bg" id="addAdminModal" style="display:none;" aria-hidden="true" role="dialog">
+  <div class="admin-modal-card" style="max-width:440px;">
+    <button class="close-btn" onclick="closeAddAdminModal()">&times;</button>
+    <div class="modal-title" style="margin-bottom:18px;">Admin Registration</div>
+    <form id="adminModalRegForm" autocomplete="off" novalidate>
+      <div class="profile-info">
+        <div>
+          <span class="modal-label">First Name</span>
+          <input type="text" id="modalFirstName" name="firstName" style="flex:1;">
+        </div>
+        <div>
+          <span class="modal-label">Middle Name</span>
+          <input type="text" id="modalMiddleName" name="middleName" style="flex:1;">
+        </div>
+        <div>
+          <span class="modal-label">Last Name</span>
+          <input type="text" id="modalLastName" name="lastName" style="flex:1;">
+        </div>
+        <div>
+          <span class="modal-label">Email</span>
+          <input type="email" id="modalAdminEmailInput" name="adminEmail" style="flex:1;">
+        </div>
+        <div>
+          <span class="modal-label">Password</span>
+          <input type="password" id="modalAdminPassword" name="adminPassword" style="flex:1;">
+        </div>
+        <div>
+          <span class="modal-label">Confirm</span>
+          <input type="password" id="modalConfirmPassword" name="confirmPassword" style="flex:1;">
+        </div>
+        <div style="margin-top:8px;">
+          <label style="font-weight:500;">
+            <input type="checkbox" id="modalTermsCheckbox" name="termsCheckbox" style="margin-right:8px;">
+            I agree to the Terms and Conditions
+          </label>
+        </div>
+      </div>
+      <div id="modalErrorMsg" style="color:#d32f2f;min-height:18px;margin:8px 0 0 0;"></div>
+      <button type="submit" class="logout-btn" style="margin-top:18px;">Register</button>
+    </form>
+  </div>
+</div>
+
+<script>
+// Show/hide modal
+function openAddAdminModal() {
+  document.getElementById('addAdminModal').style.display = 'flex';
+  document.getElementById('addAdminModal').setAttribute('aria-hidden','false');
+}
+function closeAddAdminModal() {
+  document.getElementById('addAdminModal').style.display = 'none';
+  document.getElementById('addAdminModal').setAttribute('aria-hidden','true');
+  document.getElementById('adminModalRegForm').reset();
+  document.getElementById('modalErrorMsg').textContent = '';
+}
+
+// Wire up the "Create New Admin" button to open the modal
+document.getElementById('openAddAdminBtn').onclick = function(e) {
+  e.preventDefault();
+  openAddAdminModal();
+};
+
+// Modal registration logic
+document.getElementById('adminModalRegForm').onsubmit = async function(e) {
+  e.preventDefault();
+  const fname = document.getElementById('modalFirstName').value.trim();
+  const mname = document.getElementById('modalMiddleName').value.trim();
+  const lname = document.getElementById('modalLastName').value.trim();
+  const email = document.getElementById('modalAdminEmailInput').value.trim();
+  const pass = document.getElementById('modalAdminPassword').value;
+  const pass2 = document.getElementById('modalConfirmPassword').value;
+  const terms = document.getElementById('modalTermsCheckbox').checked;
+  const err = document.getElementById('modalErrorMsg');
+  err.textContent = '';
+
+  if (!fname || !lname || !email || !pass || !pass2) {
+    err.textContent = 'All fields are required.';
+    return;
+  }
+  if (pass.length < 6) {
+    err.textContent = 'Password must be at least 6 characters.';
+    return;
+  }
+  if (pass !== pass2) {
+    err.textContent = 'Passwords do not match.';
+    return;
+  }
+  if (!terms) {
+    err.textContent = 'You must agree to the Terms and Conditions.';
+    return;
+  }
+
+  // Use secondary app to avoid logging out current admin
+  let secondaryApp;
+  if (!window._secondaryApp) {
+    window._secondaryApp = firebase.initializeApp(firebase.app().options, 'secondary');
+  }
+  secondaryApp = window._secondaryApp;
+
+  try {
+    err.textContent = 'Registering...';
+    const cred = await secondaryApp.auth().createUserWithEmailAndPassword(email, pass);
+    const uid = cred.user.uid;
+    const adminData = {
+      uid,
+      email,
+      fname,
+      mname,
+      lname,
+      role: 'admin',
+      createdAt: Date.now()
+    };
+    await firebase.database().ref('admins/' + uid).set(adminData);
+    await secondaryApp.auth().signOut();
+    err.style.color = '#2e7d32';
+    err.textContent = 'Admin registered!';
+    setTimeout(() => {
+      closeAddAdminModal();
+      loadAdmins();
+    }, 900);
+  } catch (ex) {
+    err.style.color = '#d32f2f';
+    err.textContent = ex.message || 'Registration failed.';
+  }
+};
+</script>
+
 </body>
 </html>
