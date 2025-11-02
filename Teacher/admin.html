@@ -185,7 +185,7 @@ document.addEventListener("DOMContentLoaded", function() {
             align-items: center; justify-content: center;
         }
         .admin-modal-card {
-            background: linear-gradient(180deg, #ffe6f7 0%, #e0eaff 100%);
+            background: linear-gradient(135deg, #ffe6f7 0%, #e0eaff 100%);
             border-radius: 28px;
             box-shadow: 0 4px 24px rgba(79,140,255,0.10);
             max-width: 400px;
@@ -406,6 +406,25 @@ td:hover .action-btns .reject,
     position: relative;
     z-index: 2;
 }
+    .teacher-tab-btn {
+    padding: 10px 32px;
+    border: none;
+    border-radius: 8px;
+    background: #e0e0e0;
+    color: #222;
+    font-weight: 600;
+    font-size: 1.08em;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+    box-shadow: 0 2px 8px #0001;
+}
+.teacher-tab-btn.active {
+    background: #2e8b57;
+    color: #fff;
+}
+.teacher-tab-btn:not(.active):hover {
+    background: #bdbdbd;
+}
     </style>
 </head>
 <body>
@@ -443,7 +462,7 @@ td:hover .action-btns .reject,
                     <i class="fas fa-user-graduate"></i> Student Management
                 </button>
                 <button id="tabTeachers" class="nav-tab" onclick="showTab('teachers')" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease;">
-                    <i class="fas fa-chalkboard-teacher"></i> Teacher Approvals
+                    <i class="fas fa-chalkboard-teacher"></i> Teacher Management
                 </button>
             </div>
         </div>
@@ -531,18 +550,13 @@ td:hover .action-btns .reject,
                         <div>
                             <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Grade Level</label>
                             <select id="gradeFilter" style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; background: white;">
-                                <option value="">All Grades</option>
-                                <option value="Grade 5">Grade 5</option>
-                                <option value="Grade 6">Grade 6</option>
+                                <!-- Options will be populated by JS -->
                             </select>
                         </div>
                         <div>
                             <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Section</label>
                             <select id="sectionFilter" style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; background: white;">
-                                <option value="">All Sections</option>
-                                <option value="A">Section A</option>
-                                <option value="B">Section B</option>
-                                <option value="C">Section C</option>
+                                <!-- Options will be populated by JS -->
                             </select>
                         </div>
                     </div>
@@ -572,32 +586,65 @@ td:hover .action-btns .reject,
         </div>
 
         <!-- Teacher Approvals Tab -->
-        <div id="contentTeachers" class="tab-content" style="display: none;">
-            <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-                <h2 style="color: #2e8b57; margin-bottom: 25px; font-size: 1.8rem; font-weight: 700;">
-                    <i class="fas fa-chalkboard-teacher" style="margin-right: 10px;"></i>Teacher Account Approvals
-                </h2>
-                <div style="overflow-x: auto;">
-                    <table id="teachersTable" style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                        <thead>
-                            <tr style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white;">
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">ID</th>
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">Name</th>
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">Email</th>
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">Grade Level</th>
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">Section</th>
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">Students</th>
-                                <th style="padding: 15px; text-align: left; font-weight: 600;">Status</th>
-                                <th style="padding: 15px; text-align: center; font-weight: 600;">Action</th>
-                                <th style="padding: 15px; text-align: center; font-weight: 600;">Delete</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Rows will be inserted here by JS -->
-                        </tbody>
-                    </table>
+        <div id="contentTeachers" class="tab-content" style="display:none;">
+            <div style="display: flex; justify-content: center; gap: 18px; margin-bottom: 24px;">
+                <button id="btnApprovals" class="teacher-tab-btn active" onclick="showTeacherSubTab('approvals')">Approvals</button>
+                <button id="btnApproved" class="teacher-tab-btn" onclick="showTeacherSubTab('approved')">Approved</button>
+            </div>
+            <div id="teacherApprovals" class="teacher-subtab" style="display:block;">
+                <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+                    <h2 style="color: #2e8b57; margin-bottom: 25px; font-size: 1.8rem; font-weight: 700;">
+                        <i class="fas fa-chalkboard-teacher" style="margin-right: 10px;"></i>Pending teacher approvals
+                    </h2>
+                    <div style="overflow-x: auto;">
+                        <table id="teachersTableApprovals" style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                            <thead>
+                                <tr style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white;">
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">ID</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Name</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Email</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Grade Level</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Section</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Students</th>
+                                    <th style="padding: 15px; text-align: left; font-weight: 600;">Status</th>
+                                    <th style="padding: 15px; text-align: center; font-weight: 600;">Action</th>
+                                    <th style="padding: 15px; text-align: center; font-weight: 600;">Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teachersTableApprovalsBody">
+                                <!-- Approval rows will be inserted here by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+            <div id="teacherApproved" class="teacher-subtab" style="display:none;">
+    <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+        <h2 style="color: #2e8b57; margin-bottom: 25px; font-size: 1.8rem; font-weight: 700;">
+            <i class="fas fa-chalkboard-teacher" style="margin-right: 10px;"></i>Approved teachers
+        </h2>
+        <div style="overflow-x: auto;">
+            <table id="teachersTableApproved" style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <thead>
+                    <tr style="background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); color: white;">
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">ID</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">Name</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">Email</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">Grade Level</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">Section</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">Students</th>
+                        <th style="padding: 15px; text-align: left; font-weight: 600;">Status</th>
+                        <th style="padding: 15px; text-align: center; font-weight: 600;">Action</th>
+                        <th style="padding: 15px; text-align: center; font-weight: 600;">Delete</th>
+                    </tr>
+                </thead>
+                <tbody id="teachersTableApprovedBody">
+                    <!-- Approved rows will be inserted here by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
         </div>
     </div>
 
@@ -618,83 +665,185 @@ td:hover .action-btns .reject,
         </div>
     </div>
 
-    <!-- Modal for student review -->
-    <div class="admin-modal-bg" id="studentReviewModal">
-        <div class="admin-modal-card">
-            <button class="close-btn" onclick="closeStudentReviewModal()">&times;</button>
-            <div style="display:flex;flex-direction:column;align-items:center;">
-                <img class="profile-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=student" alt="Student Avatar" style="width:80px;height:80px;border-radius:50%;border:3px solid #ffd700;margin-bottom:10px;">
-            </div>
-            <div class="profile-name" id="modalStudentName" style="font-size:1.3em;font-family:'Baloo 2',cursive;color:#2e8b57;margin-bottom:2px;text-align:center;">Student Name</div>
-            <div class="profile-role" style="color:#2e8b57;font-weight:700;font-size:1.05rem;margin-bottom:14px;letter-spacing:1px;text-align:center;">
-                Student
-            </div>
-            <div class="profile-info" id="studentModalContent" style="width:100%;max-width:420px;margin:0 auto 0 auto;">
-                <!-- Details will be filled by JS -->
-            </div>
-            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
-                <button onclick="editStudent()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                    <i class="fas fa-edit"></i> Edit Student
-                </button>
-                <button onclick="deleteStudentFromModal()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                    <i class="fas fa-trash"></i> Delete Student
-                </button>
-            </div>
+    <!-- Improved Admin Registration Modal (better design & style) -->
+<style>
+  .admin-modal-bg {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0; top: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.35);
+    align-items: center; justify-content: center;
+  }
+  .admin-modal-card {
+    background: linear-gradient(135deg, #f8fff8 0%, #e0f7fa 100%);
+    border-radius: 22px;
+    box-shadow: 0 8px 32px rgba(46, 139, 87, 0.12);
+    max-width: 420px;
+    width: 95%;
+    padding: 36px 28px 24px 28px;
+    text-align: center;
+    position: relative;
+    font-family: 'Manrope', 'Baloo 2', Arial, sans-serif;
+    animation: sidebarDrop 0.5s cubic-bezier(.77,0,.18,1);
+  }
+  .admin-modal-card .close-btn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: none;
+    border: none;
+    font-size: 1.7rem;
+    color: #ff69b4;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .admin-modal-card .close-btn:hover {
+    color: #2e8b57;
+  }
+  .admin-modal-card .modal-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2e8b57;
+    margin-bottom: 18px;
+    letter-spacing: 1px;
+  }
+  .admin-modal-card .profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 10px;
+    width: 100%;
+    max-width: 420px;
+    background: #f7f9fb;
+    border-radius: 14px;
+    padding: 18px 0 10px 0;
+  }
+  .admin-modal-card .profile-info > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0 0 0 0;
+    font-size: 1.05rem;
+    color: #3f4d34;
+    margin: 0;
+    min-height: 32px;
+  }
+  .admin-modal-card .modal-label {
+    min-width: 110px;
+    color: #2e8b57;
+    font-weight: 600;
+    font-size: 1.07rem;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+  }
+  .admin-modal-card input[type="text"],
+  .admin-modal-card input[type="email"],
+  .admin-modal-card input[type="password"] {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 11px 12px;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    background: #f6f7fb;
+    font-size: 15px;
+    transition: border-color 0.2s, background 0.2s;
+    outline: none;
+  }
+  .admin-modal-card input:focus {
+    border-color: #2e8b57;
+    background: #e8f5e9;
+  }
+  .admin-modal-card input[type="checkbox"] {
+    accent-color: #2e8b57;
+    width: 18px; height: 18px;
+    margin-right: 8px;
+  }
+  .admin-modal-card button[type="submit"] {
+    width: 100%;
+    padding: 13px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.08rem;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 2px 10px #2e8b5733;
+    letter-spacing: 1px;
+    transition: background 0.2s;
+  }
+  .admin-modal-card button[type="submit"]:hover {
+    background: linear-gradient(135deg, #3cb371 0%, #2e8b57 100%);
+  }
+  #modalErrorMsg {
+    color: #d32f2f;
+    min-height: 18px;
+    margin: 8px 0 0 0;
+    font-size: 1rem;
+    text-align: left;
+  }
+  @media (max-width: 600px) {
+    .admin-modal-card {
+      padding: 18px 4vw 18px 4vw;
+      min-width: 0;
+    }
+    .admin-modal-card .profile-info {
+      padding: 10px 0 0 0;
+    }
+    .admin-modal-card .modal-label {
+      min-width: 80px;
+      font-size: 1rem;
+    }
+  }
+</style>
+<div class="admin-modal-bg" id="addAdminModal" style="display:none;" aria-hidden="true" role="dialog">
+  <div class="admin-modal-card">
+    <button class="close-btn" onclick="closeAddAdminModal()" aria-label="Close">&times;</button>
+    <div class="modal-title">Admin Registration</div>
+    <form id="adminModalRegForm" autocomplete="off" novalidate>
+      <div class="profile-info">
+        <div>
+          <span class="modal-label">First Name</span>
+          <input type="text" id="modalFirstName" name="firstName" placeholder="First Name" required>
         </div>
-    </div>
-
-    <!-- Modal for student editing -->
-    <div class="admin-modal-bg" id="studentEditModal">
-        <div class="admin-modal-card" style="max-width: 500px;">
-            <button class="close-btn" onclick="closeStudentEditModal()">&times;</button>
-            <h4 style="color: #2e8b57; margin-bottom: 20px; text-align: center;">Edit Student Information</h4>
-            <form id="studentEditForm">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">First Name:</label>
-                        <input type="text" id="editFname" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Last Name:</label>
-                        <input type="text" id="editLname" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Email:</label>
-                    <input type="email" id="editEmail" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Grade:</label>
-                        <select id="editGrade" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                            <option value="Grade 5">Grade 5</option>
-                            <option value="Grade 6">Grade 6</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Section:</label>
-                        <select id="editSection" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                            <option value="A">Section A</option>
-                            <option value="B">Section B</option>
-                            <option value="C">Section C</option>
-                        </select>
-                    </div>
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Subject:</label>
-                    <select id="editSubject" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                        <option value="Math">Math</option>
-                        <option value="English">English</option>
-                        <option value="Science">Science</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" onclick="closeStudentEditModal()" style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Cancel</button>
-                    <button type="submit" style="background: #2e8b57; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Save Changes</button>
-                </div>
-            </form>
+        <div>
+          <span class="modal-label">Middle Name</span>
+          <input type="text" id="modalMiddleName" name="middleName" placeholder="Middle Name">
         </div>
-    </div>
+        <div>
+          <span class="modal-label">Last Name</span>
+          <input type="text" id="modalLastName" name="lastName" placeholder="Last Name" required>
+        </div>
+        <div>
+          <span class="modal-label">Email</span>
+          <input type="email" id="modalAdminEmailInput" name="adminEmail" placeholder="Email Address" required>
+        </div>
+        <div>
+          <span class="modal-label">Password</span>
+          <input type="password" id="modalAdminPassword" name="adminPassword" placeholder="Password" required>
+        </div>
+        <div>
+          <span class="modal-label">Confirm</span>
+          <input type="password" id="modalConfirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+        </div>
+        <div style="margin-top:8px;">
+          <label style="font-weight:500;display:flex;align-items:center;">
+            <input type="checkbox" id="modalTermsCheckbox" name="termsCheckbox" style="margin-right:8px;">
+            I agree to the Terms and Conditions
+          </label>
+        </div>
+      </div>
+      <div id="modalErrorMsg"></div>
+      <button type="submit" class="logout-btn">Register</button>
+    </form>
+  </div>
+</div>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -747,8 +896,12 @@ function loadTeachers() {
 
         // Then fetch all teachers
         db.ref('teachers').once('value').then(snapshot => {
-            const tbody = document.querySelector('#teachersTable tbody');
-            tbody.innerHTML = '';
+            // Use the correct tbody IDs
+            const approvalsTbody = document.getElementById('teachersTableApprovalsBody');
+            const approvedTbody = document.getElementById('teachersTableApprovedBody');
+            if (approvalsTbody) approvalsTbody.innerHTML = '';
+            if (approvedTbody) approvedTbody.innerHTML = '';
+
             snapshot.forEach(child => {
                 const t = child.val();
                 // Count students in the same section as this teacher
@@ -779,13 +932,17 @@ function loadTeachers() {
                         <button class="delete" onclick="deleteTeacher('${child.key}')">Delete</button>
                     </td>
                 `;
-                tbody.appendChild(tr);
+                if (t.approved) {
+                    if (approvedTbody) approvedTbody.appendChild(tr);
+                } else {
+                    if (approvalsTbody) approvalsTbody.appendChild(tr);
+                }
             });
         });
     });
 }
 
-    // Approve teacher
+// Approve teacher
     function approveTeacher(key) {
         const btn = document.querySelector(`button.approve[onclick="approveTeacher('${key}')"]`);
         const tr = btn ? btn.closest('tr') : null;
@@ -840,7 +997,7 @@ function loadTeachers() {
                 <div><span class="modal-label">Middle Name:</span> <span>${t.mname || ''}</span></div>
                 <div><span class="modal-label">Last Name:</span> <span>${t.lname || ''}</span></div>
                 <div><span class="modal-label">Email:</span> <span>${t.email || ''}</span></div>
-                <div><span class="modal-label">Grade Level:</span> <span>${t.grade || ''}</span></div>
+                <div><span class="modal-label">Grade Level:</span> <span>${t.gradelevel || ''}</span></div>
                 <div><span class="modal-label">Section:</span> <span>${t.section || ''}</span></div>
                 <div><span class="modal-label">Address:</span> <span>${t.address || ''}</span></div>
                 <div><span class="modal-label">Gender:</span> <span>${t.gender || ''}</span></div>
@@ -858,406 +1015,171 @@ function loadTeachers() {
         document.getElementById('reviewModal').style.display = 'none';
     }
 
-    // Admin Management Functions
-    let currentAdmin = null;
 
-    // Load current admin info
-    function loadCurrentAdmin() {
-        firebase.auth().onAuthStateChanged(async function(user) {
-            if (user) {
-                const uid = user.uid;
-                const snap = await db.ref('admins/' + uid).once('value');
-                const admin = snap.val();
-                if (admin && admin.role === "admin") {
-                    currentAdmin = admin;
-                    currentAdmin.uid = uid;
-                    loadAdmins();
-                }
-            }
+function loadStudents() {
+    db.ref('students').once('value').then(snapshot => {
+        const students = [];
+        const sectionsSet = new Set();
+        const gradesSet = new Set();
+
+        snapshot.forEach(child => {
+            const s = child.val();
+            students.push(s);
+            if (s.section) sectionsSet.add(s.section);
+            if (s.gradelevel) gradesSet.add(s.gradelevel); // <-- use gradelevel
         });
-    }
 
-    // Load all admins
-    function loadAdmins() {
-        db.ref('admins').once('value').then(snapshot => {
-            const tbody = document.querySelector('#adminsTableBody');
-            tbody.innerHTML = '';
-            snapshot.forEach(child => {
-                const admin = child.val();
-                if (admin.role === "admin") {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">${(admin.fname || '') + ' ' + (admin.lname || '')}</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">${admin.email || ''}</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">${admin.createdAt ? new Date(admin.createdAt).toLocaleDateString() : '—'}</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
-                            ${child.key !== currentAdmin.uid ? 
-                                `<button onclick="deleteAdmin('${child.key}')" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete</button>` : 
-                                '<span style="color: #28a745; font-weight: bold;">Current Admin</span>'
-                            }
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
+        // Populate dynamic section filter
+        const sectionFilter = document.getElementById('sectionFilter');
+        if (sectionFilter) {
+            sectionFilter.innerHTML = '<option value="">All Sections</option>';
+            Array.from(sectionsSet).sort().forEach(section => {
+                sectionFilter.innerHTML += `<option value="${section}">Section ${section}</option>`;
+            });
+        }
+
+        // Populate dynamic grade filter
+        const gradeFilter = document.getElementById('gradeFilter');
+        if (gradeFilter) {
+            gradeFilter.innerHTML = '<option value="">All Grades</option>';
+            Array.from(gradesSet).sort().forEach(grade => {
+                gradeFilter.innerHTML += `<option value="${grade}">${grade}</option>`;
+            });
+        }
+
+        // Filtering logic
+        function renderTable() {
+            const search = (document.getElementById('studentSearch')?.value || '').toLowerCase();
+            const grade = gradeFilter?.value || '';
+            const section = sectionFilter?.value || '';
+
+            // Group students by gradelevel and section
+            const grouped = {};
+            students.forEach(s => {
+                if (
+                    (grade === '' || s.gradelevel === grade) &&
+                    (section === '' || s.section === section) &&
+                    (
+                        !search ||
+                        (s.fname && s.fname.toLowerCase().includes(search)) ||
+                        (s.lname && s.lname.toLowerCase().includes(search)) ||
+                        (s.email && s.email.toLowerCase().includes(search)) ||
+                        (s.id && s.id.toLowerCase().includes(search))
+                    )
+                ) {
+                    if (!grouped[s.gradelevel]) grouped[s.gradelevel] = {};
+                    if (!grouped[s.gradelevel][s.section]) grouped[s.gradelevel][s.section] = [];
+                    grouped[s.gradelevel][s.section].push(s);
                 }
             });
-        });
-    }
 
-    // Create new admin
-    async function createAdmin(adminData) {
-        try {
-            // Create user in Firebase Auth
-            const userCredential = await firebase.auth().createUserWithEmailAndPassword(adminData.email, adminData.password);
-            const user = userCredential.user;
-            const uid = user.uid;
+            // Render table
+            const tbody = document.getElementById('studentsTableBody');
+            if (tbody) tbody.innerHTML = '';
+            Object.keys(grouped).sort().forEach(gradeKey => {
+                Object.keys(grouped[gradeKey]).sort().forEach(sectionKey => {
+                    // Add a group row for grade/section
+                    const groupTr = document.createElement('tr');
+                    groupTr.style.background = '#e0ffe6';
+                    groupTr.innerHTML = `<td colspan="8" style="text-align:center;font-weight:bold;">
+                        Grade: ${gradeKey} &nbsp; / &nbsp; Section: ${sectionKey}
+                    </td>`;
+                    tbody.appendChild(groupTr);
 
-            // Save admin data in Realtime Database
-            const newAdminData = {
-                fname: adminData.fname,
-                lname: adminData.lname,
-                email: adminData.email,
-                role: "admin",
-                createdAt: new Date().toISOString(),
-                createdBy: currentAdmin.uid
-            };
-
-            await db.ref('admins/' + uid).set(newAdminData);
-
-            // Send verification email
-            try {
-                await user.sendEmailVerification();
-            } catch (err) {
-                console.log("Failed to send verification email: " + err.message);
-            }
-
-            // Sign out the created user (we don't want to stay logged in as them)
-            await firebase.auth().signOut();
-
-            alert('Admin created successfully! Verification email sent.');
-            document.getElementById('adminForm').reset();
-            document.getElementById('createAdminForm').style.display = 'none';
-            loadAdmins();
-
-        } catch (error) {
-            console.error('Error creating admin:', error);
-            alert('Error creating admin: ' + error.message);
-        }
-    }
-
-    // Delete admin
-    function deleteAdmin(adminUid) {
-        if (confirm('Are you sure you want to delete this admin? This action cannot be undone.')) {
-            db.ref('admins/' + adminUid).remove()
-                .then(() => {
-                    alert('Admin deleted successfully.');
-                    loadAdmins();
-                })
-                .catch(err => {
-                    console.error('Error deleting admin:', err);
-                    alert('Error deleting admin: ' + err.message);
+                    grouped[gradeKey][sectionKey].forEach(s => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${s.id || ''}</td>
+                            <td>${(s.fname || '') + ' ' + (s.lname || '')}</td>
+                            <td>${s.email || ''}</td>
+                            <td>${s.gradelevel || ''}</td>
+                            <td>${s.section || ''}</td>
+                            <td>${s.subject || ''}</td>
+                            <td>${s.registeredAt ? new Date(s.registeredAt).toLocaleString() : ''}</td>
+                            <td>
+                                <button class="delete" onclick="deleteStudent('${s.id}')">Delete</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
                 });
+            });
         }
-    }
 
-    // Event listeners for admin management
-    document.getElementById('createAdminBtn').onclick = function() {
-        document.getElementById('createAdminForm').style.display = 'block';
-    };
+        // Attach filter events
+        document.getElementById('studentSearch')?.addEventListener('input', renderTable);
+        gradeFilter?.addEventListener('change', renderTable);
+        sectionFilter?.addEventListener('change', renderTable);
 
-    document.getElementById('cancelAdminBtn').onclick = function() {
-        document.getElementById('createAdminForm').style.display = 'none';
-        document.getElementById('adminForm').reset();
-    };
+        renderTable();
+    });
+}
 
-    document.getElementById('adminForm').onsubmit = function(e) {
-        e.preventDefault();
-        
-        const fname = document.getElementById('adminFname').value;
-        const lname = document.getElementById('adminLname').value;
-        const email = document.getElementById('adminEmail').value;
-        const password = document.getElementById('adminPassword').value;
 
-        // Password validation
-        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-        if (!strongPasswordRegex.test(password)) {
-            alert('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+// ...existing code...
+
+function loadCurrentAdmin() {
+    // Already handled in your DOMContentLoaded event for the current admin
+}
+
+// Load all admins and display in the table
+function loadAdmins() {
+    const tbody = document.getElementById('adminsTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+
+    db.ref('admins').once('value').then(snapshot => {
+        tbody.innerHTML = '';
+        if (!snapshot.exists()) {
+            tbody.innerHTML = '<tr><td colspan="4">No admins found.</td></tr>';
             return;
         }
-
-        const adminData = { fname, lname, email, password };
-        createAdmin(adminData);
-    };
-
-    // Student Management Functions
-    let currentStudent = null;
-    let allStudents = [];
-
-    // Load all students
-    function loadStudents() {
-        db.ref('students').once('value').then(snapshot => {
-            allStudents = [];
-            const tbody = document.querySelector('#studentsTableBody');
-            tbody.innerHTML = '';
-            
-            snapshot.forEach(child => {
-                const student = child.val();
-                allStudents.push({ ...student, uid: child.key });
-                
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.id || ''}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                        <button onclick="reviewStudent('${child.key}')" style="background: none; border: none; color: #2e8b57; cursor: pointer; font-weight: 600; text-decoration: underline;">
-                            ${(student.fname || '') + ' ' + (student.lname || '')}
-                        </button>
-                    </td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.email || ''}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.gradelevel || ''}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.section || ''}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.subject || ''}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.registeredAt ? new Date(student.registeredAt).toLocaleDateString() : '—'}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
-                        <button onclick="editStudent('${child.key}')" style="background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 5px;">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button onclick="deleteStudent('${child.key}')" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        });
-    }
-
-    // Review student (show modal)
-    function reviewStudent(studentUid) {
-        const student = allStudents.find(s => s.uid === studentUid);
-        if (!student) return;
-        
-        currentStudent = student;
-        document.getElementById('modalStudentName').textContent = `${(student.fname || '')} ${(student.lname || '')}`;
-        
-        let html = `
-            <div><span class="modal-label">ID:</span> <span>${student.id || ''}</span></div>
-            <div><span class="modal-label">First Name:</span> <span>${student.fname || ''}</span></div>
-            <div><span class="modal-label">Last Name:</span> <span>${student.lname || ''}</span></div>
-            <div><span class="modal-label">Email:</span> <span>${student.email || ''}</span></div>
-            <div><span class="modal-label">Grade Level:</span> <span>${student.gradelevel || ''}</span></div>
-            <div><span class="modal-label">Section:</span> <span>${student.section || ''}</span></div>
-            <div><span class="modal-label">Subject:</span> <span>${student.subject || ''}</span></div>
-            <div><span class="modal-label">Gender:</span> <span>${student.gender || ''}</span></div>
-            <div><span class="modal-label">Age:</span> <span>${student.age || ''}</span></div>
-            <div><span class="modal-label">School Year:</span> <span>${student.school_year || ''}</span></div>
-            <div><span class="modal-label">Registered:</span> <span>${student.registeredAt ? new Date(student.registeredAt).toLocaleString() : '—'}</span></div>
-        `;
-        
-        document.getElementById('studentModalContent').innerHTML = html;
-        document.getElementById('studentReviewModal').style.display = 'flex';
-    }
-
-    // Edit student
-    function editStudent(studentUid = null) {
-        const student = studentUid ? allStudents.find(s => s.uid === studentUid) : currentStudent;
-        if (!student) return;
-        
-        currentStudent = student;
-        
-        // Populate form with current student data
-        document.getElementById('editFname').value = student.fname || '';
-        document.getElementById('editLname').value = student.lname || '';
-        document.getElementById('editEmail').value = student.email || '';
-        document.getElementById('editGrade').value = student.gradelevel || 'Grade 5';
-        document.getElementById('editSection').value = student.section || 'A';
-        document.getElementById('editSubject').value = student.subject || 'Math';
-        
-        document.getElementById('studentEditModal').style.display = 'flex';
-    }
-
-    // Delete student
-    function deleteStudent(studentUid) {
-        if (confirm('Are you sure you want to delete this student? This action cannot be undone.')) {
-            db.ref('students/' + studentUid).remove()
-                .then(() => {
-                    alert('Student deleted successfully.');
-                    loadStudents();
-                })
-                .catch(err => {
-                    console.error('Error deleting student:', err);
-                    alert('Error deleting student: ' + err.message);
-                });
-        }
-    }
-
-    // Delete student from modal
-    function deleteStudentFromModal() {
-        if (currentStudent) {
-            deleteStudent(currentStudent.uid);
-            closeStudentReviewModal();
-        }
-    }
-
-    // Update student
-    function updateStudent(studentData) {
-        if (!currentStudent) return;
-        
-        db.ref('students/' + currentStudent.uid).update(studentData)
-            .then(() => {
-                alert('Student updated successfully.');
-                closeStudentEditModal();
-                loadStudents();
-            })
-            .catch(err => {
-                console.error('Error updating student:', err);
-                alert('Error updating student: ' + err.message);
-            });
-    }
-
-    // Close modals
-    function closeStudentReviewModal() {
-        document.getElementById('studentReviewModal').style.display = 'none';
-        currentStudent = null;
-    }
-
-    function closeStudentEditModal() {
-        document.getElementById('studentEditModal').style.display = 'none';
-    }
-
-    // Student search and filter
-    function filterStudents() {
-        const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
-        const gradeFilter = document.getElementById('gradeFilter').value;
-        const sectionFilter = document.getElementById('sectionFilter').value;
-        
-        const tbody = document.querySelector('#studentsTableBody');
-        tbody.innerHTML = '';
-        
-        const filteredStudents = allStudents.filter(student => {
-            const matchesSearch = !searchTerm || 
-                (student.fname && student.fname.toLowerCase().includes(searchTerm)) ||
-                (student.lname && student.lname.toLowerCase().includes(searchTerm)) ||
-                (student.email && student.email.toLowerCase().includes(searchTerm)) ||
-                (student.id && student.id.toLowerCase().includes(searchTerm));
-            
-            const matchesGrade = !gradeFilter || student.gradelevel === gradeFilter;
-            const matchesSection = !sectionFilter || student.section === sectionFilter;
-            
-            return matchesSearch && matchesGrade && matchesSection;
-        });
-        
-        filteredStudents.forEach(student => {
+        snapshot.forEach(child => {
+            const a = child.val();
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.id || ''}</td>
-                <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                    <button onclick="reviewStudent('${student.uid}')" style="background: none; border: none; color: #2e8b57; cursor: pointer; font-weight: 600; text-decoration: underline;">
-                        ${(student.fname || '') + ' ' + (student.lname || '')}
-                    </button>
-                </td>
-                <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.email || ''}</td>
-                <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.gradelevel || ''}</td>
-                <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.section || ''}</td>
-                <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.subject || ''}</td>
-                <td style="padding: 12px; border-bottom: 1px solid #eee;">${student.registeredAt ? new Date(student.registeredAt).toLocaleDateString() : '—'}</td>
-                <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
-                    <button onclick="editStudent('${student.uid}')" style="background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 5px;">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                    <button onclick="deleteStudent('${student.uid}')" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
+                <td>${(a.fname || '') + ' ' + (a.lname || '')}</td>
+                <td>${a.email || ''}</td>
+                <td>${a.createdAt ? new Date(a.createdAt).toLocaleString() : ''}</td>
+                <td>
+                    <button class="delete" onclick="deleteAdmin('${a.uid}')">Delete</button>
                 </td>
             `;
             tbody.appendChild(tr);
         });
+    });
+}
+
+// Delete admin function (optional, add safety check)
+function deleteAdmin(uid) {
+    if (confirm('Are you sure you want to delete this admin?')) {
+        db.ref('admins/' + uid).remove()
+            .then(() => {
+                alert('Admin deleted.');
+                loadAdmins();
+            })
+            .catch(err => alert('Error deleting admin: ' + err.message));
     }
+}
 
-    // Event listeners for student management
-    document.getElementById('studentSearch').addEventListener('input', filterStudents);
-    document.getElementById('gradeFilter').addEventListener('change', filterStudents);
-    document.getElementById('sectionFilter').addEventListener('change', filterStudents);
+// ...existing code...
 
-    document.getElementById('studentEditForm').onsubmit = function(e) {
-        e.preventDefault();
-        
-        const studentData = {
-            fname: document.getElementById('editFname').value,
-            lname: document.getElementById('editLname').value,
-            email: document.getElementById('editEmail').value,
-            gradelevel: document.getElementById('editGrade').value,
-            section: document.getElementById('editSection').value,
-            subject: document.getElementById('editSubject').value,
-            updatedAt: new Date().toISOString()
-        };
-        
-        updateStudent(studentData);
-    };
+// Initial load
+loadAdmins();
 
-    // Tab Navigation Functions
-    function showTab(tabName) {
-        // Hide all tab contents
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.style.display = 'none';
-        });
-        
-        // Remove active class from all tabs
-        document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.style.background = '#6c757d';
-        });
-        
-        // Show selected tab content
-        document.getElementById('content' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).style.display = 'block';
-        
-        // Add active class to selected tab
-        document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).style.background = '#2e8b57';
-    }
-
-    // Enhanced table styling for better UX
-    function enhanceTableStyling() {
-        // Add hover effects to table rows
-        const style = document.createElement('style');
-        style.textContent = `
-            .tab-content table tbody tr {
-                transition: all 0.3s ease;
-            }
-            .tab-content table tbody tr:hover {
-                background: #f8f9fa !important;
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            }
-            .tab-content table tbody td {
-                padding: 15px;
-                border-bottom: 1px solid #e9ecef;
-                vertical-align: middle;
-            }
-            .tab-content input:focus, .tab-content select:focus {
-                border-color: #2e8b57 !important;
-                box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.1) !important;
-                outline: none !important;
-            }
-            .nav-tab:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            }
-            .approved {
-                color: #28a745;
-                font-weight: 600;
-                background: #d4edda;
-                padding: 4px 8px;
-                border-radius: 4px;
-                font-size: 12px;
-            }
-            .pending {
-                color: #ffc107;
-                font-weight: 600;
-                background: #fff3cd;
-                padding: 4px 8px;
-                border-radius: 4px;
-                font-size: 12px;
-            }
-        `;
-        document.head.appendChild(style);
-    }
+// Success modal helpers
+function openAdminCreatedModal(text){
+  const m=document.getElementById('adminCreatedModal');
+  document.getElementById('adminCreatedText').textContent = text || 'The admin account has been created successfully.';
+  m.style.display='flex';
+  m.setAttribute('aria-hidden','false');
+}
+function closeAdminCreatedModal(){
+  const m=document.getElementById('adminCreatedModal');
+  m.style.display='none';
+  m.setAttribute('aria-hidden','true');
+}
+document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminCreatedModal);
 
     // Initial load
     loadCurrentAdmin();
@@ -1266,5 +1188,282 @@ function loadTeachers() {
     enhanceTableStyling();
     </script>
     </div>
+
+
+    <!-- Insert Admin Registration form here (place just inside #mainContent, e.g. before the <h2>) -->
+
+<!-- end insert -->
+
+<script>
+// ...existing code...
+
+// Show/hide inline admin form and wire the Add Admin button
+(function () {
+  const openBtn = document.getElementById('openAddAdminBtn');
+  const addSection = document.getElementById('addAdminSection');
+  const closeBtn = document.getElementById('closeInlineAdminBtn');
+
+  if (!addSection) return;
+
+  function showForm() {
+    addSection.style.display = 'block';
+    // show close button
+    if (closeBtn) closeBtn.style.display = 'inline-block';
+    // scroll into view centered
+    addSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function hideForm() {
+    addSection.style.display = 'none';
+    if (closeBtn) closeBtn.style.display = 'none';
+  }
+
+  if (openBtn) {
+    openBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      // close admin dropdown
+      document.getElementById('adminDropdownContent')?.classList.remove('show');
+      showForm();
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', hideForm);
+  }
+
+  // Clicking outside the form should not close the admin page; provide ESC to close
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && addSection.style.display === 'block') hideForm();
+  });
+
+  // Ensure togglePassword is available globally (used by inline onclicks)
+  if (typeof window.togglePassword !== 'function') {
+    window.togglePassword = function(fieldId, iconEl){
+      const input = document.getElementById(fieldId);
+      if (!input) return;
+      const eye = iconEl && iconEl.querySelector && iconEl.querySelector('.eye');
+      const eyeOff = iconEl && iconEl.querySelector && iconEl.querySelector('.eye-off');
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (eye) eye.classList.add('hidden');
+        if (eyeOff) eyeOff.classList.remove('hidden');
+      } else {
+        input.type = 'password';
+        if (eye) eye.classList.remove('hidden');
+        if (eyeOff) eyeOff.classList.add('hidden');
+      }
+    };
+  }
+})();
+
+(() => {
+  const form = document.getElementById('inlineAdminRegForm');
+  if(!form) return;
+
+  const f = id => document.getElementById(id);
+  const msgEl = f('message');
+
+  // Reuse config; create secondary app so we don't log out current admin
+  let secondaryApp;
+  function getSecondary(){
+    if(!secondaryApp){
+      secondaryApp = firebase.initializeApp(firebase.app().options, 'secondary');
+    }
+    return secondaryApp;
+  }
+
+  function setMsg(txt, ok){
+    msgEl.textContent = txt;
+    msgEl.className = ok ? 'success' : 'error';
+  }
+
+  form.addEventListener('submit', async e=>{
+    e.preventDefault();
+    // Clear errors
+    ['FirstName','MiddleName','LastName','AdminEmail','AdminPassword','ConfirmPassword','Terms'].forEach(n=>{
+      const el = document.getElementById('error'+n);
+      if(el) el.textContent='';
+    });
+    setMsg('', true);
+
+    const first = f('firstName').value.trim();
+    const middle = f('middleName').value.trim();
+    const last = f('lastName').value.trim();
+    const email = f('adminEmailInput').value.trim();
+    const pass = f('adminPassword').value;
+    const pass2 = f('confirmPassword').value;
+    const terms = f('termsCheckbox').checked;
+
+    let invalid=false;
+    if(!first){ f('errorFirstName').textContent='Required'; invalid=true; }
+    if(!last){ f('errorLastName').textContent='Required'; invalid=true; }
+    if(!email){ f('errorAdminEmail').textContent='Required'; invalid=true; }
+    if(pass.length<6){ f('errorAdminPassword').textContent='Min 6 chars'; invalid=true; }
+    if(pass!==pass2){ f('errorConfirmPassword').textContent='Passwords differ'; invalid=true; }
+    if(!terms){ f('errorTerms').textContent='Accept terms'; invalid=true; }
+    if(invalid) return;
+
+    setMsg('Creating admin account...', true);
+    form.querySelector('button[type=submit]').disabled=true;
+
+    try{
+      const sec = getSecondary();
+      const cred = await sec.auth().createUserWithEmailAndPassword(email, pass);
+      const uid = cred.user.uid;
+      const adminData = {
+        uid,
+        email,
+        fname:first,
+        mname:middle,
+        lname:last,
+        role:'admin',
+        createdAt: Date.now()
+      };
+      await firebase.database().ref('admins/'+uid).set(adminData);
+      setMsg('Admin created.', true);
+      openAdminCreatedModal('Admin '+(adminData.fname||'')+' '+(adminData.lname||'')+' has been created.');
+
+      // Clean up & keep current admin session
+      await sec.auth().signOut();
+      form.reset();
+    }catch(err){
+      console.error(err);
+      setMsg(err.message || 'Error creating admin', false);
+    }finally{
+      form.querySelector('button[type=submit]').disabled=false;
+    }
+  });
+})();
+</script>
+
+<script src="../assets/js/Admin/showTab.js"></script>
+
+<!-- Admin Registration Modal (converted from addAdminSection) -->
+<div class="admin-modal-bg" id="addAdminModal" style="display:none;" aria-hidden="true" role="dialog">
+  <div class="admin-modal-card" style="max-width:440px;">
+    <button class="close-btn" onclick="closeAddAdminModal()">&times;</button>
+    <div class="modal-title" style="margin-bottom:18px;">Admin Registration</div>
+    <form id="adminModalRegForm" autocomplete="off" novalidate>
+      <div class="profile-info">
+        <div>
+          <span class="modal-label">First Name</span>
+          <input type="text" id="modalFirstName" name="firstName" style="flex:1;">
+        </div>
+        <div>
+          <span class="modal-label">Middle Name</span>
+          <input type="text" id="modalMiddleName" name="middleName" style="flex:1;">
+        </div>
+        <div>
+          <span class="modal-label">Last Name</span>
+          <input type="text" id="modalLastName" name="lastName" style="flex:1;">
+        </div>
+        <div>
+          <span class="modal-label">Email</span>
+          <input type="email" id="modalAdminEmailInput" name="adminEmail" style="flex:1;">
+        </div>
+        <div>
+          <span class="modal-label">Password</span>
+          <input type="password" id="modalAdminPassword" name="adminPassword" style="flex:1;">
+        </div>
+        <div>
+          <span class="modal-label">Confirm</span>
+          <input type="password" id="modalConfirmPassword" name="confirmPassword" style="flex:1;">
+        </div>
+        <div style="margin-top:8px;">
+          <label style="font-weight:500;">
+            <input type="checkbox" id="modalTermsCheckbox" name="termsCheckbox" style="margin-right:8px;">
+            I agree to the Terms and Conditions
+          </label>
+        </div>
+      </div>
+      <div id="modalErrorMsg" style="color:#d32f2f;min-height:18px;margin:8px 0 0 0;"></div>
+      <button type="submit" class="logout-btn" style="margin-top:18px;">Register</button>
+    </form>
+  </div>
+</div>
+
+<script>
+// Show/hide modal
+function openAddAdminModal() {
+  document.getElementById('addAdminModal').style.display = 'flex';
+  document.getElementById('addAdminModal').setAttribute('aria-hidden','false');
+}
+function closeAddAdminModal() {
+  document.getElementById('addAdminModal').style.display = 'none';
+  document.getElementById('addAdminModal').setAttribute('aria-hidden','true');
+  document.getElementById('adminModalRegForm').reset();
+  document.getElementById('modalErrorMsg').textContent = '';
+}
+
+// Wire up the "Create New Admin" button to open the modal
+document.getElementById('openAddAdminBtn').onclick = function(e) {
+  e.preventDefault();
+  openAddAdminModal();
+};
+
+// Modal registration logic
+document.getElementById('adminModalRegForm').onsubmit = async function(e) {
+  e.preventDefault();
+  const fname = document.getElementById('modalFirstName').value.trim();
+  const mname = document.getElementById('modalMiddleName').value.trim();
+  const lname = document.getElementById('modalLastName').value.trim();
+  const email = document.getElementById('modalAdminEmailInput').value.trim();
+  const pass = document.getElementById('modalAdminPassword').value;
+  const pass2 = document.getElementById('modalConfirmPassword').value;
+  const terms = document.getElementById('modalTermsCheckbox').checked;
+  const err = document.getElementById('modalErrorMsg');
+  err.textContent = '';
+
+  if (!fname || !lname || !email || !pass || !pass2) {
+    err.textContent = 'All fields are required.';
+    return;
+  }
+  if (pass.length < 6) {
+    err.textContent = 'Password must be at least 6 characters.';
+    return;
+  }
+  if (pass !== pass2) {
+    err.textContent = 'Passwords do not match.';
+    return;
+  }
+  if (!terms) {
+    err.textContent = 'You must agree to the Terms and Conditions.';
+    return;
+  }
+
+  // Use secondary app to avoid logging out current admin
+  let secondaryApp;
+  if (!window._secondaryApp) {
+    window._secondaryApp = firebase.initializeApp(firebase.app().options, 'secondary');
+  }
+  secondaryApp = window._secondaryApp;
+
+  try {
+    err.textContent = 'Registering...';
+    const cred = await secondaryApp.auth().createUserWithEmailAndPassword(email, pass);
+    const uid = cred.user.uid;
+    const adminData = {
+      uid,
+      email,
+      fname,
+      mname,
+      lname,
+      role: 'admin',
+      createdAt: Date.now()
+    };
+    await firebase.database().ref('admins/' + uid).set(adminData);
+    await secondaryApp.auth().signOut();
+    err.style.color = '#2e7d32';
+    err.textContent = 'Admin registered!';
+    setTimeout(() => {
+      closeAddAdminModal();
+      loadAdmins();
+    }, 900);
+  } catch (ex) {
+    err.style.color = '#d32f2f';
+    err.textContent = ex.message || 'Registration failed.';
+  }
+};
+</script>
+
 </body>
 </html>

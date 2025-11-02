@@ -356,18 +356,23 @@
             // Calculate Math-specific scores
             students.forEach(s => {
                 // Math quiz points - only from math quizzes
-    let mathQuizPoints = 0;
-    if (s.quizzes) {
-        Object.keys(s.quizzes).forEach(quizKey => {
-            if (quizKey.includes('math') || quizKey.includes('lesson1') || quizKey.includes('clock-quiz')) {
-                const summary = s.quizzes[quizKey]?.summary;
-                if (summary && typeof summary.best === 'number') {
-                    mathQuizPoints += summary.best;
+                let mathQuizPoints = 0;
+                if (s.quizzes && Array.isArray(s.quizzes.subject_math)) {
+                    s.quizzes.subject_math.forEach(quarterObj => {
+                        if (quarterObj && typeof quarterObj === 'object') {
+                            Object.values(quarterObj).forEach(quizObj => {
+                                if (
+                                    quizObj &&
+                                    quizObj.summary &&
+                                    typeof quizObj.summary.totalScore === 'number'
+                                ) {
+                                    mathQuizPoints += quizObj.summary.totalScore;
+                                }
+                            });
+                        }
+                    });
                 }
-            }
-        });
-    }
-    s.quizPoints = mathQuizPoints;
+                s.quizPoints = mathQuizPoints;
                 
                 // Math assessment points - only from math assessments
                 let mathAssessmentPoints = 0;

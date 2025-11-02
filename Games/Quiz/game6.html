@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>English Fill in the Blanks (Drag & Drop)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #f0f4fa;
+      font-family: "Segoe UI", Arial, sans-serif;
+      width: 100vw;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    body {
+      width: 100vw;
+      height: 100vh;
+      min-height: 100vh;
+      min-width: 100vw;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: stretch;
+    }
+    .main-game-area {
+      flex: 1 1 0;
+      width: 100vw;
+      height: 100vh;
+      min-height: 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      background: #f0f4fa;
+    }
+    .card {
+      width: 100vw;
+      height: 100vh;
+      max-width: none;
+      max-height: none;
+      background: #fff;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      box-sizing: border-box;
+    }
+    #score {
+      margin-top: 24px;
+      font-size: 1.2em;
+      text-align: center;
+    }
+    .sentence {
+      font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+      margin: 0 0 18px 0;
+      line-height: 2.1;
+      text-align: center;
+      word-break: break-word;
+      padding: 8px 8vw;
+      min-height: 3.4em;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .blank {
+      display: inline-block;
+      min-width: 80px;
+      border-bottom: 2px solid #4f8cff;
+      background: #eaf6fb;
+      margin: 0 6px;
+      padding: 8px 18px;
+      border-radius: 12px;
+      vertical-align: middle;
+      font-weight: 700;
+      color: #4f8cff;
+      cursor: pointer;
+      transition: background .18s, color .18s, transform .12s;
+      user-select: none;
+      font-size: 1em;
+    }
+    .blank.filled { background: #d1e7dd; color: #198754; border-color: #198754; }
+    .blank.incorrect { background: #f8d7da; color: #b30000; border-color: #b30000; }
+    .word-bank {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      justify-content: center;
+      align-items: center;
+      padding: 0 8vw;
+      width: 100%;
+      margin-bottom: 12px;
+      min-height: 60px;
+      box-sizing: border-box;
+    }
+    .word {
+      background: #fff;
+      color: #1976d2;
+      border: 2px solid #4f8cff;
+      border-radius: 12px;
+      padding: 14px 32px;
+      font-size: 1.1em;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      transition: background .18s, color .18s, border .18s;
+      box-shadow: 0 2px 8px #0001;
+    }
+    .word.dragging { opacity: .5; transform: scale(.98); }
+    .controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      padding-top: 6px;
+      width: 100%;
+    }
+    button#next-btn {
+      padding: 14px 36px;
+      font-size: 1.1em;
+      border-radius: 8px;
+      border: none;
+      background: #bdbdbd;
+      color: #fff;
+      cursor: pointer;
+      margin: 0 auto 24px auto;
+      display: block;
+      font-weight: 600;
+      transition: background .18s;
+    }
+    button#next-btn:enabled {
+      background: #4f8cff;
+    }
+    #result {
+      text-align: center;
+      font-size: 1.2em;
+      margin-top: 18px;
+      min-height: 1.5em;
+    }
+    @media (max-width: 700px) {
+      .sentence { font-size: 1.1em; padding: 8px 2vw; }
+      .blank { min-width: 56px; padding: 6px 8px; font-size: .98em; }
+      .word { font-size: 1em; padding: 10px 12px; }
+      .word-bank { gap: 8px; }
+      button#next-btn { padding: 10px 18px; font-size: 1em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="main-game-area">
+    <div class="card" role="main" aria-label="Fill in the blanks game">
+      <div id="score" aria-live="polite"></div>
+      <div class="sentence" id="sentence" aria-hidden="false"></div>
+      <div class="word-bank" id="word-bank" aria-label="Word bank"></div>
+      <div class="controls">
+        <button id="next-btn" disabled>Next</button>
+      </div>
+      <div id="result" aria-live="polite"></div>
+    </div>
+  </div>
+  <script>
+    const quiz = [
+      { sentence: "The ___ jumps over the ___ dog.", blanks: ["quick","lazy"], distractors: ["brown","happy","sleepy"] },
+      { sentence: "She ___ to school every morning.", blanks: ["walks"], distractors: ["run","walk","walking"] },
+      { sentence: "I have ___ apples and ___ bananas.", blanks: ["three","two"], distractors: ["ten","red","yellow"] },
+      { sentence: "They are ___ a movie right now.", blanks: ["watching"], distractors: ["watched","watches","play"] }
+    ];
+
+    let current = 0, score = 0;
+    let filled = [], correct = [], usedWords = [];
+    let dragWord = null;
+
+    const sentenceEl = document.getElementById('sentence');
+    const wordBankEl = document.getElementById('word-bank');
+    const nextBtn = document.getElementById('next-btn');
+    const scoreEl = document.getElementById('score');
+    const resultEl = document.getElementById('result');
+
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
+
+    function renderQuestion(){
+      const q = quiz[current];
+      filled = Array(q.blanks.length).fill(null);
+      correct = Array(q.blanks.length).fill(false);
+      usedWords = [];
+      dragWord = null;
+      sentenceEl.innerHTML = '';
+      resultEl.textContent = '';
+      nextBtn.disabled = true;
+
+      // build sentence with blanks
+      const parts = q.sentence.split("___");
+      for(let i=0;i<parts.length;i++){
+        sentenceEl.append(document.createTextNode(parts[i]));
+        if(i < q.blanks.length){
+          const span = document.createElement('span');
+          span.className = 'blank';
+          span.setAttribute('data-idx', i);
+          span.tabIndex = 0;
+          span.addEventListener('dragover', e => { e.preventDefault(); span.classList.add('drag-over'); });
+          span.addEventListener('dragleave', e => { span.classList.remove('drag-over'); });
+          span.addEventListener('drop', e => {
+            e.preventDefault();
+            span.classList.remove('drag-over');
+            if(dragWord) fillBlank(i, dragWord);
+          });
+          span.addEventListener('touchend', e => {
+            if(dragWord) fillBlank(i, dragWord);
+          }, {passive:true});
+          span.addEventListener('click', () => {
+            if(filled[i] !== null){
+              usedWords = usedWords.filter(w => w !== filled[i]);
+              filled[i] = null;
+              correct[i] = false;
+              updateUI();
+            }
+          });
+          sentenceEl.appendChild(span);
+        }
+      }
+
+      // build word bank
+      let words = q.blanks.concat(q.distractors);
+      shuffle(words);
+      wordBankEl.innerHTML = '';
+      words.forEach(w => {
+        const wordEl = document.createElement('div');
+        wordEl.className = 'word';
+        wordEl.textContent = w;
+        wordEl.draggable = true;
+        wordEl.addEventListener('dragstart', e => {
+          dragWord = w;
+          wordEl.classList.add('dragging');
+        });
+        wordEl.addEventListener('dragend', e => { dragWord = null; wordEl.classList.remove('dragging'); });
+        wordEl.addEventListener('touchstart', e => {
+          dragWord = w;
+          wordEl.classList.add('dragging');
+        }, {passive:true});
+        wordEl.addEventListener('touchend', e => {
+          const idx = filled.findIndex(f => f === null);
+          if(idx !== -1) fillBlank(idx, w);
+          dragWord = null;
+          wordEl.classList.remove('dragging');
+        }, {passive:true});
+        wordEl.addEventListener('click', () => {
+          const idx = filled.findIndex(f => f === null);
+          if(idx !== -1) fillBlank(idx, w);
+        });
+        wordBankEl.appendChild(wordEl);
+      });
+
+      updateUI();
+    }
+
+    function fillBlank(idx, word){
+      if(usedWords.includes(word)) return;
+      filled[idx] = word;
+      usedWords.push(word);
+      const q = quiz[current];
+      correct[idx] = (word === q.blanks[idx]);
+      updateUI();
+      checkCompletion();
+    }
+
+    function updateUI(){
+      const blanks = sentenceEl.querySelectorAll('.blank');
+      blanks.forEach((b, i) => {
+        b.textContent = filled[i] || '';
+        b.classList.toggle('filled', Boolean(filled[i] && correct[i]));
+        b.classList.toggle('incorrect', Boolean(filled[i] && !correct[i]));
+      });
+      Array.from(wordBankEl.children).forEach(n => {
+        n.style.opacity = usedWords.includes(n.textContent) ? '0.35' : '1';
+        n.style.pointerEvents = usedWords.includes(n.textContent) ? 'none' : 'auto';
+      });
+      scoreEl.textContent = `Score: ${score} / ${quiz.length}`;
+    }
+
+    function checkCompletion(){
+      if(filled.every(w => w !== null)){
+        const q = quiz[current];
+        let allCorrect = true;
+        for(let i=0;i<q.blanks.length;i++){
+          if(filled[i] === q.blanks[i]){
+            correct[i] = true;
+          } else {
+            correct[i] = false;
+            allCorrect = false;
+          }
+        }
+        updateUI();
+        if(allCorrect){
+          score++;
+          resultEl.textContent = "✅ Correct!";
+          nextBtn.disabled = false;
+        }else{
+          resultEl.textContent = "❌ Some are incorrect — tap a filled blank to remove and try again.";
+          nextBtn.disabled = true;
+        }
+      }
+    }
+
+    nextBtn.addEventListener('click', () => {
+      current++;
+      if(current < quiz.length){
+        renderQuestion();
+      }else showResult();
+    });
+
+    function showResult(){
+      sentenceEl.innerHTML = '';
+      wordBankEl.innerHTML = '';
+      nextBtn.style.display = 'none';
+      scoreEl.textContent = `Final Score: ${score} / ${quiz.length}`;
+      resultEl.textContent = score === quiz.length
+        ? "🎉 Excellent! You filled all the blanks!"
+        : score >= quiz.length/2
+          ? "👍 Good job! Keep practicing!"
+          : "💡 Try again for a better score!";
+    }
+
+    renderQuestion();
+  </script>
+</body>
+</html>
