@@ -58,12 +58,16 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
       container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;"><i class="fa fa-spinner fa-spin"></i> Loading Supabase designs...</div>';
     }
 
-    // Load metadata from designs-list
-    const { data: kvData } = await supabaseClient
+    // Load metadata from designs-list (use maybeSingle to avoid errors if table doesn't exist)
+    const { data: kvData, error: kvError } = await supabaseClient
       .from('designs_metadata')
       .select('value')
       .eq('key', 'designs-list')
-      .single();
+      .maybeSingle();
+    
+    if (kvError && kvError.code !== 'PGRST116') { // PGRST116 = not found (expected)
+      console.warn('Error loading metadata:', kvError);
+    }
 
     if (!kvData || !kvData.value) {
       console.log('No metadata found, listing files directly...');
