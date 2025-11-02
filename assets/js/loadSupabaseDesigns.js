@@ -376,6 +376,7 @@ async function openSupabaseDesignViewer(designId, subject, designName = 'Design'
     sessionStorage.setItem('supabase-design-subject', subject);
     sessionStorage.setItem('supabase-design-name', designName);
     sessionStorage.setItem('supabase-design-quarter', quarter);
+    sessionStorage.setItem('supabase-design-grade', gradeLevel || '');
 
     // Open in fullscreen viewer - try getEditorBase first, then fallback
     let editorBaseUrl = '../deploy/editor/index.html';
@@ -465,6 +466,7 @@ async function openSupabaseDesignEditor(designId, subject, designName = 'Design'
     sessionStorage.setItem('supabase-design-subject', subject);
     sessionStorage.setItem('supabase-design-name', designName);
     sessionStorage.setItem('supabase-design-quarter', quarter);
+    sessionStorage.setItem('supabase-design-grade', gradeLevel || '');
 
     // Open in editor mode - try getEditorBase first, then fallback
     let editorBaseUrl = '../deploy/editor/index.html';

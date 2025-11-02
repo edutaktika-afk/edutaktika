@@ -237,6 +237,14 @@
                 window.location.href = "logreg.html";
             } else {
                 document.getElementById('mainContent').style.display = "block";
+                
+                // Store teacher's grade level in sessionStorage for Editor
+                if (teacher && teacher.gradelevel) {
+                    const grade = teacher.gradelevel.toString();
+                    const gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+                    sessionStorage.setItem('supabase-design-grade', gradeLevel);
+                    console.log(`📚 Stored teacher grade level in sessionStorage: ${gradeLevel}`);
+                }
             }
         });
     });
