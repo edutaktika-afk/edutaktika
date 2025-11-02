@@ -133,7 +133,8 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
           id: fileId,
           name: fileId, // Will use ID as name if no metadata
           thumbnail: data.publicUrl,
-          source: 'supabase'
+          source: 'supabase',
+          quarter: quarter // Store the quarter so it can be passed to editor
         });
       }
 
