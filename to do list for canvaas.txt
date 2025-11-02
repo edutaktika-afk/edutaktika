@@ -154,3 +154,12 @@ window.parent.postMessage({
     slideIndex: parentTestIndex // <-- Always use this!
   }
 }, '*');
+
+
+Edit button: Hidden by default, shown only in quizEditor (via param, window.name, or postMessage).
+Edits: Only affect Firebase/localStorage, not the original file.
+Saving: Save edited questions to Firebase in quizEditor.
+Loading: Load questions from Firebase if available, otherwise use defaults.
+
+The score is calculated and sent to the parent for saving.
+The user does not see their score after clicking Finish; they only see a completion message.

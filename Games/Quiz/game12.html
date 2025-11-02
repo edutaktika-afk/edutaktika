@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Froggy Jumps</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #b3e5fc; margin: 0; }
+    #game-container {
+      max-width: 1100px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 2px 16px #0002;
+      padding: 0 0 32px 0;
+      width: 98vw;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    #question-bar {
+      background: #e3f2fd;
+      border-radius: 18px 18px 0 0;
+      padding: 24px 32px 18px 32px;
+      font-size: 1.25em;
+      font-weight: 600;
+      border-bottom: 2px solid #90caf9;
+      margin-bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 70px;
+      position: relative;
+    }
+    #question-bar .qnum {
+      font-size: 1em;
+      font-weight: 700;
+      color: #1976d2;
+      margin-right: 18px;
+    }
+    #question-bar .qimg {
+      margin-left: 18px;
+      max-height: 40px;
+      max-width: 60px;
+      vertical-align: middle;
+    }
+    #pond {
+      position: relative;
+      width: 100%;
+      height: 420px;
+      background: url('https://i.imgur.com/4QfKuz1.png') repeat;
+      background-size: 180px 180px;
+      margin: 0 auto 0 auto;
+      overflow: hidden;
+      border-bottom-left-radius: 18px;
+      border-bottom-right-radius: 18px;
+      z-index: 1;
+    }
+    .lilypad {
+      position: absolute;
+      width: 180px;
+      height: 110px;
+      background: #388e3c;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      box-shadow: 0 4px 18px #0003;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2em;
+      color: #fff;
+      cursor: pointer;
+      border: 4px solid #2e7031;
+      transition: background 0.2s, border 0.2s, transform 0.2s;
+      z-index: 1;
+      user-select: none;
+      font-weight: 700;
+      text-shadow: 1px 2px 6px #0007;
+      flex-direction: column;
+    }
+    .lilypad.correct {
+      background: #aed581;
+      border-color: #558b2f;
+      color: #33691e;
+    }
+    .lilypad.incorrect {
+      background: #ffcdd2;
+      border-color: #d32f2f;
+      color: #b71c1c;
+    }
+    .lilypad .label {
+      background: #1976d2;
+      color: #fff;
+      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1em;
+      font-weight: bold;
+      margin-bottom: 6px;
+      margin-top: -10px;
+      box-shadow: 0 2px 8px #0002;
+      border: 2px solid #fff;
+    }
+    #froggy {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      z-index: 2;
+      transition: left 0.5s, top 0.5s;
+      pointer-events: none;
+      left: 50%;
+      top: 85%;
+      transform: translate(-50%, -50%);
+      display: block;
+      filter: drop-shadow(0 8px 16px #0004);
+    }
+    #froggy img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    #scorebar {
+      position: absolute;
+      left: 24px;
+      bottom: 24px;
+      background: #fff;
+      border-radius: 50px;
+      box-shadow: 0 2px 8px #0002;
+      padding: 10px 22px;
+      font-size: 1.1em;
+      color: #1976d2;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      z-index: 10;
+    }
+    #next-btn {
+      margin-top: 24px;
+      padding: 14px 38px;
+      font-size: 1.15em;
+      border: none;
+      border-radius: 8px;
+      background: #1976d2;
+      color: #fff;
+      cursor: pointer;
+      display: none;
+      font-weight: 600;
+      box-shadow: 0 2px 8px #0002;
+    }
+    #next-btn:disabled { background: #ccc; cursor: not-allowed; }
+    #result {
+      text-align: center;
+      font-size: 1.3em;
+      margin-top: 32px;
+      font-weight: 700;
+      color: #1976d2;
+    }
+    @media (max-width: 900px) {
+      #pond { height: 320px; }
+      .lilypad { width: 120px; height: 70px; font-size: 1.1em; }
+      #froggy { width: 70px; height: 70px; }
+    }
+    @media (max-width: 600px) {
+      #game-container { width: 100vw; border-radius: 0; }
+      #pond { height: 200px; }
+      .lilypad { width: 70px; height: 38px; font-size: 0.9em; }
+      #froggy { width: 36px; height: 36px; }
+      #question-bar { font-size: 1em; padding: 10px 4vw 10px 4vw; }
+      #scorebar { left: 2vw; bottom: 8px; font-size: 0.95em; }
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="question-bar">
+      <span class="qnum" id="qnum"></span>
+      <span id="question"></span>
+      <img id="qimg" class="qimg" style="display:none;">
+    </div>
+    <div id="pond">
+      <div id="froggy"><img src="https://i.imgur.com/8Qf8QkR.png" alt="Froggy"></div>
+    </div>
+    <div id="scorebar">
+      <span id="score"></span>
+      <span id="timer"></span>
+    </div>
+    <button id="next-btn">Next</button>
+    <div id="result"></div>
+  </div>
+  <script>
+    // Example quiz data for Froggy Jumps
+    const quiz = [
+      {
+        question: "When rolled up, not even a lion can hunt it (unfortunately humans can). What's it called?",
+        options: ["Squamed", "Armadillo", "Pangolin"],
+        answer: 2,
+        image: "https://upload.wikimedia.org/wikipedia/commons/6/6b/Manis_javanica_2.jpg"
+      },
+      {
+        question: "Which animal is a mammal?",
+        options: ["Frog", "Dog", "Eagle", "Shark"],
+        answer: 1,
+        image: "https://upload.wikimedia.org/wikipedia/commons/7/73/Lion_waiting_in_Namibia.jpg"
+      },
+      {
+        question: "Which is a fruit?",
+        options: ["Carrot", "Potato", "Apple", "Celery"],
+        answer: 2,
+        image: "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg"
+      },
+      {
+        question: "Which is a vehicle?",
+        options: ["Bicycle", "Banana", "Lion", "Rose"],
+        answer: 0,
+        image: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Bicycle_bike_icon.png"
+      }
+    ];
+
+    let current = 0;
+    let score = 0;
+    let timer = 0;
+    let interval = null;
+    let froggyPos = { left: 0, top: 0 };
+
+    const questionEl = document.getElementById('question');
+    const qnumEl = document.getElementById('qnum');
+    const qimgEl = document.getElementById('qimg');
+    const pondEl = document.getElementById('pond');
+    const froggyEl = document.getElementById('froggy');
+    const nextBtn = document.getElementById('next-btn');
+    const scoreEl = document.getElementById('score');
+    const timerEl = document.getElementById('timer');
+    const resultEl = document.getElementById('result');
+
+    function startTimer() {
+      timer = 0;
+      timerEl.textContent = "⏱ 00:00";
+      if (interval) clearInterval(interval);
+      interval = setInterval(() => {
+        timer++;
+        timerEl.textContent = "⏱ " + ("0" + Math.floor(timer/60)).slice(-2) + ":" + ("0" + (timer%60)).slice(-2);
+      }, 1000);
+    }
+
+    function stopTimer() {
+      if (interval) clearInterval(interval);
+    }
+
+    function showQuestion() {
+      const q = quiz[current];
+      qnumEl.textContent = `${current + 1} / ${quiz.length}`;
+      questionEl.textContent = q.question;
+      if (q.image) {
+        qimgEl.src = q.image;
+        qimgEl.style.display = '';
+      } else {
+        qimgEl.style.display = 'none';
+      }
+      resultEl.textContent = '';
+      nextBtn.style.display = 'none';
+      scoreEl.textContent = `Score: ${score} / ${quiz.length}`;
+      // Remove old lilypads
+      Array.from(pondEl.querySelectorAll('.lilypad')).forEach(e => e.remove());
+      // Arrange lilypads in a circle
+      const padCount = q.options.length;
+      const centerX = pondEl.offsetWidth / 2;
+      const centerY = pondEl.offsetHeight * 0.60;
+      const radius = Math.min(centerX, centerY) - 60;
+      let firstPadX = 0, firstPadY = 0;
+      for (let i = 0; i < padCount; i++) {
+        const angle = Math.PI * (1 + (i / (padCount - 1)) * 1); // spread pads horizontally
+        const x = centerX + Math.cos(angle) * radius - 90;
+        const y = centerY + Math.sin(angle) * radius - 30;
+        const pad = document.createElement('div');
+        pad.className = 'lilypad';
+        pad.style.left = `${x}px`;
+        pad.style.top = `${y}px`;
+        pad.innerHTML = `<div class="label">${String.fromCharCode(65 + i)}</div>${q.options[i]}`;
+        pad.onclick = () => jumpToPad(i, x, y, pad);
+        pondEl.appendChild(pad);
+        // Store correct pad position for froggy start
+        if (i === 0) {
+          firstPadX = x + 40;
+          firstPadY = y + 30;
+        }
+      }
+      // Place froggy at the bottom center for each question
+      froggyEl.style.display = 'block';
+      froggyEl.style.left = (pondEl.offsetWidth / 2 - froggyEl.offsetWidth / 2) + 'px';
+      froggyEl.style.top = (pondEl.offsetHeight - froggyEl.offsetHeight / 1.5) + 'px';
+      startTimer();
+    }
+
+    function jumpToPad(idx, x, y, pad) {
+      const q = quiz[current];
+      // Move froggy
+      froggyEl.style.left = (x + 40) + 'px';
+      froggyEl.style.top = (y + 30) + 'px';
+      // Disable all lilypads
+      Array.from(pondEl.querySelectorAll('.lilypad')).forEach(e => e.onclick = null);
+      // Check answer
+      setTimeout(() => {
+        if (idx === q.answer) {
+          pad.classList.add('correct');
+          score++;
+          resultEl.textContent = "✅ Correct!";
+        } else {
+          pad.classList.add('incorrect');
+          resultEl.textContent = "❌ Oops! Try the next one!";
+        }
+        nextBtn.style.display = 'inline-block';
+        scoreEl.textContent = `Score: ${score} / ${quiz.length}`;
+        stopTimer();
+      }, 400);
+    }
+
+    nextBtn.onclick = () => {
+      current++;
+      if (current < quiz.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    };
+
+    function showResult() {
+      questionEl.textContent = '';
+      qimgEl.style.display = 'none';
+      Array.from(pondEl.querySelectorAll('.lilypad')).forEach(e => e.remove());
+      froggyEl.style.display = 'none';
+      nextBtn.style.display = 'none';
+      stopTimer();
+      scoreEl.textContent = `Final Score: ${score} / ${quiz.length}`;
+      resultEl.textContent = score === quiz.length
+        ? "🎉 Froggy made it to the shore! Perfect!"
+        : score >= quiz.length / 2
+          ? "👍 Good job! Froggy is almost there!"
+          : "💡 Try again to help Froggy!";
+    }
+
+    // Responsive: re-render lilypads on resize
+    window.addEventListener('resize', () => {
+      if (current < quiz.length) showQuestion();
+    });
+
+    // Start game
+    showQuestion();
+  </script>
+</body>
+</html>
