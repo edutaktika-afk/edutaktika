@@ -361,10 +361,15 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
     id = nanoid(10);
   }
   
-  // Validate subject
+  // Validate subject and quarter
   if (!subject) {
     console.error('❌ Error: No subject provided!');
     throw new Error('Subject is required');
+  }
+  
+  if (!quarter) {
+    console.error('❌ Error: No quarter provided!');
+    throw new Error('Quarter is required');
   }
 
   const subjectFolder = getSubjectFolder(subject);
@@ -375,8 +380,10 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
     throw new Error(`Invalid subject: ${subject}. Must be one of: science, english, math`);
   }
   
-  const previewPath = `${subjectFolder}/${id}.jpg`;
-  const storePath = `${subjectFolder}/${id}.json`;
+  // Include quarter in the path: subject/quarterX/id.json
+  const quarterFolder = `quarter${quarter}`;
+  const previewPath = `${subjectFolder}/${quarterFolder}/${id}.jpg`;
+  const storePath = `${subjectFolder}/${quarterFolder}/${id}.json`;
   console.log(`📤 Upload paths: preview="${previewPath}", design="${storePath}"`);
 
   await writeFile(previewPath, preview);

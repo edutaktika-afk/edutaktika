@@ -264,7 +264,13 @@ const App = observer(({ store }) => {
         
         const subjectFolder = getSubjectFolder(subject);
         console.log(`📁 Subject: "${subject}" → Folder: "${subjectFolder}"`);
-        console.log(`📁 Downloading from folder: ${subjectFolder}/${designId}.json`);
+        
+        // Get quarter from URL params or sessionStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const quarter = urlParams.get('quarter') || sessionStorage.getItem('supabase-design-quarter') || '1';
+        const quarterFolder = `quarter${quarter}`;
+        const fullPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
+        console.log(`📁 Downloading from folder: ${fullPath}`);
         
         if (!subjectFolder) {
           throw new Error(`Invalid subject: "${subject}". Cannot determine folder.`);
@@ -272,7 +278,7 @@ const App = observer(({ store }) => {
         
         const { data, error } = await supabase.storage
           .from('LessonStorage')
-          .download(`${subjectFolder}/${designId}.json`);
+          .download(fullPath);
 
         console.log('Download result:', { hasData: !!data, error });
         

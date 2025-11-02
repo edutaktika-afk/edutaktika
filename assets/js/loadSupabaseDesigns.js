@@ -67,10 +67,12 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
 
     if (!kvData || !kvData.value) {
       console.log('No metadata found, listing files directly...');
-      // Fall back to listing files directly
+      // Fall back to listing files directly from quarter subfolder
+      const quarterFolder = `quarter${quarter}`;
+      const fullPath = `${subjectFolder}/${quarterFolder}`;
       const { data: files, error } = await supabaseClient.storage
         .from(BUCKET_NAME)
-        .list(subjectFolder, {
+        .list(fullPath, {
           limit: 100,
           offset: 0,
         });
@@ -99,7 +101,7 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
         const fileId = file.name.replace('.json', '');
         const { data } = supabaseClient.storage
           .from(BUCKET_NAME)
-          .getPublicUrl(`${subjectFolder}/${fileId}.jpg`);
+          .getPublicUrl(`${fullPath}/${fileId}.jpg`);
         
         designs.push({
           id: fileId,
@@ -144,10 +146,11 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
     }
 
     // Get public URLs for thumbnails
+    const quarterFolder = `quarter${quarter}`;
     const designsWithUrls = filteredDesigns.map(design => {
       const { data } = supabaseClient.storage
         .from(BUCKET_NAME)
-        .getPublicUrl(`${SUBJECT_FOLDERS[subject.toLowerCase()]}/${design.id}.jpg`);
+        .getPublicUrl(`${SUBJECT_FOLDERS[subject.toLowerCase()]}/${quarterFolder}/${design.id}.jpg`);
       
       return {
         ...design,
@@ -246,11 +249,13 @@ async function openSupabaseDesignViewer(designId, subject, designName = 'Design'
     }
 
     const subjectFolder = SUBJECT_FOLDERS[subject.toLowerCase()] || subject.toUpperCase();
+    const quarterFolder = `quarter${quarter}`;
+    const fullPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
     
     // Download the design JSON
     const { data, error } = await supabaseClient.storage
       .from(BUCKET_NAME)
-      .download(`${subjectFolder}/${designId}.json`);
+      .download(fullPath);
 
     if (error) {
       console.error('Error downloading design:', error);
@@ -276,7 +281,7 @@ async function openSupabaseDesignViewer(designId, subject, designName = 'Design'
     } else if (typeof getEditorBaseUrl === 'function') {
       editorBaseUrl = getEditorBaseUrl();
     }
-    const viewerUrl = editorBaseUrl + '?supabaseDesign=' + designId + '&subject=' + subject;
+    const viewerUrl = editorBaseUrl + '?supabaseDesign=' + designId + '&subject=' + subject + '&quarter=' + quarter;
     window.open(viewerUrl, '_blank', 'width=1400,height=900');
 
   } catch (error) {
@@ -298,11 +303,13 @@ async function openSupabaseDesignEditor(designId, subject, designName = 'Design'
     }
 
     const subjectFolder = SUBJECT_FOLDERS[subject.toLowerCase()] || subject.toUpperCase();
+    const quarterFolder = `quarter${quarter}`;
+    const fullPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
     
     // Download the design JSON
     const { data, error } = await supabaseClient.storage
       .from(BUCKET_NAME)
-      .download(`${subjectFolder}/${designId}.json`);
+      .download(fullPath);
 
     if (error) {
       console.error('Error downloading design:', error);
@@ -328,7 +335,7 @@ async function openSupabaseDesignEditor(designId, subject, designName = 'Design'
     } else if (typeof getEditorBaseUrl === 'function') {
       editorBaseUrl = getEditorBaseUrl();
     }
-    const editorUrl = editorBaseUrl + '?supabaseDesign=' + designId + '&subject=' + subject + '&view=true';
+    const editorUrl = editorBaseUrl + '?supabaseDesign=' + designId + '&subject=' + subject + '&quarter=' + quarter + '&view=true';
     window.open(editorUrl, '_blank', 'width=1400,height=900');
 
   } catch (error) {
