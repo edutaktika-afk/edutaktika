@@ -1165,6 +1165,117 @@ function viewQuiz(quarter, name, mode = 'view', subject = subjectPage) {
     }
 }
 
+// New design gallery functions with environment-aware URLs
+function openDesignViewer(jsonUrl) {
+    console.log('🎨 Opening design in full Editor mode:', jsonUrl);
+    
+    // Show loading state
+    showButtonLoading('view');
+    
+    try {
+        // Use environment-aware editor URL - Full Editor mode with design loaded
+        const editorBaseUrl = getEditorBaseUrl();
+        const editorUrl = `${editorBaseUrl}?design=${encodeURIComponent(jsonUrl)}`;
+        console.log('🔗 Full Editor URL:', editorUrl);
+        
+        // Open in new window with full editor dimensions
+        const newWindow = window.open(editorUrl, '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
+        if (!newWindow) {
+            alert('Please allow popups for this site to open the Editor.');
+        } else {
+            // Check if window loaded successfully
+            setTimeout(() => {
+                if (newWindow.closed) {
+                    console.log('❌ Editor window was closed');
+                } else {
+                    console.log('✅ Editor opened in full mode');
+                }
+                hideButtonLoading('view');
+            }, 1000);
+        }
+    } catch (error) {
+        console.error('❌ Error opening design viewer:', error);
+        alert('Error opening design viewer. Please try again.');
+        hideButtonLoading('view');
+    }
+}
+
+function openDesignEditor(jsonUrl) {
+    console.log('✏️ Opening design in editor mode:', jsonUrl);
+    
+    // Show loading state
+    showButtonLoading('edit');
+    
+    try {
+        // Use environment-aware editor URL
+        const editorBaseUrl = getEditorBaseUrl();
+        const editorUrl = `${editorBaseUrl}?design=${encodeURIComponent(jsonUrl)}&view=true`;
+        console.log('🔗 Editor URL:', editorUrl);
+        
+        // Open in new window with better dimensions
+        const newWindow = window.open(editorUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+        if (!newWindow) {
+            alert('Please allow popups for this site to edit designs.');
+        } else {
+            // Check if window loaded successfully
+            setTimeout(() => {
+                if (newWindow.closed) {
+                    console.log('❌ Editor window was closed');
+                } else {
+                    console.log('✅ Editor window opened successfully');
+                }
+                hideButtonLoading('edit');
+            }, 1000);
+        }
+    } catch (error) {
+        console.error('❌ Error opening design editor:', error);
+        alert('Error opening design editor. Please try again.');
+        hideButtonLoading('edit');
+    }
+}
+
+// Button loading state functions
+function showButtonLoading(type) {
+    const buttons = document.querySelectorAll(`button[onclick*="openDesign${type === 'view' ? 'Viewer' : 'Editor'}"]`);
+    buttons.forEach(button => {
+        const originalText = button.innerHTML;
+        button.setAttribute('data-original-text', originalText);
+        button.innerHTML = `<i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i>Loading...`;
+        button.disabled = true;
+        button.style.opacity = '0.7';
+    });
+}
+
+function hideButtonLoading(type) {
+    const buttons = document.querySelectorAll(`button[onclick*="openDesign${type === 'view' ? 'Viewer' : 'Editor'}"]`);
+    buttons.forEach(button => {
+        const originalText = button.getAttribute('data-original-text');
+        if (originalText) {
+            button.innerHTML = originalText;
+            button.removeAttribute('data-original-text');
+        }
+        button.disabled = false;
+        button.style.opacity = '1';
+    });
+}
+
+// Environment-aware editor URL function
+function getEditorBaseUrl() {
+    // Always use the built Editor from deploy/editor folder
+    // This ensures we use the production build with Firebase SDK included
+    return '../deploy/editor/index.html';
+}
+
+// Use buildEditorUrl from editorEnv.js if available, otherwise create one
+if (typeof buildEditorUrl === 'undefined') {
+    function buildEditorUrl(paramsObj) {
+        const base = getEditorBaseUrl();
+        const params = new URLSearchParams(paramsObj || {});
+        const sep = base.includes('?') ? '&' : '?';
+        return base + (params.toString() ? (sep + params.toString()) : '');
+    }
+}
+
 
 </script>
 
