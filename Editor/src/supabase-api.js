@@ -115,9 +115,9 @@ const readKv = async function readKv(key) {
         .from('designs_metadata')
         .select('value')
         .eq('key', key)
-        .single();
+        .maybeSingle(); // Use maybeSingle to avoid errors when not found
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') { // PGRST116 = not found (expected)
         console.error('Supabase read KV error:', error);
         return await storage.getItem(key);
       }
