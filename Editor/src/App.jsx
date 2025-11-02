@@ -268,17 +268,28 @@ const App = observer(({ store }) => {
         // Get quarter from URL params or sessionStorage
         const urlParams = new URLSearchParams(window.location.search);
         const quarter = urlParams.get('quarter') || sessionStorage.getItem('supabase-design-quarter') || '1';
-        const quarterFolder = `quarter${quarter}`;
-        const fullPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
-        console.log(`📁 Downloading from folder: ${fullPath}`);
         
         if (!subjectFolder) {
           throw new Error(`Invalid subject: "${subject}". Cannot determine folder.`);
         }
         
-        const { data, error } = await supabase.storage
+        // Try new quarter-based structure first, fallback to old direct structure
+        const quarterFolder = `quarter${quarter}`;
+        const newPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
+        const oldPath = `${subjectFolder}/${designId}.json`;
+        console.log(`📁 Trying path: ${newPath}`);
+        
+        let { data, error } = await supabase.storage
           .from('LessonStorage')
-          .download(fullPath);
+          .download(newPath);
+
+        // If new structure fails, try old structure
+        if (error) {
+          console.log(`⚠️ New path failed, trying old path: ${oldPath}`);
+          ({ data, error } = await supabase.storage
+            .from('LessonStorage')
+            .download(oldPath));
+        }
 
         console.log('Download result:', { hasData: !!data, error });
         

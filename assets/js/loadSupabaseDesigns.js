@@ -67,15 +67,34 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
 
     if (!kvData || !kvData.value) {
       console.log('No metadata found, listing files directly...');
-      // Fall back to listing files directly from quarter subfolder
+      // Fall back to listing files directly - try quarter subfolder first, then old structure
       const quarterFolder = `quarter${quarter}`;
-      const fullPath = `${subjectFolder}/${quarterFolder}`;
-      const { data: files, error } = await supabaseClient.storage
+      const newPath = `${subjectFolder}/${quarterFolder}`;
+      const oldPath = subjectFolder;
+      
+      let files, error, fullPath;
+      
+      // Try new structure first
+      console.log(`📁 Trying to list: ${newPath}`);
+      ({ data: files, error } = await supabaseClient.storage
         .from(BUCKET_NAME)
-        .list(fullPath, {
+        .list(newPath, {
           limit: 100,
           offset: 0,
-        });
+        }));
+      
+      if (error) {
+        console.log(`⚠️ New path failed, trying old path: ${oldPath}`);
+        ({ data: files, error } = await supabaseClient.storage
+          .from(BUCKET_NAME)
+          .list(oldPath, {
+            limit: 100,
+            offset: 0,
+          }));
+        fullPath = oldPath;
+      } else {
+        fullPath = newPath;
+      }
 
       if (error) {
         console.error('Error listing files:', error);
@@ -249,16 +268,29 @@ async function openSupabaseDesignViewer(designId, subject, designName = 'Design'
     }
 
     const subjectFolder = SUBJECT_FOLDERS[subject.toLowerCase()] || subject.toUpperCase();
-    const quarterFolder = `quarter${quarter}`;
-    const fullPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
     
-    // Download the design JSON
-    const { data, error } = await supabaseClient.storage
+    // Try new quarter-based structure first, fallback to old direct structure
+    const quarterFolder = `quarter${quarter}`;
+    const newPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
+    const oldPath = `${subjectFolder}/${designId}.json`;
+    
+    console.log(`📁 Trying path: ${newPath}`);
+    
+    // Download the design JSON - try new structure first
+    let { data, error } = await supabaseClient.storage
       .from(BUCKET_NAME)
-      .download(fullPath);
+      .download(newPath);
+
+    // If new structure fails, try old structure
+    if (error) {
+      console.log(`⚠️ New path failed, trying old path: ${oldPath}`);
+      ({ data, error } = await supabaseClient.storage
+        .from(BUCKET_NAME)
+        .download(oldPath));
+    }
 
     if (error) {
-      console.error('Error downloading design:', error);
+      console.error('Error downloading design from both locations:', error);
       alert('Error loading design: ' + error.message);
       return;
     }
@@ -303,16 +335,29 @@ async function openSupabaseDesignEditor(designId, subject, designName = 'Design'
     }
 
     const subjectFolder = SUBJECT_FOLDERS[subject.toLowerCase()] || subject.toUpperCase();
-    const quarterFolder = `quarter${quarter}`;
-    const fullPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
     
-    // Download the design JSON
-    const { data, error } = await supabaseClient.storage
+    // Try new quarter-based structure first, fallback to old direct structure
+    const quarterFolder = `quarter${quarter}`;
+    const newPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
+    const oldPath = `${subjectFolder}/${designId}.json`;
+    
+    console.log(`📁 Trying path: ${newPath}`);
+    
+    // Download the design JSON - try new structure first
+    let { data, error } = await supabaseClient.storage
       .from(BUCKET_NAME)
-      .download(fullPath);
+      .download(newPath);
+
+    // If new structure fails, try old structure
+    if (error) {
+      console.log(`⚠️ New path failed, trying old path: ${oldPath}`);
+      ({ data, error } = await supabaseClient.storage
+        .from(BUCKET_NAME)
+        .download(oldPath));
+    }
 
     if (error) {
-      console.error('Error downloading design:', error);
+      console.error('Error downloading design from both locations:', error);
       alert('Error loading design: ' + error.message);
       return;
     }
