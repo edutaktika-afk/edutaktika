@@ -117,6 +117,32 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
       if (jsonFiles.length === 0) {
         if (container) {
           container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No designs found.<br><small>Click "Create Lesson" to get started!</small></div>';
+        }
+        return [];
+      }
+
+      // Load each file to get metadata
+      const designs = [];
+      for (const file of jsonFiles) {
+        const fileId = file.name.replace('.json', '');
+        const { data } = supabaseClient.storage
+          .from(BUCKET_NAME)
+          .getPublicUrl(`${fullPath}/${fileId}.jpg`);
+        
+        designs.push({
+          id: fileId,
+          name: fileId, // Will use ID as name if no metadata
+          thumbnail: data.publicUrl,
+          source: 'supabase',
+          quarter: quarter // Store the quarter so it can be passed to editor
+        });
+      }
+
+      if (container) {
+        renderSupabaseDesigns(designs, quarter, container, subject, isTeacher);
+      }
+      return designs;
+    }
 
     // Parse the metadata
     const allDesigns = kvData.value;
