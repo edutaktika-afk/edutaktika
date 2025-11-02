@@ -380,10 +380,39 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
     throw new Error(`Invalid subject: ${subject}. Must be one of: science, english, math`);
   }
   
-  // Include quarter in the path: subject/quarterX/id.json
+  // Try to get teacher's grade level from Firebase
+  let gradeLevel = null;
+  try {
+    // Dynamically import Firebase if available
+    if (typeof window !== 'undefined' && window.firebase) {
+      const user = window.firebase.auth().currentUser;
+      if (user) {
+        const teacherSnap = await window.firebase.database().ref('teachers/' + user.uid).once('value');
+        const teacher = teacherSnap.val();
+        if (teacher && teacher.gradelevel) {
+          const grade = teacher.gradelevel.toString();
+          gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+          console.log(`📚 Found teacher grade level: ${teacher.gradelevel} → normalized: ${gradeLevel}`);
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('Could not fetch grade level from Firebase:', error);
+  }
+  
+  // Build paths with grade if available: subject/gradeX/quarterX/id.json
   const quarterFolder = `quarter${quarter}`;
-  const previewPath = `${subjectFolder}/${quarterFolder}/${id}.jpg`;
-  const storePath = `${subjectFolder}/${quarterFolder}/${id}.json`;
+  let previewPath, storePath;
+  
+  if (gradeLevel) {
+    previewPath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${id}.jpg`;
+    storePath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${id}.json`;
+  } else {
+    // Fallback to old structure without grade
+    previewPath = `${subjectFolder}/${quarterFolder}/${id}.jpg`;
+    storePath = `${subjectFolder}/${quarterFolder}/${id}.json`;
+  }
+  
   console.log(`📤 Upload paths: preview="${previewPath}", design="${storePath}"`);
 
   await writeFile(previewPath, preview);

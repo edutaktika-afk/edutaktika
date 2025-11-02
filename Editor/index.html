@@ -49,7 +49,22 @@
     <script src="https://js.puter.com/v2/"></script>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script>
+      // Initialize Firebase for Editor
+      const firebaseConfig = {
+        apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+        authDomain: "edutaktika.firebaseapp.com",
+        databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+        projectId: "edutaktika",
+        storageBucket: "edutaktika.appspot.com",
+        messagingSenderId: "676848575316",
+        appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+        measurementId: "G-X3GT5TNN87"
+      };
+      firebase.initializeApp(firebaseConfig);
+    </script>
     <script type="text/javascript">
       !(function (e, t) {
         ((e = t.createElement('script')).src =

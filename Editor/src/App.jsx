@@ -273,22 +273,49 @@ const App = observer(({ store }) => {
           throw new Error(`Invalid subject: "${subject}". Cannot determine folder.`);
         }
         
-        // Try new quarter-based structure first, fallback to old direct structure
-        const quarterFolder = `quarter${quarter}`;
-        const newPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
-        const oldPath = `${subjectFolder}/${designId}.json`;
-        console.log(`📁 Trying path: ${newPath}`);
+        // Try to get teacher's grade level from Firebase
+        let gradeLevel = null;
+        try {
+          if (typeof window !== 'undefined' && window.firebase) {
+            const user = window.firebase.auth().currentUser;
+            if (user) {
+              const teacherSnap = await window.firebase.database().ref('teachers/' + user.uid).once('value');
+              const teacher = teacherSnap.val();
+              if (teacher && teacher.gradelevel) {
+                const grade = teacher.gradelevel.toString();
+                gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+                console.log(`📚 Found teacher grade level: ${teacher.gradelevel} → normalized: ${gradeLevel}`);
+              }
+            }
+          }
+        } catch (error) {
+          console.warn('Could not fetch grade level:', error);
+        }
         
-        let { data, error } = await supabase.storage
-          .from('LessonStorage')
-          .download(newPath);
-
-        // If new structure fails, try old structure
-        if (error) {
-          console.log(`⚠️ New path failed, trying old path: ${oldPath}`);
+        // Build paths to try in priority order: grade+quarter > quarter > grade > root
+        const quarterFolder = `quarter${quarter}`;
+        const pathsToTry = [];
+        if (gradeLevel) {
+          pathsToTry.push(`${subjectFolder}/${gradeLevel}/${quarterFolder}/${designId}.json`);
+          pathsToTry.push(`${subjectFolder}/${gradeLevel}/${designId}.json`);
+        }
+        pathsToTry.push(`${subjectFolder}/${quarterFolder}/${designId}.json`);
+        pathsToTry.push(`${subjectFolder}/${designId}.json`);
+        
+        console.log(`📁 Trying paths in order: ${pathsToTry.join(', ')}`);
+        
+        // Try each path in priority order
+        let data, error;
+        for (const path of pathsToTry) {
+          console.log(`📁 Trying: ${path}`);
           ({ data, error } = await supabase.storage
             .from('LessonStorage')
-            .download(oldPath));
+            .download(path));
+          
+          if (!error) {
+            console.log(`✅ Successfully downloaded from: ${path}`);
+            break;
+          }
         }
 
         console.log('Download result:', { hasData: !!data, error });
