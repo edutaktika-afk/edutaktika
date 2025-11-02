@@ -1238,7 +1238,8 @@ async function loadAllDesignsForQuarter(container) {
             jsonUrl: design.id,
             thumbUrl: design.thumbnail || design.thumbUrl,
             created: design.created || 'Unknown',
-            source: design.source || 'unknown'
+            source: design.source || 'unknown',
+            quarter: design.quarter || quarterNumber // Preserve quarter for proper loading
         }));
         
         renderDesignsForQuarter(compatibleDesigns, container);
@@ -1262,7 +1263,7 @@ function renderDesignsForQuarter(designs, container) {
         <div class="gallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin: 20px 0;">
             ${designs.map(design => `
                 <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; cursor: pointer; position: relative;" 
-                     onclick="${design.source === 'supabase' ? `openSupabaseDesignViewer('${design.id}', 'subject_math')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}"
+                     onclick="${design.source === 'supabase' ? `openSupabaseDesignViewer('${design.id}', 'subject_math', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}"
                      onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'"
                      onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
                     <img 
@@ -1276,13 +1277,13 @@ function renderDesignsForQuarter(designs, container) {
                         <div class="card-title" style="font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 8px;">${design.name}</div>
                         <div class="card-description" style="font-size: 0.9rem; color: #666; margin-bottom: 12px;">${design.description}</div>
                         <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                            <button onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openSupabaseDesignViewer('${design.id}', 'subject_math')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}" 
+                            <button onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openSupabaseDesignViewer('${design.id}', 'subject_math', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}"
                                     style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);"
                                     onmouseover="this.style.background='#1976D2'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(33, 150, 243, 0.4)'"
                                     onmouseout="this.style.background='#2196F3'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(33, 150, 243, 0.3)'">
                                 <i class="fas fa-eye" style="margin-right: 6px;"></i>View Design
                             </button>
-                            <button onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openSupabaseDesignEditor('${design.id}', 'subject_math')` : `openDesignEditor('${encodeURIComponent(design.jsonUrl)}')`}" 
+                            <button onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openSupabaseDesignEditor('${design.id}', 'subject_math', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignEditor('${encodeURIComponent(design.jsonUrl)}')`}"
                                     style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);"
                                     onmouseover="this.style.background='#F57C00'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(255, 152, 0, 0.4)'"
                                     onmouseout="this.style.background='#FF9800'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(255, 152, 0, 0.3)'">
