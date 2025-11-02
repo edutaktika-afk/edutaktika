@@ -1134,62 +1134,48 @@ async function loadFirebaseDesignsForQuarter(container) {
     try {
         console.log('🔄 Loading Firebase designs for quarter...');
         
-        // Get Firebase reference
-        const db = firebase.database();
+        // Get current user and teacher info
+        const user = firebase.auth().currentUser;
+        if (!user) return [];
         
-        // Fetch designs from the database (like gallery.html)
-        const snapshot = await db.ref('designs').once('value');
-        const designsData = snapshot.val();
-
-        if (!designsData) {
+        const teacherUID = user.uid;
+        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+        const teacher = teacherSnap.val();
+        const section = teacher && teacher.section ? teacher.section : null;
+        
+        if (!section) {
+            console.log('No section found for teacher');
             return [];
         }
-
-        const designs = [];
         
         // Get quarter number from container's parent section
         const quarterSection = container.closest('.quarter-section');
         const quarterNumber = quarterSection ? quarterSection.id.split('-')[1] : '1';
         
-        console.log('🔍 Loading designs for quarter:', quarterNumber);
-        console.log('📊 Total designs in database:', Object.keys(designsData).length);
+        console.log(`🔍 Loading teacher's designs for quarter: ${quarterNumber}, section: ${section}`);
         
-        // Convert database data to gallery format (like gallery.html)
-        for (const [designId, designData] of Object.entries(designsData)) {
-            if (designData && designData.json && designData.name) {
-                // Filter by subject (math) and quarter
-                const isMathDesign = designData.subject === 'math';
-                const isCorrectQuarter = designData.quarter === quarterNumber;
-                
-                console.log(`📋 Design: ${designData.name}`, {
-                    subject: designData.subject,
-                    quarter: designData.quarter,
-                    isMathDesign,
-                    isCorrectQuarter,
-                    targetQuarter: quarterNumber
+        // Fetch designs from teacher's specific path
+        const teacherLessonsSnap = await db.ref(`teachers/${teacherUID}/sections/${section}/lessons/${subjectPage}/quarter-${quarterNumber}`).once('value');
+        
+        const designs = [];
+        if (teacherLessonsSnap.exists()) {
+            teacherLessonsSnap.forEach(child => {
+                const data = child.val();
+                designs.push({
+                    id: child.key,
+                    name: data.title || data.name || child.key,
+                    description: data.description || 'No description available',
+                    jsonUrl: child.key,
+                    thumbUrl: data.preview || data.thumbnail || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%234CAF50' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3E${data.title || data.name || child.key}%3C/text%3E%3C/svg%3E`,
+                    created: data.savedAt || data.createdAt ? new Date(data.savedAt || data.createdAt).toLocaleDateString() : 'Unknown',
+                    subject: subjectPage,
+                    quarter: quarterNumber,
+                    source: 'firebase'
                 });
-                
-                if (isMathDesign && isCorrectQuarter) {
-                    designs.push({
-                        id: designId,
-                        name: designData.name,
-                        description: designData.description || 'No description available',
-                        jsonUrl: designId,
-                        thumbUrl: designData.thumbnail || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%234CAF50' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3E${designData.name}%3C/text%3E%3C/svg%3E`,
-                        created: designData.createdAt ? new Date(designData.createdAt).toLocaleDateString() : 'Unknown',
-                        subject: designData.subject,
-                        quarter: designData.quarter,
-                        source: 'firebase'
-                    });
-                }
-            }
+            });
         }
-
-        // Sort by creation date (newest first)
-        designs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         
         console.log(`📊 Loaded ${designs.length} designs from Firebase for quarter ${quarterNumber}`);
-        console.log('🎯 Found designs:', designs.map(d => ({ name: d.name, subject: d.subject, quarter: d.quarter })));
         
         return designs;
         
