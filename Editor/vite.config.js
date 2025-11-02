@@ -23,8 +23,8 @@ export default defineConfig({
     // Sourcemaps: disable on Netlify unless you explicitly want them
     sourcemap: process.env.SOURCEMAP === 'true',
 
-    // 👇 Ensures the build output goes inside deploy/editor
-    outDir: '../deploy/editor',
+    // Output to dist directory (build script will copy to deploy/editor)
+    outDir: 'dist',
     emptyOutDir: true,
   },
 });

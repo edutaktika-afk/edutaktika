@@ -226,10 +226,16 @@
         <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
+        <!-- Editor Environment -->
+        <script src="../assets/js/editorEnv.js"></script>
+
+        <!-- Supabase SDK -->
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="../assets/js/loadSupabaseDesigns.js"></script>
+
         <script src="../assets/js/Teacher Side/profile.js"></script>
 
     <script src="../assets/js/Teacher Side/header.js"></script>
-    <script src="../assets/js/editorEnv.js"></script>
 
     <div class="container">
         <!--<div class="math-header>
@@ -244,20 +250,18 @@
             </button>
         </div>
 <script>
-    // Quiz Section button: go to quiz section page (replace with your quiz page)
+// Use shared getEditorBase for create lesson navigation
+// Create Lesson button: go to new Polotno editor (using Create Design logic)
+document.getElementById('createLessonBtn').onclick = function() {
+    const editorBaseUrl = getEditorBase();
+    console.log('🎨 Opening editor for lesson creation:', editorBaseUrl);
+    window.location.href = editorBaseUrl;
+};
+
+// Quiz Section button: go to quiz section page (replace with your quiz page)
 document.getElementById('createQuizBtn').onclick = function() {
     window.location.href = 'create-quiz.html';
 };
-</script>
-<script>
-// Create Lesson button using shared environment helper
-(function(){
-    const btn = document.getElementById('createLessonBtn');
-    if(!btn) return;
-    btn.addEventListener('click', ()=>{
-        window.location.href = buildEditorUrl({ subject: 'subject_english' });
-    });
-})();
 </script>
 
 <!-- Dropdown for mobile -->
@@ -909,10 +913,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
 <script>
     // Place this script after your modal HTML
 
-// Show modal on Create Lesson click
-document.getElementById('createLessonBtn').onclick = function() {
-    document.getElementById('createLessonModal').style.display = 'flex';
-};
+// Create Lesson button now handled at the top of the page (removed duplicate modal handler)
 
 // Hide modal function
 function closeCreateLessonModal() {
@@ -1062,10 +1063,20 @@ async function loadTeacherLessons() {
     }
 }
 
-// Initialize lesson loading when user is authenticated
+// Initialize Firebase designs loading when user is authenticated
 firebase.auth().onAuthStateChanged(async function(user) {
     if (user) {
-        await loadTeacherLessons();
+        console.log('👤 User authenticated, loading Firebase and Supabase designs...');
+        // Wait a bit for DOM to be ready
+        setTimeout(() => {
+            // Load Firebase AND Supabase designs for all quarters
+            for (let q = 1; q <= 4; q++) {
+                const container = document.querySelector(`#quarter-${q} .lessons-container`);
+                if (container) {
+                    loadAllDesignsForQuarter(container);
+                }
+            }
+        }, 1000);
     }
 });
 function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
@@ -1075,6 +1086,142 @@ function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
     } else {
         window.location.href = 'present.html?' + new URLSearchParams(paramsObj).toString();
     }
+}
+
+// Combined loading function that loads both Firebase and Supabase
+async function loadAllDesignsForQuarter(container) {
+    try {
+        // Show loading state
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;"><i class="fa fa-spinner fa-spin"></i> Loading designs...</div>';
+        
+        const allDesigns = [];
+        
+        // Load Firebase designs
+        const firebaseDesigns = await loadTeacherLessonsDataForQuarter(container);
+        allDesigns.push(...(firebaseDesigns || []));
+        
+        // Load Supabase designs
+        const quarterSection = container.closest('.quarter-section');
+        const quarterNumber = quarterSection ? quarterSection.id.split('-')[1] : '1';
+        const isTeacher = true;
+        let supabaseDesigns = [];
+        
+        if (typeof loadSupabaseDesignsForQuarter === 'function') {
+            supabaseDesigns = await loadSupabaseDesignsForQuarter('subject_english', quarterNumber, null, isTeacher);
+            if (supabaseDesigns && supabaseDesigns.length) {
+                allDesigns.push(...supabaseDesigns);
+            }
+        }
+        
+        // Render all designs together
+        if (allDesigns.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No designs found.<br><small>Click "Create Lesson" to get started!</small></div>';
+            return;
+        }
+        
+        // Convert Supabase format to Firebase format for rendering
+        const compatibleDesigns = allDesigns.map(design => ({
+            id: design.id,
+            name: design.name,
+            description: design.description || 'No description available',
+            jsonUrl: design.id,
+            thumbUrl: design.thumbnail || design.thumbUrl,
+            created: design.created || 'Unknown',
+            source: design.source || 'unknown',
+            quarter: design.quarter || quarterNumber // Preserve quarter for proper loading
+        }));
+        
+        renderDesignsForQuarter(compatibleDesigns, container);
+        
+        console.log(`✅ Loaded ${allDesigns.length} total designs (${firebaseDesigns?.length || 0} Firebase, ${supabaseDesigns?.length || 0} Supabase)`);
+        
+    } catch (error) {
+        console.error('Error loading all designs:', error);
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">Error loading designs. Please refresh the page.</div>';
+    }
+}
+
+// Load Firebase teacher lessons data for a specific quarter
+async function loadTeacherLessonsDataForQuarter(container) {
+    const user = firebase.auth().currentUser;
+    if (!user) return [];
+    
+    const teacherUID = user.uid;
+    const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+    const teacher = teacherSnap.val();
+    const section = teacher && teacher.section ? teacher.section : null;
+    
+    if (!section) return [];
+    
+    const quarterSection = container.closest('.quarter-section');
+    const quarterNumber = quarterSection ? quarterSection.id.split('-')[1] : '1';
+    
+    const teacherLessonsSnap = await db.ref(`teachers/${teacherUID}/sections/${section}/lessons/${subjectPage}/quarter-${quarterNumber}`).once('value');
+    
+    const designs = [];
+    if (teacherLessonsSnap.exists()) {
+        teacherLessonsSnap.forEach(child => {
+            const data = child.val();
+            designs.push({
+                id: child.key,
+                name: data.title || child.key,
+                description: data.description || 'No description available',
+                jsonUrl: child.key,
+                thumbUrl: `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%234CAF50' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3E${data.title || child.key}%3C/text%3E%3C/svg%3E`,
+                created: data.savedAt ? new Date(data.savedAt).toLocaleDateString() : 'Unknown',
+                source: 'firebase',
+                quarter: quarterNumber
+            });
+        });
+    }
+    
+    return designs;
+}
+
+// Render designs for a specific quarter (combined Firebase + Supabase)
+function renderDesignsForQuarter(designs, container) {
+    if (designs.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No designs found.<br><small>Click "Create Lesson" to get started!</small></div>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="gallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin: 20px 0;">
+            ${designs.map(design => `
+                <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; cursor: pointer; position: relative;" 
+                     onclick="${design.source === 'supabase' ? `openSupabaseDesignViewer('${design.id}', 'subject_english', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}"
+                     onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'"
+                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
+                    <img 
+                        class="card-image" 
+                        src="${design.thumbUrl}" 
+                        alt="${design.name}"
+                        style="width: 100%; height: 160px; object-fit: cover;"
+                        onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\'%3E%3Crect fill=\'%23e3f2fd\' width=\'300\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'20\' fill=\'%231976d2\'%3E${design.name}%3C/text%3E%3C/svg%3E'"
+                    >
+                    <div class="card-content" style="padding: 16px;">
+                        <div class="card-title" style="font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 8px;">${design.name}</div>
+                        <div class="card-description" style="font-size: 0.9rem; color: #666; margin-bottom: 12px;">${design.description}</div>
+                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <button onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openSupabaseDesignViewer('${design.id}', 'subject_english', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}"
+                                    style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);"
+                                    onmouseover="this.style.background='#1976D2'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(33, 150, 243, 0.4)'"
+                                    onmouseout="this.style.background='#2196F3'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(33, 150, 243, 0.3)'">
+                                <i class="fas fa-eye" style="margin-right: 6px;"></i>View Design
+                            </button>
+                            <button onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openSupabaseDesignEditor('${design.id}', 'subject_english', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignEditor('${encodeURIComponent(design.jsonUrl)}')`}"
+                                    style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);"
+                                    onmouseover="this.style.background='#F57C00'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(255, 152, 0, 0.4)'"
+                                    onmouseout="this.style.background='#FF9800'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(255, 152, 0, 0.3)'">
+                                <i class="fas fa-edit" style="margin-right: 6px;"></i>Edit Design
+                            </button>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #888;">Created: ${design.created} ${design.source ? `| ${design.source.toUpperCase()}` : ''}</div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 </script>
 
