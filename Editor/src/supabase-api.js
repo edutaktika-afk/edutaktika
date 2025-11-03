@@ -429,10 +429,12 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
   if (gradeLevel) {
     previewPath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${id}.jpg`;
     storePath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${id}.json`;
+    console.log(`✅ Using grade-based path structure: ${gradeLevel}/${quarterFolder}/`);
   } else {
     // Fallback to old structure without grade
     previewPath = `${subjectFolder}/${quarterFolder}/${id}.jpg`;
     storePath = `${subjectFolder}/${quarterFolder}/${id}.json`;
+    console.warn(`⚠️ No grade level found! Saving to old structure without grade folder.`);
   }
   
   console.log(`📤 Upload paths: preview="${previewPath}", design="${storePath}"`);
