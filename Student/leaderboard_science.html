@@ -1,4 +1,4 @@
- <script>
+<script>
     document.addEventListener("DOMContentLoaded", function() {
         firebase.auth().onAuthStateChanged(async function(user) {
             if (!user) {
@@ -357,15 +357,18 @@
             students.forEach(s => {
                 // Science quiz points - only from Science quizzes
                 let scienceQuizPoints = 0;
-                if (s.quizzes) {
-                    Object.keys(s.quizzes).forEach(quizKey => {
-                        // Only count Science-related quizzes
-                        if (quizKey.includes('science') || quizKey.includes('science-quiz')) {
-                            const summary = s.quizzes[quizKey]?.summary;
-                            if (summary && typeof summary.best === 'number') {
-                                console.log(`Found science quiz ${quizKey} with score:`, summary.best);
-                                scienceQuizPoints += summary.best;
-                            }
+                if (s.quizzes && Array.isArray(s.quizzes.subject_science)) {
+                    s.quizzes.subject_science.forEach(quarterObj => {
+                        if (quarterObj && typeof quarterObj === 'object') {
+                            Object.values(quarterObj).forEach(quizObj => {
+                                if (
+                                    quizObj &&
+                                    quizObj.summary &&
+                                    typeof quizObj.summary.totalScore === 'number'
+                                ) {
+                                    scienceQuizPoints += quizObj.summary.totalScore;
+                                }
+                            });
                         }
                     });
                 }
