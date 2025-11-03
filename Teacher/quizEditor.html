@@ -2,268 +2,708 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Lesson Editor | Eduktaktaktika</title>
+    <title>Quiz Editor | Edutaktika</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    
     <style>
+        /* CSS Variables */
         :root {
-        --primary: #2e8b57;
-        --secondary: #ffd700;
-        --accent: #ff69b4;
-        --background: #f0f8ff;
-        --card-bg: #ffffff;
-        --text-main: #22223b;
-        --text-light: #9a8c98;
-        --shadow: 0 4px 24px rgba(46, 139, 87, 0.08);
-        --radius: 18px;
-    }
+            --primary: #2e8b57;
+            --secondary: #ffd700;
+            --accent: #ff69b4;
+            --background: #f0f8ff;
+            --card-bg: #ffffff;
+            --text-main: #22223b;
+            --text-light: #9a8c98;
+            --shadow: 0 4px 24px rgba(46, 139, 87, 0.08);   
+            --radius: 18px;
+        }
+
+        /* Base Styles */
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             overflow: hidden;
-            background: #f0f1f5;
+            background: var(--background);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
+
         body {
             min-height: 100vh;
-            height: 100vh;
             width: 100vw;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
-            background: var(--background);
-    color: var(--text-main);
         }
+
+        /* Header/Breadcrumbs */
         .breadcrumbs {
             width: 100vw;
             left: 0;
             top: 0;
             position: relative;
             box-sizing: border-box;
-            padding: 11px 24px;
+            padding: 8px 24px;
             color: #888;
-            font-size: 1rem;
+            font-size: 14px;
             display: flex;
             align-items: center;
             justify-content: flex-start;
             gap: 18px;
             background: rgb(255, 255, 255);
-            z-index: 2;
-            margin: 0;
+            z-index: 100;
+            border-bottom: 1px solid #e0e0e0;
         }
+
+        .breadcrumbs .logo {
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
         .right-breadcrumb-btns {
             margin-left: auto;
             margin-right: 20px;
             display: flex;
             gap: 10px;
         }
+
         .right-breadcrumb-btns button {
-            background: #388e3c;
+            background: var(--primary);
             color: #fff;
             border: none;
-            border-radius: 6px;
-            padding: 6px 18px;
+            border-radius: 8px;
+            padding: 8px 16px;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 6px;
-            transition: background 0.15s;
+            transition: all 0.2s ease;
         }
-        .right-breadcrumb-btns button#present-btn {
-            background: #b39ddb;
-        }
+
         .right-breadcrumb-btns button:hover {
-            background: #232946;
+            background: #1e5f3f;
+            transform: translateY(-1px);
         }
+
+        .right-breadcrumb-btns button#present-btn {
+            background: var(--accent);
+        }
+
+        /* Burger Menu */
+        #burger-menu-btn {
+            background: none;
+            border: none;
+            padding: 0 10px 0 0;
+            cursor: pointer;
+            font-size: 1.7rem;
+            color: var(--primary);
+            outline: none;
+        }
+
+        #burger-dropdown {
+            display: none;
+            position: absolute;
+            top: 54px;
+            left: 16px;
+            min-width: 160px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            padding: 10px 0;
+            z-index: 1000;
+        }
+
+        #burger-dropdown a {
+            display: block;
+            padding: 12px 24px;
+            color: var(--text-main);
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        #burger-dropdown a:hover {
+            background: #f5f5f5;
+        }
+
+        /* Main Layout */
         .editor-layout {
             flex: 1 1 auto;
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 64px);
+            height: calc(100vh - 70px);
             min-height: 0;
-            min-width: 0;
             overflow: hidden;
         }
+
         .main-area {
             display: flex;
             flex: 1 1 auto;
             min-height: 0;
-            min-width: 0;
             overflow: hidden;
         }
+
+        /* Sidebar */
         .sidebar {
-            min-width: 240px;
-            width: 240px;
-            max-width: 320px;
+            min-width: 200px;
+            width: 220px;
+            max-width: 280px;
             height: 100%;
             overflow-y: auto;
-            background: #e5f5ee; border-right: 1px solid #e0e0e0; padding: 24px 12px; display: flex; flex-direction: column; gap: 32px;
-            z-index: 1;
+            background: #e8f5e8;
+            border-right: 1px solid #d0d0d0;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            z-index: 10;
         }
-        .sidebar h4 { margin: 0 0 18px 0; color:rgb(0, 0, 0); font-size: 1.1rem; }
-        .sidebar-group { margin-bottom: 18px; }
-        .sidebar-label { font-size: 1rem; color:rgb(0, 0, 0); margin-bottom: 7px; }
-        .sidebar button, .sidebar input[type="file"] {
-            display: block; width: 100%; margin-bottom: 7px; padding: 7px 0; border: none; border-radius: 6px; background: #fff; color: #232946; cursor: pointer; font-size: 1rem;
-            transition: background 0.15s;
+
+        .sidebar-group {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        .sidebar button:hover { background: #e3f0ff; }
-        .sidebar .shape-btn { font-size: 1.4rem; width: 40px; display: inline-block; margin-right: 6px; }
-       .editor-content {
+
+        .sidebar-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar button {
+            display: block;
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar button:hover {
+            background: #1e5f3f;
+            transform: translateY(-1px);
+        }
+
+        /* Canvas Area */
+        .editor-content {
             flex: 1 1 auto;
             width: 100%;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            gap: 24px;
+            align-items: center;
             min-height: 0;
-            min-width: 0;
             overflow: hidden;
-            background: #f0f1f5;
+            background: var(--background);
+            padding: 20px;
+            box-sizing: border-box;
         }
+
         .canvas-area {
-            padding: 16px;
-            min-height: 0;
-            min-width: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             flex: 1 1 auto;
-            overflow: hidden;
-            margin-left: 20px;
-            margin-bottom: 30px;
+            max-width: 100%;
+            max-height: 100%;
         }
+
         .canvas-wrapper {
-            width: 1280px !important;
-            height: 720px !important;
-            max-width: 1280px !important;
-            max-height: 720px !important;
-            margin: 0 auto;
+            width: 80%;
+            max-width: 800px;
+            aspect-ratio: 16/9;
             background: #fff;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden; /* Ensure games don't overflow */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            max-width: 800px;
+            max-height: 450px;
+            display: block;
+            outline: none;
+            position: relative;
+            z-index: 1; /* Lower z-index than iframe */
+        }
+
+        /* Game Iframe Styles */
+/* Update the Game Iframe Styles to fill the entire canvas */
+#game-iframe {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important; /* Remove the scale and centering transform */
+    width: 100% !important; /* Fill entire canvas width */
+    height: 100% !important; /* Fill entire canvas height */
+    border: none !important;
+    z-index: 10 !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important; /* Cover the entire area */
+    overflow: hidden !important;
+    border-radius: 0 !important; /* Remove border radius to fill corners */
+    box-shadow: none !important; /* Remove shadow for full coverage */
+    -webkit-overflow-scrolling: touch !important;
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+}
+
+#game-iframe::-webkit-scrollbar {
+    display: none !important;
+}
+
+        /* Slide Navigation */
+        .slide-nav {
+            position: fixed;
+            bottom: 0px;
+            left: 59%;
+            transform: translateX(-50%);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: transparent;
+            padding: 8px 24px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            max-width: 80vw;
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border for definition */
+        }
+
+        #slide-preview-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            overflow-x: auto;
+            overflow-y: hidden; /* Prevent vertical scrollbar */
+            max-width: 50vw;
+            padding: 0 8px;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* Internet Explorer 10+ */
+        }
+
+        #slide-preview-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .slide-thumb {
+            width: 60px;
+            height: 40px;
+            background: #fff;
+            border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
             position: relative;
             overflow: hidden;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
         }
-#canvas {
-    width: 1280px !important;
-    height: 720px !important;
-    max-width: 1280px !important;
-    max-height: 720px !important;
-    display: block;
-}
-        .rightbar {
-            width: 240px;
-            min-width: 160px;
-            max-width: 320px;
-            background: #fff;
-            border-left: 1px solid #e0e0e0;
-            padding: 16px 8px;
-            border-radius: 0 18px 18px 0;
-            box-shadow: 0 2px 8px #e0e0e055;
+
+        .slide-thumb.active {
+            border-color: var(--primary);
+            box-shadow: 0 4px 16px rgba(46, 139, 87, 0.2);
+        }
+
+        .slide-thumb:hover {
+            transform: translateY(-2px);
+        }
+
+        #slide-indicator {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        .zoom-controls {
             display: flex;
-            flex-direction: column;
-            gap: 18px;
-            min-height: 0;
-            height: 100%;
-            overflow-y: auto;
+            align-items: center;
+            gap: 8px;
         }
-        .rightbar label { font-weight: 600; color: #232946; margin-bottom: 6px; display: block; }
-        .rightbar .position-btns, .rightbar .layer-btns, .rightbar .text-btns, .rightbar .align-btns {
-            display: flex; gap: 6px; margin-bottom: 10px;
+
+        .zoom-controls label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
         }
-        .rightbar button, .rightbar select, .rightbar input[type="number"] {
-            border: 1px solid #e0e0e0; border-radius: 5px; background: #f4f8ff; padding: 6px 10px; font-size: 1rem; cursor: pointer;
+
+        #canvas-scale {
+            width: 120px;
         }
-        .rightbar button.selected, .rightbar button:focus { background: #e3f0ff; }
-        .rightbar .color-btn { width: 24px; height: 24px; border-radius: 4px; border: none; background: #388e3c; }
-        .undo-redo-bar { display: flex; gap: 12px; margin: 18px 0 0 0; }
-        .undo-redo-bar button { background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; padding: 7px 18px; cursor: pointer; font-weight: 600; }
-        .undo-redo-bar button:hover { background: #e3f0ff; }
-        @media (max-width: 1200px) {
-            .sidebar, .rightbar { width: 180px; min-width: 140px; }
+
+        #canvas-scale-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--primary);
+            min-width: 40px;
         }
-        @media (max-width: 900px) {
-            .editor-layout { flex-direction: column; height: auto; }
-            .sidebar, .rightbar {
-                width: 100vw;
-                min-width: 0;
-                max-width: 100vw;
-                position: static;
-                height: auto;
+
+        #reset-zoom-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        #reset-zoom-btn:hover {
+            background: #1e5f3f;
+        }
+
+        /* Game Modal */
+        #game-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #game-modal > div {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 16px 64px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        #game-modal h2 {
+            margin-top: 0;
+            margin-bottom: 24px;
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .game-option {
+            display: block;
+            width: 100%;
+            margin-bottom: 12px;
+            padding: 16px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .game-option:hover {
+            background: #1e5f3f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(46, 139, 87, 0.3);
+        }
+
+        .cancel-button {
+            margin-top: 24px;
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .cancel-button:hover {
+            background: #ff4444;
+            color: white;
+            border-color: #ff4444;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 180px;
+                min-width: 180px;
             }
+            
+            .canvas-wrapper {
+                width: 90%;
+            }
+        }
+
+        @media (max-width: 768px) {
             .main-area {
                 flex-direction: column;
             }
-            .editor-content { flex-direction: column; align-items: stretch; gap: 12px; }
-            .canvas-area { max-width: 100vw; }
-            .canvas { max-width: 98vw; max-height: 40vw; }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+                flex-direction: row;
+                overflow-x: auto;
+                gap: 16px;
+                padding: 16px;
+            }
+            
+            .sidebar-group {
+                min-width: 200px;
+                flex-shrink: 0;
+            }
+            
+            .canvas-wrapper {
+                width: 95%;
+                max-width: none;
+            }
+            
+            .slide-nav {
+                max-width: 95vw;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            #slide-preview-bar {
+                max-width: 70vw;
+            }
+            
+            .zoom-controls {
+                flex-wrap: wrap;
+                gap: 4px;
+            }
         }
-        @media (max-width: 600px) {
-            .canvas { max-width: 100vw; max-height: 56vw; }
-            .sidebar, .rightbar { padding: 8px 2px; }
+
+        @media (max-width: 480px) {
+            .breadcrumbs {
+                flex-wrap: wrap;
+                gap: 8px;
+                padding: 8px 16px;
+            }
+            
+            .right-breadcrumb-btns {
+                margin-right: 0;
+                gap: 8px;
+            }
+            
+            .right-breadcrumb-btns button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .slide-nav {
+                padding: 12px 16px;
+                bottom: 10px;
+            }
+            
+            .slide-thumb {
+                width: 60px;
+                height: 38px;
+            }
         }
-        .canvas-gif-overlay {
-            pointer-events: none;
-            z-index: 50;
-            position: absolute;
+
+        /* Animation Keyframes */
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Utility Classes */
+        .fade-in {
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Canvas Scaling */
+        .canvas-wrapper.scaled {
+            transform-origin: center center;
         }
     </style>
+
+    <style>
+/* Enhanced save button with loading state */
+#save-btn.saving {
+    background: #888 !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+}
+
+#save-btn.saving:before {
+    content: '⏳ ';
+    margin-right: 4px;
+}
+
+/* Custom prompt styling (if you want to enhance the browser prompt) */
+.custom-prompt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-prompt {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 16px 64px rgba(0,0,0,0.2);
+}
+
+.custom-prompt h3 {
+    margin-top: 0;
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+.custom-prompt textarea {
+    width: 100%;
+    height: 80px;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.custom-prompt textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.custom-prompt-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    justify-content: flex-end;
+}
+
+.custom-prompt-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.custom-prompt-buttons .save-btn {
+    background: var(--primary);
+    color: white;
+}
+
+.custom-prompt-buttons .save-btn:hover {
+    background: #1e5f3f;
+}
+
+.custom-prompt-buttons .cancel-btn {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.custom-prompt-buttons .cancel-btn:hover {
+    background: #e74c3c;
+    color: white;
+}
+</style>
 </head>
+
 <body>
-        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <!-- Firebase Configuration -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-<script>
-    // Add this before your main script logic
-    const firebaseConfig = {
-        apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
-        authDomain: "edutaktika.firebaseapp.com",
-        databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
-        projectId: "edutaktika",
-        storageBucket: "edutaktika.appspot.com",
-        messagingSenderId: "676848575316",
-        appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
-        measurementId: "G-X3GT5TNN87"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
-</script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+            authDomain: "edutaktika.firebaseapp.com",
+            databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+            projectId: "edutaktika",
+            storageBucket: "edutaktika.appspot.com",
+            messagingSenderId: "676848575316",
+            appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+            measurementId: "G-X3GT5TNN87"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+    </script>
 
-
-
+    <!-- Header/Breadcrumbs -->
     <div class="breadcrumbs">
         <div style="display:flex;align-items:center;gap:12px;">
-            <button id="burger-menu-btn" style="background:none;border:none;padding:0 10px 0 0;cursor:pointer;font-size:1.7rem;color:#232946;outline:none;">
+            <button id="burger-menu-btn" aria-label="Open menu">
                 <i class="fa fa-bars"></i>
             </button>
-            <span class="logo" style="font-weight:bold;font-size:1.2rem;">Eduktaktaktika</span>
+            <span class="logo">Edutaktika</span>
         </div>
-        <span class="right-breadcrumb-btns">
+        
+        <div class="right-breadcrumb-btns">
             <button id="save-btn"><i class="fa fa-save"></i> Save</button>
             <button id="export-btn"><i class="fa fa-download"></i> Export</button>
             <button id="import-btn"><i class="fa fa-upload"></i> Import</button>
             <button id="present-btn"><i class="fa fa-play"></i> Present</button>
-        </span>
-        <div id="burger-dropdown" style="display:none;position:absolute;top:54px;left:16px;min-width:160px;background:#fff;border-radius:8px;box-shadow:0 2px 8px #0002;padding:10px 0;z-index:100;">
-            <a href="#" id="burger-export" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;"><i class="fa fa-download"></i> Export</a>
-            <a href="#" id="burger-import" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;"><i class="fa fa-upload"></i> Import</a>
-            <a href="#" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;">Home</a>
-            <a href="#" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;">My Presentations</a>
-            <a href="#" style="display:block;padding:10px 24px;color:#232946;text-decoration:none;">Settings</a>
+        </div>
+        
+        <div id="burger-dropdown">
+            <a href="#" id="burger-export"><i class="fa fa-download"></i> Export</a>
+            <a href="#" id="burger-import"><i class="fa fa-upload"></i> Import</a>
+            <a href="homepage.html"><i class="fa fa-home"></i> Home</a>
+            <a href="#"><i class="fa fa-presentation-screen"></i> My Quizzes</a>
+            <a href="#"><i class="fa fa-cog"></i> Settings</a>
         </div>
     </div>
 
-    <script>
-    // Burger menu Export/Import logic will be handled in main script
-    </script>
-
+    <!-- Main Editor Layout -->
     <div class="editor-layout">
         <div class="main-area">
+            <!-- Sidebar -->
             <aside class="sidebar">
                 <div class="sidebar-group" style="display: none;">
                     <div class="sidebar-label">Games & Activities</div>
@@ -285,58 +725,56 @@
                         <canvas id="canvas"></canvas>
                     </div>
                 </div>
-                <aside class="rightbar">
-                    <label>Position</label>
-                    <div class="position-btns">
-                        <button title="Align Left"><i class="fa fa-align-left"></i></button>
-                        <button title="Align Center"><i class="fa fa-align-center"></i></button>
-                        <button title="Align Right"><i class="fa fa-align-right"></i></button>
-                        <button title="Align Top"><i class="fa fa-arrow-up"></i></button>
-                        <button title="Align Middle"><i class="fa fa-arrows-alt-v"></i></button>
-                        <button title="Align Bottom"><i class="fa fa-arrow-down"></i></button>
-                    </div>
-                    
-                    <div class="layer-btns" style="display:none;">
-                        <button title="Send Backward"><i class="fa fa-arrow-down"></i></button>
-                        <button title="Bring Forward"><i class="fa fa-arrow-up"></i></button>
-                        <button title="Delete"><i class="fa fa-trash"></i></button>
-                    </div>
-                    <div class="sidebar-group" id="layers-panel-group">
-                        <div class="sidebar-label">Layers</div>
-                        <ul id="layers-list" style="list-style:none;padding:0;margin:0;max-height:220px;overflow:auto;"></ul>
-                    </div>
-                    <label>Text</label>
-                    <div>
-                        <select class="font-family">
-                            <option>Inter</option>
-                            <option>Arial</option>
-                            <option>Times</option>
-                        </select>
-                        <input type="number" class="font-size" value="24" min="8" max="120" style="width:50px;">
-                    </div>
-                    <div class="text-btns">
-                        <button class="bold-btn"><b>B</b></button>
-                        <button class="italic-btn"><i>I</i></button>
-                        <button class="underline-btn"><u>U</u></button>
-                        <input type="color" class="color-input" title="Text Color" style="width:28px; height:28px; border:none; background:none; padding:0; margin-right:4px; display:none;">
-                        <input type="color" class="shape-color-input" title="Shape Color" style="width:28px; height:28px; border:none; background:none; padding:0; display:none;">
-                    </div>
-                    <div class="align-btns">
-                        <button class="align-left"><i class="fa fa-align-left"></i></button>
-                        <button class="align-center"><i class="fa fa-align-center"></i></button>
-                        <button class="align-right"><i class="fa fa-align-right"></i></button>
-                        <button class="align-justify"><i class="fa fa-align-justify"></i></button>
-                    </div>
-                    <div class="undo-redo-bar" style="margin-top:24px;">
-                        <button id="undo-btn"><i class="fa fa-undo"></i> Undo</button>
-                        <button id="redo-btn"><i class="fa fa-redo"></i> Redo</button>
-                    </div>
-                    
-                </aside>
             </div>
         </div>
     </div>
 
+    <!-- Slide Navigation -->
+    <div class="slide-nav">
+        <div id="slide-preview-bar"></div>
+        <span id="slide-indicator">Slide 1/1</span>
+        <div class="zoom-controls">
+            <label for="canvas-scale">Zoom:</label>
+            <input type="range" id="canvas-scale" min="0.1" max="1" step="0.01" value="0.9">
+            <span id="canvas-scale-value">80%</span>
+            <button id="reset-zoom-btn" title="Reset Zoom">
+                <i class="fa fa-refresh"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Game Selection Modal -->
+    <div id="game-modal">
+        <div class="fade-in">
+            <h2><i class="fa fa-gamepad"></i> Choose a Game</h2>
+            <button class="game-option" data-game="../Games/Quiz/game1.html">
+                <i class="fa fa-puzzle-piece"></i> Game 1
+            </button>
+            <button class="game-option" data-game="../Games/Quiz/game2.html">
+                <i class="fa fa-puzzle-piece"></i>Game 2  
+            </button>
+            <button class="game-option" data-game="../Games/Quiz/game3.html">
+                <i class="fa fa-puzzle-piece"></i>Game 3  
+            </button>
+            <button class="game-option" data-game="../Games/Quiz/game4.html">
+                <i class="fa fa-puzzle-piece"></i>Multiple Choice Quiz  
+            </button>
+            <button class="game-option" data-game="../Games/Quiz/game5.html">
+                <i class="fa fa-puzzle-piece"></i>Matching Pairs Quiz  
+            </button>
+            <button class="game-option" data-game="../Games/Quiz/sorting.html">
+                <i class="fa fa-drag-left-right"></i> Sorting Quiz
+            </button>
+            <button class="game-option" data-game="../Games/Quiz/trueorfals.html">
+                <i class="fa fa-drag-left-right"></i> True or False Quiz
+            </button>
+            <button class="cancel-button" onclick="document.getElementById('game-modal').style.display='none'">
+                <i class="fa fa-times"></i> Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
     <script>
         // Global Variables
         let quizTests = [];
@@ -350,11 +788,11 @@
         let autoSaveTimeout;
         let lastCanvasState = '';
 
-        // Initialize Fabric.js Canvas with correct dimensions
+        // Initialize Fabric.js Canvas
         const canvas = new fabric.Canvas('canvas', {
             backgroundColor: '#fff',
-            width: 1280,
-            height: 720
+            width: 800,
+            height: 450
         });
 
         // Utility Functions
@@ -392,34 +830,39 @@
             burgerDropdown.style.display = 'none';
         };
 
-        // Canvas Scaling - removed as UI elements don't exist
+        // Canvas Scaling
+        const scaleInput = document.getElementById('canvas-scale');
+        const scaleValue = document.getElementById('canvas-scale-value');
+        const canvasWrapper = document.querySelector('.canvas-wrapper');
 
-        // Canvas initialization and sizing - maintain 1280x720
+        function updateCanvasScale() {
+            const scale = parseFloat(scaleInput.value);
+            canvasWrapper.style.transform = `scale(${scale})`;
+            canvasWrapper.classList.add('scaled');
+            scaleValue.textContent = Math.round(scale * 100) + '%';
+        }
+
+        scaleInput.addEventListener('input', updateCanvasScale);
+        document.getElementById('reset-zoom-btn').onclick = function() {
+            scaleInput.value = 0.8;
+            updateCanvasScale();
+        };
+
+        // Initialize scale
+        updateCanvasScale();
+
+        // Responsive Canvas
         function resizeCanvas() {
-            // Keep canvas at fixed 1280x720 dimensions to match CSS
-            canvas.setWidth(1280);
-            canvas.setHeight(720);
+            const wrapper = document.querySelector('.canvas-wrapper');
+            const rect = wrapper.getBoundingClientRect();
+            canvas.setWidth(rect.width);
+            canvas.setHeight(rect.height);
             canvas.calcOffset && canvas.calcOffset();
             canvas.renderAll();
-            
-            // Ensure canvas element is visible
-            const canvasElement = document.getElementById('canvas');
-            if (canvasElement) {
-                canvasElement.style.display = 'block';
-                canvasElement.style.visibility = 'visible';
-                canvasElement.style.opacity = '1';
-            }
-            
-            console.log('Canvas resized to:', canvas.width, 'x', canvas.height);
         }
 
         window.addEventListener('resize', resizeCanvas);
-        // Initialize canvas properly after DOM is ready
-        setTimeout(() => {
-            resizeCanvas();
-            canvas.renderAll();
-            console.log('Canvas initialized and rendered');
-        }, 300);
+        resizeCanvas();
 
 // Replace the showGameIframe function (around line 560) with this corrected version:
 function showGameIframe() {
@@ -736,56 +1179,50 @@ function saveCurrentSlide() {
 }
 
 function loadSlide(index) {
-    console.log('Loading slide:', index, 'Total slides:', slides.length); // Debug log
+    console.log('Loading slide:', index); // Debug log
     
-    // Ensure we have a valid index
-    if (index < 0 || index >= slides.length) {
-        console.log('Invalid slide index, creating new slide');
-        if (slides.length === 0) {
-            slides.push(canvas.toJSON());
+    if (index >= 0 && index < slides.length && slides[index]) {
+        canvas.loadFromJSON(slides[index], function() {
+            canvas.renderAll();
+            
+            // Show/hide canvas and game based on slide content
+            const canvasElement = document.getElementById('canvas');
+            const hasGame = slides[index].game;
+            
+            if (hasGame) {
+                console.log('Slide has game, hiding canvas and showing game'); // Debug log
+                canvasElement.style.display = 'none';
+                showGameIframe();
+            } else {
+                console.log('Slide has no game, showing canvas'); // Debug log
+                canvasElement.style.display = 'block';
+                // Remove any existing game iframe
+                const existing = document.getElementById('game-iframe');
+                if (existing) existing.remove();
+            }
+        });
+    } else {
+        // Create new slide
+        console.log('Creating new slide'); // Debug log
+        canvas.clear();
+        canvas.backgroundColor = '#fff';
+        canvas.renderAll();
+        
+        if (!slides[index]) {
+            slides[index] = canvas.toJSON();
         }
-        index = 0;
-    }
-    
-    // Ensure slide exists
-    if (!slides[index]) {
-        console.log('Slide does not exist, creating blank slide');
-        slides[index] = canvas.toJSON();
+        
+        // Show canvas for new slide
+        const canvasElement = document.getElementById('canvas');
+        canvasElement.style.display = 'block';
+        
+        // Remove any existing game iframe
+        const existing = document.getElementById('game-iframe');
+        if (existing) existing.remove();
     }
     
     currentSlide = index;
-    setActiveThumb(index);
     updateSlideIndicator();
-    
-    // Load slide data
-    const slide = slides[index];
-    const hasGame = slide && slide.game && slide.game.url && slide.game.url.trim() !== '';
-    const canvasElement = document.getElementById('canvas');
-    
-    if (hasGame) {
-        console.log('Slide has game, hiding canvas and showing game');
-        // Load canvas background first, then show game
-        canvas.loadFromJSON(slide, function() {
-            canvas.renderAll();
-            if (canvasElement) canvasElement.style.display = 'none';
-            showGameIframe();
-        });
-    } else {
-        console.log('Slide has no game, showing canvas');
-        // Load canvas and ensure it's visible
-        canvas.loadFromJSON(slide || canvas.toJSON(), function() {
-            canvas.renderAll();
-            if (canvasElement) {
-                canvasElement.style.display = 'block';
-                // Force canvas to be visible
-                canvasElement.style.visibility = 'visible';
-                canvasElement.style.opacity = '1';
-            }
-            // Remove any existing game iframe
-            const existing = document.getElementById('game-iframe');
-            if (existing) existing.remove();
-        });
-    }
 }
 
 function addSlide() {
@@ -981,7 +1418,33 @@ function renderSlidePreviews() {
     previewBar.scrollLeft = previousScroll;
 }
 
-// loadSlide function is defined above - this duplicate is removed
+// Replace loadSlide to ensure active thumb update and immediate UI toggle
+function loadSlide(index) {
+    console.log('Loading slide:', index);
+    if (index < 0 || index >= slides.length) return;
+
+    // set currentSlide immediately for other logic that may read it
+    currentSlide = index;
+    setActiveThumb(index);
+    updateSlideIndicator();
+
+    // load canvas JSON (async)
+    canvas.loadFromJSON(slides[index], function() {
+        canvas.renderAll();
+
+        const hasGame = slides[index] && slides[index].game && slides[index].game.url && slides[index].game.url.trim() !== '';
+        const canvasEl = document.getElementById('canvas');
+
+        if (hasGame) {
+            if (canvasEl) canvasEl.style.display = 'none';
+            showGameIframe();
+        } else {
+            if (canvasEl) canvasEl.style.display = 'block';
+            const existing = document.getElementById('game-iframe');
+            if (existing) existing.remove();
+        }
+    });
+}
         // Auto-save trigger function (enhanced)
 function triggerImmediateAutoSave() {
     clearTimeout(autoSaveTimeout);
@@ -1174,28 +1637,13 @@ function debounce(func, wait) {
 
 async function loadQuizData() {
     const user = firebase.auth().currentUser;
-    if (!user) {
-        console.warn('No user logged in, initializing with blank quiz');
-        // Initialize with blank slide if no user
-        if (slides.length === 0) {
-            slides.push(canvas.toJSON());
-        }
-        return;
-    }
+    if (!user) return;
 
     const section = window.teacherSection || '';
     const subject = getParam('subject');
     const quarter = getParam('quarter');
     const name = getParam('name') || getParam('title');
-    
-    if (!section || !subject || !quarter || !name) {
-        console.warn('Missing quiz parameters, initializing with blank quiz:', { section, subject, quarter, name });
-        // Initialize with blank slide if parameters missing
-        if (slides.length === 0) {
-            slides.push(canvas.toJSON());
-        }
-        return;
-    }
+    if (!section || !subject || !quarter || !name) return;
 
     try {
         const quizRef = db.ref(`teachers/${user.uid}/sections/${section}/quizzes/${subject}/${quarter}/${name}`);
@@ -1294,25 +1742,8 @@ async function loadQuizData() {
         renderQuizTestsSidebar();
         renderSlidePreviews();
         loadSlide(currentSlide || 0);
-        
-        // Ensure canvas is visible and rendered
-        setTimeout(() => {
-            const canvasElement = document.getElementById('canvas');
-            if (canvasElement) {
-                canvasElement.style.display = 'block';
-            }
-            canvas.renderAll();
-            resizeCanvas(); // Ensure proper sizing
-        }, 100);
     } catch (err) {
         console.error('Error loading quiz data:', err);
-        // Initialize with blank slide on error
-        if (slides.length === 0) {
-            slides.push(canvas.toJSON());
-        }
-        renderQuizTestsSidebar();
-        renderSlidePreviews();
-        loadSlide(0);
     }
 }
 
@@ -1335,31 +1766,12 @@ function initializeEditor() {
     
     // Create initial slide if none exist
     if (slides.length === 0) {
-        console.log('No slides found, creating blank slide');
         slides.push(canvas.toJSON());
     }
-    
-    // Ensure canvas is visible
-    const canvasElement = document.getElementById('canvas');
-    if (canvasElement) {
-        canvasElement.style.display = 'block';
-    }
-    
-    // Remove any existing game iframe
-    const existingIframe = document.getElementById('game-iframe');
-    if (existingIframe) existingIframe.remove();
     
     loadSlide(0);
     renderSlidePreviews();
     updateSlideIndicator();
-    renderQuizTestsSidebar();
-    
-    // Ensure canvas is properly rendered after a short delay
-    setTimeout(() => {
-        canvas.renderAll();
-        resizeCanvas();
-        console.log('Canvas initialized:', canvas.width, 'x', canvas.height);
-    }, 200);
     
     // Setup comprehensive auto-save
     setupCanvasAutoSave();
@@ -1648,6 +2060,14 @@ document.getElementById('save-btn').onclick = async function() {
             if (!name) return alert('Name cannot be empty.');
         }
         
+        if (!quarter) {
+            quarter = prompt('Which quarter? (1, 2, 3, or 4)', '1');
+            if (!quarter || !['1','2','3','4'].includes(quarter.trim())) {
+                return alert('Invalid quarter.');
+            }
+            quarter = quarter.trim();
+        }
+        
         if (!subject) {
             subject = prompt('Enter subject:', 'subject_math');
             if (!subject) return alert('Subject is required.');
@@ -1928,242 +2348,6 @@ typeInput.onchange = function() {
 
 gameRow.prepend(typeInput);
 gameRow.prepend(nameInput);
-}
-
-// Rightbar Controls - Position, Text, Layers, Undo/Redo
-// Position controls
-document.querySelector('.position-btns').onclick = function(e) {
-    const btn = e.target.closest('button');
-    if (!btn) return;
-    const obj = canvas.getActiveObject();
-    if (!obj) return;
-    switch(btn.title) {
-        case 'Align Left': obj.set({ left: 0 }); break;
-        case 'Align Center': obj.set({ left: (canvas.width - obj.getScaledWidth())/2 }); break;
-        case 'Align Right': obj.set({ left: canvas.width - obj.getScaledWidth() }); break;
-        case 'Align Top': obj.set({ top: 0 }); break;
-        case 'Align Middle': obj.set({ top: (canvas.height - obj.getScaledHeight())/2 }); break;
-        case 'Align Bottom': obj.set({ top: canvas.height - obj.getScaledHeight() }); break;
-    }
-    canvas.renderAll();
-    triggerImmediateAutoSave();
-};
-
-// Layer controls
-document.querySelector('.layer-btns').onclick = function(e) {
-    const btn = e.target.closest('button');
-    if (!btn) return;
-    const activeObjects = canvas.getActiveObjects();
-    if (!activeObjects || activeObjects.length === 0) return;
-    switch(btn.title) {
-        case 'Bring Forward':
-            canvas.bringForward(activeObjects[activeObjects.length - 1]);
-            break;
-        case 'Send Backward':
-            canvas.sendBackwards(activeObjects[0]);
-            break;
-        case 'Delete':
-            activeObjects.forEach(obj => canvas.remove(obj));
-            break;
-    }
-    canvas.discardActiveObject();
-    const remaining = canvas.getObjects().filter(obj => activeObjects.includes(obj));
-    if (remaining.length > 0) {
-        canvas.setActiveObject(remaining[0]);
-    }
-    canvas.renderAll();
-    triggerImmediateAutoSave();
-};
-
-// Text controls
-document.querySelector('.font-family').onchange = function() {
-    const obj = canvas.getActiveObject();
-    if (obj && obj.type === 'i-text') {
-        obj.set({ fontFamily: this.value });
-        canvas.renderAll();
-        triggerImmediateAutoSave();
-    }
-};
-
-document.querySelector('.font-size').onchange = function() {
-    const obj = canvas.getActiveObject();
-    if (obj && obj.type === 'i-text') {
-        obj.set({ fontSize: parseInt(this.value), scaleY: 1 });
-        canvas.renderAll();
-        triggerImmediateAutoSave();
-    }
-};
-
-document.querySelector('.bold-btn').onclick = function() {
-    const obj = canvas.getActiveObject();
-    if (obj && obj.type === 'i-text') {
-        obj.set({ fontWeight: obj.fontWeight === 'bold' ? 'normal' : 'bold' });
-        canvas.renderAll();
-        triggerImmediateAutoSave();
-    }
-};
-
-document.querySelector('.italic-btn').onclick = function() {
-    const obj = canvas.getActiveObject();
-    if (obj && obj.type === 'i-text') {
-        obj.set({ fontStyle: obj.fontStyle === 'italic' ? 'normal' : 'italic' });
-        canvas.renderAll();
-        triggerImmediateAutoSave();
-    }
-};
-
-document.querySelector('.underline-btn').onclick = function() {
-    const obj = canvas.getActiveObject();
-    if (obj && obj.type === 'i-text') {
-        obj.set({ underline: !obj.underline });
-        canvas.renderAll();
-        triggerImmediateAutoSave();
-    }
-};
-
-// Color pickers
-const colorInput = document.querySelector('.color-input');
-const shapeColorInput = document.querySelector('.shape-color-input');
-
-// Show/hide color pickers based on selection
-function updateColorPickers() {
-    const active = canvas.getActiveObject();
-    const activeGroup = canvas.getActiveObjects && canvas.getActiveObjects();
-    if (!colorInput || !shapeColorInput) return;
-    
-    colorInput.style.display = 'none';
-    shapeColorInput.style.display = 'none';
-    
-    // Multi-selection
-    if (activeGroup && activeGroup.length > 1) {
-        let allText = activeGroup.every(obj => obj.type === 'i-text');
-        let allShapes = activeGroup.every(obj => ['rect','circle','polygon','triangle','ellipse'].includes(obj.type));
-        let allLines = activeGroup.every(obj => obj.type === 'line');
-        
-        if (allText) {
-            colorInput.style.display = '';
-            let hex = activeGroup[0].fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(activeGroup[0].fill)).toHex() : '#232946';
-            colorInput.value = hex;
-        } else if (allShapes || allLines) {
-            shapeColorInput.style.display = '';
-            let hex = allShapes ? (activeGroup[0].fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(activeGroup[0].fill)).toHex() : '#b39ddb') : (activeGroup[0].stroke || '#b39ddb');
-            shapeColorInput.value = hex;
-        }
-        return;
-    }
-    
-    if (active) {
-        if (active.type === 'i-text') {
-            colorInput.style.display = '';
-            let hex = active.fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(active.fill)).toHex() : '#232946';
-            colorInput.value = hex;
-        } else if (['rect','circle','polygon','triangle','ellipse'].includes(active.type)) {
-            shapeColorInput.style.display = '';
-            let hex = active.fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(active.fill)).toHex() : '#b39ddb';
-            shapeColorInput.value = hex;
-        } else if (active.type === 'line') {
-            shapeColorInput.style.display = '';
-            let hex = active.stroke || '#b39ddb';
-            try { hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(hex)).toHex(); } catch(e){}
-            shapeColorInput.value = hex;
-        }
-    }
-}
-
-canvas.on('selection:created', updateColorPickers);
-canvas.on('selection:updated', updateColorPickers);
-canvas.on('selection:cleared', updateColorPickers);
-canvas.on('object:modified', updateColorPickers);
-
-// Text color input
-if (colorInput) {
-    colorInput.addEventListener('input', function() {
-        const obj = canvas.getActiveObject();
-        if (obj && obj.type === 'i-text') {
-            obj.set({ fill: this.value });
-            canvas.renderAll();
-            triggerImmediateAutoSave();
-        }
-    });
-}
-
-// Shape color input
-if (shapeColorInput) {
-    shapeColorInput.addEventListener('input', function() {
-        const activeGroup = canvas.getActiveObjects && canvas.getActiveObjects();
-        if (activeGroup && activeGroup.length > 1) {
-            activeGroup.forEach(obj => {
-                if (['rect','circle','polygon','triangle','ellipse'].includes(obj.type)) {
-                    obj.set({ fill: this.value });
-                } else if (obj.type === 'line') {
-                    obj.set({ stroke: this.value });
-                }
-            });
-            canvas.renderAll();
-            triggerImmediateAutoSave();
-            return;
-        }
-        const obj = canvas.getActiveObject();
-        if (obj) {
-            if (['rect','circle','polygon','triangle','ellipse'].includes(obj.type)) {
-                obj.set({ fill: this.value });
-            } else if (obj.type === 'line') {
-                obj.set({ stroke: this.value });
-            }
-            canvas.renderAll();
-            triggerImmediateAutoSave();
-        }
-    });
-}
-
-// Initialize color pickers on load
-updateColorPickers();
-
-// Text align controls
-document.querySelector('.align-btns').onclick = function(e) {
-    const btn = e.target.closest('button');
-    if (!btn) return;
-    const obj = canvas.getActiveObject();
-    if (obj && obj.type === 'i-text') {
-        if (btn.classList.contains('align-left')) obj.set({ textAlign: 'left' });
-        if (btn.classList.contains('align-center')) obj.set({ textAlign: 'center' });
-        if (btn.classList.contains('align-right')) obj.set({ textAlign: 'right' });
-        if (btn.classList.contains('align-justify')) obj.set({ textAlign: 'justify' });
-        canvas.renderAll();
-        document.querySelectorAll('.align-btns button').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        triggerImmediateAutoSave();
-    }
-};
-
-// Undo/Redo
-let undoState = [], undoMods = 0;
-function saveUndoState() {
-    undoMods = 0;
-    undoState.push(JSON.stringify(canvas));
-    // Limit undo history to 50 states
-    if (undoState.length > 50) undoState.shift();
-}
-
-canvas.on('object:added', saveUndoState);
-canvas.on('object:modified', saveUndoState);
-canvas.on('object:removed', saveUndoState);
-
-if (document.getElementById('undo-btn')) {
-    document.getElementById('undo-btn').onclick = function() {
-        if (undoState.length > 1) {
-            undoState.pop();
-            canvas.loadFromJSON(undoState[undoState.length-1], function() {
-                canvas.renderAll();
-            });
-        }
-    };
-}
-
-if (document.getElementById('redo-btn')) {
-    document.getElementById('redo-btn').onclick = function() {
-        alert('Redo not implemented yet.');
-    };
 }
 
 </script>

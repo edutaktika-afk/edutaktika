@@ -272,9 +272,9 @@ document.getElementById('createLessonBtn').onclick = function() {
     window.location.href = editorBaseUrl;
 };
 
-// Quiz Section button: open Create Quiz modal
+// Quiz Section button: go to quiz section page (replace with your quiz page)
 document.getElementById('createQuizBtn').onclick = function() {
-    document.getElementById('createQuizModal').style.display = 'flex';
+    window.location.href = 'create-quiz.html';
 };
 </script>
 
@@ -320,16 +320,7 @@ document.getElementById('createQuizBtn').onclick = function() {
                 
             </div>
 
-            <!-- YouTube Lessons (auto-fetched) -->
-            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FsQc_kW5q38HD3Geb4VVQz4" style="margin-top: 20px;">
-                <div class="quarter-title" style="align-items:center; gap:10px;">
-                    <i class="fab fa-youtube"></i>
-                    <h3 style="margin:0;">Video Lessons</h3>
-                </div>
-                <div class="lessons-container">
-                    <div>Loading YouTube lessons…</div>
-                </div>
-            </div>
+            
 
             <!-- <div class="progress-container">
                 <div class="progress-title">Quarter Progress</div>
@@ -496,7 +487,7 @@ document.getElementById('createQuizBtn').onclick = function() {
             </div>
             <div class="lessons-container">
                 <div id="quiz-list"></div>
-                <div id="student-quiz-cards"></div>
+                
             </div>
         </div>
 
@@ -1698,15 +1689,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
         const el = section.querySelector('.empty-quarter-msg');
         if(el) el.remove();
     }
-    function addPlaceholder(section){
-        if(section.querySelector('.empty-quarter-msg')) return; // already present
-        const firstContainer = section.querySelector('.lessons-container');
-        const host = firstContainer || section;
-        const div = document.createElement('div');
-        div.className = 'empty-quarter-msg';
-        div.innerHTML = '<strong>No lessons available yet.</strong><br><span style="font-weight:400;">Click the "Create Lesson" button to add one.</span>';
-        host.appendChild(div);
-    }
+
     function evaluate(section){
         if(sectionHasLessonCards(section) || sectionHasVideoCards(section)){
             removePlaceholder(section);
