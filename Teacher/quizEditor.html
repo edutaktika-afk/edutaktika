@@ -392,26 +392,7 @@
             burgerDropdown.style.display = 'none';
         };
 
-        // Canvas Scaling
-        const scaleInput = document.getElementById('canvas-scale');
-        const scaleValue = document.getElementById('canvas-scale-value');
-        const canvasWrapper = document.querySelector('.canvas-wrapper');
-
-        function updateCanvasScale() {
-            const scale = parseFloat(scaleInput.value);
-            canvasWrapper.style.transform = `scale(${scale})`;
-            canvasWrapper.classList.add('scaled');
-            scaleValue.textContent = Math.round(scale * 100) + '%';
-        }
-
-        scaleInput.addEventListener('input', updateCanvasScale);
-        document.getElementById('reset-zoom-btn').onclick = function() {
-            scaleInput.value = 0.8;
-            updateCanvasScale();
-        };
-
-        // Initialize scale
-        updateCanvasScale();
+        // Canvas Scaling - removed as UI elements don't exist
 
         // Canvas initialization and sizing - maintain 1280x720
         function resizeCanvas() {
