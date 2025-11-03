@@ -259,29 +259,7 @@
     </div>
 
     <script>
-    // Burger menu Export/Import logic
-    document.getElementById('burger-export').onclick = function(e) {
-        e.preventDefault();
-        document.getElementById('export-btn').click();
-        document.getElementById('burger-dropdown').style.display = 'none';
-    };
-    document.getElementById('burger-import').onclick = function(e) {
-        e.preventDefault();
-        document.getElementById('import-btn').click();
-        document.getElementById('burger-dropdown').style.display = 'none';
-    };
-    // Burger menu dropdown logic
-    const burgerBtn = document.getElementById('burger-menu-btn');
-    const burgerDropdown = document.getElementById('burger-dropdown');
-    burgerBtn.addEventListener('click', function(e) {
-        burgerDropdown.style.display = burgerDropdown.style.display === 'none' || burgerDropdown.style.display === '' ? 'block' : 'none';
-        e.stopPropagation();
-    });
-    document.addEventListener('click', function(e) {
-        if (burgerDropdown.style.display === 'block' && !burgerDropdown.contains(e.target) && e.target !== burgerBtn) {
-            burgerDropdown.style.display = 'none';
-        }
-    });
+    // Burger menu Export/Import logic will be handled in main script
     </script>
 
     <div class="editor-layout">
@@ -372,11 +350,11 @@
         let autoSaveTimeout;
         let lastCanvasState = '';
 
-        // Initialize Fabric.js Canvas
+        // Initialize Fabric.js Canvas with correct dimensions
         const canvas = new fabric.Canvas('canvas', {
             backgroundColor: '#fff',
-            width: 800,
-            height: 450
+            width: 1280,
+            height: 720
         });
 
         // Utility Functions
@@ -435,18 +413,32 @@
         // Initialize scale
         updateCanvasScale();
 
-        // Responsive Canvas
+        // Canvas initialization and sizing - maintain 1280x720
         function resizeCanvas() {
-            const wrapper = document.querySelector('.canvas-wrapper');
-            const rect = wrapper.getBoundingClientRect();
-            canvas.setWidth(rect.width);
-            canvas.setHeight(rect.height);
+            // Keep canvas at fixed 1280x720 dimensions to match CSS
+            canvas.setWidth(1280);
+            canvas.setHeight(720);
             canvas.calcOffset && canvas.calcOffset();
             canvas.renderAll();
+            
+            // Ensure canvas element is visible
+            const canvasElement = document.getElementById('canvas');
+            if (canvasElement) {
+                canvasElement.style.display = 'block';
+                canvasElement.style.visibility = 'visible';
+                canvasElement.style.opacity = '1';
+            }
+            
+            console.log('Canvas resized to:', canvas.width, 'x', canvas.height);
         }
 
         window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        // Initialize canvas properly after DOM is ready
+        setTimeout(() => {
+            resizeCanvas();
+            canvas.renderAll();
+            console.log('Canvas initialized and rendered');
+        }, 300);
 
 // Replace the showGameIframe function (around line 560) with this corrected version:
 function showGameIframe() {
@@ -763,50 +755,56 @@ function saveCurrentSlide() {
 }
 
 function loadSlide(index) {
-    console.log('Loading slide:', index); // Debug log
+    console.log('Loading slide:', index, 'Total slides:', slides.length); // Debug log
     
-    if (index >= 0 && index < slides.length && slides[index]) {
-        canvas.loadFromJSON(slides[index], function() {
-            canvas.renderAll();
-            
-            // Show/hide canvas and game based on slide content
-            const canvasElement = document.getElementById('canvas');
-            const hasGame = slides[index].game;
-            
-            if (hasGame) {
-                console.log('Slide has game, hiding canvas and showing game'); // Debug log
-                canvasElement.style.display = 'none';
-                showGameIframe();
-            } else {
-                console.log('Slide has no game, showing canvas'); // Debug log
-                canvasElement.style.display = 'block';
-                // Remove any existing game iframe
-                const existing = document.getElementById('game-iframe');
-                if (existing) existing.remove();
-            }
-        });
-    } else {
-        // Create new slide
-        console.log('Creating new slide'); // Debug log
-        canvas.clear();
-        canvas.backgroundColor = '#fff';
-        canvas.renderAll();
-        
-        if (!slides[index]) {
-            slides[index] = canvas.toJSON();
+    // Ensure we have a valid index
+    if (index < 0 || index >= slides.length) {
+        console.log('Invalid slide index, creating new slide');
+        if (slides.length === 0) {
+            slides.push(canvas.toJSON());
         }
-        
-        // Show canvas for new slide
-        const canvasElement = document.getElementById('canvas');
-        canvasElement.style.display = 'block';
-        
-        // Remove any existing game iframe
-        const existing = document.getElementById('game-iframe');
-        if (existing) existing.remove();
+        index = 0;
+    }
+    
+    // Ensure slide exists
+    if (!slides[index]) {
+        console.log('Slide does not exist, creating blank slide');
+        slides[index] = canvas.toJSON();
     }
     
     currentSlide = index;
+    setActiveThumb(index);
     updateSlideIndicator();
+    
+    // Load slide data
+    const slide = slides[index];
+    const hasGame = slide && slide.game && slide.game.url && slide.game.url.trim() !== '';
+    const canvasElement = document.getElementById('canvas');
+    
+    if (hasGame) {
+        console.log('Slide has game, hiding canvas and showing game');
+        // Load canvas background first, then show game
+        canvas.loadFromJSON(slide, function() {
+            canvas.renderAll();
+            if (canvasElement) canvasElement.style.display = 'none';
+            showGameIframe();
+        });
+    } else {
+        console.log('Slide has no game, showing canvas');
+        // Load canvas and ensure it's visible
+        canvas.loadFromJSON(slide || canvas.toJSON(), function() {
+            canvas.renderAll();
+            if (canvasElement) {
+                canvasElement.style.display = 'block';
+                // Force canvas to be visible
+                canvasElement.style.visibility = 'visible';
+                canvasElement.style.opacity = '1';
+            }
+            // Remove any existing game iframe
+            const existing = document.getElementById('game-iframe');
+            if (existing) existing.remove();
+        });
+    }
 }
 
 function addSlide() {
@@ -1002,33 +1000,7 @@ function renderSlidePreviews() {
     previewBar.scrollLeft = previousScroll;
 }
 
-// Replace loadSlide to ensure active thumb update and immediate UI toggle
-function loadSlide(index) {
-    console.log('Loading slide:', index);
-    if (index < 0 || index >= slides.length) return;
-
-    // set currentSlide immediately for other logic that may read it
-    currentSlide = index;
-    setActiveThumb(index);
-    updateSlideIndicator();
-
-    // load canvas JSON (async)
-    canvas.loadFromJSON(slides[index], function() {
-        canvas.renderAll();
-
-        const hasGame = slides[index] && slides[index].game && slides[index].game.url && slides[index].game.url.trim() !== '';
-        const canvasEl = document.getElementById('canvas');
-
-        if (hasGame) {
-            if (canvasEl) canvasEl.style.display = 'none';
-            showGameIframe();
-        } else {
-            if (canvasEl) canvasEl.style.display = 'block';
-            const existing = document.getElementById('game-iframe');
-            if (existing) existing.remove();
-        }
-    });
-}
+// loadSlide function is defined above - this duplicate is removed
         // Auto-save trigger function (enhanced)
 function triggerImmediateAutoSave() {
     clearTimeout(autoSaveTimeout);
@@ -1221,13 +1193,28 @@ function debounce(func, wait) {
 
 async function loadQuizData() {
     const user = firebase.auth().currentUser;
-    if (!user) return;
+    if (!user) {
+        console.warn('No user logged in, initializing with blank quiz');
+        // Initialize with blank slide if no user
+        if (slides.length === 0) {
+            slides.push(canvas.toJSON());
+        }
+        return;
+    }
 
     const section = window.teacherSection || '';
     const subject = getParam('subject');
     const quarter = getParam('quarter');
     const name = getParam('name') || getParam('title');
-    if (!section || !subject || !quarter || !name) return;
+    
+    if (!section || !subject || !quarter || !name) {
+        console.warn('Missing quiz parameters, initializing with blank quiz:', { section, subject, quarter, name });
+        // Initialize with blank slide if parameters missing
+        if (slides.length === 0) {
+            slides.push(canvas.toJSON());
+        }
+        return;
+    }
 
     try {
         const quizRef = db.ref(`teachers/${user.uid}/sections/${section}/quizzes/${subject}/${quarter}/${name}`);
@@ -1326,8 +1313,25 @@ async function loadQuizData() {
         renderQuizTestsSidebar();
         renderSlidePreviews();
         loadSlide(currentSlide || 0);
+        
+        // Ensure canvas is visible and rendered
+        setTimeout(() => {
+            const canvasElement = document.getElementById('canvas');
+            if (canvasElement) {
+                canvasElement.style.display = 'block';
+            }
+            canvas.renderAll();
+            resizeCanvas(); // Ensure proper sizing
+        }, 100);
     } catch (err) {
         console.error('Error loading quiz data:', err);
+        // Initialize with blank slide on error
+        if (slides.length === 0) {
+            slides.push(canvas.toJSON());
+        }
+        renderQuizTestsSidebar();
+        renderSlidePreviews();
+        loadSlide(0);
     }
 }
 
@@ -1350,12 +1354,31 @@ function initializeEditor() {
     
     // Create initial slide if none exist
     if (slides.length === 0) {
+        console.log('No slides found, creating blank slide');
         slides.push(canvas.toJSON());
     }
+    
+    // Ensure canvas is visible
+    const canvasElement = document.getElementById('canvas');
+    if (canvasElement) {
+        canvasElement.style.display = 'block';
+    }
+    
+    // Remove any existing game iframe
+    const existingIframe = document.getElementById('game-iframe');
+    if (existingIframe) existingIframe.remove();
     
     loadSlide(0);
     renderSlidePreviews();
     updateSlideIndicator();
+    renderQuizTestsSidebar();
+    
+    // Ensure canvas is properly rendered after a short delay
+    setTimeout(() => {
+        canvas.renderAll();
+        resizeCanvas();
+        console.log('Canvas initialized:', canvas.width, 'x', canvas.height);
+    }, 200);
     
     // Setup comprehensive auto-save
     setupCanvasAutoSave();
@@ -1643,17 +1666,6 @@ document.getElementById('save-btn').onclick = async function() {
             name = name.trim();
             if (!name) return alert('Name cannot be empty.');
         }
-
-        .cancel-button:hover {
-            background-color:#ff3030;
-            color: white;
-        }
-
-        .cancel-button.active {
-            background-color: #2e8b57;
-            color: var(--white);
-            border-color: var(--forest-green);
-        }
         
         if (!subject) {
             subject = prompt('Enter subject:', 'subject_math');
@@ -1935,6 +1947,242 @@ typeInput.onchange = function() {
 
 gameRow.prepend(typeInput);
 gameRow.prepend(nameInput);
+}
+
+// Rightbar Controls - Position, Text, Layers, Undo/Redo
+// Position controls
+document.querySelector('.position-btns').onclick = function(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const obj = canvas.getActiveObject();
+    if (!obj) return;
+    switch(btn.title) {
+        case 'Align Left': obj.set({ left: 0 }); break;
+        case 'Align Center': obj.set({ left: (canvas.width - obj.getScaledWidth())/2 }); break;
+        case 'Align Right': obj.set({ left: canvas.width - obj.getScaledWidth() }); break;
+        case 'Align Top': obj.set({ top: 0 }); break;
+        case 'Align Middle': obj.set({ top: (canvas.height - obj.getScaledHeight())/2 }); break;
+        case 'Align Bottom': obj.set({ top: canvas.height - obj.getScaledHeight() }); break;
+    }
+    canvas.renderAll();
+    triggerImmediateAutoSave();
+};
+
+// Layer controls
+document.querySelector('.layer-btns').onclick = function(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const activeObjects = canvas.getActiveObjects();
+    if (!activeObjects || activeObjects.length === 0) return;
+    switch(btn.title) {
+        case 'Bring Forward':
+            canvas.bringForward(activeObjects[activeObjects.length - 1]);
+            break;
+        case 'Send Backward':
+            canvas.sendBackwards(activeObjects[0]);
+            break;
+        case 'Delete':
+            activeObjects.forEach(obj => canvas.remove(obj));
+            break;
+    }
+    canvas.discardActiveObject();
+    const remaining = canvas.getObjects().filter(obj => activeObjects.includes(obj));
+    if (remaining.length > 0) {
+        canvas.setActiveObject(remaining[0]);
+    }
+    canvas.renderAll();
+    triggerImmediateAutoSave();
+};
+
+// Text controls
+document.querySelector('.font-family').onchange = function() {
+    const obj = canvas.getActiveObject();
+    if (obj && obj.type === 'i-text') {
+        obj.set({ fontFamily: this.value });
+        canvas.renderAll();
+        triggerImmediateAutoSave();
+    }
+};
+
+document.querySelector('.font-size').onchange = function() {
+    const obj = canvas.getActiveObject();
+    if (obj && obj.type === 'i-text') {
+        obj.set({ fontSize: parseInt(this.value), scaleY: 1 });
+        canvas.renderAll();
+        triggerImmediateAutoSave();
+    }
+};
+
+document.querySelector('.bold-btn').onclick = function() {
+    const obj = canvas.getActiveObject();
+    if (obj && obj.type === 'i-text') {
+        obj.set({ fontWeight: obj.fontWeight === 'bold' ? 'normal' : 'bold' });
+        canvas.renderAll();
+        triggerImmediateAutoSave();
+    }
+};
+
+document.querySelector('.italic-btn').onclick = function() {
+    const obj = canvas.getActiveObject();
+    if (obj && obj.type === 'i-text') {
+        obj.set({ fontStyle: obj.fontStyle === 'italic' ? 'normal' : 'italic' });
+        canvas.renderAll();
+        triggerImmediateAutoSave();
+    }
+};
+
+document.querySelector('.underline-btn').onclick = function() {
+    const obj = canvas.getActiveObject();
+    if (obj && obj.type === 'i-text') {
+        obj.set({ underline: !obj.underline });
+        canvas.renderAll();
+        triggerImmediateAutoSave();
+    }
+};
+
+// Color pickers
+const colorInput = document.querySelector('.color-input');
+const shapeColorInput = document.querySelector('.shape-color-input');
+
+// Show/hide color pickers based on selection
+function updateColorPickers() {
+    const active = canvas.getActiveObject();
+    const activeGroup = canvas.getActiveObjects && canvas.getActiveObjects();
+    if (!colorInput || !shapeColorInput) return;
+    
+    colorInput.style.display = 'none';
+    shapeColorInput.style.display = 'none';
+    
+    // Multi-selection
+    if (activeGroup && activeGroup.length > 1) {
+        let allText = activeGroup.every(obj => obj.type === 'i-text');
+        let allShapes = activeGroup.every(obj => ['rect','circle','polygon','triangle','ellipse'].includes(obj.type));
+        let allLines = activeGroup.every(obj => obj.type === 'line');
+        
+        if (allText) {
+            colorInput.style.display = '';
+            let hex = activeGroup[0].fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(activeGroup[0].fill)).toHex() : '#232946';
+            colorInput.value = hex;
+        } else if (allShapes || allLines) {
+            shapeColorInput.style.display = '';
+            let hex = allShapes ? (activeGroup[0].fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(activeGroup[0].fill)).toHex() : '#b39ddb') : (activeGroup[0].stroke || '#b39ddb');
+            shapeColorInput.value = hex;
+        }
+        return;
+    }
+    
+    if (active) {
+        if (active.type === 'i-text') {
+            colorInput.style.display = '';
+            let hex = active.fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(active.fill)).toHex() : '#232946';
+            colorInput.value = hex;
+        } else if (['rect','circle','polygon','triangle','ellipse'].includes(active.type)) {
+            shapeColorInput.style.display = '';
+            let hex = active.fill ? fabric.Color.fromSource(fabric.Color.sourceFromHex(active.fill)).toHex() : '#b39ddb';
+            shapeColorInput.value = hex;
+        } else if (active.type === 'line') {
+            shapeColorInput.style.display = '';
+            let hex = active.stroke || '#b39ddb';
+            try { hex = fabric.Color.fromSource(fabric.Color.sourceFromHex(hex)).toHex(); } catch(e){}
+            shapeColorInput.value = hex;
+        }
+    }
+}
+
+canvas.on('selection:created', updateColorPickers);
+canvas.on('selection:updated', updateColorPickers);
+canvas.on('selection:cleared', updateColorPickers);
+canvas.on('object:modified', updateColorPickers);
+
+// Text color input
+if (colorInput) {
+    colorInput.addEventListener('input', function() {
+        const obj = canvas.getActiveObject();
+        if (obj && obj.type === 'i-text') {
+            obj.set({ fill: this.value });
+            canvas.renderAll();
+            triggerImmediateAutoSave();
+        }
+    });
+}
+
+// Shape color input
+if (shapeColorInput) {
+    shapeColorInput.addEventListener('input', function() {
+        const activeGroup = canvas.getActiveObjects && canvas.getActiveObjects();
+        if (activeGroup && activeGroup.length > 1) {
+            activeGroup.forEach(obj => {
+                if (['rect','circle','polygon','triangle','ellipse'].includes(obj.type)) {
+                    obj.set({ fill: this.value });
+                } else if (obj.type === 'line') {
+                    obj.set({ stroke: this.value });
+                }
+            });
+            canvas.renderAll();
+            triggerImmediateAutoSave();
+            return;
+        }
+        const obj = canvas.getActiveObject();
+        if (obj) {
+            if (['rect','circle','polygon','triangle','ellipse'].includes(obj.type)) {
+                obj.set({ fill: this.value });
+            } else if (obj.type === 'line') {
+                obj.set({ stroke: this.value });
+            }
+            canvas.renderAll();
+            triggerImmediateAutoSave();
+        }
+    });
+}
+
+// Initialize color pickers on load
+updateColorPickers();
+
+// Text align controls
+document.querySelector('.align-btns').onclick = function(e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const obj = canvas.getActiveObject();
+    if (obj && obj.type === 'i-text') {
+        if (btn.classList.contains('align-left')) obj.set({ textAlign: 'left' });
+        if (btn.classList.contains('align-center')) obj.set({ textAlign: 'center' });
+        if (btn.classList.contains('align-right')) obj.set({ textAlign: 'right' });
+        if (btn.classList.contains('align-justify')) obj.set({ textAlign: 'justify' });
+        canvas.renderAll();
+        document.querySelectorAll('.align-btns button').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        triggerImmediateAutoSave();
+    }
+};
+
+// Undo/Redo
+let undoState = [], undoMods = 0;
+function saveUndoState() {
+    undoMods = 0;
+    undoState.push(JSON.stringify(canvas));
+    // Limit undo history to 50 states
+    if (undoState.length > 50) undoState.shift();
+}
+
+canvas.on('object:added', saveUndoState);
+canvas.on('object:modified', saveUndoState);
+canvas.on('object:removed', saveUndoState);
+
+if (document.getElementById('undo-btn')) {
+    document.getElementById('undo-btn').onclick = function() {
+        if (undoState.length > 1) {
+            undoState.pop();
+            canvas.loadFromJSON(undoState[undoState.length-1], function() {
+                canvas.renderAll();
+            });
+        }
+    };
+}
+
+if (document.getElementById('redo-btn')) {
+    document.getElementById('redo-btn').onclick = function() {
+        alert('Redo not implemented yet.');
+    };
 }
 
 </script>
