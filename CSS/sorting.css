@@ -1,0 +1,248 @@
+
+    :root{
+      --design-w:1000;
+      --design-h:640;
+      --accent:#1976d2;
+    }
+    html,body{
+      height:100%;width:100%;margin:0;padding:0;
+      overflow:hidden; /* no page scrollbars */
+      font-family:system-ui,Segoe UI,Arial,sans-serif;
+      background:#ffffff;
+    }
+    /* Outer canvas fit */
+    #game-root{
+      width:100%;height:100%;
+      display:flex;align-items:center;justify-content:center;
+      overflow:hidden;
+    }
+    /* Inner “design size” panel that we scale */
+    #game-inner{
+      width:100%;height:100%;
+      max-width:1400px;
+      max-height:100%;
+      padding:24px clamp(16px,2vw,36px);
+      box-sizing:border-box;
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      overflow:hidden;
+      position:relative;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+    }
+    header h2{
+      margin:0;
+      font-size:28px;
+      font-weight:700;
+      color:#153c57;
+    }
+    #modify-game-btn{
+      background:#fff;
+      border:1px solid rgba(0,60,110,.15);
+      padding:10px 18px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:15px;
+      color:#134a78;
+      box-shadow:0 4px 14px rgba(10,40,70,.08);
+      transition:.18s;
+    }
+    #modify-game-btn:hover{background:#f0f8ff}
+    .board{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:22px;
+      min-height:0;
+      overflow:hidden;
+    }
+    /* Remove old column styles */
+    .left-col,.right-col{display:none!important}
+    /* Habitats area: flexible row that wraps */
+    .game-area{
+      flex:0 0 auto;
+      display:flex;
+      flex-wrap:wrap;
+      gap:24px;
+      justify-content:center;
+      align-items:flex-start;
+      padding:4px;
+      min-height:180px;
+      max-height:50%;
+      overflow:auto;
+      scrollbar-width:none;
+    }
+    .game-area::-webkit-scrollbar{display:none}
+    .habitat{
+      flex:1 1 clamp(220px,26%,320px);
+      min-width:220px;
+      max-width:340px;
+      min-height:170px;
+      background:#fff;
+      border-radius:16px;
+      box-shadow:0 4px 20px -4px rgba(15,50,90,0.15);
+      padding:18px 18px 16px;
+      box-sizing:border-box;
+      position:relative;
+      border:2px solid transparent;
+      transition:.2s;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .habitat-title{
+      font-size:18px;
+      font-weight:700;
+      text-align:center;
+      color:#123c56;
+      margin:0 0 4px;
+    }
+    .habitat.droppable{border-color:#90caf9;}
+    .habitat.correct{background:#e0f6e2;border-color:#2d9141;}
+    .habitat.incorrect{background:#ffe4e4;border-color:#d93a3a;}
+    /* Animals tray */
+    #animals-tray{
+      flex:1 1 auto;
+      width:100%;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-content:flex-start;
+      padding:14px 16px 10px;
+      background:#ffffff;
+      border:1px solid rgba(0,70,140,.12);
+      border-radius:16px;
+      min-height:100px;
+      max-height:20%;
+      overflow:auto;
+      box-shadow:0 4px 20px -6px rgba(25,55,90,.1);
+    }
+    #animals-tray::-webkit-scrollbar{width:8px}
+    #animals-tray::-webkit-scrollbar-thumb{background:#c7d8e5;border-radius:6px}
+    .animal{
+      background:#ffe082;
+      border-radius:10px;
+      padding:8px 12px 8px 10px;
+      cursor:grab;
+      font-size:14px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:600;
+      box-shadow:0 3px 10px -2px rgba(15,40,60,.25);
+      user-select:none;
+    }
+    .animal img{
+      width:30px;height:30px;object-fit:cover;border-radius:8px;flex-shrink:0;
+    }
+    .score{
+      font-size:16px;
+      font-weight:600;
+      text-align:center;
+      color:#184562;
+      padding:6px 0;
+    }
+    #play-again-btn{
+      display:none;
+      background:var(--accent);
+      color:#fff;
+      border:0;
+      padding:10px 22px;
+      font-size:15px;
+      font-weight:600;
+      border-radius:10px;
+      cursor:pointer;
+      box-shadow:0 6px 16px -4px rgba(20,70,130,.4);
+      margin:0 auto;
+    }
+    #play-again-btn:hover{background:#0f63bd}
+    /* Modal */
+    #modify-modal{
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(10,30,55,.55);
+      z-index:400;
+      align-items:center;
+      justify-content:center;
+      padding:30px;
+    }
+    #modify-card{
+      width:min(960px,96%);
+      max-height:92vh;
+      overflow:auto;
+      background:#fff;
+      border-radius:20px;
+      padding:34px 38px 40px;
+      box-shadow:0 28px 70px -16px rgba(10,30,55,.55);
+      box-sizing:border-box;
+      display:flex;
+      flex-direction:column;
+      gap:26px;
+    }
+    #animal-list{max-height:50vh;overflow:auto;border:1px solid #e8eef3;border-radius:14px;padding:14px;background:#f9fcfe;}
+    .animal-mod{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      align-items:center;
+      padding:10px 4px 12px;
+      border-bottom:1px solid #e7edf3;
+      font-size:14px;
+    }
+    .animal-mod:last-child{border-bottom:none}
+    .animal-mod img{width:54px;height:54px;border-radius:10px;object-fit:cover}
+    .animal-mod input[type=text]{padding:8px 10px;border:1px solid #d2dee8;border-radius:8px;font-size:14px}
+    .animal-mod select{padding:8px 10px;border:1px solid #d2dee8;border-radius:8px;font-size:14px}
+    .animal-mod button.remove{
+      background:#e74c3c;
+      color:#fff;
+      border:0;
+      padding:8px 12px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:13px;
+    }
+    .modal-actions{display:flex;justify-content:flex-end;gap:14px}
+    .primary-btn{
+      background:var(--accent);color:#fff;border:0;padding:12px 28px;font-size:15px;font-weight:600;border-radius:10px;cursor:pointer;
+    }
+    .secondary-btn{
+      background:#edf4fa;color:#163d57;border:0;padding:12px 24px;font-size:15px;font-weight:600;border-radius:10px;cursor:pointer;
+    }
+    /* Responsive shrink (habitats wrap) */
+    @media (max-width:860px){
+      #game-inner{padding:20px 22px;}
+      .board{flex-direction:column;}
+      .right-col{width:100%;flex-direction:row;flex-wrap:wrap;}
+      #animals-tray{flex:1 1 100%;}
+    }
+    /* === Responsive layout rewrite === */
+    @media (max-width:780px){
+      .habitat{flex:1 1 calc(50% - 24px);}
+    }
+    @media (max-width:520px){
+      .habitat{flex:1 1 100%;}
+      header h2{font-size:22px;}
+      .animal{padding:6px 8px;font-size:13px}
+      .animal img{width:30px;height:30px}
+    }
+
+    /* Ensure no page scroll; internal areas scroll if overflow */
+    html,body{overflow:hidden}
+
+    /* Student mode: remove immediate feedback colors */
+    .habitat.correct,.habitat.incorrect{background:#fff;border-color:transparent;}
+    .quiz-controls {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 18px;
+}

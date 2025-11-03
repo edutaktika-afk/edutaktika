@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react';
 import { storage } from './storage';
 
 import * as api from './api';
+import * as firebaseApi from './firebase-api';
 
 export const ProjectContext = createContext({});
 
@@ -25,6 +26,7 @@ const setToStorage = (key, value) => {
 class Project {
   id = '';
   name = '';
+  description = '';
   user = {};
   skipSaving = false;
   cloudEnabled = false;
@@ -83,6 +85,24 @@ class Project {
     await storage.setItem('polotno-last-design-id', id);
     this.status = 'loading';
     try {
+      // Try Firebase first if URL parameters are present
+      const urlParams = firebaseApi.getLessonParamsFromURL();
+      if (urlParams.subject && urlParams.quarter && urlParams.teacherUID && urlParams.section) {
+        try {
+          const { storeJSON, name, description } = await firebaseApi.loadLessonWithURLParams({ id });
+          if (storeJSON) {
+            this.store.loadJSON(storeJSON);
+          }
+          this.name = name;
+          this.description = description;
+          this.status = 'saved';
+          return;
+        } catch (firebaseError) {
+          console.log('Firebase load failed, falling back to local storage:', firebaseError);
+        }
+      }
+      
+      // Fallback to local storage
       const { storeJSON, name } = await Promise.race([
         api.loadById({
           id,
@@ -132,7 +152,30 @@ class Project {
     const blob = await new Promise((resolve) => {
       canvas.toBlob(resolve, 'image/jpeg', 0.9);
     });
+    
     try {
+      // Try Firebase first if URL parameters are present
+      const urlParams = firebaseApi.getLessonParamsFromURL();
+      if (urlParams.subject && urlParams.quarter && urlParams.teacherUID && urlParams.section) {
+        try {
+          const res = await firebaseApi.saveLessonWithURLParams({
+            storeJSON,
+            preview: blob,
+            id: this.id,
+            name: this.name,
+          });
+          if (res.status === 'saved') {
+            this.id = res.id;
+            await storage.setItem('polotno-last-design-id', res.id);
+          }
+          this.status = 'saved';
+          return;
+        } catch (firebaseError) {
+          console.log('Firebase save failed, falling back to local storage:', firebaseError);
+        }
+      }
+      
+      // Fallback to local storage
       const res = await api.saveDesign({
         storeJSON,
         preview: blob,

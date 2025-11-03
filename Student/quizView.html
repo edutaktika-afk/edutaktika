@@ -14,36 +14,44 @@
     
     <style>
     /* Make presentation area strictly 4:3 and responsive */
-    html, body {
-        margin: 0;
-        padding: 0;
-        background: #222;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        font-family: inherit;
+html, body {
+    margin: 0;
+    padding: 0;
+    background: #222;
+    width: 100vw;
+    height: 100vh;
+    min-height: 100vh;
+    min-width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* REMOVE overflow: hidden; */
+    /* REMOVE position: fixed; */
+}
+    /* Canvas styling with proper constraints - use 4:3 (1024x768) */
+    #presentation-canvas { 
+        width: 1024px; 
+        height: 768px; 
+        max-height: 100vh; 
+        display: block;
+        object-fit: contain;
     }
 
     /* Presentation wrapper enforces 4:3 aspect ratio */
     .presentation-canvas-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         width: min(1024px, 95vw);
         aspect-ratio: 4 / 3; /* strict 4:3 */
-        background: #000000;
+        background: #000;
         border-radius: 8px;
         position: relative;
         overflow: hidden;
         box-shadow: 0 12px 40px rgba(2,6,23,0.6);
-    }
+        margin: 0 auto;
 
-    /* Canvas fills the wrapper exactly (keeps logical size in Fabric) */
-    canvas#presentation-canvas {
-        width: 100%;
-        height: 100%;
-        display: block;
-        background: #fff;
     }
 
     /* Game iframe must also fill the 4:3 area */
@@ -86,16 +94,6 @@
         width: 100%;
         height: 100%;
     }
-    
-    /* Canvas styling with proper constraints - use 4:3 (1024x768) */
-    #presentation-canvas { 
-        width: 1024px; 
-        height: 768px; 
-        max-width: 100vw; 
-        max-height: 90vh; 
-        display: block;
-        object-fit: contain;
-    }
 
     /* Back button styling */
     .back-btn { 
@@ -120,21 +118,10 @@
         position: absolute;
     }
 
-    /* Canvas wrapper with no overflow */
-    .presentation-canvas-wrapper {
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        max-width: 100vw;
-        max-height: 90vh;
-    }
-
     /* Navigation bar styling */
     .nav-bar {
         position: fixed;
-        bottom: 30px;
+        bottom: 1px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 100;
@@ -186,15 +173,6 @@
         border: none;
         z-index: 10;
         pointer-events: auto;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 1400px) {
-        #presentation-canvas {
-            width: 90vw;
-            height: calc(90vw * 0.75); /* 4:3 aspect ratio */
-            max-height: 80vh;
-        }
     }
 
     @media (max-width: 768px) {
@@ -251,6 +229,56 @@
     <div class="presentation-canvas-wrapper">
         <canvas id="presentation-canvas"></canvas>
     </div> 
+    <!-- Show fullscreen button only on desktop (width > 800px) -->
+<button id="fullscreen-btn" style="
+    display:none;
+    position:fixed;
+    top:16px;
+    right:16px;
+    z-index:99999;
+    background:#232946;
+    color:#fff;
+    border:none;
+    border-radius:50%;
+    width:48px;
+    height:48px;
+    box-shadow:0 4px 18px #23294644;
+    font-size:1.3rem;
+    cursor:pointer;
+    padding:0;
+">
+    <i class="fas fa-expand"></i>
+</button>
+<script>
+function showFullscreenBtnIfNeeded() {
+    const btn = document.getElementById('fullscreen-btn');
+    // Show only if width is greater than 800px (desktop)
+    if (window.innerWidth > 300) {
+        btn.style.display = 'block';
+    } 
+    else {
+        btn.style.display = 'none';
+    }
+}
+window.addEventListener('resize', showFullscreenBtnIfNeeded);
+window.addEventListener('orientationchange', showFullscreenBtnIfNeeded);
+document.addEventListener('DOMContentLoaded', showFullscreenBtnIfNeeded);
+
+document.getElementById('fullscreen-btn').onclick = function() {
+    const wrapper = document.querySelector('.presentation-canvas-wrapper');
+    if (wrapper.requestFullscreen) {
+        wrapper.requestFullscreen();
+    } else if (wrapper.webkitRequestFullscreen) {
+        wrapper.webkitRequestFullscreen();
+    } else if (wrapper.msRequestFullscreen) {
+        wrapper.msRequestFullscreen();
+    }
+    if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(()=>{});
+    }
+};
+</script>
+
     <script>    
 // Firebase config
 const firebaseConfig = {
@@ -327,9 +355,11 @@ function updateNavigationButtons() {
     const prevBtn = document.getElementById('prev-slide-btn');
     const nextBtn = document.getElementById('next-slide-btn');
     
-    // Disable/enable buttons based on current slide
-    prevBtn.disabled = currentSlide === 0;
-    nextBtn.disabled = currentSlide === slides.length - 1;
+    // Disable Prev if first slide or if current/previous test is already completed
+    prevBtn.disabled = currentSlide === 0 || attemptedTests[currentSlide - 1] || attemptedTests[currentSlide];
+
+    // Disable Next if last slide, or if current test is not yet completed
+    nextBtn.disabled = currentSlide === slides.length - 1 || !attemptedTests[currentSlide];
 }
 
 function updateSlideIndicator() {
@@ -668,9 +698,10 @@ if (!name) {
     });
 }
 
-// Navigation events
+// Update navigation events to enforce rules
 document.getElementById('next-slide-btn').onclick = function() {
-    if (currentSlide < slides.length-1) {
+    // Only allow next if current test is completed
+    if (currentSlide < slides.length - 1 && attemptedTests[currentSlide]) {
         currentSlide++;
         loadSlide(currentSlide);
         updateSlideIndicator();
@@ -678,7 +709,12 @@ document.getElementById('next-slide-btn').onclick = function() {
 };
 
 document.getElementById('prev-slide-btn').onclick = function() {
-    if (currentSlide > 0) {
+    // Only allow prev if previous test is not completed and current is not completed
+    if (
+        currentSlide > 0 &&
+        !attemptedTests[currentSlide - 1] && // Can't go back if previous is completed
+        !attemptedTests[currentSlide]        // Can't go back if current is completed
+    ) {
         currentSlide--;
         loadSlide(currentSlide);
         updateSlideIndicator();
@@ -804,7 +840,7 @@ window.addEventListener('message', function(event) {
     ? payload.slideIndex
     : (typeof currentSlide === 'number' ? currentSlide : 0);
 
-    // Only first attempt per test
+// Only first attempt per test
     if (attemptedTests[slideIndex]) return;
     attemptedTests[slideIndex] = true;
     testScores[slideIndex] = { score, maxScore, answers, timestamp: Date.now() };
@@ -814,6 +850,9 @@ window.addEventListener('message', function(event) {
     if (user) {
       saveToStudentQuiz(user);
     }
+
+    // Update navigation buttons after test completion
+    updateNavigationButtons();
 
     // Now increment slide and load next
     setTimeout(() => {
@@ -833,6 +872,10 @@ window.addEventListener('message', function(event) {
             // Lock quiz and prevent retake
             document.body.innerHTML += `<div style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;"><div style="background:#fff;padding:48px 60px;border-radius:24px;font-size:1.5rem;color:#222;font-weight:700;text-align:center;">Quiz Completed.<br>You cannot take this quiz again.</div></div>`;
             window.parent.postMessage({ type: 'quizClosed', quizId: quizId, timestamp: Date.now() }, '*');
+            setTimeout(() => {
+              // Go back to the previous page after 2 seconds
+              window.location.href = document.referrer && document.referrer !== location.href ? document.referrer : 'homepage.html';
+            }, 3000);
           };
           document.body.appendChild(doneBtn);
         }
@@ -875,6 +918,113 @@ function saveToStudentQuiz(user) {
     completedAt: Date.now()
   });
 }
+
+
+</script>
+<script>
+    function isFullscreen() {
+    return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+}
+
+// Responsive 4:3 canvas in fullscreen
+function resizeCanvasTo4by3Responsive() {
+    const wrapper = document.querySelector('.presentation-canvas-wrapper');
+    const canvasEl = document.getElementById('presentation-canvas');
+    if (!wrapper || !canvasEl) return;
+
+    let ww = window.innerWidth;
+    let wh = window.innerHeight;
+
+    // Find the largest 4:3 that fits in the viewport
+    let targetW = ww;
+    let targetH = ww * 3 / 4;
+    if (targetH > wh) {
+        targetH = wh;
+        targetW = wh * 4 / 3;
+    }
+
+    // Shrink the canvas for fullscreen (e.g. 70%)
+    const scale = 0.1; // <--- adjust this value (0.7 = 70% of max possible)
+    targetW *= scale;
+    targetH *= scale;
+
+    wrapper.style.width = targetW + 'px';
+    wrapper.style.height = targetH + 'px';
+    wrapper.style.display = 'flex';
+    wrapper.style.alignItems = 'center';
+    wrapper.style.justifyContent = 'center';
+    wrapper.style.margin = 'auto';
+
+    canvasEl.style.width = '100%';
+    canvasEl.style.height = '100%';
+    canvasEl.style.display = 'block';
+    canvasEl.style.margin = '0';
+
+    // Resize the Fabric.js logical canvas to match the display size
+    if (window.canvas && window.canvas.setDimensions) {
+        window.canvas.setDimensions({
+            width: targetW,
+            height: targetH
+        }, { cssOnly: false });
+        window.canvas.calcOffset && window.canvas.calcOffset();
+        window.canvas.renderAll && window.canvas.renderAll();
+    }
+}
+
+
+function restoreCanvasFromFullscreen() {
+    const wrapper = document.querySelector('.presentation-canvas-wrapper');
+    const canvas = document.getElementById('presentation-canvas');
+    if (!wrapper || !canvas) return;
+    wrapper.removeAttribute('style');
+    canvas.removeAttribute('style');
+    // Restore fabric.js canvas to original size
+    if (window.canvas && window.canvas.setDimensions) {
+        window.canvas.setDimensions({ width: 1024, height: 768 });
+        window.canvas.calcOffset && window.canvas.calcOffset();
+        window.canvas.renderAll && window.canvas.renderAll();
+    }
+}
+
+document.getElementById('fullscreen-btn').onclick = function() {
+    const wrapper = document.querySelector('.presentation-canvas-wrapper');
+    if (wrapper.requestFullscreen) {
+        wrapper.requestFullscreen();
+    } else if (wrapper.webkitRequestFullscreen) {
+        wrapper.webkitRequestFullscreen();
+    } else if (wrapper.msRequestFullscreen) {
+        wrapper.msRequestFullscreen();
+    }
+    if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(()=>{});
+    }
+    setTimeout(resizeCanvasTo4by3Responsive, 300);
+};
+
+window.addEventListener('resize', function() {
+    if (isFullscreen()) resizeCanvasTo4by3Responsive();
+});
+document.addEventListener('fullscreenchange', function() {
+    if (isFullscreen()) {
+        resizeCanvasTo4by3Responsive();
+    } else {
+        restoreCanvasFromFullscreen();
+    }
+});
+document.addEventListener('webkitfullscreenchange', function() {
+    if (isFullscreen()) {
+        resizeCanvasTo4by3Responsive();
+    } else {
+        restoreCanvasFromFullscreen();
+    }
+});
+document.addEventListener('msfullscreenchange', function() {
+    if (isFullscreen()) {
+        resizeCanvasTo4by3Responsive();
+    } else {
+        restoreCanvasFromFullscreen();
+    }
+});
 </script>
 
 </body>

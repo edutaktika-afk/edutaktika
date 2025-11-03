@@ -6,27 +6,48 @@ import { unstable_setAnimationsEnabled } from 'polotno/config';
 import { createProject, ProjectContext } from './project';
 
 import './index.css';
+import './animations.css';
 import App from './App';
 import './logger';
 import { ErrorBoundary } from 'react-error-boundary';
 
+// Import environment detection and license handler
+import { initializeEnvironment } from './utils/environment';
+import licenseHandler from './utils/licenseHandler';
+import './utils/animationManager'; // Load animation manager
+
+// Initialize environment detection
+const config = initializeEnvironment();
+
 if (window.location.host !== 'studio.polotno.com') {
   console.log(
-    `%cWelcome to Polotno Studio! Thanks for your interest in the project!
-This repository has many customizations from the default version Polotno SDK.
-I don't recommend to use it as starting point.
-Instead, you can start from any official demos, e.g.: https://polotno.com/docs/full-canvas-editor
-or direct sandbox: https://codesandbox.io/s/github/polotno-project/polotno-site/tree/source/examples/polotno-demo?from-embed.
-But feel free to use this repository as a reference for your own project and to learn how to use Polotno SDK.`,
-    'background: rgba(54, 213, 67, 1); color: white; padding: 5px;'
+    `%cWelcome to Edutaktika Editor! 🎨
+This is a customized educational design editor based on Polotno SDK.
+Environment: ${config.isLocal ? 'Local Development' : 'Deployed'}
+Mode: ${config.isPresentation ? 'Presentation' : config.isViewOnly ? 'View-Only' : 'Editor'}
+License banners are ${config.license.hideInPresentation ? 'hidden' : 'visible'} in presentation mode.`,
+    'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border-radius: 5px;'
   );
 }
 
+// Enable animations with enhanced settings
 unstable_setAnimationsEnabled(true);
 
 const store = createStore({ key: 'nFA5H9elEytDyPyvKL7T' });
 window.store = store;
-store.addPage();
+
+// Check if we're in view-only mode
+const urlParams = new URLSearchParams(window.location.search);
+const designUrl = urlParams.get('design');
+const isViewOnly = urlParams.get('view') === 'true' || designUrl;
+
+if (isViewOnly && designUrl) {
+  console.log('🎨 Loading design in view-only mode:', designUrl);
+  // Add a default page first to prevent null activePage errors
+  store.addPage();
+} else {
+  store.addPage();
+}
 
 const project = createProject({ store });
 window.project = project;
