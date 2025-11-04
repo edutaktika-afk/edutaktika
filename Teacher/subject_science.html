@@ -306,10 +306,10 @@
                     window.location.href = editorBaseUrl;
                 };
                 
-                // Quiz Section button: open Create Quiz modal
-                document.getElementById('createQuizBtn').onclick = function() {
-                    document.getElementById('createQuizModal').style.display = 'flex';
-                };
+// Quiz Section button: go to quiz section page (replace with your quiz page)
+document.getElementById('createQuizBtn').onclick = function() {
+    window.location.href = 'create-quiz.html';
+};
                </script>
 
                <!-- Dropdown for mobile -->
@@ -354,16 +354,7 @@
                 
             </div>
 
-            <!-- YouTube Lessons (auto-fetched) -->
-            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FvX8con4ltjXkQQTOySuXMD" style="margin-top: 20px;">
-                <div class="quarter-title" style="align-items:center; gap:10px;">
-                    <i class="fab fa-youtube"></i>
-                    <h3 style="margin:0;">Video Lessons</h3>
-                </div>
-                <div class="lessons-container">
-                    <div>Loading YouTube lessons…</div>
-                </div>
-            </div>
+            
 
             <!-- <div class="progress-container">
                 <div class="progress-title">Quarter Progress</div>
@@ -530,7 +521,7 @@
             </div>
             <div class="lessons-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
                 <div id="quiz-list"></div>
-                <div id="student-quiz-cards"></div>
+                
             </div>
         </div>
 
@@ -870,33 +861,7 @@ function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
     }
 </style>
 
-<!-- Add this near the end of your body, before </body> -->
-<div id="createLessonModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
-    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
-        <h3 style="margin-top:0;">Create New Lesson</h3>
-        <form id="createLessonForm">
-            <label>Quarter:<br>
-                <select id="lesson_quarter" required>
-                    <option value="">Select Quarter</option>
-                    <option value="1">Quarter 1</option>
-                    <option value="2">Quarter 2</option>
-                    <option value="3">Quarter 3</option>
-                    <option value="4">Quarter 4</option>
-                </select>
-            </label><br><br>
-            <label>Title:<br>
-                <input type="text" id="lesson_title" required>
-            </label><br><br>
-            <label>Description:<br>
-                <textarea id="lesson_desc" rows="2"></textarea>
-            </label><br><br>
-            <div style="text-align:right;">
-                <button type="button" onclick="closeCreateLessonModal()" style="margin-right:10px;">Cancel</button>
-                <button type="submit">Start</button>
-            </div>
-        </form>
-    </div>
-</div>
+
 
 <script>
     // Place this script after your modal HTML
@@ -1622,8 +1587,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
 <script src="../assets/js/navbar.js"></script>
 <script src="../assets/tabDropdown.js"></script>
 <script src="../assets/js/header-dynamic-labels.js"></script>
-<!-- Add before closing </body> if not already included -->
-<!-- Empty quarter placeholder styles & logic -->
+
 <style>
     .empty-quarter-msg {
         box-sizing: border-box;
@@ -1681,15 +1645,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
         const el = section.querySelector('.empty-quarter-msg');
         if(el) el.remove();
     }
-    function addPlaceholder(section){
-        if(section.querySelector('.empty-quarter-msg')) return; // already present
-        const firstContainer = section.querySelector('.lessons-container');
-        const host = firstContainer || section;
-        const div = document.createElement('div');
-        div.className = 'empty-quarter-msg';
-        div.innerHTML = '<strong>No lessons available yet.</strong><br><span style="font-weight:400;">Click the "Create Lesson" button to add one.</span>';
-        host.appendChild(div);
-    }
+
     function evaluate(section){
         if(sectionHasLessonCards(section) || sectionHasVideoCards(section)){
             removePlaceholder(section);
@@ -2107,6 +2063,9 @@ document.getElementById('someButtonId').onclick = function() {
     loadQuizManagementContent();
 };
 </script>
+
+
+
 
 <script src="../assets/js/quizManagemant.js"></script>
 

@@ -305,9 +305,9 @@ document.getElementById('createLessonBtn').onclick = function() {
     window.location.href = editorBaseUrl;
 };
 
-// Quiz Section button: open Create Quiz modal
+// Quiz Section button: go to quiz section page (replace with your quiz page)
 document.getElementById('createQuizBtn').onclick = function() {
-    document.getElementById('createQuizModal').style.display = 'flex';
+    window.location.href = 'create-quiz.html';
 };
 </script>
 
@@ -342,7 +342,7 @@ document.getElementById('createQuizBtn').onclick = function() {
                 <h2>
                     Quarter 1: 
                     <span class="bounce-word">
-<span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
+                        <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
 
                     </span>
                 </h2>
@@ -354,16 +354,7 @@ document.getElementById('createQuizBtn').onclick = function() {
                 
             </div>
 
-            <!-- YouTube Lessons (auto-fetched) -->
-            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FslU5009s_m_AhD0bQNbiaW" style="margin-top: 20px;">
-                <div class="quarter-title" style="align-items:center; gap:10px;">
-                    <i class="fab fa-youtube"></i>
-                    <h3 style="margin:0;">Video Lessons</h3>
-                </div>
-                <div class="lessons-container">
-                    <div>Loading YouTube lessons…</div>
-                </div>
-            </div>
+            
 
             <!-- <div class="progress-container">
                 <div class="progress-title">Quarter Progress</div>
@@ -529,7 +520,7 @@ document.getElementById('createQuizBtn').onclick = function() {
             </div>
             <div class="lessons-container">
                 <div id="quiz-list"></div>
-                <div id="student-quiz-cards"></div>
+                
             </div>
         </div>
 
@@ -835,11 +826,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
     }
 });
 
-// Remove the old global loader and its call!
-// function loadPresentationsByQuarter(quarter) { ... }
-// ['1','2','3','4','5'].forEach(loadPresentationsByQuarter);
 
-// (Legacy viewPresentation removed; unified version at bottom.)
 </script>
 
 <style>
@@ -929,33 +916,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
     }
 </style>
 
-<!-- Add this near the end of your body, before </body> -->
-<div id="createLessonModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
-    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
-        <h3 style="margin-top:0;">Create New Lesson</h3>
-        <form id="createLessonForm">
-            <label>Quarter:<br>
-                <select id="lesson_quarter" required>
-                    <option value="">Select Quarter</option>
-                    <option value="1">Quarter 1</option>
-                    <option value="2">Quarter 2</option>
-                    <option value="3">Quarter 3</option>
-                    <option value="4">Quarter 4</option>
-                </select>
-            </label><br><br>
-            <label>Title:<br>
-                <input type="text" id="lesson_title" required>
-            </label><br><br>
-            <label>Description:<br>
-                <textarea id="lesson_desc" rows="2"></textarea>
-            </label><br><br>
-            <div style="text-align:right;">
-                <button type="button" onclick="closeCreateLessonModal()" style="margin-right:10px;">Cancel</button>
-                <button type="submit">Start</button>
-            </div>
-        </form>
-    </div>
-</div>
+
 
 <script>
     // Place this script after your modal HTML
@@ -1658,7 +1619,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
 <script src="../assets/tabDropdown.js"></script>
 
 <script src="../assets/js/header-dynamic-labels.js"></script>
-<!-- Empty quarter placeholder styles & logic -->
+
 <style>
     .empty-quarter-msg {
         box-sizing: border-box;
@@ -1714,15 +1675,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
         const el = section.querySelector('.empty-quarter-msg');
         if(el) el.remove();
     }
-    function addPlaceholder(section){
-        if(section.querySelector('.empty-quarter-msg')) return;
-        const firstContainer = section.querySelector('.lessons-container');
-        const host = firstContainer || section;
-        const div = document.createElement('div');
-        div.className = 'empty-quarter-msg';
-        div.innerHTML = '<strong>No lessons available yet.</strong><br><span style="font-weight:400;">Click the "Create Lesson" button to add one.</span>';
-        host.appendChild(div);
-    }
+
     function evaluate(section){
         if(sectionHasLessonCards(section) || sectionHasVideoCards(section)){
             removePlaceholder(section);
@@ -1753,41 +1706,9 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
 </div>
 
 
-<!-- Replace the existing createQuizModal with this updated version -->
-<div id="createQuizModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
-    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
-        <h3 style="margin-top:0;color:#ffe600;font-size:1.35rem;letter-spacing:1px;">Create New Quiz</h3>
-        <form id="createQuizForm">
-            <label>Quarter:<br>
-                <select id="quiz_quarter" required>
-                    <option value="">Select Quarter</option>
-                    <option value="1">Quarter 1</option>
-                    <option value="2">Quarter 2</option>
-                    <option value="3">Quarter 3</option>
-                    <option value="4">Quarter 4</option>
-                </select>
-            </label><br><br>
-            <label>Title:<br>
-                <input type="text" id="quiz_title" required>
-            </label><br><br>
-            <label>Description:<br>
-                <textarea id="quiz_desc" rows="2"></textarea>
-            </label><br><br>
-            <div style="text-align:right;">
-                <button type="button" onclick="closeCreateQuizModal()" style="margin-right:10px;">Cancel</button>
-                <button type="submit">Create</button>
-            </div>
-        </form>
-    </div>
-</div>
+
 
 <script>
-    // Add this script after the existing createLessonModal script
-
-// Show modal on Create Quiz click
-// document.getElementById('createQuizBtn').onclick = function() {
-//    document.getElementById('createQuizModal').style.display = 'flex';
-//};
 
 // Hide modal function
 function closeCreateQuizModal() {
