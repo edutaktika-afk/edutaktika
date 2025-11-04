@@ -7,9 +7,7 @@ import { useInfiniteAPI } from 'polotno/utils/use-api';
 import { t } from 'polotno/utils/l10n';
 import { Video } from '@blueprintjs/icons';
 import { selectVideo } from 'polotno/side-panel/select-video';
-
-// to create your own API key please go here: https://polotno.com/login
-const key = 'XWaPcWabeqo2TJSU2Ob5';
+import { getVideoKey } from '../utils/polotno-keys';
 
 // use Polotno API proxy into Pexels
 // WARNING: don't use on production! Use your own proxy and Pexels API key
@@ -18,7 +16,7 @@ const API = 'https://api.polotno.com/api/pexels/videos';
 const getPexelsVideoAPI = ({ query, page }) =>
   `${API}/${
     query ? 'search' : 'popular'
-  }?query=${query}&per_page=20&page=${page}&KEY=${key}`;
+  }?query=${query}&per_page=20&page=${page}&KEY=${getVideoKey()}`;
 
 export const VideosPanel = ({ store }) => {
   const { setQuery, loadMore, isReachingEnd, data, isLoading, error } =
