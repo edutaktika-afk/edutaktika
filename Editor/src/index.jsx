@@ -15,6 +15,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { initializeEnvironment } from './utils/environment';
 import licenseHandler from './utils/licenseHandler';
 import './utils/animationManager'; // Load animation manager
+import { getStoreKey } from './utils/polotno-keys';
 
 // Initialize environment detection
 const config = initializeEnvironment();
@@ -33,7 +34,7 @@ License banners are ${config.license.hideInPresentation ? 'hidden' : 'visible'} 
 // Enable animations with enhanced settings
 unstable_setAnimationsEnabled(true);
 
-const store = createStore({ key: 'nFA5H9elEytDyPyvKL7T' });
+const store = createStore({ key: getStoreKey() });
 window.store = store;
 
 // Check if we're in view-only mode
