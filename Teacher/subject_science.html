@@ -265,8 +265,44 @@
                <script>
                 // Create Lesson button: go to new Polotno editor (using Create Design logic)
                 document.getElementById('createLessonBtn').onclick = function() {
-                    const editorBaseUrl = getEditorBase();
-                    console.log('🎨 Opening editor for lesson creation:', editorBaseUrl);
+                    // Clear specific storage keys that the editor uses to auto-load designs
+                    // Critical: polotno-last-design-id is the main key that causes old designs to load
+                    sessionStorage.removeItem('polotno-last-design-id');
+                    sessionStorage.removeItem('polotno-state');
+                    sessionStorage.removeItem('supabase-design-to-load');
+                    sessionStorage.removeItem('current-supabase-design');
+                    sessionStorage.removeItem('supabase-design-name');
+                    sessionStorage.removeItem('supabase-design-quarter');
+                    sessionStorage.removeItem('supabase-design-grade');
+                    sessionStorage.removeItem('supabase-design-id');
+                    
+                    // Clear any other design-related keys from sessionStorage
+                    const sessionKeysToClear = Object.keys(sessionStorage).filter(key => 
+                        key.includes('design') || key.includes('lesson') || key.includes('supabase') || key.includes('polotno')
+                    );
+                    sessionKeysToClear.forEach(key => sessionStorage.removeItem(key));
+                    
+                    // Clear localStorage items related to designs (using localforage/indexedDB)
+                    // Note: The editor uses localforage which may use localStorage or indexedDB
+                    const localStorageKeysToClear = Object.keys(localStorage).filter(key => 
+                        key.includes('design') || key.includes('lesson') || key.includes('polotno')
+                    );
+                    localStorageKeysToClear.forEach(key => localStorage.removeItem(key));
+                    
+                    // Also try to clear indexedDB if available (localforage uses it)
+                    if (window.indexedDB && window.indexedDB.databases) {
+                        window.indexedDB.databases().then(databases => {
+                            databases.forEach(db => {
+                                if (db.name.includes('localforage') || db.name.includes('polotno')) {
+                                    indexedDB.deleteDatabase(db.name);
+                                }
+                            });
+                        }).catch(err => console.log('Could not clear indexedDB:', err));
+                    }
+                    
+                    // Build editor URL with new=true parameter to indicate fresh lesson
+                    const editorBaseUrl = buildEditorUrl({ new: 'true', mode: 'create' });
+                    console.log('🎨 Opening fresh editor for lesson creation:', editorBaseUrl);
                     window.location.href = editorBaseUrl;
                 };
                 
@@ -963,6 +999,7 @@ function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
 }
 
 // Combined loading function that loads both Firebase and Supabase
+// NOTE: Firebase loading is commented out - only Supabase is used now
 async function loadAllDesignsForQuarter(container) {
     try {
         // Show loading state
@@ -970,9 +1007,10 @@ async function loadAllDesignsForQuarter(container) {
         
         const allDesigns = [];
         
+        // FIREBASE LOADING COMMENTED OUT - Can be re-enabled later if needed
         // Load Firebase designs
-        const firebaseDesigns = await loadTeacherLessonsDataForQuarter(container);
-        allDesigns.push(...(firebaseDesigns || []));
+        // const firebaseDesigns = await loadTeacherLessonsDataForQuarter(container);
+        // allDesigns.push(...(firebaseDesigns || []));
         
         // Load Supabase designs
         const quarterSection = container.closest('.quarter-section');
@@ -1007,7 +1045,7 @@ async function loadAllDesignsForQuarter(container) {
         
         renderDesignsForQuarter(compatibleDesigns, container);
         
-        console.log(`✅ Loaded ${allDesigns.length} total designs (${firebaseDesigns?.length || 0} Firebase, ${supabaseDesigns?.length || 0} Supabase)`);
+        console.log(`✅ Loaded ${allDesigns.length} total designs (${supabaseDesigns?.length || 0} Supabase)`);
         
     } catch (error) {
         console.error('Error loading all designs:', error);
@@ -1015,7 +1053,9 @@ async function loadAllDesignsForQuarter(container) {
     }
 }
 
+// FIREBASE LOADING FUNCTION COMMENTED OUT - Can be re-enabled later if needed
 // Load Firebase teacher lessons data for a specific quarter
+/*
 async function loadTeacherLessonsDataForQuarter(container) {
     const user = firebase.auth().currentUser;
     if (!user) return [];
@@ -1051,6 +1091,7 @@ async function loadTeacherLessonsDataForQuarter(container) {
     
     return designs;
 }
+*/
 
 // Render designs for a specific quarter (combined Firebase + Supabase)
 function renderDesignsForQuarter(designs, container) {
