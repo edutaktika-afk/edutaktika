@@ -206,6 +206,7 @@ const App = observer(({ store }) => {
     const urlParams = new URLSearchParams(window.location.search);
     const designUrl = urlParams.get('design');
     const supabaseDesign = urlParams.get('supabaseDesign');
+    const isNew = urlParams.get('new') === 'true' || urlParams.get('mode') === 'create';
     const viewMode = urlParams.get('view') === 'true' || designUrl || supabaseDesign;
     const presentMode = urlParams.get('present') === 'true';
     
@@ -238,6 +239,15 @@ const App = observer(({ store }) => {
           }
         }, 2000); // Wait 2 seconds for the design to load
       }
+    } else if (isNew) {
+      // Skip loading old design when creating a new one
+      console.log('🎨 Creating new design - skipping auto-load');
+      // Clear any remaining storage keys just to be sure
+      if (typeof window !== 'undefined' && window.storage) {
+        window.storage.removeItem('polotno-last-design-id').catch(() => {});
+        window.storage.removeItem('polotno-state').catch(() => {});
+      }
+      // Store will already have a blank page from index.jsx
     } else {
       project.firstLoad();
     }
