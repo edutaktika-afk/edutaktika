@@ -15,20 +15,29 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { initializeEnvironment } from './utils/environment';
 import licenseHandler from './utils/licenseHandler';
 import './utils/animationManager'; // Load animation manager
-import { getStoreKey } from './utils/polotno-keys';
+import { getStoreKey, getKeyDebugInfo } from './utils/polotno-keys';
+import './utils/verify-polotno-key'; // Load verification utility
 
 // Initialize environment detection
 const config = initializeEnvironment();
 
+// Debug: Verify Polotno API key source (safe - only shows partial info)
+const keyDebug = getKeyDebugInfo();
 if (window.location.host !== 'studio.polotno.com') {
   console.log(
     `%cWelcome to Edutaktika Editor! 🎨
 This is a customized educational design editor based on Polotno SDK.
 Environment: ${config.isLocal ? 'Local Development' : 'Deployed'}
 Mode: ${config.isPresentation ? 'Presentation' : config.isViewOnly ? 'View-Only' : 'Editor'}
-License banners are ${config.license.hideInPresentation ? 'hidden' : 'visible'} in presentation mode.`,
+License banners are ${config.license.hideInPresentation ? 'hidden' : 'visible'} in presentation mode.
+Polotno Key Source: ${keyDebug.source} (Length: ${keyDebug.keyLength})`,
     'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px; border-radius: 5px;'
   );
+  
+  // Additional debug info in development only
+  if (config.isLocal || import.meta.env.DEV) {
+    console.log('🔑 Polotno API Key Debug Info:', keyDebug);
+  }
 }
 
 // Enable animations with enhanced settings
