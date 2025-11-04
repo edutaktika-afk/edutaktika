@@ -39,6 +39,13 @@
   [headers.values]
     Cache-Control = "no-cache"
 
-# Env vars (if needed later for Firebase / APIs)
-# [build.environment]
-#   VITE_FIREBASE_API_KEY = "..."
+# Environment variables for build
+# These are set in Netlify Dashboard > Site settings > Environment variables
+# For production, set in Netlify Dashboard (not in this file for security)
+# 
+# Required for Polotno SDK:
+#   Key: VITE_POLOTNO_API_KEY
+#   Value: KZiuYryOVcs9sz8q8A1l (without the pipe "|" character)
+#
+# Note: Vite only exposes variables prefixed with VITE_ to the client
+# The pipe character "|" is added by Polotno SDK internally, don't include it in the value
