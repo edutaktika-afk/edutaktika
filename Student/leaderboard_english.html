@@ -320,7 +320,7 @@
             
             const userSnapshot = await db.ref('students/' + currentUser.uid).once('value');
             const userData = userSnapshot.val();
-            const userGrade = userData ? userData.gradelevel : null;
+            const userGrade = userData ? userData.grade : null;
             
             if (!userGrade) {
                 console.error('Could not determine user grade level');
@@ -385,7 +385,7 @@
             });
 
             // Filter for current user's grade level only
-            students = students.filter(s => s.gradelevel == userGrade);
+            students = students.filter(s => s.grade == userGrade);
 
             // Sort descending by combined, then assessment, then quiz, then name
             students.sort((a,b) => b.combinedPoints - a.combinedPoints || b.assessmentPoints - a.assessmentPoints || b.quizPoints - a.quizPoints || ((a.fname||'')+(a.lname||'')).localeCompare((b.fname||'')+(b.lname||'')) );
@@ -543,7 +543,7 @@
                     document.getElementById('profileFirstName').textContent = data.fname || '';
                     document.getElementById('profileMiddleName').textContent = data.mname || '';
                     document.getElementById('profileLastName').textContent = data.lname || '';
-                    document.getElementById('profileGrade').textContent = data.gradelevel || '-';
+                    document.getElementById('profileGrade').textContent = data.grade || '-';
                     document.getElementById('profileSection').textContent = data.section || '-';
                     document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "student");
                 }
