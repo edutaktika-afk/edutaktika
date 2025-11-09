@@ -637,7 +637,7 @@ firebase.auth().onAuthStateChanged(function(user) {
                 document.getElementById('profileFirstName').textContent = data.fname || '';
                 document.getElementById('profileMiddleName').textContent = data.mname || '';
                 document.getElementById('profileLastName').textContent = data.lname || '';
-                document.getElementById('profileGrade').textContent = data.gradelevel || '';
+                document.getElementById('profileGrade').textContent = data.grade || '';
                 document.getElementById('profileSection').textContent = data.section || '';
                 document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "user");
             }

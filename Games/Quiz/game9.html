@@ -6,15 +6,32 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4fa; margin: 0; }
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f4fa;
+    }
     #game-container {
       max-width: 900px;
-      margin: 40px auto;
+      width: 90vw;
+      min-height: 0;
+      min-width: 0;
       background: #fff;
       border-radius: 12px;
       box-shadow: 0 2px 16px #0002;
       padding: 32px 24px;
-      width: 90vw;
       text-align: center;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
     h2 { margin-bottom: 24px; }
     #memory-board {
@@ -55,7 +72,13 @@
       justify-content: center;
       backface-visibility: hidden;
       transition: transform 0.4s;
-      font-size: 2em;
+      font-size: 1em;
+      word-break: break-word;
+      white-space: normal;
+      padding: 0.2em;
+      text-align: center;
+      box-sizing: border-box;
+      overflow-wrap: anywhere;
     }
     .card .back {
       background: #4f8cff;
@@ -67,7 +90,7 @@
     }
     .card .front {
       background: #d1e7dd;
-      color: #198754;
+      color: #000000;
       transform: rotateY(180deg);
     }
     .card.flipped .front, .card.matched .front {
@@ -86,24 +109,125 @@
       display: block;
     }
     #reset-btn:disabled { background: #ccc; cursor: not-allowed; }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 24px #0003;
+      padding: 2em 2em 1em 2em;
+      text-align: center;
+      min-width: 320px;
+      max-width: 95vw;
+      position: relative;
+    }
+    .modal-header {
+      font-size: 1.2em;
+      font-weight: 600;
+      margin-bottom: 1em;
+    }
+    .close-btn {
+      position: absolute;
+      top: 1em;
+      right: 1em;
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      color: #888;
+      cursor: pointer;
+    }
+    .completion-modal {
+      display: none;
+      position: fixed;
+      z-index: 3000;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      align-items: center;
+      justify-content: center;
+    }
+    .completion-modal.show { display: flex; }
+    .completion-content {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 24px #0003;
+      padding: 2em 2em 1em 2em;
+      text-align: center;
+      min-width: 320px;
+      max-width: 95vw;
+      font-size: 1.2em;
+      color: #198754;
+      font-weight: 600;
+    }
+    .btn {
+      background: #198754;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.7em 2em;
+      font-size: 1em;
+      font-weight: 600;
+      box-shadow: 0 2px 8px #0001;
+      cursor: pointer;
+      margin-top: 1em;
+    }
+    .edit-button {
+      position: absolute;
+      top: 1em;
+      right: 1em;
+      z-index: 10;
+    }
     @media (max-width: 700px) {
       #game-container { width: 99vw; min-width: 0; padding: 8px 2vw; }
       #memory-board { grid-template-columns: repeat(4, 60px); }
       .card { width: 60px; height: 70px; font-size: 1.1em; }
+      .card .front, .card .back {
+        font-size: 0.95em;
+        padding: 0.1em;
+      }
+      .modal-content, .completion-content { min-width: 140px; padding: 1em; }
     }
   </style>
 </head>
 <body>
   <div id="game-container">
+    <button class="edit-button" id="editBtn" style="position:absolute;top:1em;right:1em;z-index:10;">Edit Game</button>
     <h2>Memory Card Match</h2>
     <div id="memory-board"></div>
-    <div id="score"></div>
+    <div id="score" style="display:none"></div>
     <div id="result"></div>
     <button id="reset-btn" style="display:none;">Play Again</button>
   </div>
+
+  <!-- Completion Modal -->
+  <div class="completion-modal" id="completionModal">
+    <div class="completion-content">
+      🎉 Congratulations! You matched all the cards!
+      <button class="btn" id="doneBtn">Done</button>
+    </div>
+  </div>
+
+  <!-- Editor Modal -->
+  <div class="modal" id="editorModal">
+    <div class="modal-content">
+      <div class="modal-header">Edit Pairs (one per line, use comma to separate front/back, images allowed)</div>
+      <button class="close-btn" id="closeEditorBtn">&times;</button>
+      <textarea id="pairsInput" rows="8" style="width:100%;margin-bottom:1em;"></textarea>
+      <button class="btn" id="savePairsBtn">Save</button>
+      <div id="saveStatus" style="margin-top:0.5em;color:#198754;display:none;">Saved!</div>
+    </div>
+  </div>
+
   <script>
-    // Example pairs: emoji and word (can be replaced with images or other content)
-    const pairs = [
+    // --- Editable Content State ---
+    let pairs = [
       { front: "🐶", back: "Dog" },
       { front: "🐱", back: "Cat" },
       { front: "🍎", back: "Apple" },
@@ -111,17 +235,22 @@
       { front: "🚗", back: "Car" },
       { front: "⚽", back: "Ball" }
     ];
-
     let cards = [];
     let flipped = [];
     let matched = [];
     let moves = 0;
     let lock = false;
 
-    const board = document.getElementById('memory-board');
-    const scoreEl = document.getElementById('score');
-    const resultEl = document.getElementById('result');
-    const resetBtn = document.getElementById('reset-btn');
+    // --- Listen for parent data for students/teachers ---
+    window.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'loadQuizGameData' && event.data.gameData?.pairs) {
+        pairs = event.data.gameData.pairs;
+        startGame();
+      }
+      if (event.data && event.data.type === 'setTestIndex') {
+        parentTestIndex = event.data.index;
+      }
+    });
 
     function shuffle(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
@@ -129,6 +258,13 @@
         [arr[i], arr[j]] = [arr[j], arr[i]];
       }
       return arr;
+    }
+
+    function isImage(str) {
+      return /^https?:\/\/.+\.(jpg|jpeg|png|gif)$/i.test(str) || /^https?:\/\/.+unsplash\.com/.test(str);
+    }
+    function isEmoji(str) {
+      return /\p{Emoji}/u.test(str);
     }
 
     function startGame() {
@@ -144,11 +280,13 @@
       moves = 0;
       lock = false;
       render();
-      resultEl.textContent = '';
-      resetBtn.style.display = 'none';
+      document.getElementById('result').textContent = '';
+      document.getElementById('reset-btn').style.display = 'none';
+      document.getElementById('completionModal').classList.remove('show');
     }
 
     function render() {
+      const board = document.getElementById('memory-board');
       board.innerHTML = '';
       cards.forEach((card, i) => {
         const div = document.createElement('div');
@@ -156,13 +294,23 @@
           (flipped.includes(i) || matched.includes(i) ? ' flipped' : '');
         if (matched.includes(i)) div.classList.add('matched');
         div.onclick = () => flipCard(i);
+
+        // Support images/emojis/words
+        let frontContent = card.content;
+        if (isImage(card.content)) {
+          frontContent = `<img src="${card.content}" alt="Card image" style="max-width:70px;max-height:70px;">`;
+        } else if (isEmoji(card.content)) {
+          frontContent = `<span style="font-size:2em;">${card.content}</span>`;
+        }
+
         div.innerHTML = `
-          <div class="front">${card.content}</div>
+          <div class="front">${frontContent}</div>
           <div class="back">?</div>
         `;
         board.appendChild(div);
       });
-      scoreEl.textContent = `Moves: ${moves}`;
+      // Hide moves/score from user
+      document.getElementById('score').style.display = 'none';
     }
 
     function flipCard(i) {
@@ -182,7 +330,7 @@
             flipped = [];
             lock = false;
             render();
-            if (matched.length === cards.length) showResult();
+            if (matched.length === cards.length) showCompletion();
           }, 700);
         } else {
           setTimeout(() => {
@@ -194,14 +342,127 @@
       }
     }
 
-    function showResult() {
-      resultEl.textContent = "🎉 You matched all pairs in " + moves + " moves!";
-      resetBtn.style.display = '';
+    function showCompletion() {
+      document.getElementById('completionModal').classList.add('show');
     }
 
-    resetBtn.onclick = startGame;
+    // --- Done button handler: send score to parent ---
+    let parentTestIndex = 0;
+    document.getElementById('doneBtn').onclick = function() {
+      document.getElementById('doneBtn').disabled = true;
+      setTimeout(() => {
+        document.getElementById('completionModal').classList.remove('show');
+      }, 1200);
+      window.parent.postMessage({
+        type: 'quizResult',
+        payload: {
+          score: pairs.length,
+          maxScore: pairs.length,
+          answers: pairs,
+          quizId: window.location.pathname.split('/').pop(),
+          slideIndex: parentTestIndex
+        }
+      }, '*');
+    };
 
+    // --- Play Again button (for preview only, not in quiz) ---
+    document.getElementById('reset-btn').onclick = startGame;
+
+    // --- Start game on load ---
     startGame();
+
+    // Show Edit button ALWAYS in quizEditor (do not hide)
+    const editBtn = document.getElementById('editBtn');
+    if (editBtn) {
+      editBtn.style.display = '';
+      editBtn.onclick = function() {
+        document.getElementById('editorModal').classList.add('show');
+        document.getElementById('pairsInput').value = pairs.map(p => `${p.front},${p.back}`).join('\n');
+        document.getElementById('saveStatus').style.display = 'none';
+      };
+    }
+
+    document.getElementById('closeEditorBtn').onclick = function() {
+      document.getElementById('editorModal').classList.remove('show');
+    };
+    document.getElementById('savePairsBtn').onclick = function() {
+      let newPairs = document.getElementById('pairsInput').value
+        .split('\n')
+        .map(line => line.split(',').map(s => s.trim()))
+        .filter(arr => arr.length === 2 && arr[0] && arr[1])
+        .map(arr => ({ front: arr[0], back: arr[1] }));
+
+      // Limit to 6 pairs (12 cards)
+      if (newPairs.length > 6) {
+        alert("You can only have up to 6 pairs (12 cards)!");
+        newPairs = newPairs.slice(0, 6);
+      }
+      if (newPairs.length < 2) {
+        alert("Please enter at least two valid pairs.");
+        return;
+      }
+      pairs = newPairs;
+      document.getElementById('editorModal').classList.remove('show');
+      localStorage.setItem('quizEditor_game9_pairs', JSON.stringify(newPairs));
+      const quizId = window.location.pathname.split('/').pop();
+      const quizGameData = {
+        pairs: newPairs,
+        lastModified: new Date().toISOString(),
+        quizId: quizId,
+        gameType: 'memorymatch',
+        gameUrl: window.location.href.split('?')[0],
+        isCustomized: true,
+        totalPairs: newPairs.length
+      };
+      window.parent.postMessage({
+        type: 'saveQuizGameData',
+        gameData: quizGameData,
+        quizId: quizId,
+        source: 'game-editor'
+      }, '*');
+      window.parent.postMessage({
+        type: 'gameDataUpdate',
+        gameData: quizGameData,
+        quizId: quizId,
+        action: 'immediate-save'
+      }, '*');
+      startGame();
+      document.getElementById('saveStatus').textContent = "Saved!";
+      document.getElementById('saveStatus').style.display = '';
+      setTimeout(() => { document.getElementById('saveStatus').style.display = 'none'; }, 1200);
+    };
   </script>
+
+    <script>
+        (function hideEditButtonForStudents(){
+  // If URL has edit=true we allow edit button, otherwise hide it for students.
+  const params = new URLSearchParams(window.location.search);
+  const isEditMode = params.get('edit') === 'true';
+
+  function hideAllEditControls() {
+    const selectors = [
+      '.edit-button',        // main edit button in header
+      '#quiz-edit-controls', // optional injected edit container
+      '.btn-edit',           // generic edit class
+      '.edit-btn',           // other possible edit classes
+      '#editorModal'         // hide whole editor modal if you want (optional)
+    ].join(',');
+    document.querySelectorAll(selectors).forEach(el => {
+      if (el) el.style.display = 'none';
+    });
+  }
+
+  if (!isEditMode) {
+    // Hide immediately
+    hideAllEditControls();
+    // Hide any edit controls added later
+    const mo = new MutationObserver(hideAllEditControls);
+    mo.observe(document.body, { childList: true, subtree: true });
+    // expose for debugging if needed
+    window._hideEditButtonsObserver = mo;
+  }
+})();
+  </script>
+  
 </body>
 </html>

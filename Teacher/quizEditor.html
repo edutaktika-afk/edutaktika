@@ -225,8 +225,8 @@
         }
 
         .canvas-wrapper {
-            width: 80%;
-            max-width: 800px;
+            width: 90%;
+            max-width: 900px;
             aspect-ratio: 16/9;
             background: #fff;
             box-shadow: 0 8px 32px rgba(0,0,0,0.1);
@@ -754,7 +754,7 @@
                 <i class="fa fa-puzzle-piece"></i>Game 2  
             </button>
             <button class="game-option" data-game="../Games/Quiz/game3.html">
-                <i class="fa fa-puzzle-piece"></i>Game 3  
+                <i class="fa fa-puzzle-piece"></i>Word Search
             </button>
             <button class="game-option" data-game="../Games/Quiz/game4.html">
                 <i class="fa fa-puzzle-piece"></i>Multiple Choice Quiz  
@@ -1468,9 +1468,9 @@ async function autoSaveCanvas() {
         const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
         const teacher = teacherSnap.val();
         const section = teacher && teacher.section ? teacher.section : null;
-        const gradeLevel = teacher && teacher.gradelevel ? teacher.gradelevel : null;
+        const grade = teacher && teacher.grade ? teacher.grade : null;
 
-        if (!section || !gradeLevel) return;
+        if (!section || !grade) return;
 
         let quarter = getParam('quarter') || 'auto';
         let name = getParam('name') || getParam('title') || 'untitled';
@@ -1534,7 +1534,7 @@ async function autoSaveCanvas() {
             description: existingDescription,
             autoSaved: true,
             section: section,
-            gradeLevel: gradeLevel,
+            grade: grade,
             createdBy: teacherUID,
             teacherName: teacherName,
             password: quizPassword,
@@ -1566,8 +1566,8 @@ async function autoSaveCanvas() {
 
                     const studentSection = (student.section || '').toString().trim().toLowerCase();
                     const teacherSectionLower = (section || '').toString().trim().toLowerCase();
-                    const studentGrade = (student.gradelevel || '').toString().trim();
-                    const teacherGrade = (gradeLevel || '').toString().trim();
+                    const studentGrade = (student.grade || '').toString().trim();
+                    const teacherGrade = (grade || '').toString().trim();
 
                     if (studentSection === teacherSectionLower && studentGrade === teacherGrade) {
                         studentsUpdated++;
@@ -2112,13 +2112,13 @@ document.getElementById('save-btn').onclick = async function() {
         const teacherSnap = await db.ref('teachers/' + teacherUID).once('value'); 
         const teacher = teacherSnap.val();
         
-        if (!teacher || !teacher.section || !teacher.gradelevel) {
+        if (!teacher || !teacher.section || !teacher.grade) {
             alert('Your section and grade level must be set. Please update your profile.');
             return;
         }
         
         const section = teacher.section;
-        const gradeLevel = teacher.gradelevel;
+        const grade = teacher.grade;
         const teacherName = `${teacher.firstname || ''} ${teacher.lastname || ''}`.trim();
         const quizPassword = Math.floor(100000 + Math.random() * 900000).toString();
         const now = new Date().toISOString();
@@ -2131,7 +2131,7 @@ document.getElementById('save-btn').onclick = async function() {
             description: description,
             subject: subject,
             section: section,
-            gradeLevel: gradeLevel,
+            grade: grade,
             createdBy: teacherUID,
             teacherName: teacherName,
             password: quizPassword,
@@ -2158,8 +2158,8 @@ document.getElementById('save-btn').onclick = async function() {
                 const studentUID = studentSnap.key;
                 const studentSection = (student.section || '').toString().trim().toLowerCase();
                 const teacherSectionLower = (section || '').toString().trim().toLowerCase();
-                const studentGrade = (student.gradelevel || '').toString().trim();
-                const teacherGrade = (gradeLevel || '').toString().trim();
+                const studentGrade = (student.grade || '').toString().trim();
+                const teacherGrade = (grade || '').toString().trim();
 
                 if (studentSection === teacherSectionLower && studentGrade === teacherGrade) {
                     studentsUpdated++;
@@ -2253,14 +2253,11 @@ function renderQuizTestsSidebar() {
                 {name: 'None', url: ''},
                 {name: 'Multiple Choice (2)', url: '../Games/Quiz/game1.html'},
                 {name: 'Identification', url: '../Games/Quiz/game2.html'},
+                {name: 'Word Search', url: '../Games/Quiz/game3.html'},
                 {name: 'Multiple Choice', url: '../Games/Quiz/game4.html'},
                 {name: 'Matching Pairs', url: '../Games/Quiz/game5.html'},
-                {name: 'True or False', url: '../Games/Quiz/trueorfals.html'},
-                {name: 'Fill in the Blanks', url: '../Games/Quiz/game6.html'},
-                {name: 'Guessing Game', url: '../Games/Quiz/game7.html'},
-                {name: 'Odd One Out', url: '../Games/Quiz/game8.html'},
                 {name: 'Memory Card Match', url: '../Games/Quiz/game9.html'},
-                {name: 'Sorting', url: '../Games/Quiz/sorting.html'}
+                {name: 'True or False', url: '../Games/Quiz/trueorfals.html'}
             ].forEach(opt => {
                 const option = document.createElement('option');
                 option.value = opt.url;
@@ -2352,6 +2349,33 @@ gameRow.prepend(nameInput);
 
 </script>
 <script src="../assets/js/fetchQuiz.js"></script>
+
+<script>
+    // Listen for save from game7 (when editing in quizEditor)
+window.addEventListener('message', async function(event) {
+  if (event.data && event.data.type === 'saveQuizGameData') {
+    const { quizId, gameData } = event.data;
+    // Save to Firebase (Firestore example)
+    await firebase.firestore().collection('quizzes').doc(quizId).set(gameData);
+  }
+});
+
+// When loading for students
+async function loadQuizForStudent(quizId, gameIframe) {
+  const doc = await firebase.firestore().collection('quizzes').doc(quizId).get();
+  if (doc.exists) {
+    gameIframe.contentWindow.postMessage({
+      type: 'loadQuizGameData',
+      gameData: doc.data()
+    }, '*');
+  }
+}
+
+// Usage example (when you embed the game for a student):
+const gameIframe = document.getElementById('game-iframe'); // Your iframe element
+const quizId = 'game7.html'; // Or your actual quiz ID
+loadQuizForStudent(quizId, gameIframe);
+</script>
 
 </body>
 </html>

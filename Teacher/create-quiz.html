@@ -469,7 +469,7 @@
       }
 
       document.getElementById('section_display').value = t.section || '';
-      document.getElementById('grade_display').value = t.gradelevel || '';
+      document.getElementById('grade_display').value = t.grade || '';
       if (!document.getElementById('quiz_password').value) {
         document.getElementById('quiz_password').value = genPassword();
       }
@@ -620,10 +620,10 @@ function buildGameUrl(page, { subjectKey, quarter, title, testIndex }) {
       const tSnap = await db.ref('teachers/' + user.uid).once('value');
       const teacher = tSnap.val() || {};
       const section = teacher.section;
-      const gradeLevel = teacher.gradelevel;
+      const grade = teacher.grade;
       const teacherName = `${teacher.firstname || ''} ${teacher.lastname || ''}`.trim();
 
-      if (!section || !gradeLevel) { alert('Your section and grade level must be set in your profile.'); return; }
+      if (!section || !grade) { alert('Your section and grade level must be set in your profile.'); return; }
 
       const slidesBlank = JSON.stringify([{ version: "5.2.4", objects: [], backgroundColor: "#fff" }]);
       const nowISO = new Date().toISOString();
@@ -633,7 +633,7 @@ function buildGameUrl(page, { subjectKey, quarter, title, testIndex }) {
         description,
         quarter,
         section,
-        gradeLevel,
+        grade,
         createdAt: nowISO,
         savedAt: nowISO,
         createdBy: user.uid,
@@ -660,8 +660,8 @@ function buildGameUrl(page, { subjectKey, quarter, title, testIndex }) {
             const studentUID = stSnap.key;
             const sSection = (st.section || '').toString().trim().toLowerCase();
             const tSection = (section || '').toString().trim().toLowerCase();
-            const sGrade = (st.gradelevel || '').toString().trim();
-            const tGrade = (gradeLevel || '').toString().trim();
+            const sGrade = (st.grade || '').toString().trim();
+            const tGrade = (grade || '').toString().trim();
 
             if (sSection === tSection && sGrade === tGrade) {
               count++;
