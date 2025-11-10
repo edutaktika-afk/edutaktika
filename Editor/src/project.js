@@ -204,12 +204,64 @@ class Project {
   }
 
   async createNewDesign() {
-    await this.clear();
-    this.name = 'Untitled Design';
-    this.id = '';
-    console.log('saving');
-    await this.save();
-    console.log('saving done');
+    // Save current design state first without clearing canvas
+    const storeJSON = this.store.toJSON();
+    const hasContent = storeJSON.pages && storeJSON.pages.length > 0 && 
+                       storeJSON.pages.some(page => page.children && page.children.length > 0);
+    
+    if (hasContent) {
+      // Save current state as a new design
+      const oldId = this.id;
+      const oldName = this.name || 'Untitled Design';
+      
+      // Temporarily set ID to empty to create a new design (not update existing)
+      this.id = '';
+      this.name = oldName;
+      
+      try {
+        // Save will create a new design with a new ID
+        await this.save();
+        const newId = this.id; // Save sets this.id to the new design ID
+        console.log('✅ Current design saved as new design with ID:', newId);
+        console.log('📋 Design name:', this.name);
+        
+        // Increment designsLength to trigger list refresh in MyDesignsPanel
+        // Use mobx action to ensure reactivity
+        mobx.runInAction(() => {
+          this.designsLength = (this.designsLength || 0) + 1;
+          console.log('🔄 Updated designsLength to:', this.designsLength);
+        });
+      } finally {
+        // If there was an existing design, restore its ID so user continues editing it
+        // If there was no existing design, keep the new ID (user is now editing the saved design)
+        if (oldId) {
+          // Restore the original ID so user continues editing the original design
+          this.id = oldId;
+          this.name = oldName;
+          await storage.setItem('polotno-last-design-id', oldId);
+        } else {
+          // No old ID means this was an unsaved design, now it's saved
+          // Keep the new ID so user continues editing the now-saved design
+          // The new ID is already set from the save() call above
+          if (this.id) {
+            await storage.setItem('polotno-last-design-id', this.id);
+          }
+        }
+      }
+    } else {
+      // No content, create a new blank design
+      await this.clear();
+      this.name = 'Untitled Design';
+      this.id = '';
+      console.log('saving new blank design');
+      await this.save();
+      console.log('✅ Saving done, new design ID:', this.id);
+      // Use mobx action to ensure reactivity
+      mobx.runInAction(() => {
+        this.designsLength = (this.designsLength || 0) + 1;
+        console.log('🔄 Updated designsLength to:', this.designsLength);
+      });
+    }
   }
 
   async signIn() {
