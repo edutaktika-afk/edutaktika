@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Spinner } from '@blueprintjs/core';
 
@@ -6,6 +6,7 @@ import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from 'polotno';
 import { Toolbar } from 'polotno/toolbar/toolbar';
 import { ZoomButtons } from 'polotno/toolbar/zoom-buttons';
 import { SidePanel, DEFAULT_SECTIONS } from 'polotno/side-panel';
+import { SectionTab } from 'polotno/side-panel';
 import { Workspace } from 'polotno/canvas/workspace';
 import { PagesTimeline } from 'polotno/pages-timeline';
 import { setTranslations } from 'polotno/config';
@@ -23,15 +24,18 @@ import { MaterialIconsSection } from './sections/material-icons-section';
 
 import { useProject } from './project';
 
-import fr from './translations/fr';
+// Only load the default translation initially - others can be loaded on demand
 import en from './translations/en';
-import id from './translations/id';
-import ru from './translations/ru';
-import ptBr from './translations/pt-br';
-import zhCh from './translations/zh-ch';
+// Lazy load other translations (not needed for initial render)
+// import fr from './translations/fr';
+// import id from './translations/id';
+// import ru from './translations/ru';
+// import ptBr from './translations/pt-br';
+// import zhCh from './translations/zh-ch';
 
 import Topbar from './topbar/topbar';
-import Tutorial from './components/Tutorial';
+// Lazy load Tutorial component (not critical for initial render)
+const Tutorial = lazy(() => import('./components/Tutorial'));
 
 // load default translations
 setTranslations(en);
@@ -70,12 +74,12 @@ const isIconsSection = (sec) => {
   return name.includes('icon') || tabName.includes('icon') || panelName.includes('icon');
 };
 
-// Helper to detect default text sections (but not our custom TextSection)
+// Helper to detect default text sections
+// We'll remove ALL text sections first, then add our custom one back
 const isDefaultTextSection = (sec) => {
   const s = sec || {};
   const name = String(s.name || '').toLowerCase();
-  // Only filter out default Polotno text sections, not our custom TextSection
-  return name === 'text' && !s.Tab; // Our custom TextSection has a Tab property
+  return name === 'text';
 };
 
 // Helper to detect elements sections (duplicate with shapes)
@@ -85,22 +89,37 @@ const isElementsSection = (sec) => {
   return name === 'elements';
 };
 
-// Remove any built-in video, background, photos, icons, default text, and elements sections immediately
+// Helper to detect templates section (we want to preserve the default polotno templates)
+const isTemplatesSection = (sec) => {
+  const s = sec || {};
+  const name = String(s.name || '').toLowerCase();
+  return name === 'templates';
+};
+
+// Preserve the default polotno templates section before removing others
+let defaultTemplatesSection = null;
 for (let i = DEFAULT_SECTIONS.length - 1; i >= 0; i--) {
   const sec = DEFAULT_SECTIONS[i];
+  if (isTemplatesSection(sec)) {
+    defaultTemplatesSection = sec;
+    // Remove it now, we'll add it back later with a new name
+    DEFAULT_SECTIONS.splice(i, 1);
+    continue;
+  }
   if (isVideoSection(sec) || isBackgroundSection(sec) || isPhotosSection(sec) || isIconsSection(sec) || isDefaultTextSection(sec) || isElementsSection(sec)) {
     DEFAULT_SECTIONS.splice(i, 1);
   }
 }
 
 // Guard against future insertions of video, background, photos, icons, default text, and elements sections
+// But allow our custom TextSection (it has a Tab property)
 const _push = DEFAULT_SECTIONS.push.bind(DEFAULT_SECTIONS);
-DEFAULT_SECTIONS.push = (...items) => _push(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !isDefaultTextSection(s) && !isElementsSection(s)));
+DEFAULT_SECTIONS.push = (...items) => _push(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s)));
 const _unshift = DEFAULT_SECTIONS.unshift.bind(DEFAULT_SECTIONS);
-DEFAULT_SECTIONS.unshift = (...items) => _unshift(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !isDefaultTextSection(s) && !isElementsSection(s)));
+DEFAULT_SECTIONS.unshift = (...items) => _unshift(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s)));
 const _splice = DEFAULT_SECTIONS.splice.bind(DEFAULT_SECTIONS);
 DEFAULT_SECTIONS.splice = (start, deleteCount, ...items) =>
-  _splice(start, deleteCount, ...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !isDefaultTextSection(s) && !isElementsSection(s)));
+  _splice(start, deleteCount, ...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s)));
 
 // add backgrounds section (Photos and Icons removed)
 DEFAULT_SECTIONS.splice(3, 0, BackgroundsSection);
@@ -111,22 +130,60 @@ DEFAULT_SECTIONS.splice(4, 0, ShapesSection);
 // Add Material Icons section
 DEFAULT_SECTIONS.splice(5, 0, MaterialIconsSection);
 
-// Find and replace the default templates section with our Educational Templates
-const templatesIndex = DEFAULT_SECTIONS.findIndex(section => section.name === 'templates');
-if (templatesIndex !== -1) {
-  DEFAULT_SECTIONS.splice(templatesIndex, 1, EducationalTemplatesSection);
-} else {
-  // If no templates section found, add it at position 5
-  DEFAULT_SECTIONS.splice(5, 0, EducationalTemplatesSection);
+// Add the default polotno templates section (if it exists) - this is the original Polotno templates
+// Rename it to "Online designs" to distinguish from our educational templates
+if (defaultTemplatesSection) {
+  // Create a modified version with custom name
+  const onlineDesignsSection = {
+    ...defaultTemplatesSection,
+    name: 'online-designs',
+    Tab: observer((props) => {
+      // Use SectionTab with custom name, but try to preserve the original icon
+      const OriginalTab = defaultTemplatesSection.Tab;
+      let icon = null;
+      
+      // Try to render the original tab to extract its icon
+      if (OriginalTab) {
+        try {
+          const originalElement = React.createElement(OriginalTab, props);
+          if (originalElement && originalElement.props && originalElement.props.children) {
+            icon = originalElement.props.children;
+          }
+        } catch (e) {
+          // If that fails, use a default icon
+        }
+      }
+      
+      // If we couldn't extract the icon, use a default one
+      if (!icon) {
+        icon = <span style={{ fontSize: '20px' }}>🌐</span>;
+      }
+      
+      return (
+        <SectionTab name="Online designs" {...props}>
+          {icon}
+        </SectionTab>
+      );
+    })
+  };
+  DEFAULT_SECTIONS.splice(6, 0, onlineDesignsSection);
 }
 
+// Add our Educational Templates section - keep as "Templates"
+DEFAULT_SECTIONS.splice(7, 0, EducationalTemplatesSection);
+
 // Add our custom text section with Google Fonts after templates
-const textTemplatesIndex = DEFAULT_SECTIONS.findIndex(section => section.name === 'templates');
-if (textTemplatesIndex !== -1) {
-  DEFAULT_SECTIONS.splice(textTemplatesIndex + 1, 0, TextSection);
-} else {
-  // If no templates section found, add text section at position 1
-  DEFAULT_SECTIONS.splice(1, 0, TextSection);
+// First check if a text section already exists (shouldn't, but be safe)
+const existingTextIndex = DEFAULT_SECTIONS.findIndex(section => section.name === 'text');
+if (existingTextIndex === -1) {
+  // No text section exists, add ours
+  const textTemplatesIndex = DEFAULT_SECTIONS.findIndex(section => section.name === 'templates');
+  if (textTemplatesIndex !== -1) {
+    DEFAULT_SECTIONS.splice(textTemplatesIndex + 1, 0, TextSection);
+  } else {
+    // If no templates section found, add text section at position 1
+    DEFAULT_SECTIONS.splice(1, 0, TextSection);
+  }
 }
 // add two more sections
 // DEFAULT_SECTIONS.push(QuotesSection, QrSection); // REMOVED - Quotes and QR code sections
@@ -275,68 +332,119 @@ const App = observer(({ store }) => {
         const subjectFolder = getSubjectFolder(subject);
         console.log(`📁 Subject: "${subject}" → Folder: "${subjectFolder}"`);
         
-        // Get quarter from URL params or sessionStorage
+        // Get quarter and grade from URL params or sessionStorage
         const urlParams = new URLSearchParams(window.location.search);
         const quarter = urlParams.get('quarter') || sessionStorage.getItem('supabase-design-quarter') || '1';
+        const gradeFromUrl = urlParams.get('grade'); // Get grade from URL params (new window/tab)
         
         if (!subjectFolder) {
           throw new Error(`Invalid subject: "${subject}". Cannot determine folder.`);
         }
         
-        // Try to get teacher's grade level from Firebase
+        // Try to get teacher's grade level - priority: URL params > sessionStorage > Firebase (matches save logic)
         let gradeLevel = null;
-        try {
-          if (typeof window !== 'undefined' && window.firebase) {
-            const user = window.firebase.auth().currentUser;
-            if (user) {
-              const teacherSnap = await window.firebase.database().ref('teachers/' + user.uid).once('value');
-              const teacher = teacherSnap.val();
-              if (teacher && teacher.gradelevel) {
-                const grade = teacher.gradelevel.toString();
-                gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
-                console.log(`📚 Found teacher grade level: ${teacher.gradelevel} → normalized: ${gradeLevel}`);
-              }
-            }
+        
+        // First try URL params (most reliable for new windows/tabs)
+        if (gradeFromUrl) {
+          gradeLevel = gradeFromUrl;
+          console.log(`📚 Found grade level from URL params: ${gradeLevel}`);
+          // Store in sessionStorage for future use
+          try {
+            sessionStorage.setItem('supabase-design-grade', gradeLevel);
+          } catch (error) {
+            console.warn('Could not store grade in sessionStorage:', error);
           }
-        } catch (error) {
-          console.warn('Could not fetch grade level:', error);
         }
         
-        // Build paths to try in priority order: grade+quarter > quarter > grade > root
+        // Then try sessionStorage (from when Editor was opened from subject page in same tab)
+        if (!gradeLevel) {
+          try {
+            const storedGrade = sessionStorage.getItem('supabase-design-grade');
+            if (storedGrade) {
+              gradeLevel = storedGrade;
+              console.log(`📚 Found grade level from sessionStorage: ${gradeLevel}`);
+            }
+          } catch (error) {
+            console.warn('Could not read grade from sessionStorage:', error);
+          }
+        }
+        
+        // If not in URL or sessionStorage, try Firebase (matches save logic)
+        if (!gradeLevel) {
+          try {
+            if (typeof window !== 'undefined' && window.firebase) {
+              const user = window.firebase.auth().currentUser;
+              if (user) {
+                const teacherSnap = await window.firebase.database().ref('teachers/' + user.uid).once('value');
+                const teacher = teacherSnap.val();
+                if (teacher && teacher.gradelevel) {
+                  const grade = teacher.gradelevel.toString();
+                  gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+                  console.log(`📚 Found teacher grade level from Firebase: ${teacher.gradelevel} → normalized: ${gradeLevel}`);
+                  
+                  // Store it in sessionStorage for future use
+                  try {
+                    sessionStorage.setItem('supabase-design-grade', gradeLevel);
+                  } catch (error) {
+                    console.warn('Could not store grade in sessionStorage:', error);
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.warn('Could not fetch grade level from Firebase:', error);
+          }
+        }
+        
+        // Build paths to try in priority order (matches save logic):
+        // If grade exists: grade/quarter > grade (fallback) > quarter > root
+        // If no grade: quarter > root
         const quarterFolder = `quarter${quarter}`;
         const pathsToTry = [];
+        
         if (gradeLevel) {
+          // Grade-based paths (new structure)
           pathsToTry.push(`${subjectFolder}/${gradeLevel}/${quarterFolder}/${designId}.json`);
           pathsToTry.push(`${subjectFolder}/${gradeLevel}/${designId}.json`);
         }
+        // Fallback paths (old structure without grade)
         pathsToTry.push(`${subjectFolder}/${quarterFolder}/${designId}.json`);
         pathsToTry.push(`${subjectFolder}/${designId}.json`);
         
         console.log(`📁 Trying paths in order: ${pathsToTry.join(', ')}`);
         
         // Try each path in priority order
-        let data, error;
+        let data, error, lastError;
+        let foundPath = null;
         for (const path of pathsToTry) {
           console.log(`📁 Trying: ${path}`);
           ({ data, error } = await supabase.storage
             .from('LessonStorage')
             .download(path));
           
-          if (!error) {
+          if (!error && data) {
             console.log(`✅ Successfully downloaded from: ${path}`);
+            foundPath = path;
             break;
+          } else {
+            lastError = error;
+            // Log the specific error for this path (but continue trying)
+            if (error && error.message) {
+              console.log(`   ⚠️ ${path}: ${error.message}`);
+            }
           }
         }
 
-        console.log('Download result:', { hasData: !!data, error });
+        console.log('Download result:', { hasData: !!data, foundPath, error: lastError });
         
-        if (error) {
-          console.error('Download error details:', JSON.stringify(error, null, 2));
-          throw new Error(`Failed to download design: ${error.message || JSON.stringify(error)}`);
-        }
-        
-        if (!data) {
-          throw new Error('No data returned from Supabase storage');
+        if (!data || error) {
+          const errorMsg = lastError?.message || 'Unknown error';
+          const errorDetails = `Design ID: ${designId}, Subject: ${subject}, Quarter: ${quarter}, Grade: ${gradeLevel || 'none'}`;
+          console.error('❌ Failed to find design in Supabase storage.');
+          console.error('   Tried paths:', pathsToTry);
+          console.error('   Error:', errorMsg);
+          console.error('   Details:', errorDetails);
+          throw new Error(`Design not found in Supabase storage. Tried ${pathsToTry.length} paths. Last error: ${errorMsg}. ${errorDetails}`);
         }
         
         const text = await data.text();
@@ -557,7 +665,11 @@ const App = observer(({ store }) => {
           </WorkspaceWrap>
         </PolotnoContainer>
       </div>
-      {!isViewOnly && <Tutorial store={store} />}
+      {!isViewOnly && (
+        <Suspense fallback={null}>
+          <Tutorial store={store} />
+        </Suspense>
+      )}
       {project.status === 'loading' && (
         <div
           style={{
