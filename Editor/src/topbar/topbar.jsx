@@ -27,7 +27,8 @@ import licenseHandler from '../utils/licenseHandler';
 import { FileMenu } from './file-menu';
 import { DownloadButton } from './download-button';
 import { PostProcessButton } from './post-process-button';
-import { FirebaseSaveButton } from './firebase-save-button';
+// Firebase save button removed - using Supabase instead
+// import { FirebaseSaveButton } from './firebase-save-button';
 import { SupabaseSaveButton } from './supabase-save-button';
 import { UserMenu } from './user-menu';
 import { CloudWarning } from '../cloud-warning';
@@ -89,14 +90,15 @@ function enterFullscreen() {
   const el = document.getElementById('root'); // Vite root (wraps the editor)
   if (!el) return;
   if (el.requestFullscreen) el.requestFullscreen();
-  document.body.classList.add('presenting');
+  // Don't add 'presenting' class - that's for slideshow mode, not fullscreen
+  // Fullscreen should keep all UI elements visible
 }
 
 function exitFullscreen() {
   if (document.fullscreenElement) {
     document.exitFullscreen();
   }
-  document.body.classList.remove('presenting');
+  // Don't remove 'presenting' class here - it's only for slideshow mode
 }
 
 async function presentSlideshow(store) {
@@ -513,7 +515,6 @@ export default observer(({ store, isViewOnly = false }) => {
                 </AnchorButton>
                 <PostProcessButton store={store} />
                 <DownloadButton store={store} />
-                <FirebaseSaveButton store={store} project={project} />
                 <SupabaseSaveButton store={store} project={project} />
                 <NavbarDivider />
                 <AnchorButton

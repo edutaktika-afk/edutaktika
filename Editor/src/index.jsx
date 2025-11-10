@@ -15,6 +15,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { initializeEnvironment } from './utils/environment';
 import licenseHandler from './utils/licenseHandler';
 import './utils/animationManager'; // Load animation manager
+import './utils/polotno-animations'; // Load custom Polotno animations (Wiggle, Blur, Pan, Rise)
 import { getStoreKey, getKeyDebugInfo } from './utils/polotno-keys';
 import './utils/verify-polotno-key'; // Load verification utility
 
