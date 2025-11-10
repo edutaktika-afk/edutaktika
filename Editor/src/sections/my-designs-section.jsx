@@ -145,8 +145,23 @@ export const MyDesignsPanel = observer(({ store }) => {
         fill
         intent="primary"
         onClick={async () => {
-          await project.createNewDesign();
-          loadDesigns();
+          try {
+            // Save current design and create new one
+            await project.createNewDesign();
+            
+            // Refresh the designs list immediately and after a short delay
+            // This ensures the list updates even if there are timing issues
+            loadDesigns();
+            
+            // Also refresh after a delay to catch any async updates
+            setTimeout(() => {
+              loadDesigns();
+            }, 800);
+          } catch (error) {
+            console.error('Error creating new design:', error);
+            // Still try to refresh the list in case the save partially completed
+            loadDesigns();
+          }
         }}
       >
         Create new design
