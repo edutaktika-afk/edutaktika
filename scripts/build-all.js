@@ -94,6 +94,20 @@ includeFolders.forEach(folder => {
   }
 });
 
+// 4.5. Copy Polotno helper files to assets/js/
+const polotnoHelpers = ['uploadPolotno.js', 'loadPolotnoDesign.js'];
+const assetsJsDir = join(deployDir, 'assets', 'js');
+mkdirSync(assetsJsDir, { recursive: true });
+polotnoHelpers.forEach(file => {
+  const src = join(root, file);
+  if (existsSync(src)) {
+    cpSync(src, join(assetsJsDir, file));
+    log('Copied Polotno helper: ' + file + ' -> assets/js/');
+  } else {
+    log('WARNING: Polotno helper not found: ' + file);
+  }
+});
+
 // 5. Build Vite editor
 const editorDir = join(root, 'Editor');
 if (existsSync(editorDir)) {
