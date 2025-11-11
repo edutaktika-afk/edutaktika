@@ -744,6 +744,117 @@ td:hover .action-btns .reject,
         </div>
     </div>
 
+    <!-- Edit Admin Modal -->
+    <div class="admin-modal-bg" id="editAdminModal" style="display:none;">
+        <div class="admin-modal-card" style="max-width:600px;">
+            <button class="close-btn" onclick="closeEditAdminModal()">&times;</button>
+            <h2 style="color:#2e8b57;margin-bottom:20px;text-align:center;">Edit Admin</h2>
+            <form id="editAdminForm" style="display:grid;gap:15px;">
+                <input type="hidden" id="editAdminUid">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                    <div>
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">First Name</label>
+                        <input type="text" id="editAdminFname" required style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                    </div>
+                    <div>
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">Last Name</label>
+                        <input type="text" id="editAdminLname" required style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                    </div>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">Email</label>
+                    <input type="email" id="editAdminEmail" required style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;">
+                    <button type="button" onclick="closeEditAdminModal()" style="padding:10px 20px;border:none;border-radius:8px;cursor:pointer;background:#ccc;">Cancel</button>
+                    <button type="submit" style="padding:10px 20px;border:none;border-radius:8px;cursor:pointer;background:#2e8b57;color:white;font-weight:600;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Student Modal -->
+    <div class="admin-modal-bg" id="editStudentModal" style="display:none;">
+        <div class="admin-modal-card" style="max-width:600px;">
+            <button class="close-btn" onclick="closeEditStudentModal()">&times;</button>
+            <h2 style="color:#2e8b57;margin-bottom:20px;text-align:center;">Edit Student</h2>
+            <form id="editStudentForm" style="display:grid;gap:15px;">
+                <input type="hidden" id="editStudentId">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                    <div>
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">First Name</label>
+                        <input type="text" id="editStudentFname" required style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                    </div>
+                    <div>
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">Last Name</label>
+                        <input type="text" id="editStudentLname" required style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                    </div>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">Email</label>
+                    <input type="email" id="editStudentEmail" required style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:15px;">
+                    <div>
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">Grade Level</label>
+                        <input type="text" id="editStudentGrade" style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                    </div>
+                    <div>
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">Section</label>
+                        <input type="text" id="editStudentSection" style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                    </div>
+                    <div>
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">Subject</label>
+                        <input type="text" id="editStudentSubject" style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;">
+                    <button type="button" onclick="closeEditStudentModal()" style="padding:10px 20px;border:none;border-radius:8px;cursor:pointer;background:#ccc;">Cancel</button>
+                    <button type="submit" style="padding:10px 20px;border:none;border-radius:8px;cursor:pointer;background:#2e8b57;color:white;font-weight:600;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Teacher Modal -->
+    <div class="admin-modal-bg" id="editTeacherModal" style="display:none;">
+        <div class="admin-modal-card" style="max-width:600px;">
+            <button class="close-btn" onclick="closeEditTeacherModal()">&times;</button>
+            <h2 style="color:#2e8b57;margin-bottom:20px;text-align:center;">Edit Teacher</h2>
+            <form id="editTeacherForm" style="display:grid;gap:15px;">
+                <input type="hidden" id="editTeacherKey">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                    <div>
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">First Name</label>
+                        <input type="text" id="editTeacherFname" required style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                    </div>
+                    <div>
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">Last Name</label>
+                        <input type="text" id="editTeacherLname" required style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                    </div>
+                </div>
+                <div>
+                    <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">Email</label>
+                    <input type="email" id="editTeacherEmail" required style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                    <div>
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">Grade Level</label>
+                        <input type="text" id="editTeacherGrade" style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                    </div>
+                    <div>
+                        <label style="display:block;margin-bottom:5px;font-weight:600;color:#333;">Section</label>
+                        <input type="text" id="editTeacherSection" style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;">
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;">
+                    <button type="button" onclick="closeEditTeacherModal()" style="padding:10px 20px;border:none;border-radius:8px;cursor:pointer;background:#ccc;">Cancel</button>
+                    <button type="submit" style="padding:10px 20px;border:none;border-radius:8px;cursor:pointer;background:#2e8b57;color:white;font-weight:600;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Improved Admin Registration Modal (better design & style) -->
 <style>
   .admin-modal-bg {
@@ -1011,6 +1122,7 @@ function loadTeachers() {
                         </div>
                     </td>
                     <td>
+                        <button class="review" onclick="editTeacher('${child.key}')" style="margin-right: 8px;">Edit</button>
                         <button class="delete" onclick="deleteTeacher('${child.key}')">Delete</button>
                     </td>
                 `;
@@ -1188,6 +1300,7 @@ function loadStudents() {
                             <td>${s.subject || ''}</td>
                             <td>${s.registeredAt ? new Date(s.registeredAt).toLocaleString() : ''}</td>
                             <td>
+                                <button class="review" onclick="editStudent('${s.id}')" style="margin-right: 8px;">Edit</button>
                                 <button class="delete" onclick="deleteStudent('${s.id}')">Delete</button>
                             </td>
                         `;
@@ -1233,6 +1346,7 @@ function loadAdmins() {
                 <td>${a.email || ''}</td>
                 <td>${a.createdAt ? new Date(a.createdAt).toLocaleString() : ''}</td>
                 <td>
+                    <button class="review" onclick="editAdmin('${a.uid}')" style="margin-right: 8px;">Edit</button>
                     <button class="delete" onclick="deleteAdmin('${a.uid}')">Delete</button>
                 </td>
             `;
@@ -1277,6 +1391,149 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
     loadStudents();
     loadTeachers();
     enhanceTableStyling();
+
+    // Edit Admin Functions
+    function editAdmin(uid) {
+        db.ref('admins/' + uid).once('value').then(snapshot => {
+            const admin = snapshot.val();
+            if (!admin) {
+                alert('Admin not found.');
+                return;
+            }
+            document.getElementById('editAdminUid').value = uid;
+            document.getElementById('editAdminFname').value = admin.fname || '';
+            document.getElementById('editAdminLname').value = admin.lname || '';
+            document.getElementById('editAdminEmail').value = admin.email || '';
+            document.getElementById('editAdminModal').style.display = 'flex';
+        }).catch(err => {
+            alert('Error loading admin: ' + err.message);
+        });
+    }
+
+    function closeEditAdminModal() {
+        document.getElementById('editAdminModal').style.display = 'none';
+    }
+
+    document.getElementById('editAdminForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const uid = document.getElementById('editAdminUid').value;
+        const updates = {
+            fname: document.getElementById('editAdminFname').value,
+            lname: document.getElementById('editAdminLname').value,
+            email: document.getElementById('editAdminEmail').value
+        };
+        
+        db.ref('admins/' + uid).update(updates)
+            .then(() => {
+                alert('Admin updated successfully!');
+                logActivity('Updated admin: ' + uid);
+                closeEditAdminModal();
+                loadAdmins();
+            })
+            .catch(err => alert('Error updating admin: ' + err.message));
+    });
+
+    // Edit Student Functions
+    function editStudent(id) {
+        db.ref('students').orderByChild('id').equalTo(id).once('value').then(snapshot => {
+            let student = null;
+            snapshot.forEach(child => {
+                student = child.val();
+            });
+            if (!student) {
+                alert('Student not found.');
+                return;
+            }
+            document.getElementById('editStudentId').value = id;
+            document.getElementById('editStudentFname').value = student.fname || '';
+            document.getElementById('editStudentLname').value = student.lname || '';
+            document.getElementById('editStudentEmail').value = student.email || '';
+            document.getElementById('editStudentGrade').value = student.gradelevel || '';
+            document.getElementById('editStudentSection').value = student.section || '';
+            document.getElementById('editStudentSubject').value = student.subject || '';
+            document.getElementById('editStudentModal').style.display = 'flex';
+        }).catch(err => {
+            alert('Error loading student: ' + err.message);
+        });
+    }
+
+    function closeEditStudentModal() {
+        document.getElementById('editStudentModal').style.display = 'none';
+    }
+
+    document.getElementById('editStudentForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const id = document.getElementById('editStudentId').value;
+        const updates = {
+            fname: document.getElementById('editStudentFname').value,
+            lname: document.getElementById('editStudentLname').value,
+            email: document.getElementById('editStudentEmail').value,
+            gradelevel: document.getElementById('editStudentGrade').value,
+            section: document.getElementById('editStudentSection').value,
+            subject: document.getElementById('editStudentSubject').value
+        };
+        
+        db.ref('students').orderByChild('id').equalTo(id).once('value').then(snapshot => {
+            snapshot.forEach(child => {
+                child.ref.update(updates)
+                    .then(() => {
+                        alert('Student updated successfully!');
+                        logActivity('Updated student: ' + id);
+                        closeEditStudentModal();
+                        loadStudents();
+                        loadStatistics();
+                    })
+                    .catch(err => alert('Error updating student: ' + err.message));
+            });
+        });
+    });
+
+    // Edit Teacher Functions
+    function editTeacher(key) {
+        db.ref('teachers/' + key).once('value').then(snapshot => {
+            const teacher = snapshot.val();
+            if (!teacher) {
+                alert('Teacher not found.');
+                return;
+            }
+            document.getElementById('editTeacherKey').value = key;
+            document.getElementById('editTeacherFname').value = teacher.fname || '';
+            document.getElementById('editTeacherLname').value = teacher.lname || '';
+            document.getElementById('editTeacherEmail').value = teacher.email || '';
+            document.getElementById('editTeacherGrade').value = teacher.grade || teacher.gradelevel || '';
+            document.getElementById('editTeacherSection').value = teacher.section || '';
+            document.getElementById('editTeacherModal').style.display = 'flex';
+        }).catch(err => {
+            alert('Error loading teacher: ' + err.message);
+        });
+    }
+
+    function closeEditTeacherModal() {
+        document.getElementById('editTeacherModal').style.display = 'none';
+    }
+
+    document.getElementById('editTeacherForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const key = document.getElementById('editTeacherKey').value;
+        const updates = {
+            fname: document.getElementById('editTeacherFname').value,
+            lname: document.getElementById('editTeacherLname').value,
+            email: document.getElementById('editTeacherEmail').value,
+            grade: document.getElementById('editTeacherGrade').value,
+            gradelevel: document.getElementById('editTeacherGrade').value, // Support both fields
+            section: document.getElementById('editTeacherSection').value
+        };
+        
+        db.ref('teachers/' + key).update(updates)
+            .then(() => {
+                alert('Teacher updated successfully!');
+                logActivity('Updated teacher: ' + key);
+                closeEditTeacherModal();
+                loadTeachers();
+                loadStatistics();
+            })
+            .catch(err => alert('Error updating teacher: ' + err.message));
+    });
     </script>
     </div>
 
