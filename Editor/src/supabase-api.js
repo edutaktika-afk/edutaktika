@@ -18,19 +18,80 @@ import { supabase, BUCKET_DESIGNS, BUCKET_ASSETS, shouldUseSupabase, BUCKET_LESS
  */
 
 /**
+ * Ensure folder path exists in Supabase Storage
+ * In Supabase, folders are created implicitly, but we verify the path exists
+ * @param {string} folderPath - Path to check (e.g., "ENGLISH/grade5/quarter1")
+ * @param {string} bucket - Bucket name (defaults to BUCKET_LESSON_STORAGE)
+ * @returns {Promise<boolean>} - True if path exists or was created, false on error
+ */
+const ensureFolderExists = async function ensureFolderExists(folderPath, bucket = BUCKET_LESSON_STORAGE) {
+  if (!shouldUseSupabase() || !folderPath) {
+    return true; // Skip check if not using Supabase or no path
+  }
+
+  try {
+    // Remove trailing slash if present
+    const cleanPath = folderPath.replace(/\/$/, '');
+    
+    // Check if path exists by listing it
+    // If the path exists (even if empty), list() will succeed
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .list(cleanPath, {
+        limit: 1,
+        offset: 0
+      });
+
+    if (error) {
+      // If error is "not found" or similar, the folder doesn't exist
+      // In Supabase, folders are created automatically when you upload a file
+      // So we just log and continue - the upload will create the folder structure
+      if (error.message && error.message.includes('not found')) {
+        console.log(`📁 Folder path "${cleanPath}" doesn't exist yet - will be created on first file upload`);
+        return false;
+      }
+      // Other errors might mean the path structure needs to be created
+      console.warn(`⚠️ Could not verify folder path "${cleanPath}":`, error.message);
+      return false;
+    }
+
+    // Path exists (list succeeded)
+    console.log(`✅ Folder path "${cleanPath}" exists`);
+    return true;
+  } catch (error) {
+    console.warn(`⚠️ Error checking folder path "${folderPath}":`, error);
+    // Don't throw - we'll try to upload anyway (which will create the folder)
+    return false;
+  }
+};
+
+/**
  * Save file to Supabase Storage or local storage
+ * Automatically ensures folder structure exists before uploading
  */
 const writeFile = async function writeFile(fileName, data) {
   if (shouldUseSupabase()) {
     try {
+      // Extract folder path from filename (everything except the filename)
+      const pathParts = fileName.split('/');
+      const bucketToUse = fileName.includes('SCIENCE/') || fileName.includes('ENGLISH/') || fileName.includes('MATH/') 
+        ? BUCKET_LESSON_STORAGE 
+        : BUCKET_DESIGNS;
+      
+      if (pathParts.length > 1) {
+        const folderPath = pathParts.slice(0, -1).join('/');
+        // Check if folder exists before uploading
+        await ensureFolderExists(folderPath, bucketToUse);
+      }
+
       // Supabase Storage accepts Blobs directly
       const fileData = data instanceof Blob ? data : new Blob([data], { type: 'application/json' });
 
-      console.log(`Uploading to Supabase: bucket="${BUCKET_DESIGNS}", path="${fileName}"`);
+      console.log(`Uploading to Supabase: bucket="${bucketToUse}", path="${fileName}"`);
 
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage (this will create folder structure if it doesn't exist)
       const { data: uploadData, error } = await supabase.storage
-        .from(BUCKET_DESIGNS)
+        .from(bucketToUse)
         .upload(fileName, fileData, {
           upsert: true,
           contentType: data instanceof Blob ? data.type : 'application/json'
@@ -41,7 +102,7 @@ const writeFile = async function writeFile(fileName, data) {
         throw error;
       }
 
-      console.log(`Upload successful:`, uploadData);
+      console.log(`✅ Upload successful:`, uploadData);
       return uploadData;
     } catch (error) {
       console.error('Failed to upload to Supabase, falling back to local storage:', error);
@@ -455,6 +516,18 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
   }
   
   console.log(`📤 Upload paths: preview="${previewPath}", design="${storePath}"`);
+
+  // Ensure folder structure exists before uploading
+  const previewFolder = previewPath.split('/').slice(0, -1).join('/');
+  const designFolder = storePath.split('/').slice(0, -1).join('/');
+  
+  console.log(`📁 Checking folder structure...`);
+  if (previewFolder) {
+    await ensureFolderExists(previewFolder, BUCKET_LESSON_STORAGE);
+  }
+  if (designFolder && designFolder !== previewFolder) {
+    await ensureFolderExists(designFolder, BUCKET_LESSON_STORAGE);
+  }
 
   await writeFile(previewPath, preview);
   console.log(`✅ Preview saved to Supabase: ${previewPath}`);
