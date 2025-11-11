@@ -288,6 +288,8 @@
 
 
     <script src="../assets/js/Student Side/header.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/loadSupabaseDesigns.js"></script>
     
 
     <div class="container">
@@ -617,30 +619,69 @@
             }
 
             for (let q = 1; q <= 4; q++) {
-                const lessonsSnap = await db.ref('teachers/' + teacherUID + '/sections/' + student.section + '/lessons/subject_math/quarter-' + q).once('value');
                 const container = document.querySelector(`#quarter-${q} .lessons-container`);
                 if (!container) continue;
-                container.innerHTML = '';
-                if (!lessonsSnap.exists()) {
-                    
-                    continue;
+                container.innerHTML = '<div style="text-align:center;padding:10px;color:#666;"><i class="fa fa-spinner fa-spin"></i> Loading...</div>';
+                
+                // Load from Supabase first (primary source)
+                let supabaseDesigns = [];
+                if (typeof loadSupabaseDesignsForQuarter === 'function') {
+                    try {
+                        // Get student's grade level for proper folder structure
+                        const studentGrade = student.gradelevel ? (student.gradelevel.toString().startsWith('grade') ? student.gradelevel.toString() : `grade${student.gradelevel}`) : null;
+                        supabaseDesigns = await loadSupabaseDesignsForQuarter('subject_english', q.toString(), null, false, studentGrade);
+                    } catch (error) {
+                        console.error('Error loading Supabase designs:', error);
+                    }
                 }
-                lessonsSnap.forEach(lessonSnap => {
-                    const lesson = lessonSnap.val();
-                    const name = lesson.title || lessonSnap.key;
-                    const div = document.createElement('div');
-                    div.className = 'lesson-item';
-                    div.setAttribute('data-presentation', name);
-                    div.innerHTML = `
-                        <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
-                        <div class="lesson-title">
-                            <h3>${name}</h3>
-                            <p>${lesson.description || ''}</p>
-                            <span class="lesson-badge" onclick="window.location.href='present.html?subject=subject_math&quarter=${q}&name=${encodeURIComponent(name)}'" style="cursor:pointer;">View</span>
-                        </div>
-                    `;
-                    container.appendChild(div);
-                });
+                
+                // Also load from Firebase (fallback/legacy)
+                const lessonsSnap = await db.ref('teachers/' + teacherUID + '/sections/' + student.section + '/lessons/subject_english/quarter-' + q).once('value');
+                
+                container.innerHTML = '';
+                
+                // Render Supabase designs
+                if (supabaseDesigns && supabaseDesigns.length > 0) {
+                    supabaseDesigns.forEach(design => {
+                        const div = document.createElement('div');
+                        div.className = 'lesson-item';
+                        div.setAttribute('data-presentation', design.name);
+                        div.innerHTML = `
+                            <div class="lesson-thumbnail" style="background-image: url('${design.thumbnail || ''}'); background-size: cover; background-position: center;"></div>
+                            <div class="lesson-title">
+                                <h3>${design.name}</h3>
+                                <p>${design.description || 'Supabase Design'}</p>
+                                <span class="lesson-badge" onclick="openSupabaseDesignViewer('${design.id}', 'subject_english', '${design.name.replace(/'/g, "\\'")}', '${q}')" style="cursor:pointer;">View</span>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                    });
+                }
+                
+                // Render Firebase designs (if any)
+                if (lessonsSnap.exists()) {
+                    lessonsSnap.forEach(lessonSnap => {
+                        const lesson = lessonSnap.val();
+                        const name = lesson.title || lessonSnap.key;
+                        const div = document.createElement('div');
+                        div.className = 'lesson-item';
+                        div.setAttribute('data-presentation', name);
+                        div.innerHTML = `
+                            <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
+                            <div class="lesson-title">
+                                <h3>${name}</h3>
+                                <p>${lesson.description || ''}</p>
+                                <span class="lesson-badge" onclick="window.location.href='present.html?subject=subject_english&quarter=${q}&name=${encodeURIComponent(name)}'" style="cursor:pointer;">View</span>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                    });
+                }
+                
+                // Show empty state if no designs found
+                if ((!supabaseDesigns || supabaseDesigns.length === 0) && !lessonsSnap.exists()) {
+                    container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No lessons available for this quarter.</div>';
+                }
             }
         }
     });
