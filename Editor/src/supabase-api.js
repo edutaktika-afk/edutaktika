@@ -426,15 +426,32 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
   const quarterFolder = `quarter${quarter}`;
   let previewPath, storePath;
   
+  // Always try to use grade-based structure for better organization
+  // If gradeLevel is not found, try to get it from URL params or default to a generic location
+  if (!gradeLevel) {
+    // Try to get from URL parameters
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlGrade = urlParams.get('grade');
+      if (urlGrade) {
+        gradeLevel = urlGrade.startsWith('grade') ? urlGrade : `grade${urlGrade}`;
+        console.log(`📚 Found grade level from URL params: ${gradeLevel}`);
+      }
+    } catch (error) {
+      console.warn('Could not read grade from URL:', error);
+    }
+  }
+  
   if (gradeLevel) {
     previewPath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${id}.jpg`;
     storePath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${id}.json`;
     console.log(`✅ Using grade-based path structure: ${gradeLevel}/${quarterFolder}/`);
   } else {
-    // Fallback to old structure without grade
+    // Fallback to old structure without grade (but log a warning)
     previewPath = `${subjectFolder}/${quarterFolder}/${id}.jpg`;
     storePath = `${subjectFolder}/${quarterFolder}/${id}.json`;
-    console.warn(`⚠️ No grade level found! Saving to old structure without grade folder.`);
+    console.warn(`⚠️ No grade level found! Saving to: ${subjectFolder}/${quarterFolder}/`);
+    console.warn(`💡 Tip: Grade level helps organize designs. Make sure teacher's grade level is set in Firebase.`);
   }
   
   console.log(`📤 Upload paths: preview="${previewPath}", design="${storePath}"`);

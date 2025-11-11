@@ -288,6 +288,8 @@
 
 
     <script src="../assets/js/Student Side/header.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/loadSupabaseDesigns.js"></script>
 
     <div class="container">
         <!-- Add Firebase design loading functionality -->
@@ -707,10 +709,35 @@ async function loadStudentLessons() {
     for (let q = 1; q <= 4; q++) {
         const container = document.querySelector(`#quarter-${q} .lessons-container`);
         if (!container) continue;
+        container.innerHTML = '<div style="text-align:center;padding:10px;color:#666;"><i class="fa fa-spinner fa-spin"></i> Loading...</div>';
 
         let lessons = [];
+        
+        // Load from Supabase first (primary source)
+        let supabaseDesigns = [];
+        if (typeof loadSupabaseDesignsForQuarter === 'function') {
+            try {
+                // Get student's grade level for proper folder structure
+                const studentGrade = student.gradelevel ? (student.gradelevel.toString().startsWith('grade') ? student.gradelevel.toString() : `grade${student.gradelevel}`) : null;
+                supabaseDesigns = await loadSupabaseDesignsForQuarter('subject_math', q.toString(), null, false, studentGrade);
+                if (supabaseDesigns && supabaseDesigns.length > 0) {
+                    supabaseDesigns.forEach(design => {
+                        lessons.push({
+                            title: design.name,
+                            description: design.description || 'Supabase Design',
+                            quarter: q,
+                            source: 'supabase',
+                            id: design.id,
+                            thumbnail: design.thumbnail
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading Supabase designs:', error);
+            }
+        }
 
-        // Load teacher's lessons from Editor
+        // Load teacher's lessons from Editor (Firebase - fallback/legacy)
         try {
             const lessonsSnap = await db.ref(`teachers/${teacherUID}/sections/${student.section}/lessons/${subjectPage}/quarter-${q}`).once('value');
             if (lessonsSnap.exists()) {
@@ -756,23 +783,45 @@ async function loadStudentLessons() {
             // Sort lessons by title
             lessons.sort((a, b) => a.title.localeCompare(b.title));
             
-            container.innerHTML = lessons.map(lesson => `
-                <div class="lesson-item" data-presentation="${lesson.title}">
-                    <div class="lesson-thumbnail" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-calculator" style="font-size: 2rem; color: white;"></i>
-                    </div>
-                    <div class="lesson-title">
-                        <h3>${lesson.title}</h3>
-                        <p>${lesson.description}</p>
-                        <div style="margin-top: 8px;">
-                            <span class="lesson-badge" onclick="openLesson('${lesson.title}', ${lesson.quarter}, '${lesson.source}', '${lesson.teacherUID || ''}')" style="cursor:pointer; background: #4CAF50; color: white; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">View Lesson</span>
+            container.innerHTML = lessons.map(lesson => {
+                // Handle Supabase designs
+                if (lesson.source === 'supabase' && lesson.id) {
+                    return `
+                        <div class="lesson-item" data-presentation="${lesson.title}">
+                            <div class="lesson-thumbnail" style="background-image: url('${lesson.thumbnail || ''}'); background-size: cover; background-position: center;"></div>
+                            <div class="lesson-title">
+                                <h3>${lesson.title}</h3>
+                                <p>${lesson.description}</p>
+                                <div style="margin-top: 8px;">
+                                    <span class="lesson-badge" onclick="openSupabaseDesignViewer('${lesson.id}', 'subject_math', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.quarter}')" style="cursor:pointer; background: #4CAF50; color: white; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">View Lesson</span>
+                                </div>
+                                <div style="font-size: 0.8rem; color: #888; margin-top: 4px;">
+                                    Supabase Design
+                                </div>
+                            </div>
                         </div>
-                        <div style="font-size: 0.8rem; color: #888; margin-top: 4px;">
-                            ${lesson.source === 'teacher' ? 'Teacher Lesson' : 'Shared Lesson'}
+                    `;
+                } else {
+                    // Firebase/legacy designs
+                    return `
+                        <div class="lesson-item" data-presentation="${lesson.title}">
+                            <div class="lesson-thumbnail" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-calculator" style="font-size: 2rem; color: white;"></i>
+                            </div>
+                            <div class="lesson-title">
+                                <h3>${lesson.title}</h3>
+                                <p>${lesson.description}</p>
+                                <div style="margin-top: 8px;">
+                                    <span class="lesson-badge" onclick="openLesson('${lesson.title}', ${lesson.quarter}, '${lesson.source}', '${lesson.teacherUID || ''}')" style="cursor:pointer; background: #4CAF50; color: white; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">View Lesson</span>
+                                </div>
+                                <div style="font-size: 0.8rem; color: #888; margin-top: 4px;">
+                                    ${lesson.source === 'teacher' ? 'Teacher Lesson' : 'Shared Lesson'}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            `).join('');
+                    `;
+                }
+            }).join('');
         }
     }
 }
