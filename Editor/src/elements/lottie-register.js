@@ -3,13 +3,15 @@
  * 
  * Polotno uses a custom element rendering system. We'll register
  * our Lottie renderer so it can be used when elements of type 'lottie' are rendered.
+ * 
+ * Note: Polotno doesn't require a custom model - elements with type 'lottie'
+ * will be handled by our custom renderer component.
  */
 
 import { LottieElement } from './lottie-element';
-import { LottieModel } from './lottie-model';
 
 // Export for use in workspace rendering
-export { LottieModel, LottieElement };
+export { LottieElement };
 
 // Register custom renderer globally
 // Polotno's Workspace component will check for custom renderers
