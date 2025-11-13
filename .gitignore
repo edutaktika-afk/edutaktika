@@ -14,6 +14,10 @@ package-lock.json
 # Local environment / secrets
 .env
 .env.*
+.env.local
+.env.production
+.env.development
+# Never commit environment files with real credentials!
 
 # OS / Editor junk
 .DS_Store
