@@ -812,67 +812,13 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
     throw new Error(`Invalid subject: ${subject}. Must be one of: science, english, math`);
   }
   
-  // Try to get teacher's grade level from Firebase or sessionStorage
-  let gradeLevel = null;
+  // Get teacher's grade level using utility function (Firebase > sessionStorage > URL params)
+  const { getUserGradeLevelWithFallback } = await import('./utils/getUserGradeLevel');
+  const gradeLevel = await getUserGradeLevelWithFallback();
   
-  // First try sessionStorage (from when Editor was opened from subject page)
-  try {
-    const storedGrade = sessionStorage.getItem('supabase-design-grade');
-    if (storedGrade) {
-      gradeLevel = storedGrade;
-      console.log(`📚 Found grade level from sessionStorage: ${gradeLevel}`);
-    }
-  } catch (error) {
-    console.warn('Could not read grade from sessionStorage:', error);
-  }
-  
-  // If not in sessionStorage, try Firebase
-  if (!gradeLevel) {
-    try {
-      // Dynamically import Firebase if available
-      if (typeof window !== 'undefined' && window.firebase) {
-        const user = window.firebase.auth().currentUser;
-        if (user) {
-          const teacherSnap = await window.firebase.database().ref('teachers/' + user.uid).once('value');
-          const teacher = teacherSnap.val();
-          if (teacher && teacher.gradelevel) {
-            const grade = teacher.gradelevel.toString();
-            gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
-            console.log(`📚 Found teacher grade level from Firebase: ${teacher.gradelevel} → normalized: ${gradeLevel}`);
-            
-            // Store it in sessionStorage for future use
-            try {
-              sessionStorage.setItem('supabase-design-grade', gradeLevel);
-            } catch (error) {
-              console.warn('Could not store grade in sessionStorage:', error);
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.warn('Could not fetch grade level from Firebase:', error);
-    }
-  }
-  
-  // Build paths with grade if available: subject/gradeX/quarterX/id.json
+  // Build paths with grade: subject/gradeX/quarterX/id.json
   const quarterFolder = `quarter${quarter}`;
   let previewPath, storePath;
-  
-  // Always try to use grade-based structure for better organization
-  // If gradeLevel is not found, try to get it from URL params or default to a generic location
-  if (!gradeLevel) {
-    // Try to get from URL parameters
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlGrade = urlParams.get('grade');
-      if (urlGrade) {
-        gradeLevel = urlGrade.startsWith('grade') ? urlGrade : `grade${urlGrade}`;
-        console.log(`📚 Found grade level from URL params: ${gradeLevel}`);
-      }
-    } catch (error) {
-      console.warn('Could not read grade from URL:', error);
-    }
-  }
   
   // REQUIRE grade level - don't allow saving without it
   if (!gradeLevel) {
