@@ -613,18 +613,7 @@ const App = observer(({ store }) => {
           )}
           <WorkspaceWrap>
             {!isViewOnly && <Toolbar store={store} />}
-              <Workspace 
-                store={store}
-                renderElement={(element, store) => {
-                  // Custom renderer for Lottie elements
-                  if (element.type === 'lottie') {
-                    const { LottieElement } = require('./elements/lottie-element');
-                    return <LottieElement element={element} store={store} />;
-                  }
-                  // Return null to use default renderer for other element types
-                  return null;
-                }}
-              />
+              <Workspace store={store} />
             {!isViewOnly && <ZoomButtons store={store} />}
             {!isViewOnly && <PagesTimeline store={store} />}
           </WorkspaceWrap>
