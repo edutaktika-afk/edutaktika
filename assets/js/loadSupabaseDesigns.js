@@ -94,14 +94,20 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
       // Build paths with grade-aware structure
       const quarterFolder = `quarter${quarter}`;
       
-      // Priority order: grade + quarter > quarter > grade > root
+      // IMPORTANT: Only use grade-specific paths when gradeLevel is provided
+      // This prevents Grade 5 lessons from loading when looking for Grade 6
       const pathsToTry = [];
       if (gradeLevel) {
-        pathsToTry.push(`${subjectFolder}/${gradeLevel}/${quarterFolder}`); // Newest: with grade
-        pathsToTry.push(`${subjectFolder}/${gradeLevel}`); // Just grade
+        // Grade-specific paths only - no fallback to non-grade paths
+        pathsToTry.push(`${subjectFolder}/${gradeLevel}/${quarterFolder}`); // Primary: subject/grade/quarter
+        pathsToTry.push(`${subjectFolder}/${gradeLevel}`); // Fallback: subject/grade (all quarters)
+        console.log(`📚 Using grade-specific paths for: ${gradeLevel}`);
+      } else {
+        // Only use non-grade paths if no grade level is specified
+        console.warn(`⚠️ No grade level provided! This may load lessons from wrong grade.`);
+        pathsToTry.push(`${subjectFolder}/${quarterFolder}`); // Just quarter
+        pathsToTry.push(subjectFolder); // Fallback: root
       }
-      pathsToTry.push(`${subjectFolder}/${quarterFolder}`); // Just quarter
-      pathsToTry.push(subjectFolder); // Fallback: root
       
       let files, error, fullPath;
       
@@ -115,19 +121,26 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
             offset: 0,
           }));
         
-        if (!error) {
+        if (!error && files && files.length > 0) {
           fullPath = path;
-          console.log(`✅ Successfully listed files from: ${fullPath}`);
+          console.log(`✅ Successfully listed files from: ${fullPath} (${files.length} items)`);
           break;
         } else {
-          console.log(`⚠️ Path failed (${error.message})`);
+          if (error) {
+            console.log(`⚠️ Path failed (${error.message})`);
+          } else {
+            console.log(`⚠️ Path exists but is empty`);
+          }
         }
       }
 
-      if (error) {
-        console.error('❌ Error listing files from all paths:', error);
+      if (error || !files || files.length === 0) {
+        const errorMsg = gradeLevel 
+          ? `No lessons found for ${gradeLevel} in ${subjectFolder}/${quarterFolder}. Make sure lessons are saved with the correct grade level.`
+          : 'Error loading designs from Supabase.';
+        console.error(`❌ ${errorMsg}`);
         if (container) {
-          container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Error loading designs from Supabase.</div>';
+          container.innerHTML = `<div style="text-align:center;padding:20px;color:#666;">${errorMsg}</div>`;
         }
         return [];
       }
@@ -370,7 +383,7 @@ async function openSupabaseDesignViewer(designId, subject, designName = 'Design'
     const text = await data.text();
     const designJSON = JSON.parse(text);
 
-    // Store in session storage for the editor
+    // Store in session storage for the editor (for same-tab scenarios)
     sessionStorage.setItem('supabase-design-to-load', text);
     sessionStorage.setItem('supabase-design-id', designId);
     sessionStorage.setItem('supabase-design-subject', subject);
@@ -378,14 +391,31 @@ async function openSupabaseDesignViewer(designId, subject, designName = 'Design'
     sessionStorage.setItem('supabase-design-quarter', quarter);
     sessionStorage.setItem('supabase-design-grade', gradeLevel || '');
 
-    // Open in fullscreen viewer - try getEditorBase first, then fallback
-    let editorBaseUrl = '../deploy/editor/index.html';
+    // Open in fullscreen viewer - use environment-aware editor URL
+    // IMPORTANT: Pass grade level in URL params since new window/tab has separate sessionStorage
+    let editorBaseUrl = '/editor/index.html'; // Default for production deployment
     if (typeof getEditorBase === 'function') {
       editorBaseUrl = getEditorBase();
     } else if (typeof getEditorBaseUrl === 'function') {
       editorBaseUrl = getEditorBaseUrl();
+    } else if (typeof window.location !== 'undefined') {
+      // Fallback: detect environment from hostname
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      editorBaseUrl = isLocal ? 'http://localhost:5173/' : '/editor/index.html';
     }
-    const viewerUrl = editorBaseUrl + '?supabaseDesign=' + designId + '&subject=' + subject + '&quarter=' + quarter;
+    
+    // Build URL with parameters
+    let viewerUrl = editorBaseUrl;
+    const params = new URLSearchParams();
+    params.set('supabaseDesign', designId);
+    params.set('subject', subject);
+    params.set('quarter', quarter);
+    if (gradeLevel) {
+      params.set('grade', gradeLevel);
+    }
+    viewerUrl += (viewerUrl.includes('?') ? '&' : '?') + params.toString();
+    
+    console.log('🔗 Opening viewer with URL:', viewerUrl);
     window.open(viewerUrl, '_blank', 'width=1400,height=900');
 
   } catch (error) {
@@ -460,7 +490,7 @@ async function openSupabaseDesignEditor(designId, subject, designName = 'Design'
     const text = await data.text();
     const designJSON = JSON.parse(text);
 
-    // Store in session storage for the editor
+    // Store in session storage for the editor (for same-tab scenarios)
     sessionStorage.setItem('supabase-design-to-load', text);
     sessionStorage.setItem('supabase-design-id', designId);
     sessionStorage.setItem('supabase-design-subject', subject);
@@ -468,14 +498,32 @@ async function openSupabaseDesignEditor(designId, subject, designName = 'Design'
     sessionStorage.setItem('supabase-design-quarter', quarter);
     sessionStorage.setItem('supabase-design-grade', gradeLevel || '');
 
-    // Open in editor mode - try getEditorBase first, then fallback
-    let editorBaseUrl = '../deploy/editor/index.html';
+    // Open in editor mode - use environment-aware editor URL
+    // IMPORTANT: Pass grade level in URL params since new window/tab has separate sessionStorage
+    let editorBaseUrl = '/editor/index.html'; // Default for production deployment
     if (typeof getEditorBase === 'function') {
       editorBaseUrl = getEditorBase();
     } else if (typeof getEditorBaseUrl === 'function') {
       editorBaseUrl = getEditorBaseUrl();
+    } else if (typeof window.location !== 'undefined') {
+      // Fallback: detect environment from hostname
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      editorBaseUrl = isLocal ? 'http://localhost:5173/' : '/editor/index.html';
     }
-    const editorUrl = editorBaseUrl + '?supabaseDesign=' + designId + '&subject=' + subject + '&quarter=' + quarter + '&view=true';
+    
+    // Build URL with parameters
+    let editorUrl = editorBaseUrl;
+    const params = new URLSearchParams();
+    params.set('supabaseDesign', designId);
+    params.set('subject', subject);
+    params.set('quarter', quarter);
+    if (gradeLevel) {
+      params.set('grade', gradeLevel);
+    }
+    params.set('view', 'true');
+    editorUrl += (editorUrl.includes('?') ? '&' : '?') + params.toString();
+    
+    console.log('🔗 Opening editor with URL:', editorUrl);
     window.open(editorUrl, '_blank', 'width=1400,height=900');
 
   } catch (error) {
