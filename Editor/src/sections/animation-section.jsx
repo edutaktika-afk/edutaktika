@@ -210,6 +210,6 @@ export const AnimationSection = {
       </SectionTab>
     );
   }),
-  Panel: observer(AnimationPanel), // Ensure Panel is also wrapped with observer
+  Panel: AnimationPanel, // AnimationPanel is already wrapped with observer
 };
 
