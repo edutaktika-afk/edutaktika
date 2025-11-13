@@ -16,6 +16,7 @@
     "idb": "^8.0.3",
     "jszip": "^3.10.1",
     "localforage": "^1.10.0",
+    "lottie-web": "^5.13.0",
     "nanoid": "^5.0.6",
     "polotno": "^2.26.1",
     "qrcode": "^1.5.4",
