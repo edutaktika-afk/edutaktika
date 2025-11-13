@@ -189,7 +189,7 @@ export const AnimationPanel = observer(({ store }) => {
 });
 
 export const AnimationSection = {
-  name: 'animate',
+  name: 'custom-animate', // Changed from 'animate' to avoid conflict with Polotno's built-in section
   Tab: observer((props) => (
     <SectionTab name="Animate" {...props}>
       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
