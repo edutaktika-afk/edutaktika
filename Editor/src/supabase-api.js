@@ -874,17 +874,23 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
     }
   }
   
-  if (gradeLevel) {
-    previewPath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${id}.jpg`;
-    storePath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${id}.json`;
-    console.log(`✅ Using grade-based path structure: ${gradeLevel}/${quarterFolder}/`);
-  } else {
-    // Fallback to old structure without grade (but log a warning)
-    previewPath = `${subjectFolder}/${quarterFolder}/${id}.jpg`;
-    storePath = `${subjectFolder}/${quarterFolder}/${id}.json`;
-    console.warn(`⚠️ No grade level found! Saving to: ${subjectFolder}/${quarterFolder}/`);
-    console.warn(`💡 Tip: Grade level helps organize designs. Make sure teacher's grade level is set in Firebase.`);
+  // REQUIRE grade level - don't allow saving without it
+  if (!gradeLevel) {
+    const errorMsg = `❌ Grade level is required! Cannot save lesson without grade level.\n\n` +
+      `Please ensure:\n` +
+      `1. Your grade level is set in your teacher profile in Firebase\n` +
+      `2. You opened the editor from the subject page (not directly)\n` +
+      `3. The grade level is passed in the URL or sessionStorage\n\n` +
+      `This prevents Grade 5 lessons from appearing for Grade 6 teachers.`;
+    console.error(errorMsg);
+    alert(errorMsg);
+    throw new Error('Grade level is required to save lessons. This prevents cross-grade contamination.');
   }
+  
+  // Always use grade-based structure
+  previewPath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${id}.jpg`;
+  storePath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${id}.json`;
+  console.log(`✅ Using grade-based path structure: ${gradeLevel}/${quarterFolder}/`);
   
   console.log(`📤 Upload paths: preview="${previewPath}", design="${storePath}"`);
 

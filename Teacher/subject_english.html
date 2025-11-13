@@ -263,7 +263,29 @@
 <script>
 // Use shared getEditorBase for create lesson navigation
 // Create Lesson button: go to new Polotno editor (using Create Design logic)
-document.getElementById('createLessonBtn').onclick = function() {
+document.getElementById('createLessonBtn').onclick = async function() {
+    // Get teacher's grade level BEFORE clearing storage
+    let gradeLevel = null;
+    try {
+        const user = firebase.auth().currentUser;
+        if (user) {
+            const teacherSnap = await db.ref('teachers/' + user.uid).once('value');
+            const teacher = teacherSnap.val();
+            if (teacher && teacher.gradelevel) {
+                const grade = teacher.gradelevel.toString();
+                gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+                console.log(`📚 Found teacher grade level: ${teacher.gradelevel} → normalized: ${gradeLevel}`);
+            }
+        }
+    } catch (error) {
+        console.warn('Could not fetch grade level:', error);
+    }
+    
+    if (!gradeLevel) {
+        alert('⚠️ Grade level not found! Please make sure your grade level is set in your teacher profile. Lessons must be saved with a grade level to prevent cross-grade contamination.');
+        return;
+    }
+    
     // Clear specific storage keys that the editor uses to auto-load designs
     // Critical: polotno-last-design-id is the main key that causes old designs to load
     sessionStorage.removeItem('polotno-last-design-id');
@@ -272,12 +294,14 @@ document.getElementById('createLessonBtn').onclick = function() {
     sessionStorage.removeItem('current-supabase-design');
     sessionStorage.removeItem('supabase-design-name');
     sessionStorage.removeItem('supabase-design-quarter');
-    sessionStorage.removeItem('supabase-design-grade');
+    // IMPORTANT: Store grade level in sessionStorage for the editor
+    sessionStorage.setItem('supabase-design-grade', gradeLevel);
     sessionStorage.removeItem('supabase-design-id');
     
     // Clear any other design-related keys from sessionStorage
     const sessionKeysToClear = Object.keys(sessionStorage).filter(key => 
-        key.includes('design') || key.includes('lesson') || key.includes('supabase') || key.includes('polotno')
+        (key.includes('design') || key.includes('lesson') || key.includes('supabase') || key.includes('polotno')) && 
+        !key.includes('supabase-design-grade') // Keep grade level
     );
     sessionKeysToClear.forEach(key => sessionStorage.removeItem(key));
     
@@ -299,8 +323,20 @@ document.getElementById('createLessonBtn').onclick = function() {
         }).catch(err => console.log('Could not clear indexedDB:', err));
     }
     
-    // Build editor URL with new=true parameter to indicate fresh lesson
-    const editorBaseUrl = buildEditorUrl({ new: 'true', mode: 'create' });
+    // Build editor URL with new=true parameter and grade level
+    const editorParams = { 
+        new: 'true', 
+        mode: 'create',
+        subject: 'subject_english'
+    };
+    
+    // IMPORTANT: Pass grade level in URL params (for new window/tab scenarios)
+    if (gradeLevel) {
+        editorParams.grade = gradeLevel;
+        console.log(`📚 Passing grade level to editor: ${gradeLevel}`);
+    }
+    
+    const editorBaseUrl = buildEditorUrl(editorParams);
     console.log('🎨 Opening fresh editor for lesson creation:', editorBaseUrl);
     window.location.href = editorBaseUrl;
 };
@@ -1473,6 +1509,7 @@ function viewQuiz(quarter, name, mode = 'view', subject = subjectPage) {
 
 <script>
     
+/* HIDDEN FOR FUTURE USE - YouTube Video Loading Function
 // Load latest YouTube videos via playlist RSS feed into Quarter 1 (Teacher) - English
 async function loadYouTubeVideosTeacher() {
     const wrapper = document.getElementById('youtube-lessons');
@@ -1610,7 +1647,8 @@ async function loadYouTubeVideosTeacher() {
         `;
     }
 }
-document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
+// document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher); // DISABLED - Hidden for future use
+*/
 
 
 </script>
