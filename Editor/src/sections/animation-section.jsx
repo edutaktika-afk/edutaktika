@@ -61,12 +61,14 @@ export const AnimationPanel = observer(({ store }) => {
 
     try {
       // Apply animation using Polotno's animation system
+      // IMPORTANT: Set loop to false to prevent infinite loops
       const animation = {
         type: 'enter',
         name: animationName,
         duration: 1000,
         delay: 0,
         enabled: true,
+        loop: false, // CRITICAL: Prevent infinite loops
         data: {}
       };
 
@@ -79,10 +81,15 @@ export const AnimationPanel = observer(({ store }) => {
       // Add new animation
       const updatedAnims = [...filteredAnims, animation];
       
-      // Update element animations
-      selectedElement.set('animations', updatedAnims);
+      // Update element animations using Polotno's API
+      if (selectedElement.set) {
+        selectedElement.set('animations', updatedAnims);
+      } else if (selectedElement.animations) {
+        // Fallback: directly set animations array
+        selectedElement.animations = updatedAnims;
+      }
 
-      console.log('✅ Animation applied:', animationName);
+      console.log('✅ Animation applied:', animationName, animation);
     } catch (error) {
       console.error('❌ Error applying animation:', error);
       alert('Error applying animation: ' + error.message);

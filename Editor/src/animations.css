@@ -1222,7 +1222,7 @@ img:hover {
 }
 
 .animate-heart-beat {
-  animation: heartBeat 1.3s ease-in-out infinite;
+  animation: heartBeat 1.3s ease-in-out;
 }
 
 .animate-rubber-band {
@@ -1278,35 +1278,35 @@ img:hover {
 }
 
 .animate-morph {
-  animation: morph 2s ease-in-out infinite;
+  animation: morph 2s ease-in-out;
 }
 
 .animate-color-shift {
-  animation: colorShift 3s linear infinite;
+  animation: colorShift 3s linear;
 }
 
 .animate-rainbow {
-  animation: rainbow 2s linear infinite;
+  animation: rainbow 2s linear;
 }
 
 .animate-sparkle {
-  animation: sparkle 1.5s ease-in-out infinite;
+  animation: sparkle 1.5s ease-in-out;
 }
 
 .animate-twinkle {
-  animation: twinkle 2s ease-in-out infinite;
+  animation: twinkle 2s ease-in-out;
 }
 
 .animate-shimmer {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
   background-size: 200% 100%;
-  animation: shimmer 2s ease-in-out infinite;
+  animation: shimmer 2s ease-in-out;
 }
 
 .animate-gradient-shift {
   background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
   background-size: 400% 400%;
-  animation: gradientShift 4s ease infinite;
+  animation: gradientShift 4s ease;
 }
 
 /* ========================================
@@ -1679,7 +1679,7 @@ img:hover {
    ======================================== */
 
 .animate-pulse {
-  animation: pulse 2s ease-in-out infinite;
+  animation: pulse 2s ease-in-out;
 }
 
 .animate-wobble {
@@ -1723,15 +1723,15 @@ img:hover {
 }
 
 .animate-spiral {
-  animation: spiral 3s ease-in-out infinite;
+  animation: spiral 3s ease-in-out;
 }
 
 .animate-orbit {
-  animation: orbit 4s linear infinite;
+  animation: orbit 4s linear;
 }
 
 .animate-vortex {
-  animation: vortex 2s ease-in-out infinite;
+  animation: vortex 2s ease-in-out;
 }
 
 .animate-firework {
@@ -1739,11 +1739,11 @@ img:hover {
 }
 
 .animate-lightning {
-  animation: lightning 0.5s ease-in-out infinite;
+  animation: lightning 0.5s ease-in-out;
 }
 
 .animate-aurora {
   background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab, #ee7752);
   background-size: 400% 400%;
-  animation: aurora 4s ease infinite;
+  animation: aurora 4s ease;
 }

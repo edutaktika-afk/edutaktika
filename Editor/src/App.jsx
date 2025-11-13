@@ -616,7 +616,15 @@ const App = observer(({ store }) => {
                 store={store}
                 sections={(() => {
                   // Filter out unwanted sections and deduplicate by name
-                  const filtered = DEFAULT_SECTIONS.filter((s) => !isVideoSection(s) && !isPhotosSection(s) && !isIconsSection(s));
+                  const filtered = DEFAULT_SECTIONS.filter((s) => {
+                    const name = String(s?.name || '').toLowerCase();
+                    // Remove Polotno's built-in animation section (it's hardcoded)
+                    if (name === 'animate' || name === 'animations' || name === 'animation') {
+                      console.log('🚫 Removing Polotno built-in animation section:', s.name);
+                      return false;
+                    }
+                    return !isVideoSection(s) && !isPhotosSection(s) && !isIconsSection(s);
+                  });
                   // Deduplicate sections by name to prevent React key warnings
                   const seen = new Set();
                   return filtered.filter((section) => {
