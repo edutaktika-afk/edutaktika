@@ -301,19 +301,25 @@ export const LottieSection = {
 
           const { w, h } = anim.renderer.transformCanvas;
 
-          // Add as custom Lottie element (animated)
+          // Add as image element with Lottie data
           const element = store.activePage.addElement({
-            type: 'lottie',
+            type: 'image', // Use image type so Polotno can render it
             name: 'lottie',
             x: store.width / 2 - w / 2,
             y: store.height / 2 - h / 2,
             width: w,
             height: h,
+            src: tempCanvas.toDataURL(), // Initial frame
             lottieUrl: objectUrl, // Use object URL for file uploads
             lottieData: json, // Also store the JSON data
             lottieLoop: true,
             lottieAutoplay: true,
           });
+          
+          // Start animation after element is created
+          if (element) {
+            startLottieAnimation(element);
+          }
 
           if (element) {
             store.selectElements([element.id]);
