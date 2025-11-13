@@ -608,7 +608,20 @@ const App = observer(({ store }) => {
             <SidePanelWrap>
               <SidePanel
                 store={store}
-                sections={DEFAULT_SECTIONS.filter((s) => !isVideoSection(s) && !isPhotosSection(s) && !isIconsSection(s))}
+                sections={(() => {
+                  // Filter out unwanted sections and deduplicate by name
+                  const filtered = DEFAULT_SECTIONS.filter((s) => !isVideoSection(s) && !isPhotosSection(s) && !isIconsSection(s));
+                  // Deduplicate sections by name to prevent React key warnings
+                  const seen = new Set();
+                  return filtered.filter((section) => {
+                    const name = section?.name || '';
+                    if (seen.has(name)) {
+                      return false; // Skip duplicate
+                    }
+                    seen.add(name);
+                    return true;
+                  });
+                })()}
               />
             </SidePanelWrap>
           )}
