@@ -67,6 +67,7 @@ class Project {
   }
 
   async firstLoad() {
+    // Check for deprecated design format and migrate it
     const deprecatedDesign = await storage.getItem('polotno-state');
     if (deprecatedDesign) {
       this.store.loadJSON(deprecatedDesign);
@@ -74,10 +75,20 @@ class Project {
       await this.save();
       return;
     }
+    
+    // Don't auto-load the last design - start with blank canvas
+    // Users can still access their designs via "My Designs" sidebar
+    // The lastDesignId is kept in storage for reference but not auto-loaded
     const lastDesignId = await storage.getItem('polotno-last-design-id');
     if (lastDesignId) {
-      await this.loadById(lastDesignId);
+      // Just log it for reference, but don't load it automatically
+      console.log('Last design ID:', lastDesignId, '(not auto-loading - start with blank canvas)');
     }
+    
+    // Start with a blank canvas
+    this.id = '';
+    this.name = 'Untitled Design';
+    this.status = 'saved';
   }
 
   async loadById(id) {

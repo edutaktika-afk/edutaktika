@@ -1,5 +1,24 @@
 import { nanoid } from 'nanoid';
 import { storage } from './storage';
+import { shouldUseSupabase } from './supabase';
+
+// Lazy load Supabase API when needed
+let supabaseApiCache = null;
+const getSupabaseApi = async () => {
+  if (supabaseApiCache) {
+    return supabaseApiCache;
+  }
+  if (shouldUseSupabase()) {
+    try {
+      supabaseApiCache = await import('./supabase-api');
+      return supabaseApiCache;
+    } catch (error) {
+      console.warn('Supabase API not available, using default API:', error);
+      return null;
+    }
+  }
+  return null;
+};
 
 const isSignedIn = () => {
   return window.puter?.auth?.isSignedIn();
@@ -152,8 +171,46 @@ export async function saveDesign({ storeJSON, preview, name, id }) {
 }
 
 export const getPreview = async ({ id }) => {
-  const preview = await readFile(`designs/${id}.jpg`);
-  return URL.createObjectURL(preview);
+  try {
+    const preview = await readFile(`designs/${id}.jpg`);
+    
+    // If preview is already a URL string, return it
+    if (typeof preview === 'string') {
+      // Check if it's a data URL or regular URL
+      if (preview.startsWith('data:') || preview.startsWith('http://') || preview.startsWith('https://')) {
+        return preview;
+      }
+      // If it's a base64 string without data: prefix, convert it
+      if (preview.length > 0) {
+        try {
+          const blob = await fetch(`data:image/jpeg;base64,${preview}`).then(r => r.blob());
+          return URL.createObjectURL(blob);
+        } catch (e) {
+          console.warn('Failed to convert string to blob:', e);
+          return null;
+        }
+      }
+      return null;
+    }
+    
+    // If preview is a Blob, create object URL
+    if (preview instanceof Blob) {
+      return URL.createObjectURL(preview);
+    }
+    
+    // If preview is null/undefined, return null
+    if (!preview) {
+      console.warn(`Preview not found for design: ${id}`);
+      return null;
+    }
+    
+    // Fallback: try to convert to Blob
+    console.warn(`Unexpected preview type for design ${id}:`, typeof preview);
+    return null;
+  } catch (error) {
+    console.error(`Error loading preview for design ${id}:`, error);
+    return null;
+  }
 };
 
 const batchCall = (asyncFunction) => {
@@ -238,7 +295,14 @@ export const getAssetPreviewSrc = async ({ id }) => {
   }
 };
 
-export const uploadAsset = async ({ file, preview, type }) => {
+export const uploadAsset = async ({ file, preview, type, onProgress = null }) => {
+  // Use Supabase API if available (it handles large files better)
+  const supabaseApi = await getSupabaseApi();
+  if (supabaseApi && shouldUseSupabase()) {
+    return await supabaseApi.uploadAsset({ file, preview, type, onProgress });
+  }
+  
+  // Fall back to default API (Puter/local storage)
   const list = await listAssets();
   const id = nanoid(10);
   await writeFile(`uploads/${id}`, file);
