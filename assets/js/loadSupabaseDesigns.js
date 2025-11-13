@@ -85,8 +85,14 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
       .eq('key', 'designs-list')
       .maybeSingle();
     
-    if (kvError && kvError.code !== 'PGRST116') { // PGRST116 = not found (expected)
-      console.warn('Error loading metadata:', kvError);
+    if (kvError) {
+      // PGRST116 = not found (expected if key doesn't exist)
+      // PGRST205 = table doesn't exist (table not created yet)
+      if (kvError.code === 'PGRST205') {
+        console.log('⚠️ designs_metadata table not found - will list files directly instead');
+      } else if (kvError.code !== 'PGRST116') {
+        console.warn('Error loading metadata:', kvError);
+      }
     }
 
     if (!kvData || !kvData.value) {
