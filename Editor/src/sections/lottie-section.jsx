@@ -135,20 +135,21 @@ export const LottieSection = {
         // Wait a bit for first frame to render
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Convert canvas to data URL
-        const dataURL = await canvasToDataURL(tempCanvas);
+        // Get animation dimensions
+        const { w, h } = anim.renderer.transformCanvas;
 
-        // Add as image element to Polotno
+        // Add as custom Lottie element to Polotno (animated)
         const element = store.activePage.addElement({
-          type: 'image',
+          type: 'lottie',
           name: 'lottie',
-          src: dataURL,
-          x: store.width / 2 - tempCanvas.width / 2,
-          y: store.height / 2 - tempCanvas.height / 2,
-          width: tempCanvas.width,
-          height: tempCanvas.height,
-          // Store the Lottie URL for later use
+          x: store.width / 2 - w / 2,
+          y: store.height / 2 - h / 2,
+          width: w,
+          height: h,
+          // Store the Lottie URL for animation playback
           lottieUrl: lottieUrl.trim(),
+          lottieLoop: true,
+          lottieAutoplay: true,
         });
 
         if (element) {
@@ -190,15 +191,81 @@ export const LottieSection = {
           return;
         }
 
-        // Create object URL
+        // For file uploads, we can use the JSON data directly
+        // Create object URL for the file
         const objectUrl = URL.createObjectURL(file);
-        setLottieUrl(objectUrl);
         
-        // Add the animation
-        await addLottieElement();
-        
-        // Clean up object URL after a delay
-        setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+        // Add the animation using the object URL
+        setIsLoading(true);
+        setError(null);
+
+        try {
+          // Dynamically import lottie-web
+          const lottie = await import('lottie-web');
+          
+          // Create a temporary canvas to get dimensions
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = 400;
+          tempCanvas.height = 400;
+
+          const anim = lottie.default.loadAnimation({
+            path: objectUrl,
+            renderer: 'canvas',
+            loop: true,
+            autoplay: true,
+            rendererSettings: {
+              context: tempCanvas.getContext('2d'),
+              clearCanvas: true,
+              progressiveLoad: true,
+            },
+          });
+
+          // Wait for animation to load
+          await new Promise((resolve, reject) => {
+            anim.addEventListener('config_ready', () => {
+              const { w, h } = anim.renderer.transformCanvas;
+              tempCanvas.width = w;
+              tempCanvas.height = h;
+              resolve();
+            });
+            anim.addEventListener('error', reject);
+          });
+
+          // Wait a bit for first frame
+          await new Promise(resolve => setTimeout(resolve, 500));
+
+          const { w, h } = anim.renderer.transformCanvas;
+
+          // Add as custom Lottie element (animated)
+          const element = store.activePage.addElement({
+            type: 'lottie',
+            name: 'lottie',
+            x: store.width / 2 - w / 2,
+            y: store.height / 2 - h / 2,
+            width: w,
+            height: h,
+            lottieUrl: objectUrl, // Use object URL for file uploads
+            lottieData: json, // Also store the JSON data
+            lottieLoop: true,
+            lottieAutoplay: true,
+          });
+
+          if (element) {
+            store.selectElements([element.id]);
+          }
+
+          // Clean up animation instance (element will create its own)
+          anim.destroy();
+          setIsLoading(false);
+          
+          // Don't revoke object URL immediately - element needs it
+          // It will be cleaned up when element is removed
+        } catch (err) {
+          console.error('Error loading Lottie animation:', err);
+          setError(`Failed to load Lottie animation: ${err.message}`);
+          setIsLoading(false);
+          URL.revokeObjectURL(objectUrl);
+        }
       } catch (err) {
         console.error('Error reading Lottie file:', err);
         setError(`Failed to read file: ${err.message}`);
