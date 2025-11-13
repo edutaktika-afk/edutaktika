@@ -11,52 +11,26 @@ const TextIcon = () => (
 );
 import { t } from 'polotno/utils/l10n';
 
-import { CUSTOM_FONTS, loadGoogleFonts, getFontOptions, waitForFont } from '../fonts';
+// Removed Google Fonts - using Polotno's default fonts instead
+// import { CUSTOM_FONTS, loadGoogleFonts, getFontOptions, waitForFont } from '../fonts';
 
 export const TextPanel = observer(({ store }) => {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [selectedFont, setSelectedFont] = useState('Inter');
+  const [selectedFont, setSelectedFont] = useState('Arial');
 
-  useEffect(() => {
-    // Load Google Fonts when component mounts
-    loadGoogleFonts();
-    setFontsLoaded(true);
-  }, []);
-
-  const addTextElement = async (text, fontSize = 24, fontFamily = 'Inter') => {
-    try {
-      // Wait for font to load before creating element
-      await waitForFont(fontFamily);
-      
-      const textElement = store.activePage?.addElement({
-        type: 'text',
-        text: text,
-        fontSize: fontSize,
-        fontFamily: fontFamily,
-        x: store.width / 2 - 100,
-        y: store.height / 2 - 50,
-        fill: '#000000'
-      });
-      
-      if (textElement) {
-        store.selectElements([textElement.id]);
-      }
-    } catch (error) {
-      console.warn('Font loading failed, using fallback:', error);
-      // Fallback without waiting for font
-      const textElement = store.activePage?.addElement({
-        type: 'text',
-        text: text,
-        fontSize: fontSize,
-        fontFamily: fontFamily,
-        x: store.width / 2 - 100,
-        y: store.height / 2 - 50,
-        fill: '#000000'
-      });
-      
-      if (textElement) {
-        store.selectElements([textElement.id]);
-      }
+  const addTextElement = (text, fontSize = 24, fontFamily = 'Arial') => {
+    // Use Polotno's default fonts - no need to wait for font loading
+    const textElement = store.activePage?.addElement({
+      type: 'text',
+      text: text,
+      fontSize: fontSize,
+      fontFamily: fontFamily,
+      x: store.width / 2 - 100,
+      y: store.height / 2 - 50,
+      fill: '#000000'
+    });
+    
+    if (textElement) {
+      store.selectElements([textElement.id]);
     }
   };
 
@@ -73,7 +47,19 @@ export const TextPanel = observer(({ store }) => {
     });
   };
 
-  const fontOptions = getFontOptions();
+  // Use Polotno's default fonts instead of Google Fonts
+  const fontOptions = [
+    { value: 'Arial', label: 'Arial', category: 'sans-serif' },
+    { value: 'Helvetica', label: 'Helvetica', category: 'sans-serif' },
+    { value: 'Times New Roman', label: 'Times New Roman', category: 'serif' },
+    { value: 'Courier New', label: 'Courier New', category: 'monospace' },
+    { value: 'Georgia', label: 'Georgia', category: 'serif' },
+    { value: 'Verdana', label: 'Verdana', category: 'sans-serif' },
+    { value: 'Comic Sans MS', label: 'Comic Sans MS', category: 'sans-serif' },
+    { value: 'Impact', label: 'Impact', category: 'sans-serif' },
+    { value: 'Trebuchet MS', label: 'Trebuchet MS', category: 'sans-serif' },
+    { value: 'Palatino', label: 'Palatino', category: 'serif' },
+  ];
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>

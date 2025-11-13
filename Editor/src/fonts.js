@@ -84,29 +84,12 @@ export const CUSTOM_FONTS = [
   }
 ];
 
-// Function to load Google Fonts dynamically
+// Function to load Google Fonts dynamically - DISABLED
+// Using Polotno's default fonts instead to avoid MIME type errors
 export const loadGoogleFonts = () => {
-  const fontFamilies = CUSTOM_FONTS.map(font => font.family).join('|');
-  const weights = CUSTOM_FONTS.map(font => font.weights.join(';')).join(';');
-  
-  // Create link element for Google Fonts
-  const link = document.createElement('link');
-  link.rel = 'preconnect';
-  link.href = 'https://fonts.googleapis.com';
-  document.head.appendChild(link);
-  
-  const link2 = document.createElement('link');
-  link2.rel = 'preconnect';
-  link2.href = 'https://fonts.gstatic.com';
-  link2.crossOrigin = 'anonymous';
-  document.head.appendChild(link2);
-  
-  const fontLink = document.createElement('link');
-  fontLink.rel = 'stylesheet';
-  fontLink.href = `https://fonts.googleapis.com/css2?family=${fontFamilies}:wght@${weights}&display=swap`;
-  document.head.appendChild(fontLink);
-  
-  console.log('Educational Google Fonts loaded successfully');
+  // No-op: Google Fonts loading disabled
+  // Polotno provides default fonts that work reliably
+  console.log('Using Polotno default fonts (Google Fonts disabled)');
 };
 
 // Function to get font options for Polotno
