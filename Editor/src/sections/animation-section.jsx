@@ -28,13 +28,6 @@ export const AnimationPanel = observer(({ store }) => {
 
   // Get currently selected element
   const selectedElement = store.selectedElements?.[0];
-  
-  // Debug: Log to verify component is rendering
-  console.log('🎬 AnimationPanel rendering', { 
-    hasStore: !!store, 
-    selectedElement: selectedElement?.id,
-    selectedCategory 
-  });
 
   // Animation categories
   const animations = [
@@ -197,16 +190,13 @@ export const AnimationPanel = observer(({ store }) => {
 
 export const AnimationSection = {
   name: 'custom-animate', // Changed from 'animate' to avoid conflict with Polotno's built-in section
-  Tab: observer((props) => {
-    console.log('🎬 AnimationSection Tab rendering', props);
-    return (
-      <SectionTab name="Animate" {...props}>
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0L6 6H0L5 10L3 16L8 12L13 16L11 10L16 6H10L8 0Z"/>
-        </svg>
-      </SectionTab>
-    );
-  }),
+  Tab: observer((props) => (
+    <SectionTab name="Animate" {...props}>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0L6 6H0L5 10L3 16L8 12L13 16L11 10L16 6H10L8 0Z"/>
+      </svg>
+    </SectionTab>
+  )),
   Panel: AnimationPanel, // AnimationPanel is already wrapped with observer
 };
 
