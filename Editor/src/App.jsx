@@ -192,6 +192,7 @@ if (existingTextIndex === -1) {
 DEFAULT_SECTIONS.unshift(MyDesignsSection);
 
 DEFAULT_SECTIONS.push(StableDiffusionSection);
+DEFAULT_SECTIONS.push(AnimationSection); // Custom animation section with all animations
 // DEFAULT_SECTIONS.push(VideosSection);
 
 const isStandalone = () => {
