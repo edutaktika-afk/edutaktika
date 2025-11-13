@@ -248,11 +248,11 @@
 }
 
 .animate-pulse {
-  animation: pulse 2s infinite;
+  animation: pulse 2s;
 }
 
 .animate-rotate {
-  animation: rotate 2s linear infinite;
+  animation: rotate 2s linear;
 }
 
 .animate-shake {

@@ -107,6 +107,31 @@
         nav ul li.dropdown:hover .dropdown-content {
             display: block;
         }
+        #quarter-5 .lessons-container {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    align-items: stretch;
+    /* Optional: for smooth scrolling */
+    scroll-behavior: smooth;
+}
+#quizzesContainer {
+    display: flex !important;
+    flex-direction: row;
+    gap: 18px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    align-items: stretch;
+    /* Optional: for smooth scrolling */
+    scroll-behavior: smooth;
+    -ms-overflow-style: none;
+}
+#quizzesContainer::-webkit-scrollbar {
+    display: none;                 /* Chrome, Safari, Opera */
+}
+
     </style>
 </head>
 <body>
@@ -469,8 +494,7 @@
             </div> -->
         </div>
 
-        <!-- Quizzes -->
-        <div class="quarter-section" id="quarter-5">
+<div class="quarter-section" id="quarter-5">
             <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
                     <i class="fas fa-calendar-alt"></i>
@@ -479,6 +503,7 @@
                 <div style="display: flex; align-items: center;">
                     <label for="quiz-quarter-filter" style="font-weight:600; margin-right:8px;">Filter by Quarter:</label>
                     <select id="quiz-quarter-filter" style="min-width:120px;">
+                        <option value="">All Quarters</option>
                         <option value="1">Quarter 1</option>
                         <option value="2">Quarter 2</option>
                         <option value="3">Quarter 3</option>
@@ -487,9 +512,10 @@
                 </div>
             </div>
             <div class="lessons-container">
-                <div id="quiz-list"></div>
-                <div id="student-quiz-cards"></div>
+                <div id="quizzesContainer"></div>
+                
             </div>
+            
         </div>
 
         <!-- Assessments panel -->
@@ -631,7 +657,7 @@ firebase.auth().onAuthStateChanged(function(user) {
                 document.getElementById('profileFirstName').textContent = data.fname || '';
                 document.getElementById('profileMiddleName').textContent = data.mname || '';
                 document.getElementById('profileLastName').textContent = data.lname || '';
-                document.getElementById('profileGrade').textContent = data.gradelevel || '';
+                document.getElementById('profileGrade').textContent = data.grade || '';
                 document.getElementById('profileSection').textContent = data.section || '';
                 document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "user");
             }
@@ -1339,93 +1365,6 @@ window.testPlaylist = function() {
 })();
 
 
-// --- Inject Quiz Card for English (Multiple Attempts Allowed) ---
-(function(){
-    const container = document.getElementById('quizzesContainer');
-    if(!container) return;
-    const card = document.createElement('div');
-    card.className='lesson-item';
-    card.innerHTML = `
-        <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;">Q1</div>
-        <div class="lesson-title">
-            <h3>Quiz 1: English - Spelling Bee</h3>
-            <p>Test your spelling skills with drag and drop letters!</p>
-            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/spelling-bee-quiz.html'">Start</span>
-            <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="q1LastScore">Last Score: -</div>
-            <div style="font-size:0.9rem;color:#444;" id="q1BestScore">Best Score: -</div>
-        </div>`;
-    container.appendChild(card);
-
-    firebase.auth().onAuthStateChanged(user => {
-        if(!user) return;
-        const uid = user.uid;
-        // Prefer global quizSummaries path
-        const summaryRef = firebase.database().ref(`quizSummaries/spelling-bee/${uid}`);
-        summaryRef.once('value').then(snap => {
-            if(snap.exists()){
-                const s = snap.val();
-                const lastEl = document.getElementById('q1LastScore');
-                const bestEl = document.getElementById('q1BestScore');
-                if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
-                if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
-            } else {
-                // Fallback student path
-                firebase.database().ref(`students/${uid}/quizzes/spelling-bee/summary`).once('value').then(msnap => {
-                    if(!msnap.exists()) return;
-                    const s = msnap.val();
-                    const lastEl = document.getElementById('q1LastScore');
-                    const bestEl = document.getElementById('q1BestScore');
-                    if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
-                    if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
-                });
-            }
-        });
-    });
-})();
-
-// --- Inject Quiz Card 2 for English (Reading Comprehension) ---
-(function(){
-    const container = document.getElementById('quizzesContainer');
-    if(!container) return;
-    const card = document.createElement('div');
-    card.className='lesson-item';
-    card.innerHTML = `
-        <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;">Q2</div>
-        <div class="lesson-title">
-            <h3>Quiz 2: English - Advanced Spelling</h3>
-            <p>More challenging spelling words to test your skills!</p>
-            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/spelling-bee-quiz.html'">Start</span>
-            <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="q2LastScore">Last Score: -</div>
-            <div style="font-size:0.9rem;color:#444;" id="q2BestScore">Best Score: -</div>
-        </div>`;
-    container.appendChild(card);
-
-    firebase.auth().onAuthStateChanged(user => {
-        if(!user) return;
-        const uid = user.uid;
-        // Use spelling-bee-advanced as the key for this specific quiz
-        const summaryRef = firebase.database().ref(`quizSummaries/spelling-bee-advanced/${uid}`);
-        summaryRef.once('value').then(snap => {
-            if(snap.exists()){
-                const s = snap.val();
-                const lastEl = document.getElementById('q2LastScore');
-                const bestEl = document.getElementById('q2BestScore');
-                if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
-                if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
-            } else {
-                // Fallback student path
-                firebase.database().ref(`students/${uid}/quizzes/spelling-bee-advanced/summary`).once('value').then(msnap => {
-                    if(!msnap.exists()) return;
-                    const s = msnap.val();
-                    const lastEl = document.getElementById('q2LastScore');
-                    const bestEl = document.getElementById('q2BestScore');
-                    if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
-                    if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
-                });
-            }
-        });
-    });
-})();
 
 // --- Extend tab switching to include Assessments ---
 (function(){

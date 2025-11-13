@@ -566,24 +566,20 @@ label {
                                         <option value="6">6</option>
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <span class="input-icon"><i class="fas fa-book"></i></span>
-                                    <label for="reg_subject">Subject</label>
-                                    <select name="reg_subject" id="reg_subject" required>
-                                        <option value="">Select</option>
-                                        <option value="Math">Math</option>
-                                        <option value="Science">Science</option>
-                                        <option value="English">English</option>
-                                    </select>
-                                </div>
+
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-users"></i></span>
                                     <label for="reg_section">Section</label>
                                     <select name="reg_section" id="reg_section" required>
                                         <option value="">Select</option>
-                                        <option value="Apple">Apple</option>
-                                        <option value="Banana">Banana</option>
-                                        <option value="Cherry">Cherry</option>
+                                        <option value="Ubas">Ubas</option>
+                                        <option value="Durian">Durian</option>
+                                        <option value="Kasoy">Kasoy</option>
+                                        <option value="Melon">Melon</option>
+                                        <option value="Langka">Langka</option>
+                                        <option value="Fruit Salad">Fruit Salad</option>
+                                        <option value="Guyabano">Guyabano</option>
+                                        <option value="Santol">Santol</option>
                                     </select>
                                 </div>
                             </div>
@@ -609,8 +605,8 @@ label {
                                     <label for="reg_school_year">School Year</label>
                                     <select name="reg_school_year" id="reg_school_year" required>
                                         <option value="">Select</option>
-                                        <option value="2024-2025">2025-2026</option>
-                                        <option value="2025-2026">2026-2027</option>
+                                        <option value="2025-2026">2025-2026</option>
+                                        <option value="2026-2027">2026-2027</option>
                                     </select>
                                 </div>
                             </div>
@@ -781,8 +777,7 @@ document.getElementById('registerForm').onsubmit = async function(e) {
         },
         gender: document.getElementById('reg_gender').value,
         age: document.getElementById('reg_age').value,
-        gradelevel: document.getElementById('reg_grade').value,
-        subject: document.getElementById('reg_subject').value,
+        grade: document.getElementById('reg_grade').value,
         section: document.getElementById('reg_section').value,
         school_year: document.getElementById('reg_school_year').value,
         email: email,
@@ -796,6 +791,7 @@ document.getElementById('registerForm').onsubmit = async function(e) {
         const uid = user.uid;
         // Save user data in Realtime Database under "students"
         await db.ref('students/' + uid).set(userData);
+        await assignTeacherQuizzesToStudent(uid, userData);
         // Send verification email
         try {
             await user.sendEmailVerification();
@@ -1040,6 +1036,48 @@ document.addEventListener('DOMContentLoaded', function() {
         validateField(schoolYearField, 'schoolyear-warning');
     });
 });
+async function assignTeacherQuizzesToStudent(studentUID, student) {
+    if (!student || !student.section || !student.grade || !student.school_year) {
+        console.log("Student info incomplete:", student);
+        return;
+    }
+
+    // Find the teacher for this section, grade, and schoolyear
+    const teachersSnap = await db.ref('teachers').once('value');
+    let teacherUID = null;
+    teachersSnap.forEach(tsnap => {
+        const t = tsnap.val();
+        const teacherSchoolYear = t.schoolyear || t.school_year;
+        console.log("Comparing Teacher:", t.section, t.grade, teacherSchoolYear, "with Student:", student.section, student.grade, student.school_year);
+        if (
+            t.section && t.section.trim().toLowerCase() === student.section.trim().toLowerCase() &&
+            t.grade && String(t.grade) === String(student.grade) &&
+            teacherSchoolYear && String(teacherSchoolYear) === String(student.school_year)
+        ) {
+            teacherUID = tsnap.key;
+        }
+    });
+
+    if (!teacherUID) {
+        console.log("No matching teacher found for", student.section, student.grade, student.school_year);
+        return;
+    }
+
+    // For each quarter, copy teacher's quizzes to student's quiz list
+    for (let q = 1; q <= 4; q++) {
+        const teacherQuizRef = db.ref(`teachers/${teacherUID}/sections/${student.section}/quizzes/subject_math/${q}`);
+        const teacherQuizSnap = await teacherQuizRef.once('value');
+        const studentQuizRef = db.ref(`students/${studentUID}/quizzes/subject_math/${q}`);
+
+        if (teacherQuizSnap.exists()) {
+            const teacherQuizzes = teacherQuizSnap.val();
+            await studentQuizRef.set(teacherQuizzes);
+            console.log(`Copied quizzes for Q${q} to student`);
+        } else {
+            console.log(`No teacher quizzes found for Q${q}`);
+        }
+    }
+}
 </script>
 
  <script src="../assets/js/Student Side/logreg.js"></script>

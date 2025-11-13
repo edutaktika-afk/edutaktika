@@ -1,275 +1,198 @@
-# 🧪 Testing Guide - New Features
+# Testing Guide for Polotno Upload/Load System
 
-## Quick Test Checklist
+This guide shows you how to test the `uploadPolotno.js` and `loadPolotnoDesign.js` functions.
 
-### ✅ **Test 1: Tabbed Grading System**
+## 📋 Prerequisites
 
-**File**: `Teacher/grading.html`
+1. **Configure Supabase credentials** in both files:
+   - Open `uploadPolotno.js` and set:
+     - `SUPABASE_URL` - Your Supabase project URL
+     - `SUPABASE_KEY` - Your Supabase anon key
+     - `STORAGE_BUCKET` - Your bucket name (default: 'LessonStorage')
+   
+   - Open `loadPolotnoDesign.js` and set the same values
 
-**Steps:**
-1. Open `Teacher/grading.html` in browser
-2. Log in with teacher credentials
-3. See two tabs: "⚙️ Configuration" and "📊 Grading Sheet"
-4. Click "Configuration" tab
-   - Should show grading attributes and percentage controls
-   - Should show summary panel on right
-5. Click "Grading Sheet" tab
-   - Should smoothly transition to grading sheet
-   - Should show student grades table
-   - Should show filters and statistics
-6. Switch between tabs - should be instant and smooth
+2. **Install dependencies** (for Node.js testing):
+   ```bash
+   npm install @supabase/supabase-js
+   ```
 
-**Expected Result:**
-- ✅ Tabs switch without page reload
-- ✅ Only one section visible at a time
-- ✅ Clean, uncluttered interface
-- ✅ Works on mobile/tablet
+## 🧪 Testing Methods
 
----
+### Method 1: Node.js Test Script (Recommended)
 
-### ✅ **Test 2: Multi-Page Templates in Editor**
-
-**File**: `Editor/index.html` or `deploy/editor/index.html`
+This is the most comprehensive test that verifies the complete workflow.
 
 **Steps:**
-1. Open the Editor
-2. Click "Science Templates" tab in left sidebar
-3. Look for templates with "(Multi-page)" label
-4. Click "Science Lesson (Multi-page)"
-   - Should load 4 pages automatically
-   - Page 1: Cover slide
-   - Page 2: Learning Objectives
-   - Page 3: Main Content
-   - Page 4: Key Takeaways
-5. Check page navigation at bottom
-   - Should show all 4 pages
-   - Click to navigate between pages
-6. Edit some text on each page
-7. Try other templates:
-   - Math Lesson (4 pages)
-   - English Essay (5 pages)
-   - Book Report (4 pages)
-   - Quiz Assessment (2 pages)
 
-**Expected Result:**
-- ✅ All pages load at once
-- ✅ Easy navigation between pages
-- ✅ All elements editable
-- ✅ Professional designs
+1. Open terminal in your project root
+2. Run:
+   ```bash
+   node test-polotno-upload-load.js
+   ```
 
----
+**What it does:**
+- ✅ Creates a test Polotno JSON with embedded base64 images
+- ✅ Uploads it to Supabase
+- ✅ Waits 2 seconds for processing
+- ✅ Loads it back from Supabase
+- ✅ Verifies data integrity (pages, dimensions, images)
+- ✅ Shows detailed results
 
-### ✅ **Test 3: Template Documentation**
+**Expected output:**
+```
+🧪 Starting Polotno Upload/Load Test
+============================================================
+📝 Creating test Polotno JSON file...
+✅ Created test file: test-polotno-design.json
 
-**Files**: `assets/templates/*.md`
-
-**Steps:**
-1. Open `assets/templates/README.md`
-   - Should see complete template guide
-   - Color codes, usage instructions
-2. Open `assets/templates/USAGE_GUIDE.md`
-   - Should see step-by-step guide
-   - Example workflows
-3. Open `assets/templates/QUICK_REFERENCE.md`
-   - Should see quick cheat sheet
-   - Shortcuts and tips
-
-**Expected Result:**
-- ✅ All documentation files present
-- ✅ Clear, well-formatted content
-- ✅ Helpful for teachers
-
----
-
-### ✅ **Test 4: Editor New Features**
-
-**File**: `Editor/index.html`
-
-**Test Firebase Integration:**
-1. Open Editor
-2. Create a simple design
-3. Click "File" → "Save to Firebase" (if implemented in UI)
-4. Check Firebase database for saved lesson
-
-**Test Custom Fonts:**
-1. Add text element
-2. Open font dropdown
-3. Should see 11 Google Fonts
-4. Change font - should apply instantly
-
-**Test Material Icons:**
-1. Click "Icons" tab (if visible)
-2. Browse Science, Math, Education categories
-3. Click icon to add to canvas
-4. Icon should appear as text element
-
-**Test Tutorial:**
-1. Clear localStorage (or use incognito)
-2. Open Editor
-3. Should see "Tutorial" button in top-right
-4. Click to start interactive tutorial
-
-**Expected Result:**
-- ✅ Firebase saves/loads lessons
-- ✅ Fonts load and apply correctly
-- ✅ Icons work as expected
-- ✅ Tutorial guides users
-
----
-
-### ✅ **Test 5: New Games**
-
-**Files**: `Games/Assessment/lesson*.html`, `Games/Quiz/*.html`
-
-**Steps:**
-1. Open `Games/Assessment/lesson1.html`
-   - Should load assessment game
-2. Open `Games/Quiz/clock-quiz.html`
-   - Should load clock learning game
-3. Open `Games/Quiz/spelling-bee-quiz.html`
-   - Should load spelling bee game
-4. Try other new lessons
-
-**Expected Result:**
-- ✅ All games load correctly
-- ✅ Interactive elements work
-- ✅ No console errors
-
----
-
-### ✅ **Test 6: Build and Deploy**
-
-**Steps:**
-1. Make a small change to any file
-2. Run `npm run build` from root
-3. Check `deploy/` folder generated
-4. Verify all updated files in deploy folder
-5. Open `deploy/index.html` in browser
-6. Test navigation and links
-
-**Expected Result:**
-- ✅ Build completes without errors
-- ✅ Deploy folder contains all files
-- ✅ All features work in deploy version
-- ✅ No broken links
-
----
-
-## 🐛 **Known Issues to Check**
-
-### Grading System
-- [ ] Tab switching works on all browsers
-- [ ] Data persists when switching tabs
-- [ ] Mobile responsiveness
-
-### Editor
-- [ ] Templates load without errors
-- [ ] All fonts display correctly
-- [ ] Firebase auth works
-- [ ] Export functions work
-
-### General
-- [ ] All links point to correct files
-- [ ] Images load correctly
-- [ ] No console errors
-- [ ] Responsive on mobile
-
----
-
-## 📱 **Browser Compatibility Test**
-
-Test on:
-- [ ] Chrome (latest)
-- [ ] Firefox (latest)
-- [ ] Safari (latest)
-- [ ] Edge (latest)
-- [ ] Mobile Chrome
-- [ ] Mobile Safari
-
----
-
-## ✅ **Quick Verification Commands**
-
-```bash
-# Verify templates exist
-ls assets/templates/*.json
-
-# Verify Editor files
-ls Editor/src/templateData.js Editor/src/firebase-api.js Editor/src/fonts.js
-
-# Verify grading system updated
-grep -c "switchTab" Teacher/grading.html
-# Should output: 3 (or more)
-
-# Verify build successful
-ls deploy/editor/index.html
-ls deploy/Teacher/grading.html
-
-# Count template files
-ls assets/templates/*.json | wc -l
-# Should output: 7
+📤 STEP 1: Testing uploadPolotno...
+🚀 Starting Polotno JSON upload...
+🔍 Optimizing JSON: Finding embedded base64 images...
+📤 Uploading images to Supabase Storage...
+✅ Uploaded: https://...
+📥 STEP 2: Testing loadPolotnoDesign...
+✅ Design loaded successfully!
+🎉 ALL TESTS PASSED! ✅
 ```
 
+### Method 2: Browser Test (Interactive)
+
+This provides a visual interface for testing.
+
+**Steps:**
+
+1. Make sure you have a local web server running (required for loading JS modules)
+   ```bash
+   # Using Python 3
+   python -m http.server 8000
+   
+   # Or using Node.js http-server
+   npx http-server -p 8000
+   ```
+
+2. Open your browser and go to:
+   ```
+   http://localhost:8000/test-polotno-browser.html
+   ```
+
+3. Click the buttons to test:
+   - **Test Upload** - Upload a test design
+   - **Test Load** - Load a design by ID
+   - **Run Full Test** - Complete upload + load workflow
+
+**Features:**
+- ✅ Visual interface with logs
+- ✅ Easy to test individual functions
+- ✅ Shows real-time progress
+- ✅ Copy design IDs easily
+
+### Method 3: Manual Testing in Your Code
+
+You can also test directly in your own JavaScript files:
+
+```javascript
+// In Node.js
+const { uploadPolotno } = require('./uploadPolotno.js');
+const { loadPolotnoDesign } = require('./loadPolotnoDesign.js');
+
+async function test() {
+  // Upload
+  const result = await uploadPolotno('./path/to/your/design.json', {
+    designName: 'My Test Design',
+    subject: 'SCIENCE',
+    quarter: 'quarter1'
+  });
+  
+  console.log('Uploaded! Design ID:', result.designId);
+  
+  // Load
+  const design = await loadPolotnoDesign(result.designId, {
+    subject: 'SCIENCE',
+    quarter: 'quarter1'
+  });
+  
+  console.log('Loaded! Pages:', design.pages.length);
+}
+
+test();
+```
+
+## 🔍 What to Check
+
+When testing, verify:
+
+1. **Upload works:**
+   - ✅ Images are detected and uploaded
+   - ✅ Base64 images are replaced with Supabase URLs
+   - ✅ JSON is minified
+   - ✅ Files appear in Supabase Storage
+
+2. **Load works:**
+   - ✅ Design files are found
+   - ✅ All parts are downloaded
+   - ✅ Pages/slides are merged correctly
+   - ✅ Complete design is returned
+
+3. **Data integrity:**
+   - ✅ Page count matches
+   - ✅ Dimensions match
+   - ✅ Images are URLs (not base64)
+   - ✅ All content is preserved
+
+## ⚠️ Common Issues
+
+### "Please configure SUPABASE_URL and SUPABASE_KEY"
+- **Solution:** Edit the configuration at the top of both `uploadPolotno.js` and `loadPolotnoDesign.js`
+
+### "No design files found"
+- **Solution:** Check that:
+  - The design ID is correct
+  - The search path (subject/quarter) matches where you uploaded
+  - Files exist in Supabase Storage dashboard
+
+### "Supabase SDK not loaded" (Browser)
+- **Solution:** Make sure you include the Supabase SDK script before loading the functions:
+  ```html
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  ```
+
+### Upload fails with permission error
+- **Solution:** Check your Supabase Storage bucket policies allow uploads
+
+## 📊 Expected Test Results
+
+A successful test should show:
+
+```
+✅ Upload successful!
+   - Images uploaded: 2
+   - JSON parts uploaded: 1
+   - Total size: ~X KB
+
+✅ Load successful!
+   - Parts found: 1
+   - Total pages/slides: 2
+   - Design dimensions: 1920x1080
+
+🎉 ALL TESTS PASSED! ✅
+```
+
+## 🚀 Next Steps
+
+Once testing passes:
+
+1. Use `uploadPolotno()` in your editor to save designs
+2. Use `loadPolotnoDesign()` to load designs for viewing/editing
+3. Integrate with your existing Polotno editor workflow
+
+## 💡 Tips
+
+- **Test with small files first** - Make sure everything works before uploading large designs
+- **Check Supabase Storage dashboard** - Verify files are actually uploaded
+- **Use unique design names** - Avoid conflicts when testing multiple times
+- **Monitor console logs** - They provide detailed information about each step
+
 ---
 
-## 🎯 **Success Criteria**
-
-All features working when:
-- ✅ Tabs switch smoothly in grading system
-- ✅ Templates load with multiple pages
-- ✅ Editor build completes successfully
-- ✅ All documentation accessible
-- ✅ New games/lessons playable
-- ✅ No console errors
-- ✅ Mobile responsive
-
----
-
-## 💡 **Tips for Testing**
-
-1. **Use Browser DevTools** - Check Console for errors
-2. **Test on Real Devices** - Don't just use browser emulation
-3. **Clear Cache** - Hard refresh (Ctrl+Shift+R) to see changes
-4. **Test User Flows** - Follow actual teacher/student workflows
-5. **Check Firebase** - Verify data saves correctly
-
----
-
-## 📞 **If Something Doesn't Work**
-
-### Grading Tabs Not Switching?
-- Check browser console for JavaScript errors
-- Verify `switchTab` function is defined
-- Clear browser cache
-
-### Templates Not Loading?
-- Verify template JSON files exist in `assets/templates/`
-- Check `Editor/src/templateData.js` is present
-- Rebuild the Editor: `npm run build`
-
-### Fonts Not Showing?
-- Check internet connection (fonts load from Google)
-- Verify `Editor/src/fonts.js` exists
-- Check browser console for loading errors
-
-### Build Fails?
-- Run `npm install` in Editor folder
-- Check Node.js version (should be 16+)
-- Verify all source files present
-
----
-
-## 🎉 **Everything Working?**
-
-If all tests pass:
-1. ✅ Mark UPDATE_SUMMARY.md as verified
-2. ✅ Deploy to production
-3. ✅ Notify teachers about new features
-4. ✅ Share template documentation
-
-**Enjoy your updated platform!** 🚀
-
----
-
-*Testing Guide Created: October 14, 2025*
-
+Happy testing! 🎉

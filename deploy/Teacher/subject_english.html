@@ -66,6 +66,14 @@
                 window.location.href = "logreg.html";
             } else {
                 document.getElementById('mainContent').style.display = "block";
+                
+                // Store teacher's grade level in sessionStorage for Editor
+                if (teacher && teacher.gradelevel) {
+                    const grade = teacher.gradelevel.toString();
+                    const gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+                    sessionStorage.setItem('supabase-design-grade', gradeLevel);
+                    console.log(`📚 Stored teacher grade level in sessionStorage: ${gradeLevel}`);
+                }
             }
         });
     });
@@ -248,13 +256,52 @@
             <button id="createLessonBtn" style="background:#388e3c;color:#fff;border:none;border-radius:6px;padding:10px 28px;font-size:1.1rem;font-weight:600;cursor:pointer;">
                 <i class="fa fa-plus"></i> Create Lesson
             </button>
+            <button id="createQuizBtn" style="background:#ffe600;color:#000;border:none;border-radius:6px;padding:10px 28px;font-size:1.1rem;font-weight:600;cursor:pointer;margin-left: auto;">
+                <i class="fa fa-plus"></i> Create Quiz
+            </button>
         </div>
 <script>
 // Use shared getEditorBase for create lesson navigation
 // Create Lesson button: go to new Polotno editor (using Create Design logic)
 document.getElementById('createLessonBtn').onclick = function() {
-    const editorBaseUrl = getEditorBase();
-    console.log('🎨 Opening editor for lesson creation:', editorBaseUrl);
+    // Clear specific storage keys that the editor uses to auto-load designs
+    // Critical: polotno-last-design-id is the main key that causes old designs to load
+    sessionStorage.removeItem('polotno-last-design-id');
+    sessionStorage.removeItem('polotno-state');
+    sessionStorage.removeItem('supabase-design-to-load');
+    sessionStorage.removeItem('current-supabase-design');
+    sessionStorage.removeItem('supabase-design-name');
+    sessionStorage.removeItem('supabase-design-quarter');
+    sessionStorage.removeItem('supabase-design-grade');
+    sessionStorage.removeItem('supabase-design-id');
+    
+    // Clear any other design-related keys from sessionStorage
+    const sessionKeysToClear = Object.keys(sessionStorage).filter(key => 
+        key.includes('design') || key.includes('lesson') || key.includes('supabase') || key.includes('polotno')
+    );
+    sessionKeysToClear.forEach(key => sessionStorage.removeItem(key));
+    
+    // Clear localStorage items related to designs (using localforage/indexedDB)
+    // Note: The editor uses localforage which may use localStorage or indexedDB
+    const localStorageKeysToClear = Object.keys(localStorage).filter(key => 
+        key.includes('design') || key.includes('lesson') || key.includes('polotno')
+    );
+    localStorageKeysToClear.forEach(key => localStorage.removeItem(key));
+    
+    // Also try to clear indexedDB if available (localforage uses it)
+    if (window.indexedDB && window.indexedDB.databases) {
+        window.indexedDB.databases().then(databases => {
+            databases.forEach(db => {
+                if (db.name.includes('localforage') || db.name.includes('polotno')) {
+                    indexedDB.deleteDatabase(db.name);
+                }
+            });
+        }).catch(err => console.log('Could not clear indexedDB:', err));
+    }
+    
+    // Build editor URL with new=true parameter to indicate fresh lesson
+    const editorBaseUrl = buildEditorUrl({ new: 'true', mode: 'create' });
+    console.log('🎨 Opening fresh editor for lesson creation:', editorBaseUrl);
     window.location.href = editorBaseUrl;
 };
 
@@ -295,7 +342,7 @@ document.getElementById('createQuizBtn').onclick = function() {
                 <h2>
                     Quarter 1: 
                     <span class="bounce-word">
-<span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
+                        <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
 
                     </span>
                 </h2>
@@ -307,16 +354,7 @@ document.getElementById('createQuizBtn').onclick = function() {
                 
             </div>
 
-            <!-- YouTube Lessons (auto-fetched) -->
-            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FslU5009s_m_AhD0bQNbiaW" style="margin-top: 20px;">
-                <div class="quarter-title" style="align-items:center; gap:10px;">
-                    <i class="fab fa-youtube"></i>
-                    <h3 style="margin:0;">Video Lessons</h3>
-                </div>
-                <div class="lessons-container">
-                    <div>Loading YouTube lessons…</div>
-                </div>
-            </div>
+            
 
             <!-- <div class="progress-container">
                 <div class="progress-title">Quarter Progress</div>
@@ -482,7 +520,7 @@ document.getElementById('createQuizBtn').onclick = function() {
             </div>
             <div class="lessons-container">
                 <div id="quiz-list"></div>
-                <div id="student-quiz-cards"></div>
+                
             </div>
         </div>
 
@@ -788,11 +826,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
     }
 });
 
-// Remove the old global loader and its call!
-// function loadPresentationsByQuarter(quarter) { ... }
-// ['1','2','3','4','5'].forEach(loadPresentationsByQuarter);
 
-// (Legacy viewPresentation removed; unified version at bottom.)
 </script>
 
 <style>
@@ -882,33 +916,7 @@ firebase.auth().onAuthStateChanged(async function(user) {
     }
 </style>
 
-<!-- Add this near the end of your body, before </body> -->
-<div id="createLessonModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
-    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
-        <h3 style="margin-top:0;">Create New Lesson</h3>
-        <form id="createLessonForm">
-            <label>Quarter:<br>
-                <select id="lesson_quarter" required>
-                    <option value="">Select Quarter</option>
-                    <option value="1">Quarter 1</option>
-                    <option value="2">Quarter 2</option>
-                    <option value="3">Quarter 3</option>
-                    <option value="4">Quarter 4</option>
-                </select>
-            </label><br><br>
-            <label>Title:<br>
-                <input type="text" id="lesson_title" required>
-            </label><br><br>
-            <label>Description:<br>
-                <textarea id="lesson_desc" rows="2"></textarea>
-            </label><br><br>
-            <div style="text-align:right;">
-                <button type="button" onclick="closeCreateLessonModal()" style="margin-right:10px;">Cancel</button>
-                <button type="submit">Start</button>
-            </div>
-        </form>
-    </div>
-</div>
+
 
 <script>
     // Place this script after your modal HTML
@@ -1089,6 +1097,7 @@ function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
 }
 
 // Combined loading function that loads both Firebase and Supabase
+// NOTE: Firebase loading is commented out - only Supabase is used now
 async function loadAllDesignsForQuarter(container) {
     try {
         // Show loading state
@@ -1096,9 +1105,10 @@ async function loadAllDesignsForQuarter(container) {
         
         const allDesigns = [];
         
+        // FIREBASE LOADING COMMENTED OUT - Can be re-enabled later if needed
         // Load Firebase designs
-        const firebaseDesigns = await loadTeacherLessonsDataForQuarter(container);
-        allDesigns.push(...(firebaseDesigns || []));
+        // const firebaseDesigns = await loadTeacherLessonsDataForQuarter(container);
+        // allDesigns.push(...(firebaseDesigns || []));
         
         // Load Supabase designs
         const quarterSection = container.closest('.quarter-section');
@@ -1133,7 +1143,7 @@ async function loadAllDesignsForQuarter(container) {
         
         renderDesignsForQuarter(compatibleDesigns, container);
         
-        console.log(`✅ Loaded ${allDesigns.length} total designs (${firebaseDesigns?.length || 0} Firebase, ${supabaseDesigns?.length || 0} Supabase)`);
+        console.log(`✅ Loaded ${allDesigns.length} total designs (${supabaseDesigns?.length || 0} Supabase)`);
         
     } catch (error) {
         console.error('Error loading all designs:', error);
@@ -1141,7 +1151,9 @@ async function loadAllDesignsForQuarter(container) {
     }
 }
 
+// FIREBASE LOADING FUNCTION COMMENTED OUT - Can be re-enabled later if needed
 // Load Firebase teacher lessons data for a specific quarter
+/*
 async function loadTeacherLessonsDataForQuarter(container) {
     const user = firebase.auth().currentUser;
     if (!user) return [];
@@ -1177,6 +1189,7 @@ async function loadTeacherLessonsDataForQuarter(container) {
     
     return designs;
 }
+*/
 
 // Render designs for a specific quarter (combined Firebase + Supabase)
 function renderDesignsForQuarter(designs, container) {
@@ -1606,7 +1619,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
 <script src="../assets/tabDropdown.js"></script>
 
 <script src="../assets/js/header-dynamic-labels.js"></script>
-<!-- Empty quarter placeholder styles & logic -->
+
 <style>
     .empty-quarter-msg {
         box-sizing: border-box;
@@ -1662,15 +1675,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
         const el = section.querySelector('.empty-quarter-msg');
         if(el) el.remove();
     }
-    function addPlaceholder(section){
-        if(section.querySelector('.empty-quarter-msg')) return;
-        const firstContainer = section.querySelector('.lessons-container');
-        const host = firstContainer || section;
-        const div = document.createElement('div');
-        div.className = 'empty-quarter-msg';
-        div.innerHTML = '<strong>No lessons available yet.</strong><br><span style="font-weight:400;">Click the "Create Lesson" button to add one.</span>';
-        host.appendChild(div);
-    }
+
     function evaluate(section){
         if(sectionHasLessonCards(section) || sectionHasVideoCards(section)){
             removePlaceholder(section);
@@ -1701,41 +1706,9 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
 </div>
 
 
-<!-- Replace the existing createQuizModal with this updated version -->
-<div id="createQuizModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
-    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:350px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
-        <h3 style="margin-top:0;color:#ffe600;font-size:1.35rem;letter-spacing:1px;">Create New Quiz</h3>
-        <form id="createQuizForm">
-            <label>Quarter:<br>
-                <select id="quiz_quarter" required>
-                    <option value="">Select Quarter</option>
-                    <option value="1">Quarter 1</option>
-                    <option value="2">Quarter 2</option>
-                    <option value="3">Quarter 3</option>
-                    <option value="4">Quarter 4</option>
-                </select>
-            </label><br><br>
-            <label>Title:<br>
-                <input type="text" id="quiz_title" required>
-            </label><br><br>
-            <label>Description:<br>
-                <textarea id="quiz_desc" rows="2"></textarea>
-            </label><br><br>
-            <div style="text-align:right;">
-                <button type="button" onclick="closeCreateQuizModal()" style="margin-right:10px;">Cancel</button>
-                <button type="submit">Create</button>
-            </div>
-        </form>
-    </div>
-</div>
+
 
 <script>
-    // Add this script after the existing createLessonModal script
-
-// Show modal on Create Quiz click
-// document.getElementById('createQuizBtn').onclick = function() {
-//    document.getElementById('createQuizModal').style.display = 'flex';
-//};
 
 // Hide modal function
 function closeCreateQuizModal() {

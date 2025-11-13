@@ -1,476 +1,621 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Short Answer Quiz</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-:root{
-  --bg:#f1f6fb;
-  --card:#ffffff;
-  --accent:#2563eb;
-  --danger:#d94848;
-  --muted:#5b6b7c;
-}
-*{box-sizing:border-box;font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif}
-html,body,#embedRoot{height:100%;width:100%;margin:0;padding:0;overflow:hidden;background:var(--bg);}
-body{display:flex;align-items:center;justify-content:center;}
-#embedRoot{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  height: 100%;
-  width: 100%;
-}
-.quiz-scale{
-  /* Remove absolute + translate; center via flex parent */
-  position:static;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transform-origin:50% 50%;
-  will-change:transform;
-}
-.quiz-wrap{
-  width:750px;max-width:750px;
-  background:var(--card);
-  padding:40px 44px 46px;
-  border-radius:30px;
-  box-shadow:0 26px 86px -22px rgba(20,45,70,.35);
-  display:flex;
-  flex-direction:column;
-  gap:26px;
-  position:relative;
-}
-h1{margin:0;font-size:2rem;color:#12344d;text-align:center;font-weight:700;}
-#questionText{font-size:1.15rem;font-weight:600;line-height:1.4;color:#13384d;min-height:64px;text-align:center;margin:0;}
-.answer-box{display:flex;flex-direction:column;gap:14px;align-items:stretch}
-.answer-box input[type=text]{
-  width:100%;padding:16px 18px;font-size:1rem;
-  border:2px solid #d4e1ec;background:#fff;border-radius:16px;
-  outline:none;transition:.18s;
-}
-.answer-box input[type=text]:focus{border-color:var(--accent);background:#f6faff}
-.controls{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
-button{cursor:pointer;font-weight:600;font-size:1rem}
-#nextBtn,#finishBtn{
-  background:var(--accent);
-  color:#fff;
-  border:0;
-  padding:14px 30px;
-  border-radius:18px;
-  box-shadow:0 6px 22px -8px rgba(37,99,235,.45);
-  font-weight:600;
-  font-size:1rem;
-  cursor:pointer;
-  transition:.22s;
-  /* NEW hidden baseline: keep space reserved */
-  visibility:hidden;
-  opacity:0;
-  transform:translateY(6px);
-  pointer-events:none;
-}
-#nextBtn:hover,#finishBtn:hover{background:#1d56cc}
-
-/* When active (shown) */
-#nextBtn.active,#finishBtn.active{
-  visibility:visible;
-  opacity:1;
-  transform:translateY(0);
-  pointer-events:auto;
-  align-items: center;
-  margin-left: 100px;
-}
-
-/* Keep controls container height constant to avoid layout shift */
-.controls{
-  display:flex;
-  justify-content:center;
-  gap:16px;
-  flex-wrap:wrap;
-  min-height:60px; /* reserve space */
-  position:relative;
-}
-#editOpen{
-  position:absolute;top:14px;right:14px;
-  background:#fff;border:1px solid #c5d5e1;color:#174369;
-  padding:7px 16px;font-size:.75rem;border-radius:12px;
-}
-#editOpen:hover{background:#f2f8fc}
-#progress{height:10px;width:100%;background:#e5edf3;border-radius:8px;overflow:hidden}
-#bar{height:100%;width:0;background:linear-gradient(90deg,#2563eb,#4f8dfd)}
-/* Final modal */
-.modal{position:fixed;inset:0;background:rgba(15,35,55,.55);display:none;align-items:center;justify-content:center;padding:28px;z-index:400}
-.modal-card{background:#fff;width:min(520px,94%);padding:50px 52px 56px;border-radius:34px;text-align:center;box-shadow:0 34px 96px -28px rgba(15,35,55,.55);display:flex;flex-direction:column;gap:30px}
-.modal-card h2{margin:0;font-size:2.2rem;color:#153a55}
-.primary{background:var(--accent);color:#fff;border:0;padding:14px 34px;font-size:1.05rem;border-radius:20px}
-.primary:hover{background:#1d56cc}
-/* Editor */
-#editorModal{position:fixed;inset:0;background:rgba(10,25,45,.55);display:none;align-items:center;justify-content:center;padding:28px;z-index:450}
-#editorCard{
-  background:#fff;width:min(980px,96%);max-height:92vh;overflow:auto;
-  border-radius:32px;padding:40px 46px 48px;
-  display:flex;flex-direction:column;gap:30px;
-  box-shadow:0 38px 110px -32px rgba(10,30,60,.55)
-}
-.editor-flex{display:flex;gap:34px;flex-wrap:wrap}
-.col{flex:1 1 380px;min-width:320px;display:flex;flex-direction:column;gap:16px}
-label.small{font-size:.65rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#436177}
-textarea,input[type=text]{width:100%;border:1px solid #c2d4e1;border-radius:14px;padding:12px 14px;font-size:.9rem;font-family:inherit;resize:vertical}
-.q-list{border:1px solid #d5e2ec;border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;max-height:460px;overflow:auto}
-.qrow{padding:12px 14px;border:1px solid #d9e5ef;border-radius:16px;background:#f6fbfe;display:flex;flex-direction:column;gap:8px;position:relative}
-.qrow.active{outline:2px solid var(--accent);background:#eef6ff}
-.qrow button{align-self:flex-start;background:#fff;border:1px solid #c5d5e3;font-size:.65rem;padding:5px 10px;border-radius:8px}
-.qrow button:hover{background:#e8f2fa}
-.choice-row{display:flex;gap:10px;align-items:center}
-.inline{display:flex;gap:6px;flex-wrap:wrap}
-.editor-actions{display:flex;gap:12px;flex-wrap:wrap}
-.editor-actions button{background:var(--accent);color:#fff;border:0;padding:12px 20px;font-weight:600;border-radius:14px;font-size:.85rem;cursor:pointer}
-.editor-actions button.secondary{background:#e4edf4;color:#18425f}
-.editor-actions button.secondary:hover{background:#d7e7f2}
-.status{font-size:.75rem;min-height:18px;font-weight:600}
-.addBtn{background:var(--accent);color:#fff;border:0;padding:9px 16px;font-size:.7rem;font-weight:600;border-radius:10px;cursor:pointer}
-.addBtn:hover{background:#1d56cc}
-::-webkit-scrollbar{width:0;height:0}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Search Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      min-height: 100vh;
+      box-sizing: border-box;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+    .game-container {
+      width: 100vw;
+      max-width: 100vw;
+      margin: 0;
+      background: #fff;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0.5em 0.5em;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .edit-button {
+      position: absolute;
+      top: 1em;
+      right: 1em;
+      background: #198754;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5em 1.2em;
+      font-size: 1em;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 2px 8px #0001;
+      z-index: 10;
+    }
+    .edit-button[hidden] { display: none; }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 24px #0003;
+      padding: 2em 2em 1em 2em;
+      text-align: center;
+      min-width: 320px;
+      max-width: 95vw;
+    }
+    .modal-header {
+      font-size: 1.2em;
+      font-weight: 600;
+      margin-bottom: 1em;
+    }
+    .close-btn {
+      position: absolute;
+      top: 1em;
+      right: 1em;
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      color: #888;
+      cursor: pointer;
+    }
+    .word-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5em;
+      margin-bottom: 1em;
+      justify-content: center;
+      margin-top: 1em;
+      margin-bottom: 1em;
+      width: 100%;
+    }
+    .word-item {
+      background: #e9ecef;
+      border-radius: 6px;
+      padding: 0.4em 1em;
+      font-weight: 600;
+      font-size: 1em;
+      color: #333;
+      margin-bottom: 0.2em;
+      transition: background 0.2s;
+    }
+    .word-item.found {
+      background: #198754;
+      color: #fff;
+      text-decoration: line-through;
+    }
+    .grid-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 1em;
+    }
+    .grid {
+      width: 90vw;
+      max-width: 600px;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(10, 1fr);
+      gap: 2px;
+      background: #e9ecef;
+      border-radius: 8px;
+      padding: 0.5em;
+      user-select: none;
+      border: 2px solid #198754;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .cell {
+    font-size: clamp(1.5em, 1.5vw, 1em);
+    min-width: 0;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+    background: #fff;
+    border-radius: 4px;
+    font-weight: 600;
+    color: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    border: 1px solid #dee2e6;
+    position: relative;
+    padding: 0;
+    }
+    .cell.selected {
+      background: #ffe066;
+      color: #222;
+    }
+    .cell.found {
+      background: #198754;
+      color: #fff;
+    }
+    .completion-modal {
+      display: none;
+      position: fixed;
+      z-index: 3000;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      align-items: center;
+      justify-content: center;
+    }
+    .completion-modal.show { display: flex; }
+    .completion-content {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 24px #0003;
+      padding: 2em 2em 1em 2em;
+      text-align: center;
+      min-width: 320px;
+      max-width: 95vw;
+      font-size: 1.2em;
+      color: #198754;
+      font-weight: 600;
+    }
+    .btn {
+      background: #198754;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.7em 2em;
+      font-size: 1em;
+      font-weight: 600;
+      box-shadow: 0 2px 8px #0001;
+      cursor: pointer;
+      margin-top: 1em;
+    }
+    @media (max-width: 900px) {
+      .game-container {
+        max-width: 100vw;
+      
+      }
+      .grid {
+        max-width: 60vw;
+      }
+      .cell {
+        font-size: clamp(1em, 3vw, 1.6em);
+      }
+    }
+    @media (max-width: 700px) {
+      .grid {
+        width: 60vw;
+        max-width: 60vw;
+      }
+    }
+    @media (max-width: 600px) {
+      .game-container {
+        max-width: 100vw;
+        padding: 0.5em;
+        min-height: 0;
+      }
+      .grid {
+        width: 60vw;
+        max-width: 60vw;
+        aspect-ratio: 1 / 1;
+      }
+      .modal-content, .completion-content { min-width: 140px; padding: 1em; }
+    }
+  </style>
 </head>
 <body>
-<div id="embedRoot">
-  <div class="quiz-scale">
-    <div class="quiz-wrap">
-      <button id="editOpen">Edit</button>
-      <h1>Short Answer Quiz</h1>
-      <div id="progress"><div id="bar"></div></div>
-      <div id="questionText"></div>
-      <div class="answer-box">
-        <input id="answerInput" type="text" placeholder="Type your answer and press Enter or click Next..." autocomplete="off">
-      </div>
-      <div class="controls">
-        <button id="nextBtn">Next</button>
-        <button id="finishBtn">Finish</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Final Modal -->
-<div class="modal" id="finalModal" aria-hidden="true">
-  <div class="modal-card">
-    <h2>Thank You!</h2>
-    <p id="finalMsg" style="margin:0;font-size:1.05rem;color:#42596b">Your answers have been submitted.</p>
-    <button class="primary" id="restartBtn">Play Again</button>
-  </div>
-</div>
-
-<!-- Editor Modal -->
-<div id="editorModal" aria-hidden="true">
-  <div id="editorCard">
-    <h2 style="margin:0 0 -4px;font-size:1.7rem;color:#153b56">Edit Questions</h2>
-    <div class="editor-flex">
-      <div class="col">
-        <label class="small">Question List</label>
-        <div class="q-list" id="qList"></div>
-        <button id="addQuestion" class="addBtn" style="margin-top:4px">Add Question</button>
-      </div>
-      <div class="col">
-        <label class="small">Question Prompt</label>
-        <textarea id="editPrompt" rows="4" placeholder="Enter question..."></textarea>
-        <label class="small">Correct Answer (hidden from students)</label>
-        <input id="editAnswer" type="text" placeholder="Enter answer...">
-        <div class="editor-actions">
-          <button id="saveQuestion" type="button">Save Question</button>
-          <button id="closeEditor" type="button" class="secondary">Close</button>
-          <button id="deleteQuestion" type="button" class="secondary" style="background:#ffe9e9;color:#c03636">Delete</button>
+  <div class="game-container">
+    <button class="edit-button" id="editBtn" hidden>Edit Game</button>
+    <div class="word-list" id="wordList"></div>
+        <div class="grid-container">
+        <div class="grid" id="grid"></div>
         </div>
-        <div class="status" id="editStatus"></div>
-      </div>
+  </div>
+
+  <!-- Editor Modal -->
+  <div class="modal" id="editorModal">
+    <div class="modal-content">
+      <div class="modal-header">Edit Word List</div>
+      <button class="close-btn" id="closeEditorBtn">&times;</button>
+      <textarea id="wordsInput" rows="6" style="width:100%;margin-bottom:1em;"></textarea>
+      <button class="btn" id="saveWordsBtn">Save</button>
+      <div id="saveStatus" style="margin-top:0.5em;color:#198754;display:none;">Saved!</div>
     </div>
   </div>
-</div>
 
-<script>
-/* ========= DATA & STATE ========= */
-const LS_KEY='sa_quiz_v1';
-let questions=[
-  {prompt:'Name the largest planet in our solar system.', answer:'Jupiter'},
-  {prompt:'What is the process by which plants make food?', answer:'Photosynthesis'},
-  {prompt:'Abbreviation of World Wide Web?', answer:'WWW'}
-];
-try{
-  const saved=JSON.parse(localStorage.getItem(LS_KEY)||'null');
-  if(Array.isArray(saved) && saved.every(q=>q && typeof q.prompt==='string' && typeof q.answer==='string')){
-    questions=saved;
-  }
-}catch(e){}
-let current=0;
-let userAnswers=new Array(questions.length).fill('');
+  <!-- Completion Modal -->
+  <div class="completion-modal" id="completionModal">
+    <div class="completion-content">
+      🎉 Congratulations! You found all the words!
+      <button class="btn" id="doneBtn">Done</button>
+    </div>
+  </div>
 
-/* ========= ELEMENTS ========= */
-const questionText=qs('#questionText');
-const answerInput=qs('#answerInput');
-const nextBtn=qs('#nextBtn');
-const finishBtn=qs('#finishBtn');
-const bar=qs('#bar');
+  <script>
+    // --- Editable Content State ---
+    let words = ["APPLE", "DOG", "HOUSE", "MOON", "RIVER", "SUN", "TREE", "WATER", "FISH", "BOOK"];
+    let gridSize = 10;
+    let grid = [];
+    let foundWords = [];
+    let selectedCells = [];
+    let selecting = false;
+    let startCell = null;
+    let score = 0;
 
-function qs(s){return document.querySelector(s);}
+    // --- Directions array MUST be defined before startGame() is called ---
+    const directions = [
+      { dx: 1, dy: 0 },   // right
+      { dx: 0, dy: 1 },   // down
+      { dx: 1, dy: 1 },   // down-right
+      { dx: -1, dy: 0 },  // left
+      { dx: 0, dy: -1 },  // up
+      { dx: -1, dy: -1 }, // up-left
+      { dx: 1, dy: -1 },  // up-right
+      { dx: -1, dy: 1 }   // down-left
+    ];
 
-/* ========= RENDER ========= */
-function renderQuestion(){
-  const q=questions[current];
-  if(!q) return;
-  questionText.textContent=q.prompt;
-  answerInput.value=userAnswers[current]||'';
-  answerInput.disabled=false;
-  answerInput.focus();
-  updateNav();
-  updateBar();
-  if(window.__quizFit) setTimeout(window.__quizFit,0);
-}
+    // --- Quiz Editor Detection ---
+    const editBtn = document.getElementById('editBtn');
+    const isQuizEditor =
+      window.location.search.includes('quizEditor') ||
+      window.name === 'quizEditor' ||
+      (window.parent !== window && window.parent !== null);
 
-answerInput.addEventListener('input',updateNav);
-answerInput.addEventListener('keydown',e=>{
-  if(e.key==='Enter'){
-    if(current < questions.length-1 && answerInput.value.trim()){
-      saveCurrentAnswer();
-      current++;
-      renderQuestion();
-    } else if(current===questions.length-1 && answerInput.value.trim()){
-      saveCurrentAnswer();
-      finishQuiz();
+    // Hide edit button by default, show only in quizEditor
+    if (editBtn) {
+      editBtn.hidden = !isQuizEditor;
     }
+
+    // --- Load words for quizEditor preview ---
+    if (isQuizEditor) {
+      try {
+        const saved = localStorage.getItem('quizEditor_game3_words');
+        if (saved) {
+          const arr = JSON.parse(saved);
+          if (Array.isArray(arr) && arr.every(w => typeof w === 'string')) {
+            words = arr;
+          }
+        }
+      } catch (e) {}
+      startGame();
+    } else if (!isQuizEditor && window.parent === window) {
+      // Not in quizEditor and not embedded, show default game
+      startGame();
+    }
+
+    // --- Listen for parent data for students/teachers ---
+    window.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'loadQuizGameData' && event.data.gameData?.words) {
+        words = event.data.gameData.words;
+        gridSize = event.data.gameData.gridSize || 10;
+        startGame();
+      }
+      if (event.data && event.data.type === 'setTestIndex') {
+        parentTestIndex = event.data.index;
+      }
+    });
+
+    // --- Game Logic ---
+    function createEmptyGrid() {
+      grid = [];
+      for (let y = 0; y < gridSize; y++) {
+        let row = [];
+        for (let x = 0; x < gridSize; x++) {
+          row.push({ letter: '', word: null, found: false });
+        }
+        grid.push(row);
+      }
+    }
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function placeWords() {
+      shuffle(words);
+      let placedAny = false;
+      for (let word of words) {
+        let placed = false;
+        let tries = 0;
+        while (!placed && tries < 100) {
+          tries++;
+          const dir = directions[Math.floor(Math.random() * directions.length)];
+          const x = Math.floor(Math.random() * gridSize);
+          const y = Math.floor(Math.random() * gridSize);
+          if (canPlace(word, x, y, dir)) {
+            for (let i = 0; i < word.length; i++) {
+              grid[y + dir.dy * i][x + dir.dx * i].letter = word[i];
+              grid[y + dir.dy * i][x + dir.dx * i].word = word;
+            }
+            placed = true;
+            placedAny = true;
+          }
+        }
+      }
+      // Fill empty cells with random letters
+      for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+          if (!grid[y][x].letter) {
+            grid[y][x].letter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+          }
+        }
+      }
+    }
+
+    function canPlace(word, x, y, dir) {
+      for (let i = 0; i < word.length; i++) {
+        let nx = x + dir.dx * i;
+        let ny = y + dir.dy * i;
+        if (nx < 0 || ny < 0 || nx >= gridSize || ny >= gridSize) return false;
+        if (grid[ny][nx].letter && grid[ny][nx].letter !== word[i]) return false;
+      }
+      return true;
+    }
+
+    function renderWordList() {
+      const wordList = document.getElementById('wordList');
+      wordList.innerHTML = '';
+      words.forEach(word => {
+        const div = document.createElement('div');
+        div.className = 'word-item' + (foundWords.includes(word) ? ' found' : '');
+        div.textContent = word;
+        wordList.appendChild(div);
+      });
+    }
+
+    function renderGrid() {
+      const gridEl = document.getElementById('grid');
+      gridEl.innerHTML = '';
+      for (let y = 0; y < gridSize; y++) {
+        for (let x = 0; x < gridSize; x++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.textContent = grid[y][x].letter;
+          cell.dataset.x = x;
+          cell.dataset.y = y;
+          if (grid[y][x].found) cell.classList.add('found');
+          if (selectedCells.some(c => c.x === x && c.y === y)) cell.classList.add('selected');
+          cell.onmousedown = e => startSelect(x, y);
+          cell.onmouseenter = e => selecting && extendSelect(x, y);
+          cell.onmouseup = e => endSelect(x, y);
+          // Touch support
+          cell.ontouchstart = e => { startSelect(x, y); };
+          cell.ontouchmove = e => {
+            const touch = e.touches[0];
+            const target = document.elementFromPoint(touch.clientX, touch.clientY);
+            if (target && target.classList.contains('cell')) {
+              const tx = parseInt(target.dataset.x, 10);
+              const ty = parseInt(target.dataset.y, 10);
+              extendSelect(tx, ty);
+            }
+          };
+          cell.ontouchend = e => {
+            if (selectedCells.length) {
+              const last = selectedCells[selectedCells.length - 1];
+              endSelect(last.x, last.y);
+            }
+          };
+          gridEl.appendChild(cell);
+        }
+      }
+    }
+
+    function startSelect(x, y) {
+      if (grid[y][x].found) return;
+      selecting = true;
+      selectedCells = [{ x, y }];
+      startCell = { x, y };
+      renderGrid();
+    }
+
+    function extendSelect(x, y) {
+      if (!selecting || !startCell) return;
+      selectedCells = getLineCells(startCell.x, startCell.y, x, y);
+      renderGrid();
+    }
+
+    function endSelect(x, y) {
+      if (!selecting || !startCell) return;
+      selecting = false;
+      const cells = getLineCells(startCell.x, startCell.y, x, y);
+      const word = cells.map(c => grid[c.y][c.x].letter).join('');
+      const reversed = word.split('').reverse().join('');
+      let found = false;
+      if (words.includes(word) && !foundWords.includes(word)) {
+        found = word;
+      } else if (words.includes(reversed) && !foundWords.includes(reversed)) {
+        found = reversed;
+      }
+      if (found) {
+        foundWords.push(found);
+        for (let c of cells) grid[c.y][c.x].found = true;
+        renderWordList();
+        renderGrid();
+        score++;
+        if (score === words.length) showCompletion();
+      } else {
+        setTimeout(() => {
+          selectedCells = [];
+          renderGrid();
+        }, 400);
+      }
+      selectedCells = [];
+      startCell = null;
+    }
+
+    function getLineCells(x1, y1, x2, y2) {
+      let dx = x2 - x1;
+      let dy = y2 - y1;
+      let len = Math.max(Math.abs(dx), Math.abs(dy));
+      if (len === 0) return [{ x: x1, y: y1 }];
+      dx = Math.sign(dx);
+      dy = Math.sign(dy);
+      let cells = [];
+      for (let i = 0; i <= len; i++) {
+        let x = x1 + dx * i;
+        let y = y1 + dy * i;
+        if (x >= 0 && y >= 0 && x < gridSize && y < gridSize) {
+          cells.push({ x, y });
+        }
+      }
+      return cells;
+    }
+
+    function showCompletion() {
+      document.getElementById('completionModal').classList.add('show');
+    }
+
+    // --- Done button handler: send score to parent ---
+    let parentTestIndex = 0;
+    document.getElementById('doneBtn').onclick = function() {
+      document.getElementById('doneBtn').disabled = true;
+      setTimeout(() => {
+        document.getElementById('completionModal').classList.remove('show');
+      }, 1200);
+      window.parent.postMessage({
+        type: 'quizResult',
+        payload: {
+          score: score,
+          maxScore: words.length,
+          answers: foundWords,
+          quizId: window.location.pathname.split('/').pop(),
+          slideIndex: parentTestIndex
+        }
+      }, '*');
+    };
+
+    // --- Editor Modal Logic ---
+    editBtn.onclick = function() {
+      document.getElementById('editorModal').classList.add('show');
+      document.getElementById('wordsInput').value = words.join('\n');
+      document.getElementById('saveStatus').style.display = 'none';
+    };
+    document.getElementById('closeEditorBtn').onclick = function() {
+      document.getElementById('editorModal').classList.remove('show');
+    };
+
+    document.getElementById('saveWordsBtn').onclick = function() {
+      let newWords = document.getElementById('wordsInput').value
+        .split(/[\n,]+/)
+        .map(w => w.trim().toUpperCase())
+        .filter(w => w.length > 1 && /^[A-Z]+$/.test(w));
+      if (newWords.length === 0) {
+        alert("Please enter at least one valid word (letters only, min 2 chars).");
+        return;
+      }
+      if (newWords.some(w => w.length > gridSize)) {
+        alert("All words must fit in the grid. Please use shorter words.");
+        return;
+      }
+      words = newWords;
+      foundWords = [];
+      score = 0;
+      document.getElementById('editorModal').classList.remove('show');
+      // Save to localStorage for preview
+      if (isQuizEditor) {
+        localStorage.setItem('quizEditor_game3_words', JSON.stringify(newWords));
+        // Send edited data to parent/canvas for saving to database
+        const quizId = window.location.pathname.split('/').pop();
+        const quizGameData = {
+          words: newWords,
+          gridSize: gridSize,
+          lastModified: new Date().toISOString(),
+          quizId: quizId,
+          gameType: 'wordsearch',
+          gameUrl: window.location.href.split('?')[0],
+          isCustomized: true,
+          totalWords: newWords.length
+        };
+        window.parent.postMessage({
+          type: 'saveQuizGameData',
+          gameData: quizGameData,
+          quizId: quizId,
+          source: 'game-editor'
+        }, '*');
+        window.parent.postMessage({
+          type: 'gameDataUpdate',
+          gameData: quizGameData,
+          quizId: quizId,
+          action: 'immediate-save'
+        }, '*');
+      }
+      startGame();
+      document.getElementById('saveStatus').textContent = "Saved!";
+      document.getElementById('saveStatus').style.display = '';
+      setTimeout(() => { document.getElementById('saveStatus').style.display = 'none'; }, 1200);
+    };
+
+    // --- Main Game Start ---
+    function startGame() {
+      foundWords = [];
+      selectedCells = [];
+      selecting = false;
+      startCell = null;
+      score = 0;
+      createEmptyGrid();
+      placeWords();
+      renderWordList();
+      renderGrid();
+    }
+  </script>
+
+  <script>
+        (function hideEditButtonForStudents(){
+  // If URL has edit=true we allow edit button, otherwise hide it for students.
+  const params = new URLSearchParams(window.location.search);
+  const isEditMode = params.get('edit') === 'true';
+
+  function hideAllEditControls() {
+    const selectors = [
+      '.edit-button',        // main edit button in header
+      '#quiz-edit-controls', // optional injected edit container
+      '.btn-edit',           // generic edit class
+      '.edit-btn',           // other possible edit classes
+      '#editorModal'         // hide whole editor modal if you want (optional)
+    ].join(',');
+    document.querySelectorAll(selectors).forEach(el => {
+      if (el) el.style.display = 'none';
+    });
   }
-});
 
-function saveCurrentAnswer(){
-  userAnswers[current]=answerInput.value.trim();
-}
-
-function updateNav(){
-  const answered = !!answerInput.value.trim();
-  const isLast = current === questions.length - 1;
-
-  // Clear previous states
-  nextBtn.classList.remove('active');
-  finishBtn.classList.remove('active');
-
-  if(!answered){
-    return; // both stay hidden but space reserved
+  if (!isEditMode) {
+    // Hide immediately
+    hideAllEditControls();
+    // Hide any edit controls added later
+    const mo = new MutationObserver(hideAllEditControls);
+    mo.observe(document.body, { childList: true, subtree: true });
+    // expose for debugging if needed
+    window._hideEditButtonsObserver = mo;
   }
-  if(!isLast){
-    nextBtn.classList.add('active');
-  } else {
-    finishBtn.classList.add('active');
-  }
-}
-function updateBar(){
-  const pct=((current)/Math.max(questions.length-1,1))*100;
-  bar.style.width=pct+'%';
-}
-
-/* ========= NAV EVENTS ========= */
-nextBtn.addEventListener('click',()=>{
-  if(!answerInput.value.trim()) return;
-  saveCurrentAnswer();
-  current++; renderQuestion();
-});
-finishBtn.addEventListener('click',()=>{
-  if(!answerInput.value.trim()) return;
-  saveCurrentAnswer();
-  finishQuiz();
-});
-
-/* ========= FINAL MODAL ========= */
-const finalModal=qs('#finalModal');
-const finalMsg=qs('#finalMsg');
-qs('#restartBtn').addEventListener('click',()=>{
-  closeFinal();
-  current=0;
-  userAnswers=new Array(questions.length).fill('');
-  renderQuestion();
-});
-function finishQuiz(){
-  answerInput.disabled=true;
-  openFinal();
-}
-function openFinal(){
-  finalMsg.textContent='You answered '+userAnswers.filter(v=>v).length+' question'+(questions.length===1?'':'s')+'.';
-  finalModal.style.display='flex';
-  finalModal.setAttribute('aria-hidden','false');
-  if(window.__quizFit) setTimeout(window.__quizFit,0);
-}
-function closeFinal(){
-  finalModal.style.display='none';
-  finalModal.setAttribute('aria-hidden','true');
-}
-
-/* ========= EDITOR ========= */
-const editorModal=qs('#editorModal');
-const qList=qs('#qList');
-const editPrompt=qs('#editPrompt');
-const editAnswer=qs('#editAnswer');
-const editStatus=qs('#editStatus');
-const addQuestionBtn=qs('#addQuestion');
-const saveQuestionBtn=qs('#saveQuestion');
-const deleteQuestionBtn=qs('#deleteQuestion');
-const closeEditorBtn=qs('#closeEditor');
-let editingIndex=0;
-
-qs('#editOpen').addEventListener('click',openEditor);
-closeEditorBtn.addEventListener('click',closeEditor);
-addQuestionBtn.addEventListener('click',addQuestion);
-saveQuestionBtn.addEventListener('click',saveEditingQuestion);
-deleteQuestionBtn.addEventListener('click',deleteEditingQuestion);
-
-function openEditor(){
-  buildQList();
-  loadEditingQuestion(editingIndex);
-  editStatus.textContent='';
-  editorModal.style.display='flex';
-  editorModal.setAttribute('aria-hidden','false');
-  if(window.__quizFit) setTimeout(window.__quizFit,0);
-}
-function closeEditor(){
-  editorModal.style.display='none';
-  editorModal.setAttribute('aria-hidden','true');
-  if(window.__quizFit) setTimeout(window.__quizFit,0);
-}
-function buildQList(){
-  qList.innerHTML='';
-  questions.forEach((q,i)=>{
-    const r=document.createElement('div');
-    r.className='qrow'+(i===editingIndex?' active':'');
-    r.innerHTML='<div style="font-size:.8rem;font-weight:600;color:#38546a">'+(i+1)+'. '+escapeHtml(q.prompt.slice(0,60))+'</div><div class="inline"></div>';
-    const btn=document.createElement('button');
-    btn.textContent='Edit';
-    btn.addEventListener('click',()=>{editingIndex=i;buildQList();loadEditingQuestion(i);});
-    r.querySelector('.inline').appendChild(btn);
-    qList.appendChild(r);
-  });
-}
-function loadEditingQuestion(i){
-  const q=questions[i]; if(!q) return;
-  editPrompt.value=q.prompt;
-  editAnswer.value=q.answer;
-}
-function saveEditingQuestion(){
-  const prompt=editPrompt.value.trim();
-  const answer=editAnswer.value.trim();
-  if(!prompt){status('Enter a question',true);return;}
-  if(!answer){status('Enter an answer',true);return;}
-  questions[editingIndex]={prompt,answer};
-  persist();
-  status('Saved');
-  buildQList();
-  current=0; userAnswers=new Array(questions.length).fill('');
-  renderQuestion();
-  if(window.__quizFit) setTimeout(window.__quizFit,0);
-}
-function deleteEditingQuestion(){
-  if(!questions.length) return;
-  if(!confirm('Delete this question?')) return;
-  questions.splice(editingIndex,1);
-  if(!questions.length){
-    questions.push({prompt:'New question',answer:'Answer'});
-  }
-  editingIndex=Math.min(editingIndex,questions.length-1);
-  persist();
-  buildQList();
-  loadEditingQuestion(editingIndex);
-  current=0; userAnswers=new Array(questions.length).fill('');
-  renderQuestion();
-  if(window.__quizFit) setTimeout(window.__quizFit,0);
-}
-function addQuestion(){
-  questions.push({prompt:'New question',answer:'Answer'});
-  editingIndex=questions.length-1;
-  persist();
-  buildQList();
-  loadEditingQuestion(editingIndex);
-  if(window.__quizFit) setTimeout(window.__quizFit,0);
-}
-function status(msg,err){
-  editStatus.textContent=msg;
-  editStatus.style.color= err? 'var(--danger)':'var(--accent)';
-}
-function persist(){
-  localStorage.setItem(LS_KEY, JSON.stringify(questions));
-}
-
-/* ========= UTIL ========= */
-function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-
-/* ========= SCALING (FIT TO CANVAS) ========= */
-(function(){
-  const root=document.getElementById('embedRoot');
-  const scaleWrap=document.querySelector('.quiz-scale');
-  const quiz=document.querySelector('.quiz-wrap');
-  if(!root||!scaleWrap||!quiz) return;
-
-  function naturalHeight(){
-    const prev=scaleWrap.style.transform;
-    scaleWrap.style.transform='none';
-    const h=quiz.offsetHeight;
-    scaleWrap.style.transform=prev;
-    return h;
-  }
-  function fit(){
-    const w=quiz.offsetWidth;          // design width (640px)
-    const h=naturalHeight();
-    const rw=root.clientWidth;
-    const rh=root.clientHeight;
-    const scale=Math.min(rw/w, rh/h);
-    scaleWrap.style.transform=`scale(${scale})`;
-  }
-  new ResizeObserver(fit).observe(root);
-  window.addEventListener('orientationchange',fit);
-  window.addEventListener('load',fit);
-  window.__quizFit=fit;
-  setTimeout(fit,40);
 })();
-
-/* ========= INIT ========= */
-renderQuestion();
-document.addEventListener('DOMContentLoaded', function () {
-  (function controlEditButtonVisibility() {
-    const btn = document.getElementById('editOpen');
-    if (!btn) return;
-
-    // default: hidden for quizView (teacher/student). Only show from quizEditor or explicit flags.
-    btn.style.display = 'none';
-
-    try {
-      const params = new URLSearchParams(location.search);
-      const explicitEditor = params.get('editor') === 'true' || params.get('edit') === 'true' || params.get('mode') === 'edit';
-
-      // show if explicit editor mode in URL
-      if (explicitEditor) { btn.style.display = ''; return; }
-
-      // best-effort: show if referrer or parent/opener looks like quizEditor
-      if (document.referrer && document.referrer.toLowerCase().includes('quizeditor')) { btn.style.display = ''; return; }
-
-      try {
-        if (window.parent && window.parent !== window && String(window.parent.location.href).toLowerCase().includes('quizeditor')) { btn.style.display = ''; return; }
-      } catch (e) { /* cross-origin - ignore */ }
-
-      try {
-        if (window.opener && String(window.opener.location.href).toLowerCase().includes('quizeditor')) { btn.style.display = ''; return; }
-      } catch (e) { /* cross-origin - ignore */ }
-    } catch (err) {
-      // keep hidden on error
-      console.warn('controlEditButtonVisibility error', err);
-    }
-
-    // allow parent to override visibility via postMessage
-    window.addEventListener('message', function (ev) {
-      try {
-        const d = ev.data || {};
-        if (d && d.type === 'allowEdit' && d.allow === true) btn.style.display = '';
-        if (d && d.type === 'hideEditUI') btn.style.display = 'none';
-      } catch (e) { /* ignore */ }
-    }, false);
-  })();
-});
-</script>
+  </script>
 </body>
 </html>

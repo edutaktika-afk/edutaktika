@@ -21,8 +21,6 @@ import { BackgroundsSection } from './sections/backgrounds-section';
 import { EducationalTemplatesSection } from './sections/science-templates/science-templates-section';
 import { TextSection } from './sections/text-section';
 import { MaterialIconsSection } from './sections/material-icons-section';
-import { LottieSection } from './sections/lottie-section';
-import './elements/lottie-hook'; // Setup Lottie renderer hook
 
 import { useProject } from './project';
 
@@ -193,7 +191,6 @@ if (existingTextIndex === -1) {
 DEFAULT_SECTIONS.unshift(MyDesignsSection);
 
 DEFAULT_SECTIONS.push(StableDiffusionSection);
-DEFAULT_SECTIONS.push(LottieSection);
 // DEFAULT_SECTIONS.push(VideosSection);
 
 const isStandalone = () => {

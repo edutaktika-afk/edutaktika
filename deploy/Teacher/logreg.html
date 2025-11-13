@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" href="../CSS/fonts.css">
-<!-- ...inside <head> -->
+<!-- ...inside <head> --->
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     
    <style>
@@ -475,7 +475,7 @@ label {
                 </div>
                 <!-- Register Form -->
                 <div class="form-section" id="registerSection">
-                    <!-- <div class="error">All fields except Middle Name are required.</div> -->
+                    <!-- <div class="error">All fields except Middle Name are required..</div> -->
                     <form id="registerForm" autocomplete="off">
                         <div class="form-inner">
                             <div class="form-group">
@@ -575,9 +575,14 @@ label {
                                     <label for="reg_section">Section</label>
                                     <select name="reg_section" id="reg_section" required>
                                         <option value="">Select Section</option>
-                                        <option value="Apple">Apple</option>
-                                        <option value="Banana">Banana</option>
-                                        <option value="Cherry">Cherry</option>
+                                        <option value="Ubas">Ubas</option>
+                                        <option value="Durian">Durian</option>
+                                        <option value="Kasoy">Kasoy</option>
+                                        <option value="Melon">Melon</option>
+                                        <option value="Langka">Langka</option>
+                                        <option value="Fruit Salad">Fruit Salad</option>
+                                        <option value="Guyabano">Guyabano</option>
+                                        <option value="Santol">Santol</option>
                                     </select>
                                 </div>
                             </div>
@@ -605,8 +610,9 @@ label {
                                     <label for="reg_school_year">School Year</label>
                                     <select name="reg_school_year" id="reg_school_year" required>
                                         <option value="">School Year</option>
-                                        <option value="2024-2025">2024-2025</option>
                                         <option value="2025-2026">2025-2026</option>
+                                        <option value="2026-2027">2026-2027</option>
+                                        <option value="2027-2028">2027-2028</option>
                                     </select>
                                 </div>
                             </div>
@@ -852,50 +858,50 @@ document.getElementById('registerForm').onsubmit = async function(e) {
     }
 };
 
-// Login handler
-
+// Login handler (admins bypass email verification)
 document.getElementById('loginForm').onsubmit = async function(e) {
     e.preventDefault();
-    const email = document.getElementById('login_email').value;
+    const email = document.getElementById('login_email').value.trim();
     const password = document.getElementById('login_password').value;
 
-    // Check for admin credentials
-    if (email === "edutaktika@gmail.com" && password === "Adminedutaktika0!") {
-        try {
-            const userCredential = await auth.signInWithEmailAndPassword(email, password);
-            const user = userCredential.user;
-            if (!user.emailVerified) {
-                showCustomModal('Please verify your email before logging in.');
-                await auth.signOut();
-                return;
-            }
-            window.location.href = "admin.html";
-            return;
-        } catch (error) {
-            showCustomModal('Invalid admin email or password.');
-            return;
-        }
-    }
-
-    // Teacher login logic with approval check
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         const user = userCredential.user;
         const uid = user.uid;
-        const snapshot = await db.ref('teachers/' + uid).once('value');
-        const teacher = snapshot.val();
 
+        // Admin role check first
+        const adminSnap = await db.ref('admins/' + uid).once('value');
+        const adminVal = adminSnap.val();
+        const isAdmin =
+            adminSnap.exists() &&
+            (
+                adminVal === true ||
+                adminVal === 'true' ||
+                (adminVal && adminVal.role && String(adminVal.role).toLowerCase() === 'admin')
+            );
+
+        if (isAdmin) {
+            window.location.href = "admin.html";
+            return;
+        }
+
+        // Teachers must be verified
         if (!user.emailVerified) {
             showCustomModal('Please verify your email before logging in.');
             await auth.signOut();
             return;
         }
+
+        // Teacher flow with approval
+        const snapshot = await db.ref('teachers/' + uid).once('value');
+        const teacher = snapshot.val();
+
         if (!teacher || teacher.approved !== true) {
             showCustomModal('Your account is pending approval by the admin.');
             await auth.signOut();
             return;
         }
-        // Both verified and approved
+
         window.location.href = "homepage.html";
     } catch (error) {
         showCustomModal('Invalid email or password.');
@@ -951,26 +957,46 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     checkAuthReady(function() {
         firebase.auth().onAuthStateChanged(async function(user) {
-            if (user) {
-                const uid = user.uid;
-                const snapshot = await db.ref('teachers/' + uid).once('value');
-                const teacher = snapshot.val();
-                if (teacher && user.emailVerified && teacher.approved === true) {
-                    window.location.href = "homepage.html";
-                } else if (teacher && !user.emailVerified) {
-                    if (document.getElementById('loginSection').style.display !== "none") {
-                        alert('Please verify your email before logging in.');
-                    }
-                    await firebase.auth().signOut();
-                } else if (teacher && teacher.approved !== true) {
-                    showCustomModal('Your account is pending approval by the admin.');
-                    await firebase.auth().signOut();
-                } else {
-                    await firebase.auth().signOut();
-                    window.location.href = "../index.html";
+            if (!user) return;
+
+            const uid = user.uid;
+
+            // Check admin first
+            try {
+                const adminSnap = await db.ref('admins/' + uid).once('value');
+                const adminVal = adminSnap.val();
+                const isAdmin =
+                    adminSnap.exists() &&
+                    (
+                        adminVal === true ||
+                        adminVal === 'true' ||
+                        (adminVal && adminVal.role && String(adminVal.role).toLowerCase() === 'admin')
+                    );
+                if (isAdmin) {
+                    window.location.href = "admin.html";
+                    return;
                 }
+            } catch (_) {}
+
+            // Teachers must be verified
+            if (!user.emailVerified) {
+                showCustomModal('Please verify your email before logging in.');
+                await firebase.auth().signOut();
+                return;
             }
-            // If not logged in, stay on login page
+
+            // Teacher route
+            const snapshot = await db.ref('teachers/' + uid).once('value');
+            const teacher = snapshot.val();
+
+            if (teacher && teacher.approved === true) {
+                window.location.href = "homepage.html";
+            } else if (teacher && teacher.approved !== true) {
+                showCustomModal('Your account is pending approval by the admin.');
+                await firebase.auth().signOut();
+            } else {
+                await firebase.auth().signOut();
+            }
         });
     });
 }); 

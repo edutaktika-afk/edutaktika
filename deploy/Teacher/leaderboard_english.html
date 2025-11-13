@@ -163,6 +163,14 @@
                         </ul>
                     </li>
                     <li><a href="studentlist.html">Student</a></li>
+                    <li><a href="grading.html">Grading</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Assessments <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="assessment-builder.html">Create Assessment</a></li>
+                            <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                        </ul>
+                    </li>
                     <li class="dropdown">
                             <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
                             <ul class="dropdown-content">
@@ -359,17 +367,22 @@
             students.forEach(s => {
                 // English quiz points - only from English quizzes
                 let englishQuizPoints = 0;
-                if (s.quizzes) {
-                    Object.keys(s.quizzes).forEach(quizKey => {
-                        // Only count English-related quizzes
-                        if (quizKey.includes('english') || quizKey.includes('spelling-bee')) {
-                            const summary = s.quizzes[quizKey]?.summary;
-                            if (summary && typeof summary.best === 'number') {
-                                englishQuizPoints += summary.best;
-                            }
+                if (s.quizzes && Array.isArray(s.quizzes.subject_english)) {
+                    s.quizzes.subject_english.forEach(quarterObj => {
+                        if (quarterObj && typeof quarterObj === 'object') {
+                            Object.values(quarterObj).forEach(quizObj => {
+                                if (
+                                    quizObj &&
+                                    quizObj.summary &&
+                                    typeof quizObj.summary.totalScore === 'number'
+                                ) {
+                                    englishQuizPoints += quizObj.summary.totalScore;
+                                }
+                            });
                         }
                     });
                 }
+                s.quizPoints = englishQuizPoints;
                 
                 // English assessment points - only from English assessments
                 let englishAssessmentPoints = 0;

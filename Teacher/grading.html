@@ -4657,7 +4657,7 @@
                             cellContent = '○';
                         }
                         
-                        rowHTML += `<td class="${cellClass}" onclick="toggleAttendance('${student.uid}', ${week}, ${day}, '${subjectFilter}', '${quarterFilter}')">${cellContent}</td>`;
+                        rowHTML += `<td class="${cellClass}" onclick="toggleAttendance('${student.uid}', ${week}, ${day}, '${subjectFilter}', '${quarterFilter}', event)">${cellContent}</td>`;
                     }
                 }
                 
@@ -4758,7 +4758,7 @@
         }
 
         // Toggle attendance for a specific student and week
-        async function toggleAttendance(studentUID, week, day, subject, quarter) {
+        async function toggleAttendance(studentUID, week, day, subject, quarter, event) {
             const dayDate = getWeekDayDate(week, day);
             const existingRecord = getAttendanceForStudent(studentUID, dayDate, subject, quarter);
             
@@ -4783,7 +4783,7 @@
             };
 
             // Update the cell appearance immediately
-            const clickedCell = event.target;
+            const clickedCell = event ? event.target : window.event ? window.event.target : null;
             if (newStatus == 1) {
                 clickedCell.className = 'attendance-cell present';
                 clickedCell.textContent = '✓';

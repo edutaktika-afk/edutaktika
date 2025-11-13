@@ -323,7 +323,7 @@ async function loadLeaderboard() {
     
     const userSnapshot = await db.ref('students/' + currentUser.uid).once('value');
     const userData = userSnapshot.val();
-    const userGrade = userData ? userData.gradelevel : null;
+    const userGrade = userData ? userData.grade : null;
     
     if (!userGrade) {
         console.error('Could not determine user grade level');
@@ -353,15 +353,19 @@ async function loadLeaderboard() {
     // Calculate Math-specific scores
     students.forEach(s => {
         let mathQuizPoints = 0;
-        if (s.quizzes && s.quizzes.math) {
-            Object.keys(s.quizzes.math).forEach(quarterKey => {
-                const quizzesInQuarter = s.quizzes.math[quarterKey];
-                Object.keys(quizzesInQuarter).forEach(quizId => {
-                    const summary = quizzesInQuarter[quizId]?.summary;
-                    if (summary && typeof summary.totalScore === 'number') {
-                        mathQuizPoints += summary.totalScore;
-                    }
-                });
+        if (s.quizzes && Array.isArray(s.quizzes.subject_math)) {
+            s.quizzes.subject_math.forEach(quarterObj => {
+                if (quarterObj && typeof quarterObj === 'object') {
+                    Object.values(quarterObj).forEach(quizObj => {
+                        if (
+                            quizObj &&
+                            quizObj.summary &&
+                            typeof quizObj.summary.totalScore === 'number'
+                        ) {
+                            mathQuizPoints += quizObj.summary.totalScore;
+                        }
+                    });
+                }
             });
         }
         s.quizPoints = mathQuizPoints;
@@ -384,7 +388,7 @@ async function loadLeaderboard() {
     });
 
     // Filter for current user's grade level only
-    students = students.filter(s => s.gradelevel == userGrade);
+students = students.filter(s => String(s.grade) === String(userGrade));
     console.log('Students after grade filter:', students.length);
 
     // Sort descending by combined, then assessment, then quiz, then name
@@ -562,7 +566,7 @@ applyLeaderboardPagination(students, {
                     document.getElementById('profileFirstName').textContent = data.fname || '';
                     document.getElementById('profileMiddleName').textContent = data.mname || '';
                     document.getElementById('profileLastName').textContent = data.lname || '';
-                    document.getElementById('profileGrade').textContent = data.gradelevel || '-';
+                    document.getElementById('profileGrade').textContent = data.grade || '-';
                     document.getElementById('profileSection').textContent = data.section || '-';
                     document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "student");
                 }
