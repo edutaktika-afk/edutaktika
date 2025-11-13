@@ -12,6 +12,7 @@ export const LottieElement = observer(({ element, store }) => {
   const canvasRef = useRef(null);
   const animRef = useRef(null);
   const [image, setImage] = useState(null);
+  const frameUpdateRef = useRef(null);
 
   useEffect(() => {
     if (!element.lottieUrl && !element.lottieData) {
@@ -76,13 +77,27 @@ export const LottieElement = observer(({ element, store }) => {
       // Update Konva image on each frame
       anim.addEventListener('enterFrame', () => {
         if (canvas && imageRef.current) {
-          // Update the image source from canvas
-          const img = new window.Image();
-          img.onload = () => {
-            setImage(img);
-            imageRef.current?.getLayer()?.batchDraw();
-          };
-          img.src = canvas.toDataURL();
+          // Use requestAnimationFrame to throttle updates for better performance
+          if (frameUpdateRef.current) {
+            cancelAnimationFrame(frameUpdateRef.current);
+          }
+          
+          frameUpdateRef.current = requestAnimationFrame(() => {
+            const img = new window.Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+              setImage(img);
+              // Force Konva to redraw
+              const layer = imageRef.current?.getLayer();
+              if (layer) {
+                layer.batchDraw();
+              }
+            };
+            img.onerror = () => {
+              console.warn('Failed to create image from canvas');
+            };
+            img.src = canvas.toDataURL();
+          });
         }
       });
 
@@ -92,8 +107,12 @@ export const LottieElement = observer(({ element, store }) => {
 
       // Cleanup on unmount
       return () => {
+        if (frameUpdateRef.current) {
+          cancelAnimationFrame(frameUpdateRef.current);
+        }
         if (animRef.current) {
           animRef.current.destroy();
+          animRef.current = null;
         }
       };
     }).catch((error) => {
@@ -102,7 +121,19 @@ export const LottieElement = observer(({ element, store }) => {
   }, [element.lottieUrl, element.lottieData, element.lottieLoop, element.lottieAutoplay]);
 
   if (!image) {
-    return null; // Don't render until image is ready
+    // Show placeholder while loading
+    return (
+      <Image
+        ref={imageRef}
+        image={null}
+        x={0}
+        y={0}
+        width={element.width || 200}
+        height={element.height || 200}
+        fill="#f0f0f0"
+        listening={true}
+      />
+    );
   }
 
   return (
