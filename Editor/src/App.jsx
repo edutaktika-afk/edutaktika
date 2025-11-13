@@ -21,6 +21,7 @@ import { BackgroundsSection } from './sections/backgrounds-section';
 import { EducationalTemplatesSection } from './sections/science-templates/science-templates-section';
 import { TextSection } from './sections/text-section';
 import { MaterialIconsSection } from './sections/material-icons-section';
+import { AnimationSection } from './sections/animation-section';
 
 import { useProject } from './project';
 
