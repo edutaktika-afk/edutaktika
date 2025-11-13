@@ -328,10 +328,6 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
               <option value="">-- Select Grade Level --</option>
               <option value="grade5">Grade 5</option>
               <option value="grade6">Grade 6</option>
-              <option value="grade7">Grade 7</option>
-              <option value="grade8">Grade 8</option>
-              <option value="grade9">Grade 9</option>
-              <option value="grade10">Grade 10</option>
             </select>
           </FormGroup>
 
