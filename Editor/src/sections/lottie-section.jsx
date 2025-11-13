@@ -1,8 +1,65 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { SectionTab } from 'polotno/side-panel';
 import { Button, InputGroup, FileInput, Alert, Intent } from '@blueprintjs/core';
 import FaLottie from '@meronex/icons/fa/FaPlayCircle';
+
+// Function to start Lottie animation on an element
+async function startLottieAnimation(element) {
+  if (!element.lottieUrl && !element.lottieData) return;
+  
+  try {
+    const lottie = await import('lottie-web');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const animConfig = {
+      renderer: 'canvas',
+      loop: element.lottieLoop !== false,
+      autoplay: element.lottieAutoplay !== false,
+      rendererSettings: {
+        context: ctx,
+        clearCanvas: true,
+      },
+    };
+    
+    if (element.lottieData) {
+      animConfig.animationData = element.lottieData;
+    } else if (element.lottieUrl) {
+      animConfig.path = element.lottieUrl;
+    }
+    
+    const anim = lottie.default.loadAnimation(animConfig);
+    
+    anim.addEventListener('config_ready', () => {
+      const { w, h } = anim.renderer.transformCanvas;
+      canvas.width = w;
+      canvas.height = h;
+    });
+    
+    // Update element image on each frame
+    anim.addEventListener('enterFrame', () => {
+      if (element && canvas) {
+        const dataURL = canvas.toDataURL();
+        element.set({ src: dataURL });
+      }
+    });
+    
+    // Store animation reference on element
+    element._lottieAnimation = anim;
+    
+    // Cleanup when element is removed
+    const originalRemove = element.remove;
+    element.remove = function() {
+      if (this._lottieAnimation) {
+        this._lottieAnimation.destroy();
+      }
+      return originalRemove.call(this);
+    };
+  } catch (error) {
+    console.error('Failed to start Lottie animation:', error);
+  }
+}
 
 // Lottie animation component that renders to canvas
 const LottieCanvas = ({ src, onReady, loop = true, autoplay = true }) => {
@@ -138,19 +195,27 @@ export const LottieSection = {
         // Get animation dimensions
         const { w, h } = anim.renderer.transformCanvas;
 
-        // Add as custom Lottie element to Polotno (animated)
+        // For now, use image type but store Lottie data
+        // We'll render it as animated Lottie using a wrapper
         const element = store.activePage.addElement({
-          type: 'lottie',
+          type: 'image', // Use image type so Polotno can render it
           name: 'lottie',
           x: store.width / 2 - w / 2,
           y: store.height / 2 - h / 2,
           width: w,
           height: h,
-          // Store the Lottie URL for animation playback
+          // Store initial frame as image
+          src: tempCanvas.toDataURL(),
+          // Store Lottie data for animation
           lottieUrl: lottieUrl.trim(),
           lottieLoop: true,
           lottieAutoplay: true,
         });
+        
+        // Start animation after element is created
+        if (element && element.lottieUrl) {
+          startLottieAnimation(element);
+        }
 
         if (element) {
           store.selectElements([element.id]);

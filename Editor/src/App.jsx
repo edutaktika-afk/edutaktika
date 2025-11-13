@@ -22,6 +22,7 @@ import { EducationalTemplatesSection } from './sections/science-templates/scienc
 import { TextSection } from './sections/text-section';
 import { MaterialIconsSection } from './sections/material-icons-section';
 import { LottieSection } from './sections/lottie-section';
+import './elements/lottie-hook'; // Setup Lottie renderer hook
 
 import { useProject } from './project';
 
