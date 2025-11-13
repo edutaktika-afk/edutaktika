@@ -878,7 +878,7 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
       // Extract and upload embedded media with subject/grade structure
       const mediaOptions = {
         subjectFolder: subjectFolder,
-        gradeLevel: gradeLevel || null,
+        gradeLevel: normalizedGradeLevel,
         quarterFolder: quarterFolder
       };
       processedJSON = await extractEmbeddedMedia(storeJSON, id, (progress) => {
