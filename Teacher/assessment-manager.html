@@ -1053,6 +1053,7 @@
         let assessments = [];
         let attempts = [];
         let students = [];
+        let grades = []; // Added for grade analytics
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -1071,6 +1072,35 @@
             loadAssessments();
             loadAttempts();
             loadStudents();
+            loadGrades(); // Added for grade analytics
+        }
+        
+        // Load grades for analytics
+        async function loadGrades() {
+            try {
+                const user = auth.currentUser;
+                if (!user) return;
+                
+                // Get teacher info to find section
+                const teacherSnap = await db.ref(`teachers/${user.uid}`).once('value');
+                const teacher = teacherSnap.val();
+                if (!teacher || !teacher.section) return;
+                
+                const section = teacher.section;
+                const gradesSnap = await db.ref(`teachers/${user.uid}/sections/${section}/grades`).once('value');
+                
+                grades = [];
+                if (gradesSnap.exists()) {
+                    gradesSnap.forEach(child => {
+                        grades.push({ ...child.val(), id: child.key });
+                    });
+                }
+                
+                // Update analytics with grade data
+                updateAnalytics();
+            } catch (error) {
+                console.error('Error loading grades:', error);
+            }
         }
 
         // Load assessments
@@ -1173,6 +1203,9 @@
                             <button class="btn btn-success" onclick="publishAssessment('${assessment.id}')" title="Publish">
                                 <i class="fas fa-eye"></i>
                             </button>
+                            <button class="btn btn-secondary" onclick="duplicateAssessment('${assessment.id}')" title="Duplicate">
+                                <i class="fas fa-copy"></i>
+                            </button>
                             <button class="btn btn-warning" onclick="viewAttempts('${assessment.id}')" title="View Attempts">
                                 <i class="fas fa-users"></i>
                             </button>
@@ -1239,6 +1272,19 @@
                 const averageTime = attempts.reduce((sum, attempt) => sum + attempt.timeTaken, 0) / attempts.length;
                 document.getElementById('averageTime').textContent = Math.round(averageTime / 60) + 'm';
             }
+            
+            // Add grade analytics integration
+            if (grades.length > 0) {
+                const averageGrade = grades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / grades.length;
+                console.log('📊 Grade Analytics:', {
+                    totalGrades: grades.length,
+                    averageGrade: averageGrade.toFixed(2),
+                    gradeDistribution: getGradeDistribution(grades)
+                });
+                
+                // Update weakness heatmap with grade data
+                updateWeaknessHeatmapWithGrades();
+            }
 
             // Update analytics table
             const tbody = document.getElementById('analyticsTableBody');
@@ -1291,31 +1337,68 @@
             return 'Hard';
         }
 
-        // Update weakness heatmap
-        function updateWeaknessHeatmap() {
+        // Helper function to get grade distribution
+        function getGradeDistribution(grades) {
+            const distribution = { excellent: 0, good: 0, fair: 0, needsImprovement: 0 };
+            grades.forEach(grade => {
+                const finalGrade = grade.finalGrade || 0;
+                if (finalGrade >= 90) distribution.excellent++;
+                else if (finalGrade >= 80) distribution.good++;
+                else if (finalGrade >= 70) distribution.fair++;
+                else distribution.needsImprovement++;
+            });
+            return distribution;
+        }
+        
+        // Update weakness heatmap with grade data
+        function updateWeaknessHeatmapWithGrades() {
             const container = document.getElementById('weaknessHeatmap');
-            container.innerHTML = '';
-
-            if (students.length === 0 || attempts.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 40px;">No data available for heatmap</p>';
-                return;
-            }
-
-            // Group attempts by student
+            if (!container) return;
+            
+            // Merge assessment attempts with grade data for comprehensive view
             const studentStats = {};
+            
+            // First, add assessment attempt data
             students.forEach(student => {
                 const studentAttempts = attempts.filter(a => a.studentId === student.uid);
+                const studentGrades = grades.filter(g => g.studentUID === student.uid);
+                
+                let score = 0;
+                let dataSource = 'none';
+                
                 if (studentAttempts.length > 0) {
-                    const averageScore = studentAttempts.reduce((sum, attempt) => sum + attempt.percentage, 0) / studentAttempts.length;
+                    score = studentAttempts.reduce((sum, attempt) => sum + attempt.percentage, 0) / studentAttempts.length;
+                    dataSource = 'assessments';
+                } else if (studentGrades.length > 0) {
+                    // Use grade data if no assessment attempts
+                    score = studentGrades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / studentGrades.length;
+                    dataSource = 'grades';
+                }
+                
+                if (score > 0) {
                     studentStats[student.uid] = {
                         name: `${student.fname} ${student.lname}`,
-                        score: averageScore,
-                        attempts: studentAttempts.length
+                        score: score,
+                        attempts: studentAttempts.length,
+                        grades: studentGrades.length,
+                        dataSource: dataSource
                     };
                 }
             });
-
-            // Create heatmap items
+            
+            // Update heatmap with combined data
+            updateHeatmapDisplay(container, studentStats);
+        }
+        
+        // Update heatmap display
+        function updateHeatmapDisplay(container, studentStats) {
+            container.innerHTML = '';
+            
+            if (Object.keys(studentStats).length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 40px;">No data available for heatmap</p>';
+                return;
+            }
+            
             Object.values(studentStats).forEach(stat => {
                 const item = document.createElement('div');
                 item.className = 'heatmap-item';
@@ -1331,10 +1414,46 @@
                 item.innerHTML = `
                     <div class="heatmap-student">${stat.name}</div>
                     <div class="heatmap-score">${Math.round(stat.score)}%</div>
-                    <div style="font-size: 12px; color: #6c757d;">${stat.attempts} attempts</div>
+                    <div style="font-size: 12px; color: #6c757d;">
+                        ${stat.attempts > 0 ? `${stat.attempts} attempts` : ''}
+                        ${stat.grades > 0 ? `${stat.grades} grades` : ''}
+                    </div>
                 `;
                 container.appendChild(item);
             });
+        }
+        
+        // Update weakness heatmap
+        function updateWeaknessHeatmap() {
+            const container = document.getElementById('weaknessHeatmap');
+            container.innerHTML = '';
+
+            if (students.length === 0 || (attempts.length === 0 && grades.length === 0)) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 40px;">No data available for heatmap</p>';
+                return;
+            }
+
+            // Use combined grade and assessment data
+            if (grades.length > 0) {
+                updateWeaknessHeatmapWithGrades();
+                return;
+            }
+
+            // Fallback to original assessment-only logic
+            const studentStats = {};
+            students.forEach(student => {
+                const studentAttempts = attempts.filter(a => a.studentId === student.uid);
+                if (studentAttempts.length > 0) {
+                    const averageScore = studentAttempts.reduce((sum, attempt) => sum + attempt.percentage, 0) / studentAttempts.length;
+                    studentStats[student.uid] = {
+                        name: `${student.fname} ${student.lname}`,
+                        score: averageScore,
+                        attempts: studentAttempts.length
+                    };
+                }
+            });
+            
+            updateHeatmapDisplay(container, studentStats);
         }
 
         // Update question statistics
@@ -1660,6 +1779,40 @@
             showTab('attempts');
             document.getElementById('attemptAssessmentFilter').value = assessmentId;
             filterAttempts();
+        }
+
+        // Duplicate assessment
+        function duplicateAssessment(assessmentId) {
+            const assessment = assessments.find(a => a.id === assessmentId);
+            if (!assessment) {
+                alert('Assessment not found');
+                return;
+            }
+
+            if (confirm(`Duplicate "${assessment.title}"?`)) {
+                // Create a copy of the assessment
+                const duplicatedAssessment = {
+                    ...assessment,
+                    title: assessment.title + ' (Copy)',
+                    status: 'draft',
+                    createdAt: new Date().toISOString(),
+                    createdBy: auth.currentUser.uid
+                };
+
+                // Remove the id so Firebase creates a new one
+                delete duplicatedAssessment.id;
+
+                // Save to Firebase
+                db.ref('assessments').push(duplicatedAssessment)
+                    .then(() => {
+                        alert('Assessment duplicated successfully!');
+                        loadAssessments();
+                    })
+                    .catch(error => {
+                        console.error('Error duplicating assessment:', error);
+                        alert('Error duplicating assessment');
+                    });
+            }
         }
 
         // Delete assessment
