@@ -361,14 +361,22 @@ const readKv = async function readKv(key) {
         .eq('key', key)
         .maybeSingle(); // Use maybeSingle to avoid errors when not found
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = not found (expected)
-        console.error('Supabase read KV error:', error);
+      if (error) {
+        // PGRST116 = not found (expected if key doesn't exist)
+        // PGRST205 = table doesn't exist (table not created yet)
+        if (error.code === 'PGRST116') {
+          return null; // Key doesn't exist - expected
+        } else if (error.code === 'PGRST205') {
+          console.log('⚠️ designs_metadata table not found - will use file listing instead');
+          return null; // Table doesn't exist - system will list files directly
+        }
+        console.warn('Supabase read KV error:', error);
         return await storage.getItem(key);
       }
 
       return data?.value;
     } catch (error) {
-      console.error('Failed to read from Supabase, falling back to local storage:', error);
+      console.warn('Failed to read from Supabase, falling back to local storage:', error);
       return await storage.getItem(key);
     }
   } else {
@@ -387,11 +395,19 @@ const writeKv = async function writeKv(key, value) {
         .upsert({ key, value }, { onConflict: 'key' });
 
       if (error) {
-        console.error('Supabase write KV error:', error);
+        // PGRST205 = table doesn't exist (table not created yet)
+        if (error.code === 'PGRST205') {
+          console.log('⚠️ designs_metadata table not found - metadata will not be saved.');
+          console.log('💡 The system will work without it by listing files directly.');
+          console.log('💡 To create the table, see SUPABASE_TABLE_SETUP.md');
+          // Silently fail - system will work without metadata table
+          return;
+        }
+        console.warn('Supabase write KV error:', error);
         return await storage.setItem(key, value);
       }
     } catch (error) {
-      console.error('Failed to write to Supabase, falling back to local storage:', error);
+      console.warn('Failed to write to Supabase, falling back to local storage:', error);
       return await storage.setItem(key, value);
     }
   } else {
