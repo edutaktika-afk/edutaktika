@@ -787,7 +787,7 @@ export const deleteAsset = async ({ id }) => {
  * @param {string} [params.quarter] - Optional quarter number
  * @param {string} [params.id] - Optional design ID
  */
-export async function saveDesignBySubject({ storeJSON, preview, name, subject, quarter, id }) {
+export async function saveDesignBySubject({ storeJSON, preview, name, subject, quarter, gradeLevel, id }) {
   console.log(`💾 Saving to Supabase - Subject: "${subject}", Quarter: "${quarter}"`);
   if (!id) {
     id = nanoid(10);
@@ -812,31 +812,36 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
     throw new Error(`Invalid subject: ${subject}. Must be one of: science, english, math`);
   }
   
-  // Get teacher's grade level using utility function (Firebase > sessionStorage > URL params)
-  const { getUserGradeLevelWithFallback } = await import('./utils/getUserGradeLevel');
-  const gradeLevel = await getUserGradeLevelWithFallback();
+  // Get grade level - use provided gradeLevel parameter, or try to fetch from utility function
+  let finalGradeLevel = gradeLevel;
+  
+  if (!finalGradeLevel) {
+    // Fallback: try to get from utility function
+    const { getUserGradeLevelWithFallback } = await import('./utils/getUserGradeLevel');
+    finalGradeLevel = await getUserGradeLevelWithFallback();
+  }
   
   // Build paths with grade: subject/gradeX/quarterX/id.json
   const quarterFolder = `quarter${quarter}`;
   let previewPath, storePath;
   
   // REQUIRE grade level - don't allow saving without it
-  if (!gradeLevel) {
+  if (!finalGradeLevel) {
     const errorMsg = `❌ Grade level is required! Cannot save lesson without grade level.\n\n` +
-      `Please ensure:\n` +
-      `1. Your grade level is set in your teacher profile in Firebase\n` +
-      `2. You opened the editor from the subject page (not directly)\n` +
-      `3. The grade level is passed in the URL or sessionStorage\n\n` +
+      `Please select a grade level in the upload dialog.\n\n` +
       `This prevents Grade 5 lessons from appearing for Grade 6 teachers.`;
     console.error(errorMsg);
     alert(errorMsg);
     throw new Error('Grade level is required to save lessons. This prevents cross-grade contamination.');
   }
   
+  // Normalize grade level format
+  const normalizedGradeLevel = finalGradeLevel.startsWith('grade') ? finalGradeLevel : `grade${finalGradeLevel}`;
+  
   // Always use grade-based structure
-  previewPath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${id}.jpg`;
-  storePath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${id}.json`;
-  console.log(`✅ Using grade-based path structure: ${gradeLevel}/${quarterFolder}/`);
+  previewPath = `${subjectFolder}/${normalizedGradeLevel}/${quarterFolder}/${id}.jpg`;
+  storePath = `${subjectFolder}/${normalizedGradeLevel}/${quarterFolder}/${id}.json`;
+  console.log(`✅ Using grade-based path structure: ${normalizedGradeLevel}/${quarterFolder}/`);
   
   console.log(`📤 Upload paths: preview="${previewPath}", design="${storePath}"`);
 

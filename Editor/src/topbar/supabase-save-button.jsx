@@ -22,6 +22,7 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
   const [designName, setDesignName] = React.useState('');
   const [selectedSubject, setSelectedSubject] = React.useState('math');
   const [selectedQuarter, setSelectedQuarter] = React.useState('1');
+  const [selectedGradeLevel, setSelectedGradeLevel] = React.useState('');
   const [showAlert, setShowAlert] = React.useState(false);
   const [alertMessage, setAlertMessage] = React.useState('');
   const [alertIntent, setAlertIntent] = React.useState(Intent.SUCCESS);
@@ -62,6 +63,33 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
     }
   }, [store.pages]);
 
+  // Load grade level from Firebase/sessionStorage/URL on mount
+  React.useEffect(() => {
+    const loadGradeLevel = async () => {
+      try {
+        // Try to get from utility function
+        const { getUserGradeLevelWithFallback } = await import('../utils/getUserGradeLevel');
+        const gradeLevel = await getUserGradeLevelWithFallback();
+        if (gradeLevel) {
+          setSelectedGradeLevel(gradeLevel);
+          console.log('✅ Auto-populated grade level:', gradeLevel);
+        } else {
+          // If not found, try to get from URL params
+          const urlParams = new URLSearchParams(window.location.search);
+          const urlGrade = urlParams.get('grade');
+          if (urlGrade) {
+            const normalizedGrade = urlGrade.startsWith('grade') ? urlGrade : `grade${urlGrade}`;
+            setSelectedGradeLevel(normalizedGrade);
+            console.log('✅ Got grade level from URL:', normalizedGrade);
+          }
+        }
+      } catch (error) {
+        console.warn('Could not auto-load grade level:', error);
+      }
+    };
+    loadGradeLevel();
+  }, []);
+
   // Load existing design metadata when editing
   React.useEffect(() => {
     if (project?.id) {
@@ -73,6 +101,7 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
           setDesignName(metadata.name || project.name || generateDefaultName());
           if (metadata.subject) setSelectedSubject(metadata.subject);
           if (metadata.quarter) setSelectedQuarter(metadata.quarter);
+          if (metadata.gradeLevel) setSelectedGradeLevel(metadata.gradeLevel);
         } else if (project.name) {
           setDesignName(project.name);
         }
@@ -85,6 +114,13 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
   const handleSave = async () => {
     if (!designName.trim()) {
       setAlertMessage('Please enter a design name');
+      setAlertIntent(Intent.DANGER);
+      setShowAlert(true);
+      return;
+    }
+
+    if (!selectedGradeLevel) {
+      setAlertMessage('Please select a grade level');
       setAlertIntent(Intent.DANGER);
       setShowAlert(true);
       return;
@@ -111,6 +147,7 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
       const isEditing = !!existingDesignId;
       
       console.log(isEditing ? `🔄 Updating existing design: ${existingDesignId}` : '✨ Creating new design');
+      console.log(`📚 Saving with grade level: ${selectedGradeLevel}`);
       
       const result = await saveDesignBySubject({
         storeJSON: store.toJSON(),
@@ -118,6 +155,7 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
         name: designName.trim(),
         subject: selectedSubject,
         quarter: selectedQuarter,
+        gradeLevel: selectedGradeLevel, // Pass grade level explicitly
         id: existingDesignId, // This will overwrite if provided
       });
 
@@ -134,7 +172,17 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
 
     } catch (error) {
       console.error('Save failed:', error);
-      setAlertMessage(`Save failed: ${error.message}`);
+      
+      // Format error message for better display
+      let errorMessage = error.message || 'Unknown error occurred';
+      
+      // Check if it's a size limit error for design JSON
+      if (error.message && (error.message.includes('too large') || error.message.includes('50MB') || error.message.includes('embedded media'))) {
+        // Format the error message with line breaks for better readability
+        errorMessage = error.message.replace(/\n/g, '\n');
+      }
+      
+      setAlertMessage(`❌ Save failed:\n\n${errorMessage}`);
       setAlertIntent(Intent.DANGER);
       setShowAlert(true);
     } finally {
@@ -177,7 +225,7 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
               Folders: SCIENCE, ENGLISH, MATH
             </div>
             <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-              <strong>Ready to use:</strong> Just enter a design name and click "Save to Supabase"!
+              <strong>Ready to use:</strong> Enter a design name, select subject, quarter, and grade level, then click "Upload to Cloud"!
             </div>
           </>
         ) : connectionStatus === 'disconnected' ? (
@@ -202,7 +250,7 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
     <>
       <Button
         icon={<CloudUpload />}
-        text="Save to Supabase"
+        text="Upload to Cloud"
         intent="primary"
         onClick={() => setIsOpen(true)}
         style={{ marginLeft: '8px' }}
@@ -211,7 +259,7 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
       <Dialog
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title="Save Design to Supabase"
+        title="Upload Design to Cloud"
         style={{ width: '500px' }}
       >
         <div className={Classes.DIALOG_BODY}>
@@ -263,6 +311,30 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
             </select>
           </FormGroup>
 
+          <FormGroup label="Grade Level" labelFor="grade-select" requiredLabel>
+            <select
+              id="grade-select"
+              value={selectedGradeLevel}
+              onChange={(e) => setSelectedGradeLevel(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                fontSize: '14px'
+              }}
+              required
+            >
+              <option value="">-- Select Grade Level --</option>
+              <option value="grade5">Grade 5</option>
+              <option value="grade6">Grade 6</option>
+              <option value="grade7">Grade 7</option>
+              <option value="grade8">Grade 8</option>
+              <option value="grade9">Grade 9</option>
+              <option value="grade10">Grade 10</option>
+            </select>
+          </FormGroup>
+
           <ConnectionIndicator />
         </div>
         
@@ -273,11 +345,11 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
               onClick={() => setIsOpen(false)}
             />
             <Button
-              text="Save to Supabase"
+              text="Upload to Cloud"
               intent="primary"
               loading={isSaving}
               onClick={handleSave}
-              disabled={!designName.trim()}
+              disabled={!designName.trim() || !selectedGradeLevel}
             />
           </div>
         </div>
