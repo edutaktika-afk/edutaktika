@@ -47,10 +47,20 @@ if (R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY) {
       forcePathStyle: true,
     });
     console.log('✅ R2 client initialized');
+    console.log(`📡 R2 Endpoint: ${R2_ENDPOINT}`);
+    console.log(`🪣 R2 Bucket: ${R2_BUCKET_NAME}`);
+    console.log(`🌐 R2 Public URL: ${R2_PUBLIC_URL || 'Not configured (using default)'}`);
   } catch (error) {
     console.error('❌ Failed to initialize R2 client:', error);
     r2Client = null;
   }
+} else {
+  console.warn('⚠️ R2 not fully configured. Missing:', {
+    accountId: !R2_ACCOUNT_ID,
+    accessKey: !R2_ACCESS_KEY_ID,
+    secretKey: !R2_SECRET_ACCESS_KEY,
+    bucket: !R2_BUCKET_NAME
+  });
 }
 
 export { r2Client, R2_BUCKET_NAME, R2_PUBLIC_URL };

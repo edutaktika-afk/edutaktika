@@ -180,23 +180,18 @@ if (defaultTemplatesSection) {
 // Add our Educational Templates section - keep as "Templates"
 DEFAULT_SECTIONS.splice(7, 0, EducationalTemplatesSection);
 
-// Add our custom text section with Google Fonts after templates
-// First check if a text section already exists (shouldn't, but be safe)
-const existingTextIndex = DEFAULT_SECTIONS.findIndex(section => section.name === 'text');
-if (existingTextIndex === -1) {
-  // No text section exists, add ours
-  const textTemplatesIndex = DEFAULT_SECTIONS.findIndex(section => section.name === 'templates');
-  if (textTemplatesIndex !== -1) {
-    DEFAULT_SECTIONS.splice(textTemplatesIndex + 1, 0, TextSection);
-  } else {
-    // If no templates section found, add text section at position 1
-    DEFAULT_SECTIONS.splice(1, 0, TextSection);
-  }
-}
 // add two more sections
 // DEFAULT_SECTIONS.push(QuotesSection, QrSection); // REMOVED - Quotes and QR code sections
 // DEFAULT_SECTIONS.unshift(UploadSection);
 DEFAULT_SECTIONS.unshift(MyDesignsSection);
+
+// Add TextSection between Upload and Layers (position 2: after MyDesignsSection and Upload)
+// First check if a text section already exists (shouldn't, but be safe)
+const existingTextIndex = DEFAULT_SECTIONS.findIndex(section => section.name === 'text');
+if (existingTextIndex === -1) {
+  // Insert TextSection at position 2 (after MyDesignsSection[0] and Upload[1], before Layers[2])
+  DEFAULT_SECTIONS.splice(2, 0, TextSection);
+}
 
 DEFAULT_SECTIONS.push(StableDiffusionSection);
 DEFAULT_SECTIONS.push(AnimationSection); // Custom animation section with all animations

@@ -1,22 +1,12 @@
 /**
- * Load Supabase designs for subject pages
- * This file loads lesson designs from Supabase Storage and displays them
- * Editable by teachers, viewable by students
+ * Load designs from Cloudflare R2 Storage
+ * Simple approach: List files directly from R2 using a backend API or fetch files directly
  */
 
-// Supabase configuration - YOUR CREDENTIALS
-const SUPABASE_CONFIG = {
-  url: 'https://liiwqyodlzivzzethyrj.supabase.co',
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpaXdxeW9kbHppdnp6ZXRoeXJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwMDY0MTYsImV4cCI6MjA3NzU4MjQxNn0.5sPzjw-DLvZ5bA7NlRF5YdunBD-nOsQ0GC8ALz03sFE'
-};
-
-// Initialize Supabase client
-let supabaseClient = null;
-if (typeof supabase !== 'undefined') {
-  supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-} else {
-  console.warn('Supabase SDK not loaded. Please add: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>');
-}
+// R2 Configuration
+const R2_PUBLIC_URL = 'https://pub-5debe0c02d2d436787b8bc5adc76b013.r2.dev';
+const R2_BUCKET_NAME = 'lessonflarer2';
+const R2_API_ENDPOINT = '/api/list-r2-files'; // Backend API endpoint (optional)
 
 // Subject folder mapping
 const SUBJECT_FOLDERS = {
@@ -28,30 +18,39 @@ const SUBJECT_FOLDERS = {
   'subject_english': 'ENGLISH'
 };
 
-const BUCKET_NAME = 'LessonStorage';
+/**
+ * Get R2 public URL for a file
+ * @param {string} key - File path (e.g., "MATH/grade5/quarter1/design.json")
+ * @returns {string} Public URL
+ */
+function getR2FileUrl(key) {
+  // R2 public URL format: https://pub-xxx.r2.dev/bucket-name/path
+  // If R2_PUBLIC_URL already includes bucket, don't add it again
+  const baseUrl = R2_PUBLIC_URL.endsWith(`/${R2_BUCKET_NAME}`) 
+    ? R2_PUBLIC_URL 
+    : `${R2_PUBLIC_URL}/${R2_BUCKET_NAME}`;
+  return `${baseUrl}/${key}`;
+}
 
 /**
- * Load Supabase designs for a specific subject and quarter
+ * Load designs for a specific subject and quarter from R2
  * @param {string} subject - Subject name (math, science, english or subject_math, etc.)
  * @param {string} quarter - Quarter number (1, 2, 3, 4)
- * @param {HTMLElement} container - Container element to render designs into (optional, if null returns array)
+ * @param {HTMLElement} container - Container element to render designs into (optional)
  * @param {boolean} isTeacher - Whether user is a teacher (can edit)
- * @param {string} gradeLevel - Grade level (grade5, grade6, etc.) - optional, will be fetched if not provided
- * @returns {Promise<Array>} Array of designs if container is null
+ * @param {string} gradeLevel - Grade level (grade5, grade6, etc.) - optional
+ * @returns {Promise<Array>} Array of designs
  */
 async function loadSupabaseDesignsForQuarter(subject, quarter, container = null, isTeacher = false, gradeLevel = null) {
-  if (!supabaseClient) {
-    console.error('Supabase client not initialized');
-    if (container) {
-      container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Supabase not configured</div>';
-    }
-    return [];
-  }
-
-  // Get subject folder
   const subjectFolder = SUBJECT_FOLDERS[subject.toLowerCase()] || subject.toUpperCase();
   
-  // If grade level not provided and user is logged in, fetch it from Firebase
+  // Normalize subject name
+  let normalizedSubject = subject.toLowerCase();
+  if (normalizedSubject.startsWith('subject_')) {
+    normalizedSubject = normalizedSubject.replace('subject_', '');
+  }
+  
+  // Get grade level from Firebase if not provided
   if (!gradeLevel) {
     try {
       const user = firebase.auth().currentUser;
@@ -59,10 +58,9 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
         const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
         const teacher = teacherSnap.val();
         if (teacher && teacher.gradelevel) {
-          // Normalize grade level to match folder naming (e.g., "5" -> "grade5", "grade5" -> "grade5")
           const grade = teacher.gradelevel.toString();
           gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
-          console.log(`📚 Found teacher grade level: ${teacher.gradelevel} → normalized: ${gradeLevel}`);
+          console.log(`📚 Grade level: ${gradeLevel}`);
         }
       }
     } catch (error) {
@@ -70,190 +68,140 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
     }
   }
   
-  console.log(`🔄 Loading Supabase designs: subject=${subjectFolder}, quarter=${quarter}, grade=${gradeLevel || 'all'}`);
+  console.log(`🔄 [R2] Loading: ${subjectFolder}, quarter=${quarter}, grade=${gradeLevel || 'all'}`);
 
   try {
     // Show loading state
     if (container) {
-      container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;"><i class="fa fa-spinner fa-spin"></i> Loading Supabase designs...</div>';
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;"><i class="fa fa-spinner fa-spin"></i> Loading lessons from Cloudflare R2...</div>';
     }
 
-    // Load metadata from designs-list (use maybeSingle to avoid errors if table doesn't exist)
-    const { data: kvData, error: kvError } = await supabaseClient
-      .from('designs_metadata')
-      .select('value')
-      .eq('key', 'designs-list')
-      .maybeSingle();
+    // Build prefix for file listing: MATH/grade5/quarter1/
+    const quarterFolder = `quarter${quarter}`;
+    let prefix = `${subjectFolder}/`;
+    if (gradeLevel) {
+      const normalizedGrade = String(gradeLevel).startsWith('grade') ? gradeLevel : `grade${gradeLevel}`;
+      prefix = `${subjectFolder}/${normalizedGrade}/${quarterFolder}/`;
+    } else {
+      prefix = `${subjectFolder}/${quarterFolder}/`;
+    }
     
-    if (kvError) {
-      // PGRST116 = not found (expected if key doesn't exist)
-      // PGRST205 = table doesn't exist (table not created yet)
-      if (kvError.code === 'PGRST205') {
-        console.log('⚠️ designs_metadata table not found - will list files directly instead');
-      } else if (kvError.code !== 'PGRST116') {
-        console.warn('Error loading metadata:', kvError);
-      }
-    }
-
-    if (!kvData || !kvData.value) {
-      console.log('No metadata found, listing files directly...');
-      // Build paths with grade-aware structure
-      const quarterFolder = `quarter${quarter}`;
+    console.log(`📂 [R2] Listing files with prefix: ${prefix}`);
+    
+    let files = [];
+    
+    // Try to list files via backend API first (if available)
+    try {
+      const apiUrl = `${R2_API_ENDPOINT}?prefix=${encodeURIComponent(prefix)}`;
+      console.log(`🔌 [R2] Trying backend API: ${apiUrl}`);
+      const apiResponse = await fetch(apiUrl);
       
-      // IMPORTANT: Only use grade-specific paths when gradeLevel is provided
-      // This prevents Grade 5 lessons from loading when looking for Grade 6
-      const pathsToTry = [];
-      if (gradeLevel) {
-        // Grade-specific paths only - no fallback to non-grade paths
-        pathsToTry.push(`${subjectFolder}/${gradeLevel}/${quarterFolder}`); // Primary: subject/grade/quarter
-        pathsToTry.push(`${subjectFolder}/${gradeLevel}`); // Fallback: subject/grade (all quarters)
-        console.log(`📚 Using grade-specific paths for: ${gradeLevel}`);
+      if (apiResponse.ok) {
+        const apiData = await apiResponse.json();
+        files = apiData.files || [];
+        console.log(`✅ [R2] Backend API returned ${files.length} files`);
       } else {
-        // Only use non-grade paths if no grade level is specified
-        console.warn(`⚠️ No grade level provided! This may load lessons from wrong grade.`);
-        pathsToTry.push(`${subjectFolder}/${quarterFolder}`); // Just quarter
-        pathsToTry.push(subjectFolder); // Fallback: root
+        console.log(`⚠️ [R2] Backend API not available (${apiResponse.status}), trying direct fetch...`);
       }
+    } catch (apiError) {
+      console.log(`⚠️ [R2] Backend API error:`, apiError.message);
+      console.log(`💡 [R2] Backend API not configured, will try direct file access...`);
+    }
+    
+    // If no backend API, try to load a simple design IDs list (SIMPLEST APPROACH)
+    if (files.length === 0) {
+      const designIdsUrl = getR2FileUrl(`${prefix}design-ids.json`);
+      console.log(`📦 [R2] Loading design IDs from: ${designIdsUrl}`);
       
-      let files, error, fullPath;
-      
-      // Try each path in priority order
-      for (const path of pathsToTry) {
-        console.log(`📁 Trying to list: ${path}`);
-        ({ data: files, error } = await supabaseClient.storage
-          .from(BUCKET_NAME)
-          .list(path, {
-            limit: 100,
-            offset: 0,
+      try {
+        const idsResponse = await fetch(designIdsUrl);
+        if (idsResponse.ok) {
+          const idsData = await idsResponse.json();
+          console.log(`✅ [R2] Loaded design IDs:`, idsData);
+          
+          // Convert IDs to file objects
+          files = idsData.map(design => ({
+            key: `${prefix}${design.id}.json`,
+            url: getR2FileUrl(`${prefix}${design.id}.json`),
+            isJson: true,
+            thumbnailKey: `${prefix}${design.id}.jpg`,
+            thumbnailUrl: getR2FileUrl(`${prefix}${design.id}.jpg`),
+            name: design.name || design.id,
+            id: design.id
           }));
-        
-        if (!error && files && files.length > 0) {
-          fullPath = path;
-          console.log(`✅ Successfully listed files from: ${fullPath} (${files.length} items)`);
-          break;
+          console.log(`✅ [R2] Converted to ${files.length} file objects`);
         } else {
-          if (error) {
-            console.log(`⚠️ Path failed (${error.message})`);
-          } else {
-            console.log(`⚠️ Path exists but is empty`);
-          }
+          console.log(`⚠️ [R2] Design IDs file not found (${idsResponse.status})`);
         }
+      } catch (idsError) {
+        console.log(`⚠️ [R2] Error loading design IDs:`, idsError.message);
       }
-
-      if (error || !files || files.length === 0) {
-        const errorMsg = gradeLevel 
-          ? `No lessons found for ${gradeLevel} in ${subjectFolder}/${quarterFolder}. Make sure lessons are saved with the correct grade level.`
-          : 'Error loading designs from Supabase.';
-        console.error(`❌ ${errorMsg}`);
-        if (container) {
-          container.innerHTML = `<div style="text-align:center;padding:20px;color:#666;">${errorMsg}</div>`;
-        }
-        return [];
-      }
-      
-      console.log(`📁 Found ${files.length} total files in ${fullPath}`);
-
-      // Filter JSON files only
-      const jsonFiles = files.filter(file => file.name.endsWith('.json'));
-      
-      if (jsonFiles.length === 0) {
-        if (container) {
-          container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No designs found.<br><small>Click "Create Lesson" to get started!</small></div>';
-        }
-        return [];
-      }
-
-      // Load each file to get metadata
-      const designs = [];
-      for (const file of jsonFiles) {
-        const fileId = file.name.replace('.json', '');
-        const { data } = supabaseClient.storage
-          .from(BUCKET_NAME)
-          .getPublicUrl(`${fullPath}/${fileId}.jpg`);
-        
-        designs.push({
-          id: fileId,
-          name: fileId, // Will use ID as name if no metadata
-          thumbnail: data.publicUrl,
-          source: 'supabase',
-          quarter: quarter // Store the quarter so it can be passed to editor
-        });
-      }
-
-      if (container) {
-        renderSupabaseDesigns(designs, quarter, container, subject, isTeacher);
-      }
-      return designs;
-    }
-
-    // Parse the metadata
-    const allDesigns = kvData.value;
-    
-    console.log(`📦 Total designs in metadata: ${allDesigns.length}`);
-    
-    // Normalize subject name for comparison
-    let normalizedSubject = subject.toLowerCase();
-    if (normalizedSubject.startsWith('subject_')) {
-      normalizedSubject = normalizedSubject.replace('subject_', '');
     }
     
-    // Filter by subject and quarter
-    const filteredDesigns = allDesigns.filter(design => {
-      const matchesSubject = design.subject === normalizedSubject || 
-                            design.subject === SUBJECT_FOLDERS[normalizedSubject] ||
-                            design.subject === subject.toLowerCase() ||
-                            design.subject === SUBJECT_FOLDERS[subject.toLowerCase()];
-      // Convert both to strings for reliable comparison
-      const matchesQuarter = !quarter || String(design.quarter) === String(quarter);
-      
-      if (!matchesSubject) {
-        console.log(`🚫 Filtered out design "${design.name}": subject "${design.subject}" doesn't match "${normalizedSubject}"`);
-      } else if (!matchesQuarter) {
-        console.log(`🚫 Filtered out design "${design.name}": quarter "${design.quarter}" doesn't match "${quarter}"`);
-      }
-      
-      return matchesSubject && matchesQuarter;
-    });
+    // Convert files to metadata format for compatibility
+    const metadataList = files
+      .filter(file => file.isJson)
+      .map(file => {
+        const id = file.id || file.key.split('/').pop().replace('.json', '');
+        return {
+          id: id,
+          name: file.name || id, // Use name from design-ids.json if available
+          subject: normalizedSubject,
+          quarter: quarter,
+          gradeLevel: gradeLevel,
+          jsonUrl: file.url,
+          thumbnailUrl: file.thumbnailUrl || getR2FileUrl(file.key.replace('.json', '.jpg')),
+        };
+      });
+    
+    console.log(`📊 [R2] Found ${metadataList.length} designs`);
 
-    console.log(`📊 Found ${filteredDesigns.length} designs for ${subjectFolder} Quarter ${quarter}`);
-
-    if (filteredDesigns.length === 0) {
+    if (metadataList.length === 0) {
       if (container) {
-        container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No designs found.<br><small>Click "Create Lesson" to get started!</small></div>';
+        container.innerHTML = `
+          <div style="text-align:center;padding:20px;color:#666;">
+            <p>No lessons found.</p>
+            <p style="font-size:0.9rem;color:#999;margin-top:10px;">
+              Click <strong>"Create Lesson"</strong> to save your first lesson.
+            </p>
+            <p style="font-size:0.8rem;color:#999;margin-top:10px;">
+              Looking in: <code style="background:#f0f0f0;padding:2px 4px;border-radius:3px;">${prefix}</code>
+            </p>
+          </div>
+        `;
       }
       return [];
     }
 
-    // Get public URLs for thumbnails
-    const quarterFolder = `quarter${quarter}`;
+    // No filtering needed - design-ids.json is already folder-specific
+    const filteredDesigns = metadataList;
+
+    // URLs are already constructed from design-ids.json, just format for display
     const designsWithUrls = filteredDesigns.map(design => {
-      // Build path with grade if available
-      let thumbnailPath;
-      if (gradeLevel) {
-        thumbnailPath = `${SUBJECT_FOLDERS[subject.toLowerCase()]}/${gradeLevel}/${quarterFolder}/${design.id}.jpg`;
-      } else {
-        thumbnailPath = `${SUBJECT_FOLDERS[subject.toLowerCase()]}/${quarterFolder}/${design.id}.jpg`;
-      }
-      
-      const { data } = supabaseClient.storage
-        .from(BUCKET_NAME)
-        .getPublicUrl(thumbnailPath);
+      console.log(`🔗 [R2] Design "${design.name}":`, {
+        jsonUrl: design.jsonUrl,
+        thumbnailUrl: design.thumbnailUrl
+      });
       
       return {
-        ...design,
-        thumbnail: data.publicUrl,
-        source: 'supabase'
+        id: design.id,
+        name: design.name || design.id,
+        jsonUrl: design.jsonUrl,
+        thumbnail: design.thumbnailUrl,
+        quarter: design.quarter || quarter,
+        description: `Lesson: ${design.name || design.id}`,
+        source: 'r2'
       };
     });
 
     if (container) {
-      renderSupabaseDesigns(designsWithUrls, quarter, container, subject, isTeacher);
+      renderDesigns(designsWithUrls, quarter, container, subject, isTeacher);
     }
     
     return designsWithUrls;
 
   } catch (error) {
-    console.error('❌ Error loading Supabase designs:', error);
+    console.error('❌ Error loading designs from R2:', error);
     if (container) {
       container.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">Error loading designs. Please refresh the page.</div>';
     }
@@ -262,9 +210,9 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
 }
 
 /**
- * Render Supabase designs in cards
+ * Render designs in cards
  */
-function renderSupabaseDesigns(designs, quarter, container, subject, isTeacher) {
+function renderDesigns(designs, quarter, container, subject, isTeacher) {
   if (!container) return;
 
   if (designs.length === 0) {
@@ -272,72 +220,58 @@ function renderSupabaseDesigns(designs, quarter, container, subject, isTeacher) 
     return;
   }
 
-  // Build cards HTML
   let cardsHTML = '<div class="gallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin: 20px 0;">';
   
   designs.forEach(design => {
-    const description = design.description || 'No description available';
-    const subjectFolder = SUBJECT_FOLDERS[subject.toLowerCase()];
-    
     cardsHTML += `
       <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; cursor: pointer; position: relative;" 
-           onclick="openSupabaseDesignViewer('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')"
+           onclick="openDesignViewer('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')"
            onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'"
            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
         <img 
           class="card-image" 
-          src="${design.thumbnail || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\'%3E%3Crect fill=\'%234CAF50\' width=\'300\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'20\' fill=\'white\'%3E${design.name}%3C/text%3E%3C/svg%3E'}" 
+          src="${design.thumbnail}" 
           alt="${design.name}"
           style="width: 100%; height: 160px; object-fit: cover;"
           onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\'%3E%3Crect fill=\'%23e3f2fd\' width=\'300\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'20\' fill=\'%231976d2\'%3E${design.name}%3C/text%3E%3C/svg%3E'"
         >
         <div class="card-content" style="padding: 16px;">
           <div class="card-title" style="font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 8px;">${design.name}</div>
-          <div class="card-description" style="font-size: 0.9rem; color: #666; margin-bottom: 12px;">${description}</div>
-          <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-            <button onclick="event.stopPropagation(); openSupabaseDesignViewer('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')" 
-                    style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);"
-                    onmouseover="this.style.background='#1976D2'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(33, 150, 243, 0.4)'"
-                    onmouseout="this.style.background='#2196F3'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(33, 150, 243, 0.3)'">
-              <i class="fas fa-eye" style="margin-right: 6px;"></i>View Design
+          <div class="card-description" style="font-size: 0.9rem; color: #666; margin-bottom: 12px;">${design.description}</div>
+          <div style="display: flex; gap: 8px;">
+            <button onclick="event.stopPropagation(); openDesignViewer('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')" 
+                    style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600;">
+              <i class="fas fa-eye" style="margin-right: 6px;"></i>View
             </button>
             ${isTeacher ? `
-            <button onclick="event.stopPropagation(); openSupabaseDesignEditor('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')" 
-                    style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);"
-                    onmouseover="this.style.background='#F57C00'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(255, 152, 0, 0.4)'"
-                    onmouseout="this.style.background='#FF9800'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(255, 152, 0, 0.3)'">
-              <i class="fas fa-edit" style="margin-right: 6px;"></i>Edit Design
+            <button onclick="event.stopPropagation(); openDesignEditor('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')" 
+                    style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600;">
+              <i class="fas fa-edit" style="margin-right: 6px;"></i>Edit
             </button>
             ` : ''}
           </div>
-          <div style="font-size: 0.8rem; color: #888;">Supabase: ${subjectFolder}</div>
+          <div style="font-size: 0.8rem; color: #888; margin-top: 8px;">Storage: Cloudflare R2</div>
         </div>
       </div>
     `;
   });
   
   cardsHTML += '</div>';
-  
   container.innerHTML = cardsHTML;
   
-  console.log(`✅ Rendered ${designs.length} Supabase designs`);
+  console.log(`✅ Rendered ${designs.length} lessons from R2`);
 }
 
 /**
  * Open design viewer (students can only view)
  */
-async function openSupabaseDesignViewer(designId, subject, designName = 'Design', quarter = '1') {
-  console.log('🎨 Opening Supabase design viewer:', designId, subject, designName, quarter);
+async function openDesignViewer(designId, subject, designName = 'Design', quarter = '1') {
+  console.log('🎨 Opening lesson viewer:', designId, subject, designName, quarter);
   
   try {
-    if (!supabaseClient) {
-      alert('Supabase not configured');
-      return;
-    }
-
     const subjectFolder = SUBJECT_FOLDERS[subject.toLowerCase()] || subject.toUpperCase();
     
-    // Try to get teacher's grade level
+    // Get grade level
     let gradeLevel = null;
     try {
       const user = firebase.auth().currentUser;
@@ -353,98 +287,69 @@ async function openSupabaseDesignViewer(designId, subject, designName = 'Design'
       console.warn('Could not fetch grade level:', error);
     }
     
-    // Build paths to try in priority order: grade+quarter > quarter > grade > root
+    // Build R2 URL for JSON file
     const quarterFolder = `quarter${quarter}`;
-    const pathsToTry = [];
+    let jsonPath;
     if (gradeLevel) {
-      pathsToTry.push(`${subjectFolder}/${gradeLevel}/${quarterFolder}/${designId}.json`);
-      pathsToTry.push(`${subjectFolder}/${gradeLevel}/${designId}.json`);
+      jsonPath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${designId}.json`;
+    } else {
+      jsonPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
     }
-    pathsToTry.push(`${subjectFolder}/${quarterFolder}/${designId}.json`);
-    pathsToTry.push(`${subjectFolder}/${designId}.json`);
     
-    console.log(`📁 Trying paths in order: ${pathsToTry.join(', ')}`);
+    const jsonUrl = getR2FileUrl(jsonPath);
+    console.log(`📥 [R2] Loading JSON from: ${jsonUrl}`);
     
-    // Download the design JSON - try each path
-    let data, error;
-    for (const path of pathsToTry) {
-      console.log(`📁 Trying: ${path}`);
-      ({ data, error } = await supabaseClient.storage
-        .from(BUCKET_NAME)
-        .download(path));
-      
-      if (!error) {
-        console.log(`✅ Successfully downloaded from: ${path}`);
-        break;
-      }
+    // Fetch JSON from R2
+    const response = await fetch(jsonUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to load design: ${response.status}`);
     }
-
-    if (error) {
-      console.error('Error downloading design from all locations:', error);
-      alert('Error loading design: ' + error.message);
-      return;
-    }
-
-    // Read the JSON
-    const text = await data.text();
-    const designJSON = JSON.parse(text);
-
-    // Store in session storage for the editor (for same-tab scenarios)
-    sessionStorage.setItem('supabase-design-to-load', text);
+    
+    const designJSON = await response.json();
+    
+    // Store in session storage for editor
+    sessionStorage.setItem('supabase-design-to-load', JSON.stringify(designJSON));
     sessionStorage.setItem('supabase-design-id', designId);
     sessionStorage.setItem('supabase-design-subject', subject);
     sessionStorage.setItem('supabase-design-name', designName);
     sessionStorage.setItem('supabase-design-quarter', quarter);
     sessionStorage.setItem('supabase-design-grade', gradeLevel || '');
 
-    // Open in fullscreen viewer - use environment-aware editor URL
-    // IMPORTANT: Pass grade level in URL params since new window/tab has separate sessionStorage
-    let editorBaseUrl = '/editor/index.html'; // Default for production deployment
-    if (typeof getEditorBase === 'function') {
-      editorBaseUrl = getEditorBase();
-    } else if (typeof getEditorBaseUrl === 'function') {
+    // Open in viewer mode
+    let editorBaseUrl = '/editor/index.html';
+    if (typeof getEditorBaseUrl === 'function') {
       editorBaseUrl = getEditorBaseUrl();
-    } else if (typeof window.location !== 'undefined') {
-      // Fallback: detect environment from hostname
-      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      editorBaseUrl = isLocal ? 'http://localhost:5173/' : '/editor/index.html';
+    } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      editorBaseUrl = 'http://localhost:5173/';
     }
     
-    // Build URL with parameters
-    let viewerUrl = editorBaseUrl;
     const params = new URLSearchParams();
     params.set('supabaseDesign', designId);
     params.set('subject', subject);
     params.set('quarter', quarter);
-    if (gradeLevel) {
-      params.set('grade', gradeLevel);
-    }
-    viewerUrl += (viewerUrl.includes('?') ? '&' : '?') + params.toString();
+    if (gradeLevel) params.set('grade', gradeLevel);
+    params.set('view', 'true');
     
-    console.log('🔗 Opening viewer with URL:', viewerUrl);
-    window.open(viewerUrl, '_blank', 'width=1400,height=900');
+    const editorUrl = editorBaseUrl + (editorBaseUrl.includes('?') ? '&' : '?') + params.toString();
+    console.log('🔗 Opening viewer:', editorUrl);
+    window.open(editorUrl, '_blank', 'width=1400,height=900');
 
   } catch (error) {
     console.error('Error opening design viewer:', error);
-    alert('Error opening design: ' + error.message);
+    alert('Error loading design: ' + error.message);
   }
 }
 
 /**
  * Open design editor (teachers can edit)
  */
-async function openSupabaseDesignEditor(designId, subject, designName = 'Design', quarter = '1') {
-  console.log('✏️ Opening Supabase design editor:', designId, subject, designName, quarter);
+async function openDesignEditor(designId, subject, designName = 'Design', quarter = '1') {
+  console.log('✏️ Opening lesson editor:', designId, subject, designName, quarter);
   
   try {
-    if (!supabaseClient) {
-      alert('Supabase not configured');
-      return;
-    }
-
     const subjectFolder = SUBJECT_FOLDERS[subject.toLowerCase()] || subject.toUpperCase();
     
-    // Try to get teacher's grade level
+    // Get grade level
     let gradeLevel = null;
     try {
       const user = firebase.auth().currentUser;
@@ -460,86 +365,68 @@ async function openSupabaseDesignEditor(designId, subject, designName = 'Design'
       console.warn('Could not fetch grade level:', error);
     }
     
-    // Build paths to try in priority order: grade+quarter > quarter > grade > root
+    // Build R2 URL for JSON file
     const quarterFolder = `quarter${quarter}`;
-    const pathsToTry = [];
+    let jsonPath;
     if (gradeLevel) {
-      pathsToTry.push(`${subjectFolder}/${gradeLevel}/${quarterFolder}/${designId}.json`);
-      pathsToTry.push(`${subjectFolder}/${gradeLevel}/${designId}.json`);
+      jsonPath = `${subjectFolder}/${gradeLevel}/${quarterFolder}/${designId}.json`;
+    } else {
+      jsonPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
     }
-    pathsToTry.push(`${subjectFolder}/${quarterFolder}/${designId}.json`);
-    pathsToTry.push(`${subjectFolder}/${designId}.json`);
     
-    console.log(`📁 Trying paths in order: ${pathsToTry.join(', ')}`);
+    const jsonUrl = getR2FileUrl(jsonPath);
+    console.log(`📥 [R2] Loading JSON from: ${jsonUrl}`);
     
-    // Download the design JSON - try each path
-    let data, error;
-    for (const path of pathsToTry) {
-      console.log(`📁 Trying: ${path}`);
-      ({ data, error } = await supabaseClient.storage
-        .from(BUCKET_NAME)
-        .download(path));
-      
-      if (!error) {
-        console.log(`✅ Successfully downloaded from: ${path}`);
-        break;
-      }
+    // Fetch JSON from R2
+    const response = await fetch(jsonUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to load design: ${response.status}`);
     }
-
-    if (error) {
-      console.error('Error downloading design from all locations:', error);
-      alert('Error loading design: ' + error.message);
-      return;
-    }
-
-    // Read the JSON
-    const text = await data.text();
-    const designJSON = JSON.parse(text);
-
-    // Store in session storage for the editor (for same-tab scenarios)
-    sessionStorage.setItem('supabase-design-to-load', text);
+    
+    const designJSON = await response.json();
+    
+    // Store in session storage for editor
+    sessionStorage.setItem('supabase-design-to-load', JSON.stringify(designJSON));
     sessionStorage.setItem('supabase-design-id', designId);
     sessionStorage.setItem('supabase-design-subject', subject);
     sessionStorage.setItem('supabase-design-name', designName);
     sessionStorage.setItem('supabase-design-quarter', quarter);
     sessionStorage.setItem('supabase-design-grade', gradeLevel || '');
 
-    // Open in editor mode - use environment-aware editor URL
-    // IMPORTANT: Pass grade level in URL params since new window/tab has separate sessionStorage
-    let editorBaseUrl = '/editor/index.html'; // Default for production deployment
-    if (typeof getEditorBase === 'function') {
-      editorBaseUrl = getEditorBase();
-    } else if (typeof getEditorBaseUrl === 'function') {
+    // Open in editor mode
+    let editorBaseUrl = '/editor/index.html';
+    if (typeof getEditorBaseUrl === 'function') {
       editorBaseUrl = getEditorBaseUrl();
-    } else if (typeof window.location !== 'undefined') {
-      // Fallback: detect environment from hostname
-      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      editorBaseUrl = isLocal ? 'http://localhost:5173/' : '/editor/index.html';
+    } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      editorBaseUrl = 'http://localhost:5173/';
     }
     
-    // Build URL with parameters
-    let editorUrl = editorBaseUrl;
     const params = new URLSearchParams();
     params.set('supabaseDesign', designId);
     params.set('subject', subject);
     params.set('quarter', quarter);
-    if (gradeLevel) {
-      params.set('grade', gradeLevel);
-    }
-    params.set('view', 'true');
-    editorUrl += (editorUrl.includes('?') ? '&' : '?') + params.toString();
+    if (gradeLevel) params.set('grade', gradeLevel);
     
-    console.log('🔗 Opening editor with URL:', editorUrl);
+    const editorUrl = editorBaseUrl + (editorBaseUrl.includes('?') ? '&' : '?') + params.toString();
+    console.log('🔗 Opening editor:', editorUrl);
     window.open(editorUrl, '_blank', 'width=1400,height=900');
 
   } catch (error) {
     console.error('Error opening design editor:', error);
-    alert('Error opening design: ' + error.message);
+    alert('Error loading design: ' + error.message);
   }
 }
 
 // Export for use in HTML pages
 window.loadSupabaseDesignsForQuarter = loadSupabaseDesignsForQuarter;
-window.openSupabaseDesignViewer = openSupabaseDesignViewer;
-window.openSupabaseDesignEditor = openSupabaseDesignEditor;
+window.openDesignViewer = openDesignViewer;
+window.openSupabaseDesignViewer = openDesignViewer; // Alias for backward compatibility
+window.openDesignEditor = openDesignEditor;
+window.openSupabaseDesignEditor = openDesignEditor; // Alias for backward compatibility
 
+// Log that functions are available
+console.log('✅ [R2 Loader] Functions loaded:', {
+  loadSupabaseDesignsForQuarter: typeof window.loadSupabaseDesignsForQuarter,
+  openDesignViewer: typeof window.openDesignViewer,
+  openDesignEditor: typeof window.openDesignEditor
+});

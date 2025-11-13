@@ -48,7 +48,17 @@ const MATERIAL_ICONS = {
     { name: 'crop_free', label: 'Coordinate', category: 'Math' },
     { name: 'rotate_90_degrees_ccw', label: 'Rotation', category: 'Math' },
     { name: 'transform', label: 'Transform', category: 'Math' },
-    { name: 'pattern', label: 'Pattern', category: 'Math' }
+    { name: 'pattern', label: 'Pattern', category: 'Math' },
+    { name: 'schedule', label: 'Clock', category: 'Math' },
+    { name: 'access_time', label: 'Time', category: 'Math' },
+    { name: 'calendar_today', label: 'Calendar', category: 'Math' },
+    { name: 'numbers', label: 'Numbers', category: 'Math' },
+    { name: 'plus_one', label: 'Plus One', category: 'Math' },
+    { name: 'exposure_plus_1', label: 'Add', category: 'Math' },
+    { name: 'remove', label: 'Subtract', category: 'Math' },
+    { name: 'close', label: 'Multiply', category: 'Math' },
+    { name: 'horizontal_rule', label: 'Divide', category: 'Math' },
+    { name: 'equals', label: 'Equals', category: 'Math' }
   ],
   'Education': [
     { name: 'school', label: 'School', category: 'Education' },
@@ -70,7 +80,19 @@ const MATERIAL_ICONS = {
     { name: 'brush', label: 'Brush', category: 'Education' },
     { name: 'color_lens', label: 'Color Lens', category: 'Education' },
     { name: 'format_paint', label: 'Format Paint', category: 'Education' },
-    { name: 'auto_fix_high', label: 'Auto Fix', category: 'Education' }
+    { name: 'auto_fix_high', label: 'Auto Fix', category: 'Education' },
+    { name: 'person', label: 'Student', category: 'Education' },
+    { name: 'groups', label: 'Class', category: 'Education' },
+    { name: 'person_outline', label: 'Teacher', category: 'Education' },
+    { name: 'emoji_events', label: 'Award', category: 'Education' },
+    { name: 'star', label: 'Star', category: 'Education' },
+    { name: 'thumb_up', label: 'Good Job', category: 'Education' },
+    { name: 'celebration', label: 'Celebration', category: 'Education' },
+    { name: 'lightbulb', label: 'Idea', category: 'Education' },
+    { name: 'psychology', label: 'Thinking', category: 'Education' },
+    { name: 'visibility', label: 'See', category: 'Education' },
+    { name: 'hearing', label: 'Listen', category: 'Education' },
+    { name: 'record_voice_over', label: 'Speak', category: 'Education' }
   ],
   'Technology': [
     { name: 'computer', label: 'Computer', category: 'Technology' },

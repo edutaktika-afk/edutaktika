@@ -1111,16 +1111,34 @@ async function loadTeacherLessons() {
 firebase.auth().onAuthStateChanged(async function(user) {
     if (user) {
         console.log('👤 User authenticated, loading Firebase and Supabase designs...');
-        // Wait a bit for DOM to be ready
-        setTimeout(() => {
-            // Load Firebase AND Supabase designs for all quarters
-            for (let q = 1; q <= 4; q++) {
-                const container = document.querySelector(`#quarter-${q} .lessons-container`);
-                if (container) {
-                    loadAllDesignsForQuarter(container);
-                }
+        // Wait for scripts to load, then load designs
+        const waitForScripts = setInterval(() => {
+            if (typeof window.loadSupabaseDesignsForQuarter === 'function') {
+                clearInterval(waitForScripts);
+                console.log('✅ loadSupabaseDesignsForQuarter function is available');
+                // Wait a bit for DOM to be ready
+                setTimeout(() => {
+                    // Load Firebase AND Supabase designs for all quarters
+                    for (let q = 1; q <= 4; q++) {
+                        const container = document.querySelector(`#quarter-${q} .lessons-container`);
+                        if (container) {
+                            loadAllDesignsForQuarter(container);
+                        }
+                    }
+                }, 500);
+            } else {
+                console.log('⏳ Waiting for loadSupabaseDesignsForQuarter function to load...');
             }
-        }, 1000);
+        }, 100);
+        
+        // Timeout after 5 seconds
+        setTimeout(() => {
+            clearInterval(waitForScripts);
+            if (typeof window.loadSupabaseDesignsForQuarter !== 'function') {
+                console.error('❌ loadSupabaseDesignsForQuarter function failed to load after 5 seconds');
+                console.error('📋 Check if loadSupabaseDesigns.js script is loaded correctly');
+            }
+        }, 5000);
     }
 });
 function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
@@ -1152,11 +1170,20 @@ async function loadAllDesignsForQuarter(container) {
         const isTeacher = true;
         let supabaseDesigns = [];
         
-        if (typeof loadSupabaseDesignsForQuarter === 'function') {
-            supabaseDesigns = await loadSupabaseDesignsForQuarter('subject_english', quarterNumber, null, isTeacher);
+        // Try both window and global scope for the function
+        const loadFunction = window.loadSupabaseDesignsForQuarter || (typeof loadSupabaseDesignsForQuarter !== 'undefined' ? loadSupabaseDesignsForQuarter : null);
+        
+        if (loadFunction && typeof loadFunction === 'function') {
+            console.log(`🔄 [Subject Page] Calling loadSupabaseDesignsForQuarter for subject_english, quarter ${quarterNumber}`);
+            supabaseDesigns = await loadFunction('subject_english', quarterNumber, null, isTeacher);
+            console.log(`📊 [Subject Page] Received ${supabaseDesigns?.length || 0} designs from R2`);
             if (supabaseDesigns && supabaseDesigns.length) {
                 allDesigns.push(...supabaseDesigns);
             }
+        } else {
+            console.error('❌ [Subject Page] loadSupabaseDesignsForQuarter function not found!');
+            console.error('❌ [Subject Page] Available on window:', typeof window.loadSupabaseDesignsForQuarter);
+            console.error('❌ [Subject Page] Scripts loaded:', Array.from(document.scripts).map(s => s.src).filter(Boolean));
         }
         
         // Render all designs together
@@ -1170,16 +1197,16 @@ async function loadAllDesignsForQuarter(container) {
             id: design.id,
             name: design.name,
             description: design.description || 'No description available',
-            jsonUrl: design.id,
+            jsonUrl: design.jsonUrl || design.id,
             thumbUrl: design.thumbnail || design.thumbUrl,
             created: design.created || 'Unknown',
-            source: design.source || 'unknown',
+            source: design.source || 'r2',
             quarter: design.quarter || quarterNumber // Preserve quarter for proper loading
         }));
         
         renderDesignsForQuarter(compatibleDesigns, container);
         
-        console.log(`✅ Loaded ${allDesigns.length} total designs (${supabaseDesigns?.length || 0} Supabase)`);
+        console.log(`✅ Loaded ${allDesigns.length} total designs (${supabaseDesigns?.length || 0} from R2)`);
         
     } catch (error) {
         console.error('Error loading all designs:', error);
@@ -1238,7 +1265,7 @@ function renderDesignsForQuarter(designs, container) {
         <div class="gallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin: 20px 0;">
             ${designs.map(design => `
                 <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; cursor: pointer; position: relative;" 
-                     onclick="${design.source === 'supabase' ? `openSupabaseDesignViewer('${design.id}', 'subject_english', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}"
+                     onclick="${design.source === 'r2' || design.source === 'supabase' ? `openDesignViewer('${design.id}', 'subject_english', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}"
                      onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'"
                      onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
                     <img 
@@ -1252,13 +1279,13 @@ function renderDesignsForQuarter(designs, container) {
                         <div class="card-title" style="font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 8px;">${design.name}</div>
                         <div class="card-description" style="font-size: 0.9rem; color: #666; margin-bottom: 12px;">${design.description}</div>
                         <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                            <button onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openSupabaseDesignViewer('${design.id}', 'subject_english', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}"
+                            <button onclick="event.stopPropagation(); ${design.source === 'r2' || design.source === 'supabase' ? `openDesignViewer('${design.id}', 'subject_english', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}"
                                     style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);"
                                     onmouseover="this.style.background='#1976D2'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(33, 150, 243, 0.4)'"
                                     onmouseout="this.style.background='#2196F3'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(33, 150, 243, 0.3)'">
                                 <i class="fas fa-eye" style="margin-right: 6px;"></i>View Design
                             </button>
-                            <button onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openSupabaseDesignEditor('${design.id}', 'subject_english', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignEditor('${encodeURIComponent(design.jsonUrl)}')`}"
+                            <button onclick="event.stopPropagation(); ${design.source === 'r2' || design.source === 'supabase' ? `openDesignEditor('${design.id}', 'subject_english', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignEditor('${encodeURIComponent(design.jsonUrl)}')`}"
                                     style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);"
                                     onmouseover="this.style.background='#F57C00'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(255, 152, 0, 0.4)'"
                                     onmouseout="this.style.background='#FF9800'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(255, 152, 0, 0.3)'">
