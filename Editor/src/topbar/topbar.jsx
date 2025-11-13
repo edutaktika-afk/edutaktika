@@ -506,6 +506,37 @@ export default observer(({ store, isViewOnly = false }) => {
                 >
                   {document.fullscreenElement ? 'Exit Fullscreen' : 'Fullscreen'}
                 </AnchorButton>
+                {/* Duplicate Page */}
+                <AnchorButton
+                  minimal
+                  icon={<Icon icon={IconNames.DUPLICATE} />}
+                  onClick={() => {
+                    const activePage = store.activePage;
+                    if (activePage) {
+                      try {
+                        // Get current page's children
+                        const children = activePage.children;
+                        // Create new page
+                        const newPage = store.addPage();
+                        // Copy each element to the new page
+                        children.forEach((child) => {
+                          const elementJSON = child.toJSON();
+                          // Create new element from JSON
+                          newPage.addElement(elementJSON);
+                        });
+                        // Select the new page
+                        store.setActivePage(newPage.id);
+                        console.log('✅ Page duplicated successfully');
+                      } catch (error) {
+                        console.error('❌ Error duplicating page:', error);
+                        alert('Error duplicating page: ' + error.message);
+                      }
+                    }
+                  }}
+                  title="Duplicate Current Page"
+                >
+                  Duplicate Page
+                </AnchorButton>
                 {/* Present (slideshow) */}
                 <AnchorButton
                   minimal

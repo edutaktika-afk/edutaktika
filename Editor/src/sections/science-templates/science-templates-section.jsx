@@ -204,6 +204,676 @@ const EDUCATIONAL_TEMPLATES = [
     isMultiPage: true,
     fileName: 'blank-presentation',
     description: 'Clean starter template for any subject'
+  },
+  // Quick single-page templates - following multi-page design principles
+  {
+    id: 'math-problem-template',
+    name: 'Math Problem',
+    preview: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=200&h=150&fit=crop',
+    category: 'math',
+    icon: FaCalculator,
+    isMultiPage: false,
+    elements: [
+      {
+        type: 'rect',
+        x: 0,
+        y: 0,
+        width: 1920,
+        height: 1080,
+        fill: '#f5f5f5',
+        stroke: 'transparent',
+        strokeWidth: 0
+      },
+      {
+        type: 'text',
+        text: 'MATH PROBLEM',
+        fontSize: 72,
+        fontWeight: 'bold',
+        x: 150,
+        y: 150,
+        fill: '#1976d2',
+        shadowEnabled: true,
+        shadowBlur: 10,
+        shadowOffsetX: 0,
+        shadowOffsetY: 4,
+        shadowColor: 'rgba(0,0,0,0.2)'
+      },
+      {
+        type: 'text',
+        text: 'Problem #1',
+        fontSize: 36,
+        fontWeight: 'bold',
+        x: 150,
+        y: 280,
+        fill: '#333333'
+      },
+      {
+        type: 'text',
+        text: 'Solve the following equation:',
+        fontSize: 24,
+        x: 150,
+        y: 360,
+        fill: '#555555'
+      },
+      {
+        type: 'rect',
+        x: 140,
+        y: 420,
+        width: 800,
+        height: 120,
+        fill: '#ffffff',
+        stroke: '#1976d2',
+        strokeWidth: 3,
+        cornerRadius: 8
+      },
+      {
+        type: 'text',
+        text: '2x + 5 = 15',
+        fontSize: 48,
+        fontWeight: 'bold',
+        x: 150,
+        y: 450,
+        fill: '#1976d2'
+      },
+      {
+        type: 'text',
+        text: 'Solution:',
+        fontSize: 28,
+        fontWeight: '600',
+        x: 150,
+        y: 600,
+        fill: '#333333'
+      },
+      {
+        type: 'rect',
+        x: 140,
+        y: 650,
+        width: 1200,
+        height: 300,
+        fill: '#f9f9f9',
+        stroke: '#e0e0e0',
+        strokeWidth: 2,
+        cornerRadius: 8
+      },
+      {
+        type: 'text',
+        text: 'Show your work here...',
+        fontSize: 20,
+        x: 160,
+        y: 680,
+        fill: '#999999',
+        fontStyle: 'italic'
+      }
+    ],
+    description: 'Professional math problem template with solution space'
+  },
+  {
+    id: 'reading-comprehension-template',
+    name: 'Reading Comprehension',
+    preview: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=150&fit=crop',
+    category: 'english',
+    icon: FaBook,
+    isMultiPage: false,
+    elements: [
+      {
+        type: 'rect',
+        x: 0,
+        y: 0,
+        width: 1920,
+        height: 1080,
+        fill: '#ffffff',
+        stroke: 'transparent',
+        strokeWidth: 0
+      },
+      {
+        type: 'text',
+        text: 'READING COMPREHENSION',
+        fontSize: 64,
+        fontWeight: 'bold',
+        x: 150,
+        y: 100,
+        fill: '#2980b9',
+        shadowEnabled: true,
+        shadowBlur: 8,
+        shadowOffsetX: 0,
+        shadowOffsetY: 3,
+        shadowColor: 'rgba(0,0,0,0.15)'
+      },
+      {
+        type: 'text',
+        text: 'Read the passage carefully and answer the questions below.',
+        fontSize: 22,
+        x: 150,
+        y: 220,
+        fill: '#555555'
+      },
+      {
+        type: 'rect',
+        x: 140,
+        y: 280,
+        width: 1640,
+        height: 400,
+        fill: '#f8f9fa',
+        stroke: '#2980b9',
+        strokeWidth: 2,
+        cornerRadius: 8
+      },
+      {
+        type: 'text',
+        text: 'Passage:',
+        fontSize: 24,
+        fontWeight: '600',
+        x: 160,
+        y: 310,
+        fill: '#2980b9'
+      },
+      {
+        type: 'text',
+        text: '[Insert your reading passage here. Make sure it is clear and well-formatted for students to read and understand.]',
+        fontSize: 20,
+        x: 160,
+        y: 360,
+        fill: '#333333',
+        width: 1600,
+        lineHeight: 1.6
+      },
+      {
+        type: 'text',
+        text: 'Questions:',
+        fontSize: 32,
+        fontWeight: 'bold',
+        x: 150,
+        y: 750,
+        fill: '#2c3e50'
+      },
+      {
+        type: 'rect',
+        x: 140,
+        y: 800,
+        width: 1640,
+        height: 200,
+        fill: '#ffffff',
+        stroke: '#e0e0e0',
+        strokeWidth: 1,
+        cornerRadius: 8
+      },
+      {
+        type: 'text',
+        text: '1. Question one goes here...',
+        fontSize: 20,
+        x: 160,
+        y: 830,
+        fill: '#333333'
+      }
+    ],
+    description: 'Professional reading comprehension template with passage and question areas'
+  },
+  {
+    id: 'vocabulary-flashcard-template',
+    name: 'Vocabulary Flashcard',
+    preview: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=200&h=150&fit=crop',
+    category: 'english',
+    icon: FaBook,
+    isMultiPage: false,
+    elements: [
+      {
+        type: 'rect',
+        x: 0,
+        y: 0,
+        width: 1920,
+        height: 1080,
+        fill: '#e8f4f8',
+        stroke: 'transparent',
+        strokeWidth: 0
+      },
+      {
+        type: 'rect',
+        x: 360,
+        y: 200,
+        width: 1200,
+        height: 680,
+        fill: '#ffffff',
+        stroke: '#3498db',
+        strokeWidth: 4,
+        cornerRadius: 16,
+        shadowEnabled: true,
+        shadowBlur: 20,
+        shadowOffsetX: 0,
+        shadowOffsetY: 8,
+        shadowColor: 'rgba(0,0,0,0.2)'
+      },
+      {
+        type: 'text',
+        text: 'VOCABULARY',
+        fontSize: 48,
+        fontWeight: 'bold',
+        x: 960,
+        y: 280,
+        fill: '#2980b9',
+        align: 'center'
+      },
+      {
+        type: 'text',
+        text: 'Word',
+        fontSize: 72,
+        fontWeight: 'bold',
+        x: 960,
+        y: 380,
+        fill: '#2c3e50',
+        align: 'center',
+        shadowEnabled: true,
+        shadowBlur: 5,
+        shadowOffsetX: 0,
+        shadowOffsetY: 2,
+        shadowColor: 'rgba(0,0,0,0.1)'
+      },
+      {
+        type: 'rect',
+        x: 400,
+        y: 500,
+        width: 1120,
+        height: 120,
+        fill: '#ecf0f1',
+        stroke: '#3498db',
+        strokeWidth: 2,
+        cornerRadius: 8
+      },
+      {
+        type: 'text',
+        text: 'Definition:',
+        fontSize: 24,
+        fontWeight: '600',
+        x: 400,
+        y: 520,
+        fill: '#2980b9'
+      },
+      {
+        type: 'text',
+        text: '[Enter the definition here]',
+        fontSize: 22,
+        x: 400,
+        y: 560,
+        fill: '#555555'
+      },
+      {
+        type: 'text',
+        text: 'Example:',
+        fontSize: 24,
+        fontWeight: '600',
+        x: 400,
+        y: 680,
+        fill: '#2980b9'
+      },
+      {
+        type: 'rect',
+        x: 400,
+        y: 720,
+        width: 1120,
+        height: 100,
+        fill: '#ffffff',
+        stroke: '#bdc3c7',
+        strokeWidth: 1,
+        cornerRadius: 8
+      },
+      {
+        type: 'text',
+        text: '[Enter an example sentence here]',
+        fontSize: 20,
+        x: 420,
+        y: 750,
+        fill: '#7f8c8d',
+        fontStyle: 'italic'
+      }
+    ],
+    description: 'Professional vocabulary flashcard template with definition and example'
+  },
+  {
+    id: 'science-experiment-template',
+    name: 'Science Experiment',
+    preview: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=200&h=150&fit=crop',
+    category: 'science',
+    icon: FaFlask,
+    isMultiPage: false,
+    elements: [
+      {
+        type: 'rect',
+        x: 0,
+        y: 0,
+        width: 1920,
+        height: 1080,
+        fill: '#f0f4f8',
+        stroke: 'transparent',
+        strokeWidth: 0
+      },
+      {
+        type: 'text',
+        text: 'SCIENCE EXPERIMENT',
+        fontSize: 64,
+        fontWeight: 'bold',
+        x: 150,
+        y: 100,
+        fill: '#27ae60',
+        shadowEnabled: true,
+        shadowBlur: 10,
+        shadowOffsetX: 0,
+        shadowOffsetY: 4,
+        shadowColor: 'rgba(0,0,0,0.2)'
+      },
+      {
+        type: 'text',
+        text: 'Experiment Title',
+        fontSize: 40,
+        fontWeight: 'bold',
+        x: 150,
+        y: 220,
+        fill: '#2c3e50'
+      },
+      {
+        type: 'rect',
+        x: 140,
+        y: 300,
+        width: 800,
+        height: 180,
+        fill: '#ffffff',
+        stroke: '#27ae60',
+        strokeWidth: 3,
+        cornerRadius: 8
+      },
+      {
+        type: 'text',
+        text: 'Objective:',
+        fontSize: 28,
+        fontWeight: 'bold',
+        x: 160,
+        y: 330,
+        fill: '#27ae60'
+      },
+      {
+        type: 'text',
+        text: '[State the purpose of this experiment]',
+        fontSize: 22,
+        x: 160,
+        y: 380,
+        fill: '#555555',
+        width: 760
+      },
+      {
+        type: 'rect',
+        x: 140,
+        y: 520,
+        width: 800,
+        height: 200,
+        fill: '#ffffff',
+        stroke: '#27ae60',
+        strokeWidth: 3,
+        cornerRadius: 8
+      },
+      {
+        type: 'text',
+        text: 'Materials:',
+        fontSize: 28,
+        fontWeight: 'bold',
+        x: 160,
+        y: 550,
+        fill: '#27ae60'
+      },
+      {
+        type: 'text',
+        text: '• Material 1\n• Material 2\n• Material 3',
+        fontSize: 22,
+        x: 160,
+        y: 600,
+        fill: '#333333',
+        width: 760,
+        lineHeight: 1.8
+      },
+      {
+        type: 'rect',
+        x: 1000,
+        y: 300,
+        width: 780,
+        height: 420,
+        fill: '#ffffff',
+        stroke: '#27ae60',
+        strokeWidth: 3,
+        cornerRadius: 8
+      },
+      {
+        type: 'text',
+        text: 'Procedure:',
+        fontSize: 28,
+        fontWeight: 'bold',
+        x: 1020,
+        y: 330,
+        fill: '#27ae60'
+      },
+      {
+        type: 'text',
+        text: '1. Step one\n2. Step two\n3. Step three',
+        fontSize: 22,
+        x: 1020,
+        y: 380,
+        fill: '#333333',
+        width: 740,
+        lineHeight: 1.8
+      },
+      {
+        type: 'rect',
+        x: 140,
+        y: 760,
+        width: 1640,
+        height: 240,
+        fill: '#ffffff',
+        stroke: '#27ae60',
+        strokeWidth: 3,
+        cornerRadius: 8
+      },
+      {
+        type: 'text',
+        text: 'Results & Observations:',
+        fontSize: 28,
+        fontWeight: 'bold',
+        x: 160,
+        y: 790,
+        fill: '#27ae60'
+      },
+      {
+        type: 'text',
+        text: '[Record your observations and results here]',
+        fontSize: 22,
+        x: 160,
+        y: 850,
+        fill: '#999999',
+        fontStyle: 'italic',
+        width: 1600
+      }
+    ],
+    description: 'Professional science experiment template with objective, materials, procedure, and results'
+  },
+  {
+    id: 'quiz-question-template',
+    name: 'Quiz Question',
+    preview: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=200&h=150&fit=crop',
+    category: 'assessment',
+    icon: FaBook,
+    isMultiPage: false,
+    elements: [
+      {
+        type: 'rect',
+        x: 0,
+        y: 0,
+        width: 1920,
+        height: 1080,
+        fill: '#ffffff',
+        stroke: 'transparent',
+        strokeWidth: 0
+      },
+      {
+        type: 'text',
+        text: 'QUIZ QUESTION',
+        fontSize: 64,
+        fontWeight: 'bold',
+        x: 150,
+        y: 100,
+        fill: '#e74c3c',
+        shadowEnabled: true,
+        shadowBlur: 10,
+        shadowOffsetX: 0,
+        shadowOffsetY: 4,
+        shadowColor: 'rgba(0,0,0,0.2)'
+      },
+      {
+        type: 'rect',
+        x: 140,
+        y: 220,
+        width: 1640,
+        height: 200,
+        fill: '#fff5f5',
+        stroke: '#e74c3c',
+        strokeWidth: 3,
+        cornerRadius: 8
+      },
+      {
+        type: 'text',
+        text: 'Question 1:',
+        fontSize: 32,
+        fontWeight: 'bold',
+        x: 160,
+        y: 250,
+        fill: '#e74c3c'
+      },
+      {
+        type: 'text',
+        text: 'What is the answer to this question?',
+        fontSize: 28,
+        x: 160,
+        y: 310,
+        fill: '#2c3e50',
+        width: 1600
+      },
+      {
+        type: 'text',
+        text: 'Multiple Choice Options:',
+        fontSize: 28,
+        fontWeight: 'bold',
+        x: 150,
+        y: 480,
+        fill: '#2c3e50'
+      },
+      {
+        type: 'rect',
+        x: 140,
+        y: 540,
+        width: 800,
+        height: 80,
+        fill: '#ffffff',
+        stroke: '#bdc3c7',
+        strokeWidth: 2,
+        cornerRadius: 8
+      },
+      {
+        type: 'circle',
+        x: 180,
+        y: 580,
+        radius: 15,
+        fill: '#ffffff',
+        stroke: '#e74c3c',
+        strokeWidth: 3
+      },
+      {
+        type: 'text',
+        text: 'A) Option A',
+        fontSize: 24,
+        x: 220,
+        y: 575,
+        fill: '#2c3e50'
+      },
+      {
+        type: 'rect',
+        x: 140,
+        y: 640,
+        width: 800,
+        height: 80,
+        fill: '#ffffff',
+        stroke: '#bdc3c7',
+        strokeWidth: 2,
+        cornerRadius: 8
+      },
+      {
+        type: 'circle',
+        x: 180,
+        y: 680,
+        radius: 15,
+        fill: '#ffffff',
+        stroke: '#e74c3c',
+        strokeWidth: 3
+      },
+      {
+        type: 'text',
+        text: 'B) Option B',
+        fontSize: 24,
+        x: 220,
+        y: 675,
+        fill: '#2c3e50'
+      },
+      {
+        type: 'rect',
+        x: 1000,
+        y: 540,
+        width: 780,
+        height: 80,
+        fill: '#ffffff',
+        stroke: '#bdc3c7',
+        strokeWidth: 2,
+        cornerRadius: 8
+      },
+      {
+        type: 'circle',
+        x: 1040,
+        y: 580,
+        radius: 15,
+        fill: '#ffffff',
+        stroke: '#e74c3c',
+        strokeWidth: 3
+      },
+      {
+        type: 'text',
+        text: 'C) Option C',
+        fontSize: 24,
+        x: 1080,
+        y: 575,
+        fill: '#2c3e50'
+      },
+      {
+        type: 'rect',
+        x: 1000,
+        y: 640,
+        width: 780,
+        height: 80,
+        fill: '#ffffff',
+        stroke: '#bdc3c7',
+        strokeWidth: 2,
+        cornerRadius: 8
+      },
+      {
+        type: 'circle',
+        x: 1040,
+        y: 680,
+        radius: 15,
+        fill: '#ffffff',
+        stroke: '#e74c3c',
+        strokeWidth: 3
+      },
+      {
+        type: 'text',
+        text: 'D) Option D',
+        fontSize: 24,
+        x: 1080,
+        y: 675,
+        fill: '#2c3e50'
+      }
+    ],
+    description: 'Professional quiz question template with multiple choice options'
   }
 ];
 
@@ -328,38 +998,67 @@ export const ScienceTemplatesPanel = observer(({ store }) => {
         });
       }
 
-      // Add template elements
+      // Add template elements with all properties
       template.elements.forEach(element => {
         try {
           if (element.type === 'text') {
-            store.activePage?.addElement({
+            const textElement = {
               type: 'text',
               text: element.text,
               fontSize: element.fontSize,
               fontWeight: element.fontWeight || 'normal',
               x: element.x,
               y: element.y,
-              fill: element.fill
-            });
+              fill: element.fill,
+              fontStyle: element.fontStyle,
+              align: element.align,
+              width: element.width,
+              lineHeight: element.lineHeight
+            };
+            // Add shadow properties if present
+            if (element.shadowEnabled) {
+              textElement.shadowEnabled = element.shadowEnabled;
+              textElement.shadowBlur = element.shadowBlur;
+              textElement.shadowOffsetX = element.shadowOffsetX;
+              textElement.shadowOffsetY = element.shadowOffsetY;
+              textElement.shadowColor = element.shadowColor;
+            }
+            store.activePage?.addElement(textElement);
           } else if (element.type === 'rect') {
-            store.activePage?.addElement({
+            const rectElement = {
               type: 'rect',
               x: element.x,
               y: element.y,
               width: element.width,
               height: element.height,
-              fill: element.fill,
+              fill: element.fill || 'transparent',
               stroke: element.stroke,
-              strokeWidth: element.strokeWidth
-            });
+              strokeWidth: element.strokeWidth || 0
+            };
+            // Add corner radius if present
+            if (element.cornerRadius !== undefined) {
+              rectElement.cornerRadius = element.cornerRadius;
+            }
+            // Add shadow properties if present
+            if (element.shadowEnabled) {
+              rectElement.shadowEnabled = element.shadowEnabled;
+              rectElement.shadowBlur = element.shadowBlur;
+              rectElement.shadowOffsetX = element.shadowOffsetX;
+              rectElement.shadowOffsetY = element.shadowOffsetY;
+              rectElement.shadowColor = element.shadowColor;
+            }
+            store.activePage?.addElement(rectElement);
           } else if (element.type === 'circle') {
-            store.activePage?.addElement({
+            const circleElement = {
               type: 'circle',
               x: element.x,
               y: element.y,
               radius: element.radius,
-              fill: element.fill
-            });
+              fill: element.fill || 'transparent',
+              stroke: element.stroke,
+              strokeWidth: element.strokeWidth || 0
+            };
+            store.activePage?.addElement(circleElement);
           }
         } catch (elementError) {
           console.warn('Could not add element:', element, elementError);

@@ -239,7 +239,7 @@
         <!-- Editor Environment -->
         <script src="../assets/js/editorEnv.js"></script>
 
-        <!-- Supabase SDK -->
+        <!-- R2 Storage Loader (Supabase SDK needed for fallback only) -->
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <script src="../assets/js/loadSupabaseDesigns.js"></script>
 
@@ -979,16 +979,34 @@ document.getElementById('createLessonForm').onsubmit = async function(e) {
 firebase.auth().onAuthStateChanged(async function(user) {
     if (user) {
         console.log('👤 User authenticated, loading Firebase and Supabase designs...');
-        // Wait a bit for DOM to be ready
-        setTimeout(() => {
-            // Load Firebase AND Supabase designs for all quarters
-            for (let q = 1; q <= 4; q++) {
-                const container = document.querySelector(`#quarter-${q} .lessons-container`);
-                if (container) {
-                    loadAllDesignsForQuarter(container);
-                }
+        // Wait for scripts to load, then load designs
+        const waitForScripts = setInterval(() => {
+            if (typeof window.loadSupabaseDesignsForQuarter === 'function') {
+                clearInterval(waitForScripts);
+                console.log('✅ loadSupabaseDesignsForQuarter function is available');
+                // Wait a bit for DOM to be ready
+                setTimeout(() => {
+                    // Load Firebase AND Supabase designs for all quarters
+                    for (let q = 1; q <= 4; q++) {
+                        const container = document.querySelector(`#quarter-${q} .lessons-container`);
+                        if (container) {
+                            loadAllDesignsForQuarter(container);
+                        }
+                    }
+                }, 500);
+            } else {
+                console.log('⏳ Waiting for loadSupabaseDesignsForQuarter function to load...');
             }
-        }, 1000);
+        }, 100);
+        
+        // Timeout after 5 seconds
+        setTimeout(() => {
+            clearInterval(waitForScripts);
+            if (typeof window.loadSupabaseDesignsForQuarter !== 'function') {
+                console.error('❌ loadSupabaseDesignsForQuarter function failed to load after 5 seconds');
+                console.error('📋 Check if loadSupabaseDesigns.js script is loaded correctly');
+            }
+        }, 5000);
     }
 });
 function viewPresentation(quarter, name, mode = 'view', subject = subjectPage) {
@@ -1281,11 +1299,20 @@ async function loadAllDesignsForQuarter(container) {
         const isTeacher = true;
         let supabaseDesigns = [];
         
-        if (typeof loadSupabaseDesignsForQuarter === 'function') {
-            supabaseDesigns = await loadSupabaseDesignsForQuarter('subject_math', quarterNumber, null, isTeacher);
+        // Try both window and global scope for the function
+        const loadFunction = window.loadSupabaseDesignsForQuarter || (typeof loadSupabaseDesignsForQuarter !== 'undefined' ? loadSupabaseDesignsForQuarter : null);
+        
+        if (loadFunction && typeof loadFunction === 'function') {
+            console.log(`🔄 [Subject Page] Calling loadSupabaseDesignsForQuarter for subject_math, quarter ${quarterNumber}`);
+            supabaseDesigns = await loadFunction('subject_math', quarterNumber, null, isTeacher);
+            console.log(`📊 [Subject Page] Received ${supabaseDesigns?.length || 0} designs from R2`);
             if (supabaseDesigns && supabaseDesigns.length) {
                 allDesigns.push(...supabaseDesigns);
             }
+        } else {
+            console.error('❌ [Subject Page] loadSupabaseDesignsForQuarter function not found!');
+            console.error('❌ [Subject Page] Available on window:', typeof window.loadSupabaseDesignsForQuarter);
+            console.error('❌ [Subject Page] Scripts loaded:', Array.from(document.scripts).map(s => s.src).filter(Boolean));
         }
         
         // Render all designs together
@@ -1308,7 +1335,7 @@ async function loadAllDesignsForQuarter(container) {
         
         renderDesignsForQuarter(compatibleDesigns, container);
         
-        console.log(`✅ Loaded ${allDesigns.length} total designs (${supabaseDesigns?.length || 0} Supabase)`);
+        console.log(`✅ Loaded ${allDesigns.length} total designs (${supabaseDesigns?.length || 0} from R2)`);
         
     } catch (error) {
         console.error('Error loading all designs:', error);
@@ -1316,7 +1343,7 @@ async function loadAllDesignsForQuarter(container) {
     }
 }
 
-// Render designs for a specific quarter (combined Firebase + Supabase)
+// Render designs for a specific quarter (combined Firebase + R2)
 function renderDesignsForQuarter(designs, container) {
     if (designs.length === 0) {
         container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No designs found.<br><small>Click "Create Design" to get started!</small></div>';
@@ -1768,6 +1795,22 @@ async function loadYouTubeVideosTeacher() {
         if(el) el.remove();
     }
 
+    function addPlaceholder(section){
+        // Check if placeholder already exists
+        if(section.querySelector('.empty-quarter-msg')) return;
+        
+        const placeholder = document.createElement('div');
+        placeholder.className = 'empty-quarter-msg';
+        // Use HTML content with strong tag for green highlight (matches existing CSS)
+        placeholder.innerHTML = 'No lessons yet. Click <strong>"Create Lesson"</strong> to get started!';
+        
+        // Insert at the beginning of the lessons container
+        const lessonsContainer = section.querySelector('.lessons-container');
+        if(lessonsContainer) {
+            lessonsContainer.insertBefore(placeholder, lessonsContainer.firstChild);
+        }
+    }
+
     function evaluate(section){
         if(sectionHasLessonCards(section) || sectionHasVideoCards(section)){
             removePlaceholder(section);
@@ -2178,10 +2221,17 @@ async function loadQuizManagementContent() {
 }
 
 // Open modal and load content on button click
-document.getElementById('someButtonId').onclick = function() {
-    openQuizManagementModal();
-    loadQuizManagementContent();
-};
+// Note: This button ID should be replaced with the actual button ID when implementing quiz management
+// For now, this is commented out to prevent null reference errors
+/*
+const quizManagementBtn = document.getElementById('someButtonId');
+if (quizManagementBtn) {
+    quizManagementBtn.onclick = function() {
+        openQuizManagementModal();
+        loadQuizManagementContent();
+    };
+}
+*/
 </script>
 
 

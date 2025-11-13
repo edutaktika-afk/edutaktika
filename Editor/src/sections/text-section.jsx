@@ -86,6 +86,88 @@ export const TextPanel = observer(({ store }) => {
         </HTMLSelect>
       </div>
 
+      {/* Style Presets */}
+      <div style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
+        <div style={{ fontSize: '12px', color: '#666', marginBottom: '8px', fontWeight: '600' }}>
+          Style Presets
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' }}>
+          <Button
+            text="Heading"
+            onClick={() => {
+              const element = store.activePage?.addElement({
+                type: 'text',
+                text: 'Heading',
+                fontSize: 36,
+                fontFamily: selectedFont,
+                fontWeight: 'bold',
+                x: store.width / 2 - 100,
+                y: store.height / 2 - 50,
+                fill: '#1a1a1a'
+              });
+              if (element) store.selectElements([element.id]);
+            }}
+            small
+            style={{ fontSize: '11px' }}
+          />
+          <Button
+            text="Subheading"
+            onClick={() => {
+              const element = store.activePage?.addElement({
+                type: 'text',
+                text: 'Subheading',
+                fontSize: 24,
+                fontFamily: selectedFont,
+                fontWeight: '600',
+                x: store.width / 2 - 80,
+                y: store.height / 2 - 30,
+                fill: '#333333'
+              });
+              if (element) store.selectElements([element.id]);
+            }}
+            small
+            style={{ fontSize: '11px' }}
+          />
+          <Button
+            text="Body"
+            onClick={() => {
+              const element = store.activePage?.addElement({
+                type: 'text',
+                text: 'Body text',
+                fontSize: 18,
+                fontFamily: selectedFont,
+                fontWeight: 'normal',
+                x: store.width / 2 - 60,
+                y: store.height / 2 - 10,
+                fill: '#555555'
+              });
+              if (element) store.selectElements([element.id]);
+            }}
+            small
+            style={{ fontSize: '11px' }}
+          />
+          <Button
+            text="Caption"
+            onClick={() => {
+              const element = store.activePage?.addElement({
+                type: 'text',
+                text: 'Caption text',
+                fontSize: 14,
+                fontFamily: selectedFont,
+                fontWeight: 'normal',
+                fontStyle: 'italic',
+                x: store.width / 2 - 50,
+                y: store.height / 2 + 10,
+                fill: '#777777'
+              });
+              if (element) store.selectElements([element.id]);
+            }}
+            small
+            style={{ fontSize: '11px' }}
+          />
+        </div>
+      </div>
+
       {/* Quick Text Buttons */}
       <div style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
         <div style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
