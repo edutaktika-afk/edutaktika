@@ -36,9 +36,10 @@ const BUCKET_NAME = 'LessonStorage';
  * @param {string} quarter - Quarter number (1, 2, 3, 4)
  * @param {HTMLElement} container - Container element to render designs into (optional, if null returns array)
  * @param {boolean} isTeacher - Whether user is a teacher (can edit)
+ * @param {string} gradeLevel - Grade level (grade5, grade6, etc.) - optional, will be fetched if not provided
  * @returns {Promise<Array>} Array of designs if container is null
  */
-async function loadSupabaseDesignsForQuarter(subject, quarter, container = null, isTeacher = false) {
+async function loadSupabaseDesignsForQuarter(subject, quarter, container = null, isTeacher = false, gradeLevel = null) {
   if (!supabaseClient) {
     console.error('Supabase client not initialized');
     if (container) {
@@ -50,7 +51,26 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
   // Get subject folder
   const subjectFolder = SUBJECT_FOLDERS[subject.toLowerCase()] || subject.toUpperCase();
   
-  console.log(`🔄 Loading Supabase designs: subject=${subjectFolder}, quarter=${quarter}`);
+  // If grade level not provided and user is logged in, fetch it from Firebase
+  if (!gradeLevel) {
+    try {
+      const user = firebase.auth().currentUser;
+      if (user) {
+        const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
+        const teacher = teacherSnap.val();
+        if (teacher && teacher.gradelevel) {
+          // Normalize grade level to match folder naming (e.g., "5" -> "grade5", "grade5" -> "grade5")
+          const grade = teacher.gradelevel.toString();
+          gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+          console.log(`📚 Found teacher grade level: ${teacher.gradelevel} → normalized: ${gradeLevel}`);
+        }
+      }
+    } catch (error) {
+      console.warn('Could not fetch grade level:', error);
+    }
+  }
+  
+  console.log(`🔄 Loading Supabase designs: subject=${subjectFolder}, quarter=${quarter}, grade=${gradeLevel || 'all'}`);
 
   try {
     // Show loading state
@@ -71,38 +91,41 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
 
     if (!kvData || !kvData.value) {
       console.log('No metadata found, listing files directly...');
-      // Fall back to listing files directly - try quarter subfolder first, then old structure
+      // Build paths with grade-aware structure
       const quarterFolder = `quarter${quarter}`;
-      const newPath = `${subjectFolder}/${quarterFolder}`;
-      const oldPath = subjectFolder;
+      
+      // Priority order: grade + quarter > quarter > grade > root
+      const pathsToTry = [];
+      if (gradeLevel) {
+        pathsToTry.push(`${subjectFolder}/${gradeLevel}/${quarterFolder}`); // Newest: with grade
+        pathsToTry.push(`${subjectFolder}/${gradeLevel}`); // Just grade
+      }
+      pathsToTry.push(`${subjectFolder}/${quarterFolder}`); // Just quarter
+      pathsToTry.push(subjectFolder); // Fallback: root
       
       let files, error, fullPath;
       
-      // Try new structure first
-      console.log(`📁 Trying to list: ${newPath}`);
-      ({ data: files, error } = await supabaseClient.storage
-        .from(BUCKET_NAME)
-        .list(newPath, {
-          limit: 100,
-          offset: 0,
-        }));
-      
-      if (error) {
-        console.log(`⚠️ New path failed (${error.message}), trying old path: ${oldPath}`);
+      // Try each path in priority order
+      for (const path of pathsToTry) {
+        console.log(`📁 Trying to list: ${path}`);
         ({ data: files, error } = await supabaseClient.storage
           .from(BUCKET_NAME)
-          .list(oldPath, {
+          .list(path, {
             limit: 100,
             offset: 0,
           }));
-        fullPath = oldPath;
-      } else {
-        fullPath = newPath;
-        console.log(`✅ Successfully listed files from: ${fullPath}`);
+        
+        if (!error) {
+          fullPath = path;
+          console.log(`✅ Successfully listed files from: ${fullPath}`);
+          break;
+        } else {
+          console.log(`⚠️ Path failed (${error.message})`);
+        }
       }
 
       if (error) {
-        console.error('❌ Error listing files:', error);
+        console.error('❌ Error listing files from all paths:', error);
         if (container) {
           container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">Error loading designs from Supabase.</div>';
         }
@@ -185,9 +208,17 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
     // Get public URLs for thumbnails
     const quarterFolder = `quarter${quarter}`;
     const designsWithUrls = filteredDesigns.map(design => {
+      // Build path with grade if available
+      let thumbnailPath;
+      if (gradeLevel) {
+        thumbnailPath = `${SUBJECT_FOLDERS[subject.toLowerCase()]}/${gradeLevel}/${quarterFolder}/${design.id}.jpg`;
+      } else {
+        thumbnailPath = `${SUBJECT_FOLDERS[subject.toLowerCase()]}/${quarterFolder}/${design.id}.jpg`;
+      }
+      
       const { data } = supabaseClient.storage
         .from(BUCKET_NAME)
-        .getPublicUrl(`${SUBJECT_FOLDERS[subject.toLowerCase()]}/${quarterFolder}/${design.id}.jpg`);
+        .getPublicUrl(thumbnailPath);
       
       return {
         ...design,
@@ -287,28 +318,50 @@ async function openSupabaseDesignViewer(designId, subject, designName = 'Design'
 
     const subjectFolder = SUBJECT_FOLDERS[subject.toLowerCase()] || subject.toUpperCase();
     
-    // Try new quarter-based structure first, fallback to old direct structure
+    // Try to get teacher's grade level
+    let gradeLevel = null;
+    try {
+      const user = firebase.auth().currentUser;
+      if (user) {
+        const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
+        const teacher = teacherSnap.val();
+        if (teacher && teacher.gradelevel) {
+          const grade = teacher.gradelevel.toString();
+          gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+        }
+      }
+    } catch (error) {
+      console.warn('Could not fetch grade level:', error);
+    }
+    
+    // Build paths to try in priority order: grade+quarter > quarter > grade > root
     const quarterFolder = `quarter${quarter}`;
-    const newPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
-    const oldPath = `${subjectFolder}/${designId}.json`;
+    const pathsToTry = [];
+    if (gradeLevel) {
+      pathsToTry.push(`${subjectFolder}/${gradeLevel}/${quarterFolder}/${designId}.json`);
+      pathsToTry.push(`${subjectFolder}/${gradeLevel}/${designId}.json`);
+    }
+    pathsToTry.push(`${subjectFolder}/${quarterFolder}/${designId}.json`);
+    pathsToTry.push(`${subjectFolder}/${designId}.json`);
     
-    console.log(`📁 Trying path: ${newPath}`);
+    console.log(`📁 Trying paths in order: ${pathsToTry.join(', ')}`);
     
-    // Download the design JSON - try new structure first
-    let { data, error } = await supabaseClient.storage
-      .from(BUCKET_NAME)
-      .download(newPath);
-
-    // If new structure fails, try old structure
-    if (error) {
-      console.log(`⚠️ New path failed, trying old path: ${oldPath}`);
+    // Download the design JSON - try each path
+    let data, error;
+    for (const path of pathsToTry) {
+      console.log(`📁 Trying: ${path}`);
       ({ data, error } = await supabaseClient.storage
         .from(BUCKET_NAME)
-        .download(oldPath));
+        .download(path));
+      
+      if (!error) {
+        console.log(`✅ Successfully downloaded from: ${path}`);
+        break;
+      }
     }
 
     if (error) {
-      console.error('Error downloading design from both locations:', error);
+      console.error('Error downloading design from all locations:', error);
       alert('Error loading design: ' + error.message);
       return;
     }
@@ -317,21 +370,39 @@ async function openSupabaseDesignViewer(designId, subject, designName = 'Design'
     const text = await data.text();
     const designJSON = JSON.parse(text);
 
-    // Store in session storage for the editor
+    // Store in session storage for the editor (for same-tab scenarios)
     sessionStorage.setItem('supabase-design-to-load', text);
     sessionStorage.setItem('supabase-design-id', designId);
     sessionStorage.setItem('supabase-design-subject', subject);
     sessionStorage.setItem('supabase-design-name', designName);
     sessionStorage.setItem('supabase-design-quarter', quarter);
+    sessionStorage.setItem('supabase-design-grade', gradeLevel || '');
 
-    // Open in fullscreen viewer - try getEditorBase first, then fallback
-    let editorBaseUrl = '../deploy/editor/index.html';
+    // Open in fullscreen viewer - use environment-aware editor URL
+    // IMPORTANT: Pass grade level in URL params since new window/tab has separate sessionStorage
+    let editorBaseUrl = '/editor/index.html'; // Default for production deployment
     if (typeof getEditorBase === 'function') {
       editorBaseUrl = getEditorBase();
     } else if (typeof getEditorBaseUrl === 'function') {
       editorBaseUrl = getEditorBaseUrl();
+    } else if (typeof window.location !== 'undefined') {
+      // Fallback: detect environment from hostname
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      editorBaseUrl = isLocal ? 'http://localhost:5173/' : '/editor/index.html';
     }
-    const viewerUrl = editorBaseUrl + '?supabaseDesign=' + designId + '&subject=' + subject + '&quarter=' + quarter;
+    
+    // Build URL with parameters
+    let viewerUrl = editorBaseUrl;
+    const params = new URLSearchParams();
+    params.set('supabaseDesign', designId);
+    params.set('subject', subject);
+    params.set('quarter', quarter);
+    if (gradeLevel) {
+      params.set('grade', gradeLevel);
+    }
+    viewerUrl += (viewerUrl.includes('?') ? '&' : '?') + params.toString();
+    
+    console.log('🔗 Opening viewer with URL:', viewerUrl);
     window.open(viewerUrl, '_blank', 'width=1400,height=900');
 
   } catch (error) {
@@ -354,28 +425,50 @@ async function openSupabaseDesignEditor(designId, subject, designName = 'Design'
 
     const subjectFolder = SUBJECT_FOLDERS[subject.toLowerCase()] || subject.toUpperCase();
     
-    // Try new quarter-based structure first, fallback to old direct structure
+    // Try to get teacher's grade level
+    let gradeLevel = null;
+    try {
+      const user = firebase.auth().currentUser;
+      if (user) {
+        const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
+        const teacher = teacherSnap.val();
+        if (teacher && teacher.gradelevel) {
+          const grade = teacher.gradelevel.toString();
+          gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+        }
+      }
+    } catch (error) {
+      console.warn('Could not fetch grade level:', error);
+    }
+    
+    // Build paths to try in priority order: grade+quarter > quarter > grade > root
     const quarterFolder = `quarter${quarter}`;
-    const newPath = `${subjectFolder}/${quarterFolder}/${designId}.json`;
-    const oldPath = `${subjectFolder}/${designId}.json`;
+    const pathsToTry = [];
+    if (gradeLevel) {
+      pathsToTry.push(`${subjectFolder}/${gradeLevel}/${quarterFolder}/${designId}.json`);
+      pathsToTry.push(`${subjectFolder}/${gradeLevel}/${designId}.json`);
+    }
+    pathsToTry.push(`${subjectFolder}/${quarterFolder}/${designId}.json`);
+    pathsToTry.push(`${subjectFolder}/${designId}.json`);
     
-    console.log(`📁 Trying path: ${newPath}`);
+    console.log(`📁 Trying paths in order: ${pathsToTry.join(', ')}`);
     
-    // Download the design JSON - try new structure first
-    let { data, error } = await supabaseClient.storage
-      .from(BUCKET_NAME)
-      .download(newPath);
-
-    // If new structure fails, try old structure
-    if (error) {
-      console.log(`⚠️ New path failed, trying old path: ${oldPath}`);
+    // Download the design JSON - try each path
+    let data, error;
+    for (const path of pathsToTry) {
+      console.log(`📁 Trying: ${path}`);
       ({ data, error } = await supabaseClient.storage
         .from(BUCKET_NAME)
-        .download(oldPath));
+        .download(path));
+      
+      if (!error) {
+        console.log(`✅ Successfully downloaded from: ${path}`);
+        break;
+      }
     }
 
     if (error) {
-      console.error('Error downloading design from both locations:', error);
+      console.error('Error downloading design from all locations:', error);
       alert('Error loading design: ' + error.message);
       return;
     }
@@ -384,21 +477,40 @@ async function openSupabaseDesignEditor(designId, subject, designName = 'Design'
     const text = await data.text();
     const designJSON = JSON.parse(text);
 
-    // Store in session storage for the editor
+    // Store in session storage for the editor (for same-tab scenarios)
     sessionStorage.setItem('supabase-design-to-load', text);
     sessionStorage.setItem('supabase-design-id', designId);
     sessionStorage.setItem('supabase-design-subject', subject);
     sessionStorage.setItem('supabase-design-name', designName);
     sessionStorage.setItem('supabase-design-quarter', quarter);
+    sessionStorage.setItem('supabase-design-grade', gradeLevel || '');
 
-    // Open in editor mode - try getEditorBase first, then fallback
-    let editorBaseUrl = '../deploy/editor/index.html';
+    // Open in editor mode - use environment-aware editor URL
+    // IMPORTANT: Pass grade level in URL params since new window/tab has separate sessionStorage
+    let editorBaseUrl = '/editor/index.html'; // Default for production deployment
     if (typeof getEditorBase === 'function') {
       editorBaseUrl = getEditorBase();
     } else if (typeof getEditorBaseUrl === 'function') {
       editorBaseUrl = getEditorBaseUrl();
+    } else if (typeof window.location !== 'undefined') {
+      // Fallback: detect environment from hostname
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      editorBaseUrl = isLocal ? 'http://localhost:5173/' : '/editor/index.html';
     }
-    const editorUrl = editorBaseUrl + '?supabaseDesign=' + designId + '&subject=' + subject + '&quarter=' + quarter + '&view=true';
+    
+    // Build URL with parameters
+    let editorUrl = editorBaseUrl;
+    const params = new URLSearchParams();
+    params.set('supabaseDesign', designId);
+    params.set('subject', subject);
+    params.set('quarter', quarter);
+    if (gradeLevel) {
+      params.set('grade', gradeLevel);
+    }
+    params.set('view', 'true');
+    editorUrl += (editorUrl.includes('?') ? '&' : '?') + params.toString();
+    
+    console.log('🔗 Opening editor with URL:', editorUrl);
     window.open(editorUrl, '_blank', 'width=1400,height=900');
 
   } catch (error) {

@@ -15,6 +15,14 @@
                 window.location.href = "logreg.html";
             } else {
                 document.getElementById('mainContent').style.display = "block";
+                
+                // Store teacher's grade level in sessionStorage for Editor
+                if (teacher && teacher.gradelevel) {
+                    const grade = teacher.gradelevel.toString();
+                    const gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+                    sessionStorage.setItem('supabase-design-grade', gradeLevel);
+                    console.log(`📚 Stored teacher grade level in sessionStorage: ${gradeLevel}`);
+                }
             }
         });
     });
@@ -250,14 +258,53 @@
                 <button id="createLessonBtn" style="background:#388e3c;color:#fff;border:none;border-radius:6px;padding:10px 28px;font-size:1.1rem;font-weight:600;cursor:pointer;">
                     <i class="fa fa-plus"></i> Create Lesson
                 </button>
+                <button id="createQuizBtn" style="background:#ffe600;color:#000;border:none;border-radius:6px;padding:10px 28px;font-size:1.1rem;font-weight:600;cursor:pointer;margin-left: auto;">
+                    <i class="fa fa-plus"></i> Create Quiz
+                </button>
             </div>
 
 <script>
 // Use shared buildEditorUrl for create lesson navigation
 // Create Lesson button: go to new Polotno editor (using Create Design logic)
 document.getElementById('createLessonBtn').onclick = function() {
-    const editorBaseUrl = getEditorBase();
-    console.log('🎨 Opening editor for lesson creation:', editorBaseUrl);
+    // Clear specific storage keys that the editor uses to auto-load designs
+    // Critical: polotno-last-design-id is the main key that causes old designs to load
+    sessionStorage.removeItem('polotno-last-design-id');
+    sessionStorage.removeItem('polotno-state');
+    sessionStorage.removeItem('supabase-design-to-load');
+    sessionStorage.removeItem('current-supabase-design');
+    sessionStorage.removeItem('supabase-design-name');
+    sessionStorage.removeItem('supabase-design-quarter');
+    sessionStorage.removeItem('supabase-design-grade');
+    sessionStorage.removeItem('supabase-design-id');
+    
+    // Clear any other design-related keys from sessionStorage
+    const sessionKeysToClear = Object.keys(sessionStorage).filter(key => 
+        key.includes('design') || key.includes('lesson') || key.includes('supabase') || key.includes('polotno')
+    );
+    sessionKeysToClear.forEach(key => sessionStorage.removeItem(key));
+    
+    // Clear localStorage items related to designs (using localforage/indexedDB)
+    // Note: The editor uses localforage which may use localStorage or indexedDB
+    const localStorageKeysToClear = Object.keys(localStorage).filter(key => 
+        key.includes('design') || key.includes('lesson') || key.includes('polotno')
+    );
+    localStorageKeysToClear.forEach(key => localStorage.removeItem(key));
+    
+    // Also try to clear indexedDB if available (localforage uses it)
+    if (window.indexedDB && window.indexedDB.databases) {
+        window.indexedDB.databases().then(databases => {
+            databases.forEach(db => {
+                if (db.name.includes('localforage') || db.name.includes('polotno')) {
+                    indexedDB.deleteDatabase(db.name);
+                }
+            });
+        }).catch(err => console.log('Could not clear indexedDB:', err));
+    }
+    
+    // Build editor URL with new=true parameter to indicate fresh lesson
+    const editorBaseUrl = buildEditorUrl({ new: 'true', mode: 'create' });
+    console.log('🎨 Opening fresh editor for lesson creation:', editorBaseUrl);
     window.location.href = editorBaseUrl;
 };
 
@@ -309,16 +356,7 @@ document.getElementById('createQuizBtn').onclick = function() {
                 
             </div>
 
-            <!-- YouTube Lessons (auto-fetched) -->
-            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FsQc_kW5q38HD3Geb4VVQz4" style="margin-top: 20px;">
-                <div class="quarter-title" style="align-items:center; gap:10px;">
-                    <i class="fab fa-youtube"></i>
-                    <h3 style="margin:0;">Video Lessons</h3>
-                </div>
-                <div class="lessons-container">
-                    <div>Loading YouTube lessons…</div>
-                </div>
-            </div>
+            
 
             <!-- <div class="progress-container">
                 <div class="progress-title">Quarter Progress</div>
@@ -485,7 +523,7 @@ document.getElementById('createQuizBtn').onclick = function() {
             </div>
             <div class="lessons-container">
                 <div id="quiz-list"></div>
-                <div id="student-quiz-cards"></div>
+                
             </div>
         </div>
 
@@ -1129,67 +1167,55 @@ function getEditorBaseUrl() {
     return '../deploy/editor/index.html';
 }
 
+// FIREBASE LOADING FUNCTION COMMENTED OUT - Can be re-enabled later if needed
 // Load Firebase designs for a specific quarter
+/*
 async function loadFirebaseDesignsForQuarter(container) {
     try {
         console.log('🔄 Loading Firebase designs for quarter...');
         
-        // Get Firebase reference
-        const db = firebase.database();
+        // Get current user and teacher info
+        const user = firebase.auth().currentUser;
+        if (!user) return [];
         
-        // Fetch designs from the database (like gallery.html)
-        const snapshot = await db.ref('designs').once('value');
-        const designsData = snapshot.val();
-
-        if (!designsData) {
+        const teacherUID = user.uid;
+        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+        const teacher = teacherSnap.val();
+        const section = teacher && teacher.section ? teacher.section : null;
+        
+        if (!section) {
+            console.log('No section found for teacher');
             return [];
         }
-
-        const designs = [];
         
         // Get quarter number from container's parent section
         const quarterSection = container.closest('.quarter-section');
         const quarterNumber = quarterSection ? quarterSection.id.split('-')[1] : '1';
         
-        console.log('🔍 Loading designs for quarter:', quarterNumber);
-        console.log('📊 Total designs in database:', Object.keys(designsData).length);
+        console.log(`🔍 Loading teacher's designs for quarter: ${quarterNumber}, section: ${section}`);
         
-        // Convert database data to gallery format (like gallery.html)
-        for (const [designId, designData] of Object.entries(designsData)) {
-            if (designData && designData.json && designData.name) {
-                // Filter by subject (math) and quarter
-                const isMathDesign = designData.subject === 'math';
-                const isCorrectQuarter = designData.quarter === quarterNumber;
-                
-                console.log(`📋 Design: ${designData.name}`, {
-                    subject: designData.subject,
-                    quarter: designData.quarter,
-                    isMathDesign,
-                    isCorrectQuarter,
-                    targetQuarter: quarterNumber
+        // Fetch designs from teacher's specific path
+        const teacherLessonsSnap = await db.ref(`teachers/${teacherUID}/sections/${section}/lessons/${subjectPage}/quarter-${quarterNumber}`).once('value');
+        
+        const designs = [];
+        if (teacherLessonsSnap.exists()) {
+            teacherLessonsSnap.forEach(child => {
+                const data = child.val();
+                designs.push({
+                    id: child.key,
+                    name: data.title || data.name || child.key,
+                    description: data.description || 'No description available',
+                    jsonUrl: child.key,
+                    thumbUrl: data.preview || data.thumbnail || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%234CAF50' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3E${data.title || data.name || child.key}%3C/text%3E%3C/svg%3E`,
+                    created: data.savedAt || data.createdAt ? new Date(data.savedAt || data.createdAt).toLocaleDateString() : 'Unknown',
+                    subject: subjectPage,
+                    quarter: quarterNumber,
+                    source: 'firebase'
                 });
-                
-                if (isMathDesign && isCorrectQuarter) {
-                    designs.push({
-                        id: designId,
-                        name: designData.name,
-                        description: designData.description || 'No description available',
-                        jsonUrl: designId,
-                        thumbUrl: designData.thumbnail || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect fill='%234CAF50' width='300' height='200'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='20' fill='white'%3E${designData.name}%3C/text%3E%3C/svg%3E`,
-                        created: designData.createdAt ? new Date(designData.createdAt).toLocaleDateString() : 'Unknown',
-                        subject: designData.subject,
-                        quarter: designData.quarter,
-                        source: 'firebase'
-                    });
-                }
-            }
+            });
         }
-
-        // Sort by creation date (newest first)
-        designs.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
         
         console.log(`📊 Loaded ${designs.length} designs from Firebase for quarter ${quarterNumber}`);
-        console.log('🎯 Found designs:', designs.map(d => ({ name: d.name, subject: d.subject, quarter: d.quarter })));
         
         return designs;
         
@@ -1198,8 +1224,10 @@ async function loadFirebaseDesignsForQuarter(container) {
         return [];
     }
 }
+*/
 
 // Combined loading function that loads both Firebase and Supabase
+// NOTE: Firebase loading is commented out - only Supabase is used now
 async function loadAllDesignsForQuarter(container) {
     try {
         // Show loading state
@@ -1207,9 +1235,10 @@ async function loadAllDesignsForQuarter(container) {
         
         const allDesigns = [];
         
+        // FIREBASE LOADING COMMENTED OUT - Can be re-enabled later if needed
         // Load Firebase designs
-        const firebaseDesigns = await loadFirebaseDesignsForQuarter(container);
-        allDesigns.push(...(firebaseDesigns || []));
+        // const firebaseDesigns = await loadFirebaseDesignsForQuarter(container);
+        // allDesigns.push(...(firebaseDesigns || []));
         
         // Load Supabase designs
         const quarterSection = container.closest('.quarter-section');
@@ -1244,7 +1273,7 @@ async function loadAllDesignsForQuarter(container) {
         
         renderDesignsForQuarter(compatibleDesigns, container);
         
-        console.log(`✅ Loaded ${allDesigns.length} total designs (${firebaseDesigns?.length || 0} Firebase, ${supabaseDesigns?.length || 0} Supabase)`);
+        console.log(`✅ Loaded ${allDesigns.length} total designs (${supabaseDesigns?.length || 0} Supabase)`);
         
     } catch (error) {
         console.error('Error loading all designs:', error);
@@ -1701,15 +1730,7 @@ document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
         const el = section.querySelector('.empty-quarter-msg');
         if(el) el.remove();
     }
-    function addPlaceholder(section){
-        if(section.querySelector('.empty-quarter-msg')) return; // already present
-        const firstContainer = section.querySelector('.lessons-container');
-        const host = firstContainer || section;
-        const div = document.createElement('div');
-        div.className = 'empty-quarter-msg';
-        div.innerHTML = '<strong>No lessons available yet.</strong><br><span style="font-weight:400;">Click the "Create Lesson" button to add one.</span>';
-        host.appendChild(div);
-    }
+
     function evaluate(section){
         if(sectionHasLessonCards(section) || sectionHasVideoCards(section)){
             removePlaceholder(section);

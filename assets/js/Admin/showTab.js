@@ -4,11 +4,18 @@ function showTab(tab) {
     document.getElementById('contentAdmins').style.display = 'none';
     document.getElementById('contentStudents').style.display = 'none';
     document.getElementById('contentTeachers').style.display = 'none';
+    if (document.getElementById('contentAnalytics')) {
+        document.getElementById('contentAnalytics').style.display = 'none';
+    }
 
     // Remove 'active' class from all nav tabs and reset their background color
     document.getElementById('tabAdmins').classList.remove('active');
     document.getElementById('tabStudents').classList.remove('active');
     document.getElementById('tabTeachers').classList.remove('active');
+    if (document.getElementById('tabAnalytics')) {
+        document.getElementById('tabAnalytics').classList.remove('active');
+        document.getElementById('tabAnalytics').style.background = '#6c757d';
+    }
     document.getElementById('tabAdmins').style.background = '#6c757d';
     document.getElementById('tabStudents').style.background = '#6c757d';
     document.getElementById('tabTeachers').style.background = '#6c757d';
@@ -28,6 +35,13 @@ function showTab(tab) {
         document.getElementById('tabTeachers').classList.add('active');
         document.getElementById('tabTeachers').style.background = '#2e8b57';
         loadTeachers();
+    } else if (tab === 'analytics') {
+        if (document.getElementById('contentAnalytics')) {
+            document.getElementById('contentAnalytics').style.display = 'block';
+            document.getElementById('tabAnalytics').classList.add('active');
+            document.getElementById('tabAnalytics').style.background = '#2e8b57';
+            loadAdminAnalytics();
+        }
     }
 }
 

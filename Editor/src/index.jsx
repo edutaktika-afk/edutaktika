@@ -18,7 +18,6 @@ import './utils/animationManager'; // Load animation manager
 import './utils/polotno-animations'; // Load custom Polotno animations (Wiggle, Blur, Pan, Rise)
 import { getStoreKey, getKeyDebugInfo } from './utils/polotno-keys';
 import './utils/verify-polotno-key'; // Load verification utility
-import './elements/lottie-register'; // Register Lottie element type
 
 // Initialize environment detection
 const config = initializeEnvironment();

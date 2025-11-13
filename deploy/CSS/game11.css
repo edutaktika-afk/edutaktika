@@ -35,7 +35,7 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-background: #222; 
+            background: #222; 
             min-height: 100vh;
             color: var(--gray-800);
             line-height: 1.6;
@@ -43,6 +43,7 @@ background: #222;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
+            
         }
 
         /* Embedded/iframe specific styles */
@@ -65,6 +66,8 @@ background: #222;
             overflow-y: auto;
             overflow-x: hidden;
             box-sizing: border-box;
+              align-items: center;
+  justify-content: center;
         }
 
         /* When embedded, make container more compact */

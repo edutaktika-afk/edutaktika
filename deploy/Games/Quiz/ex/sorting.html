@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sort the Animals by Habitat</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <link rel="stylesheet" href="../../CSS/sorting.css">
+</head>
+<body>
+
+    <div id="game-root">
+      <div id="game-inner">
+        <header>
+          <h2>Sort the Animals by Habitat</h2>
+          <button id="modify-game-btn" style="display:none">Modify</button>
+        </header>
+
+        <div class="board">
+          <div id="game-area" class="game-area"></div>
+          <div id="animals-tray" class="tray"></div>
+          <div class="score" id="score" style="display:none"></div> <!-- hidden for students -->
+          <button id="play-again-btn" style="display:none">Play Again</button> <!-- keep for future teacher use -->
+          <button id="submit-btn" style="display:none;
+            background:var(--accent);color:#fff;border:0;
+            padding:12px 26px;font-size:15px;font-weight:600;
+            border-radius:12px;cursor:pointer;box-shadow:0 6px 18px -5px rgba(30,80,140,.4);">
+            Submit
+          </button>
+          <button id="done-btn" style="display:none;
+            background:var(--accent);color:#fff;border:0;
+            padding:12px 26px;font-size:15px;font-weight:600;
+            border-radius:12px;cursor:pointer;box-shadow:0 6px 18px -5px rgba(30,80,140,.4);">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+  <!-- Modify Modal -->
+  <div id="modify-modal" aria-hidden="true">
+    <div id="modify-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3 style="margin:0;font-size:22px">Modify Animals</h3>
+        <button id="close-modal" class="secondary-btn" style="padding:8px 18px">Close</button>
+      </div>
+      <div id="animal-list"></div>
+      <div class="modal-actions">
+        <button id="save-modifications" class="primary-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thank You Modal -->
+  <div id="thank-modal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+   background:rgba(15,35,55,.55);z-index:500;backdrop-filter:blur(3px);">
+    <div style="background:#fff;width:min(420px,92%);padding:34px 40px 38px;border-radius:22px;
+    text-align:center;font-family:inherit;box-shadow:0 26px 72px -20px rgba(10,30,60,.45);">
+      <h3 style="margin:0 0 14px;font-size:26px;color:#16354a;">Thank you!</h3>
+      <p style="margin:0 0 26px;font-size:15px;color:#4a5e71;" id="thank-msg">
+        Your answers have been submitted.
+      </p>
+      <button id="close-thank"
+        style="background:var(--accent);color:#fff;border:0;padding:10px 24px;
+        font-size:14px;font-weight:600;border-radius:10px;cursor:pointer;">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* --- Data --- */
+    const animals = [
+      { name: "Lion", habitat: "Forest", img: "https://upload.wikimedia.org/wikipedia/commons/7/73/Lion_waiting_in_Namibia.jpg" },
+      { name: "Camel", habitat: "Desert", img: "https://files.worldwildlife.org/wwfcmsprod/images/camel/blog_photo_section/5np6j2xwbl_camelenews_1050.jpg" },
+      { name: "Dolphin", habitat: "Ocean", img: "https://upload.wikimedia.org/wikipedia/commons/6/6e/Dolphin_in_the_water.jpg" },
+      { name: "Fox", habitat: "Forest", img: "https://upload.wikimedia.org/wikipedia/commons/1/16/Fox_-_British_Wildlife_Centre_%282%29.jpg" },
+      { name: "Octopus", habitat: "Ocean", img: "https://upload.wikimedia.org/wikipedia/commons/6/6b/Octopus2.jpg" },
+      { name: "Lizard", habitat: "Desert", img: "https://upload.wikimedia.org/wikipedia/commons/7/7e/Lizard_in_the_desert.jpg" }
+    ];
+    let habitats = [
+      { key: "Forest", name: "Forest" },
+      { key: "Ocean", name: "Ocean" },
+      { key: "Desert", name: "Desert" }
+    ];
+
+    let correct = 0;
+    let placements = {}; // name -> habitat placed
+    let submitted = false;
+
+    function startGame(){
+      submitted = false;
+      placements = {};
+      document.getElementById('submit-btn').style.display='none';
+
+      const area = document.getElementById('game-area');
+      area.innerHTML='';
+      habitats.forEach(h=>{
+        const d=document.createElement('div');
+        d.className='habitat droppable';
+        d.dataset.habitat=h.key;
+        d.innerHTML=`<div class="habitat-title">${h.name}</div><div class="items"></div>`;
+        area.appendChild(d);
+      });
+
+      const tray=document.getElementById('animals-tray');
+      tray.innerHTML='';
+      const shuffled=[...animals].sort(()=>Math.random()-0.5);
+      shuffled.forEach(a=>{
+        const el=document.createElement('div');
+        el.className='animal';
+        el.draggable=true;
+        el.dataset.habitat=a.habitat;
+        el.dataset.name=a.name;
+        el.innerHTML=`<img src="${a.img}" alt="${a.name}"><span>${a.name}</span>`;
+        tray.appendChild(el);
+      });
+
+      bindDrag();
+    }
+
+    function bindDrag(){
+      document.querySelectorAll('.animal').forEach(a=>{
+        a.addEventListener('dragstart',e=>{
+          if(submitted) { e.preventDefault(); return; }
+          e.dataTransfer.setData('text/plain', JSON.stringify({name:a.dataset.name, habitat:a.dataset.habitat}));
+        });
+      });
+      document.querySelectorAll('.habitat').forEach(h=>{
+        h.addEventListener('dragover',e=>{
+          if(submitted) return;
+          e.preventDefault();
+          h.classList.add('droppable');
+        });
+        h.addEventListener('dragleave',()=>h.classList.remove('droppable'));
+        h.addEventListener('drop',e=>{
+          if(submitted) return;
+          e.preventDefault();
+          h.classList.remove('droppable');
+          let raw=e.dataTransfer.getData('text/plain');
+          if(!raw) return;
+          let data;
+          try{ data=JSON.parse(raw); }catch(_){ return; }
+          const tile=document.querySelector(`.animal[data-name="${CSS.escape(data.name)}"]`);
+          if(!tile || tile.draggable===false) return;
+          // Record placement (no correctness check displayed)
+          placements[data.name]=h.dataset.habitat;
+          tile.draggable=false;
+          tile.style.opacity='.55';
+          const items=h.querySelector('.items');
+          const row=document.createElement('div');
+          row.style.display='flex';
+          row.style.alignItems='center';
+          row.style.gap='6px';
+          row.innerHTML=`<img src="${tile.querySelector('img').src}" style="width:30px;height:30px;border-radius:6px;object-fit:cover">
+          <span style="font-size:13px;font-weight:600">${data.name}</span>`;
+          items.appendChild(row);
+          checkAllPlaced();
+        });
+      });
+    }
+
+    function checkAllPlaced(){
+      const placedCount = Object.keys(placements).length;
+      if(placedCount === animals.length && !submitted){
+        const submitBtn=document.getElementById('submit-btn');
+        submitBtn.style.display='inline-block';
+      }
+    }
+
+    // Submission
+    document.getElementById('submit-btn').addEventListener('click',()=>{
+      if(submitted) return;
+      submitted = true;
+      // Lock remaining draggable tiles
+      document.querySelectorAll('.animal[draggable="true"]').forEach(a=>{
+        a.draggable=false; a.style.opacity='.55';
+      });
+      // Persist answers (optional)
+      try{
+        localStorage.setItem('animalSort_lastSubmission', JSON.stringify({
+          timestamp:Date.now(),
+          answers:placements
+        }));
+      }catch(e){}
+      openThankModal();
+      // Show Done button
+      document.getElementById('done-btn').style.display = 'inline-block';
+    });
+
+    // ---- Modal ---- //
+    const modal=document.getElementById('modify-modal');
+    const list=document.getElementById('animal-list');
+    document.getElementById('modify-game-btn').addEventListener('click',openModal);
+    document.getElementById('close-modal').addEventListener('click',()=>modal.style.display='none');
+    document.getElementById('save-modifications').addEventListener('click',saveMods);
+
+    function openModal(){
+      list.innerHTML='';
+      // habitats edit
+      const wrap=document.createElement('div');
+      wrap.style.display='flex';
+      wrap.style.flexWrap='wrap';
+      wrap.style.gap='14px';
+      habitats.forEach((h,i)=>{
+        const inp=document.createElement('input');
+        inp.type='text';
+        inp.value=h.name;
+        inp.style.padding='10px';
+        inp.style.border='1px solid #d4dde5';
+        inp.style.borderRadius='8px';
+        inp.dataset.hIndex=i;
+        wrap.appendChild(inp);
+      });
+      list.appendChild(wrap);
+
+      // animals
+      animals.forEach((a,i)=>{
+        const row=document.createElement('div');
+        row.className='animal-mod';
+        row.innerHTML=`
+          <img id="preview${i}" src="${a.img}">
+          <input id="name${i}" type="text" value="${a.name}">
+          <select id="habitat${i}">
+            ${habitats.map(h=>`<option value="${h.key}" ${a.habitat===h.key?'selected':''}>${h.name}</option>`).join('')}
+          </select>
+          <input id="img${i}" type="file" accept="image/*" style="flex:1">
+          <button class="remove">Remove</button>
+        `;
+        list.appendChild(row);
+        const file=row.querySelector(`#img${i}`);
+        const prev=row.querySelector(`#preview${i}`);
+        file.addEventListener('change',e=>{
+          const f=e.target.files[0];
+          if(!f) return;
+          const rd=new FileReader();
+          rd.onload=ev=>prev.src=ev.target.result;
+          rd.readAsDataURL(f);
+        });
+        row.querySelector('.remove').addEventListener('click',()=>{
+          if(confirm('Remove '+a.name+'?')){
+            animals.splice(i,1);
+            openModal();
+            startGame();
+          }
+        });
+      });
+
+      modal.style.display='flex';
+      modal.setAttribute('aria-hidden','false');
+    }
+
+    function saveMods(){
+      // habitats
+      [...list.querySelectorAll('input[data-h-index]')].forEach(inp=>{
+        const idx=+inp.dataset.hIndex;
+        habitats[idx].name=inp.value.trim()||habitats[idx].name;
+      });
+      // animals
+      animals.forEach((a,i)=>{
+        a.name=document.getElementById('name'+i).value.trim()||a.name;
+        a.habitat=document.getElementById('habitat'+i).value;
+        a.img=document.getElementById('preview'+i).src;
+      });
+      localStorage.setItem('animalSortAnimals', JSON.stringify(animals));
+      localStorage.setItem('animalSortHabitats', JSON.stringify(habitats));
+      if (isQuizEditor && typeof firebase !== 'undefined') {
+        const quizId = window.location.pathname.split('/').pop().replace('.html','');
+        firebase.database().ref('quizzes/' + quizId + '/sortingQuestions').set({animals, habitats});
+      }
+      modal.style.display='none';
+      startGame();
+    }
+
+    // LocalStorage load
+    try{
+      const a=JSON.parse(localStorage.getItem('animalSortAnimals')||'null');
+      const h=JSON.parse(localStorage.getItem('animalSortHabitats')||'null');
+      if(Array.isArray(a)&&a.length) { animals.splice(0,animals.length,...a); }
+      if(Array.isArray(h)&&h.length) { habitats=h; }
+    }catch(e){}
+
+    // Try to load from Firebase first
+    if (typeof firebase !== 'undefined') {
+      const quizId = window.location.pathname.split('/').pop().replace('.html','');
+      firebase.database().ref('quizzes/' + quizId + '/sortingQuestions').once('value')
+        .then(snapshot => {
+          const data = snapshot.val();
+          if (data && Array.isArray(data.animals) && Array.isArray(data.habitats)) {
+            animals.splice(0, animals.length, ...data.animals);
+            habitats = data.habitats;
+          }
+          // Now load from localStorage if present (to allow teacher preview)
+          try{
+            const a=JSON.parse(localStorage.getItem('animalSortAnimals')||'null');
+            const h=JSON.parse(localStorage.getItem('animalSortHabitats')||'null');
+            if(Array.isArray(a)&&a.length) { animals.splice(0,animals.length,...a); }
+            if(Array.isArray(h)&&h.length) { habitats=h; }
+          }catch(e){}
+          startGame();
+        });
+    } else {
+      // Fallback: just localStorage
+      try{
+        const a=JSON.parse(localStorage.getItem('animalSortAnimals')||'null');
+        const h=JSON.parse(localStorage.getItem('animalSortHabitats')||'null');
+        if(Array.isArray(a)&&a.length) { animals.splice(0,animals.length,...a); }
+        if(Array.isArray(h)&&h.length) { habitats=h; }
+      }catch(e){}
+      startGame();
+    }
+
+    // Disable Play Again for students (left hidden). Teacher could manually call startGame() if needed.
+    // Initial load
+    startGame();
+
+    // Thank you modal logic
+    const thankModal = document.getElementById('thank-modal');
+    const thankMsg = document.getElementById('thank-msg');
+    const closeThank = document.getElementById('close-thank');
+
+    function openThankModal(){
+      if(!thankModal) return;
+      thankMsg.textContent = 'Your answers have been submitted. Thank you!';
+      thankModal.style.display='flex';
+      thankModal.setAttribute('aria-hidden','false');
+      closeThank.focus();
+    }
+    function closeThankModal(){
+      if(!thankModal) return;
+      thankModal.style.display='none';
+      thankModal.setAttribute('aria-hidden','true');
+    }
+    if(closeThank){
+      closeThank.addEventListener('click',closeThankModal);
+      thankModal.addEventListener('click',e=>{ if(e.target===thankModal) closeThankModal(); });
+      document.addEventListener('keydown',e=>{
+        if(e.key==='Escape' && thankModal.style.display==='flex') closeThankModal();
+      });
+    }
+
+    /* ---- Responsive scale to canvas ---- */
+    // Optional: center content vertically if habitats grow
+    function refreshLayout(){
+      // Nothing heavy; placeholder for future adjustments
+    }
+    window.addEventListener('resize',refreshLayout);
+    refreshLayout();
+
+    // New code changes
+    const finishBtn = qs('#finishBtn');
+
+    function updateFinishVisibility(){
+      if(!finishBtn) return;
+      const currentQ = questions[currentIndex];
+      const thisAnswered = (userAnswers[currentQ.id]||[]).length>0;
+      const allPrevAnswered = questions.slice(0,currentIndex+1)
+            .every(q=> (userAnswers[q.id]||[]).length>0);
+      if(currentIndex === questions.length-1 && thisAnswered && allPrevAnswered){
+        finishBtn.style.display='inline-block';
+      } else {
+        finishBtn.style.display='none';
+      }
+    }
+
+    playBtn.addEventListener('click', ()=>{
+      // ...existing reset code...
+      if(finishBtn){ finishBtn.style.display='none'; finishBtn.disabled=false; }
+    });
+
+    doneBtn.addEventListener('click', function() {
+  let score = 0;
+  for (const a of animals) {
+    if (placements[a.name] === a.habitat) score++;
+  }
+  window.parent.postMessage({
+    type: 'quizResult',
+    payload: {
+      score: score,
+      maxScore: animals.length,
+      answers: placements,
+      quizId: window.location.pathname.split('/').pop(),
+      slideIndex: typeof parentTestIndex !== 'undefined' ? parentTestIndex : 0
+    }
+  }, '*');
+  thankMsg.textContent = 'You have completed the quiz!';
+  thankModal.style.display = 'flex';
+  thankModal.setAttribute('aria-hidden','false');
+  closeThank.focus();
+});
+  </script>
+
+  <script>
+    let parentTestIndex = 0;
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'setTestIndex') {
+    parentTestIndex = event.data.index;
+  }
+});
+
+// When sending the score:
+window.parent.postMessage({
+  type: 'quizResult',
+  payload: {
+    score: score,
+    maxScore: questions.length,
+    answers: userAnswers,
+    quizId: window.location.pathname.split('/').pop(),
+    slideIndex: parentTestIndex // <-- Always use this!
+  }
+}, '*');
+  </script>
+  
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+  const editBtn = document.getElementById('modify-game-btn');
+  if (editBtn) editBtn.style.display = 'none';
+
+  let isQuizEditor = false;
+  if (window.location.search.includes('editor=1') || window.name === 'quizEditor') {
+    isQuizEditor = true;
+    if (editBtn) editBtn.style.display = '';
+  }
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'quizEditor') {
+      isQuizEditor = true;
+      if (editBtn) editBtn.style.display = '';
+    }
+  });
+});
+  </script>
+  
+  <script>
+  // Remove any other script blocks that set editBtn.style.display!
+  // This block should come after the button is defined in the HTML.
+
+  const editBtn = document.getElementById('modify-game-btn');
+  if (editBtn) editBtn.style.display = 'none';
+
+  // Show edit button ONLY in quizEditor mode
+  function showEditIfQuizEditor() {
+    // Show if URL has edit=true
+    if (window.location.search.includes('edit=true')) {
+      editBtn.style.display = '';
+      return;
+    }
+    // Show if embedded and parent sends quizEditor message
+    window.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'quizEditor') {
+        editBtn.style.display = '';
+      }
+    });
+  }
+  showEditIfQuizEditor();
+</script>
+  
+</body>
+</html>

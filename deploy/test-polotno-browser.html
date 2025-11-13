@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Polotno Upload/Load</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #2196F3;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 10px;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .info {
+            color: #2196F3;
+        }
+        .warning {
+            color: #FF9800;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 300px;
+            margin: 5px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px 0;
+            font-weight: bold;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Polotno Upload/Load Test</h1>
+        
+        <div class="section">
+            <h2>📋 Configuration Check</h2>
+            <p>Make sure you've configured <code>SUPABASE_URL</code>, <code>SUPABASE_KEY</code>, and <code>STORAGE_BUCKET</code> in both:</p>
+            <ul>
+                <li><code>uploadPolotno.js</code></li>
+                <li><code>loadPolotnoDesign.js</code></li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>📤 Test Upload</h2>
+            <label>Design Name:</label>
+            <input type="text" id="designName" value="test-design-browser" placeholder="Enter design name">
+            
+            <label>Subject:</label>
+            <input type="text" id="subject" value="SCIENCE" placeholder="SCIENCE, MATH, or ENGLISH">
+            
+            <label>Quarter:</label>
+            <input type="text" id="quarter" value="quarter1" placeholder="quarter1, quarter2, etc.">
+            
+            <label>Grade Level (optional):</label>
+            <input type="text" id="gradeLevel" value="grade5" placeholder="grade5, grade6, etc.">
+            
+            <br><br>
+            <button onclick="testUpload()" id="uploadBtn">🚀 Test Upload</button>
+            <div id="uploadLog" class="log" style="display:none;"></div>
+        </div>
+
+        <div class="section">
+            <h2>📥 Test Load</h2>
+            <label>Design ID:</label>
+            <input type="text" id="designId" placeholder="Enter design ID (e.g., test-design-browser_1234567890)">
+            
+            <br><br>
+            <button onclick="testLoad()" id="loadBtn">📥 Test Load</button>
+            <div id="loadLog" class="log" style="display:none;"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔄 Full Test (Upload + Load)</h2>
+            <p>This will upload a test design and then immediately load it back to verify everything works.</p>
+            <button onclick="testFullWorkflow()" id="fullTestBtn">🔄 Run Full Test</button>
+            <div id="fullTestLog" class="log" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- Load Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Load our scripts -->
+    <script src="./uploadPolotno.js"></script>
+    <script src="./loadPolotnoDesign.js"></script>
+
+    <script>
+        // Helper to log messages
+        function log(elementId, message, type = 'info') {
+            const logEl = document.getElementById(elementId);
+            logEl.style.display = 'block';
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : 
+                            type === 'success' ? 'success' : 
+                            type === 'warning' ? 'warning' : 'info';
+            logEl.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        // Create a test Polotno JSON
+        function createTestPolotnoJson() {
+            // Small 1x1 red pixel PNG as base64
+            const testImageBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+            
+            return {
+                width: 1920,
+                height: 1080,
+                unit: 'px',
+                dpi: 72,
+                schemaVersion: 2,
+                fonts: [],
+                pages: [
+                    {
+                        id: 'page-1',
+                        children: [
+                            {
+                                type: 'text',
+                                id: 'text-1',
+                                text: 'Browser Test - Page 1',
+                                x: 100,
+                                y: 100,
+                                width: 500,
+                                height: 100,
+                                fontSize: 48,
+                                fill: '#000000'
+                            },
+                            {
+                                type: 'image',
+                                id: 'image-1',
+                                src: testImageBase64,
+                                x: 100,
+                                y: 250,
+                                width: 200,
+                                height: 200
+                            }
+                        ],
+                        background: '#ffffff'
+                    },
+                    {
+                        id: 'page-2',
+                        children: [
+                            {
+                                type: 'text',
+                                id: 'text-2',
+                                text: 'Browser Test - Page 2',
+                                x: 100,
+                                y: 100,
+                                width: 500,
+                                height: 100,
+                                fontSize: 48,
+                                fill: '#000000'
+                            }
+                        ],
+                        background: '#f0f0f0'
+                    }
+                ],
+                audios: []
+            };
+        }
+
+        // Test upload only
+        async function testUpload() {
+            const btn = document.getElementById('uploadBtn');
+            const logEl = document.getElementById('uploadLog');
+            logEl.innerHTML = '';
+            logEl.style.display = 'block';
+            
+            btn.disabled = true;
+            
+            try {
+                log('uploadLog', '🚀 Starting upload test...', 'info');
+                
+                const designName = document.getElementById('designName').value || 'test-design-browser';
+                const subject = document.getElementById('subject').value || 'SCIENCE';
+                const quarter = document.getElementById('quarter').value || 'quarter1';
+                const gradeLevel = document.getElementById('gradeLevel').value || '';
+                
+                const testJson = createTestPolotnoJson();
+                
+                log('uploadLog', `📝 Design name: ${designName}`, 'info');
+                log('uploadLog', `📁 Subject: ${subject}, Quarter: ${quarter}`, 'info');
+                
+                const result = await uploadPolotno(testJson, {
+                    designName: designName,
+                    subject: subject,
+                    quarter: quarter,
+                    gradeLevel: gradeLevel || undefined
+                });
+                
+                log('uploadLog', `✅ Upload successful!`, 'success');
+                log('uploadLog', `📋 Design ID: ${result.designId}`, 'success');
+                log('uploadLog', `📊 Images uploaded: ${result.imagesUploaded}`, 'info');
+                log('uploadLog', `📦 Parts uploaded: ${result.parts.length}`, 'info');
+                log('uploadLog', `💾 Total size: ${(result.totalSize / 1024).toFixed(2)} KB`, 'info');
+                
+                // Store design ID for easy copy
+                document.getElementById('designId').value = result.designId;
+                
+                log('uploadLog', `\n💡 Design ID copied to Load field above!`, 'info');
+                
+            } catch (error) {
+                log('uploadLog', `❌ Upload failed: ${error.message}`, 'error');
+                console.error('Upload error:', error);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // Test load only
+        async function testLoad() {
+            const btn = document.getElementById('loadBtn');
+            const logEl = document.getElementById('loadLog');
+            logEl.innerHTML = '';
+            logEl.style.display = 'block';
+            
+            btn.disabled = true;
+            
+            try {
+                log('loadLog', '📥 Starting load test...', 'info');
+                
+                const designId = document.getElementById('designId').value;
+                if (!designId) {
+                    throw new Error('Please enter a design ID');
+                }
+                
+                const subject = document.getElementById('subject').value || 'SCIENCE';
+                const quarter = document.getElementById('quarter').value || 'quarter1';
+                const gradeLevel = document.getElementById('gradeLevel').value || '';
+                
+                log('loadLog', `🔍 Looking for design: ${designId}`, 'info');
+                log('loadLog', `📁 Search path: ${subject}/${quarter}`, 'info');
+                
+                const design = await loadPolotnoDesign(designId, {
+                    subject: subject,
+                    quarter: quarter,
+                    gradeLevel: gradeLevel || undefined
+                });
+                
+                log('loadLog', `✅ Load successful!`, 'success');
+                log('loadLog', `📊 Pages: ${design.pages?.length || design.slides?.length || 0}`, 'info');
+                log('loadLog', `📐 Dimensions: ${design.width}x${design.height}`, 'info');
+                log('loadLog', `\n📄 Design structure:`, 'info');
+                log('loadLog', JSON.stringify(design, null, 2).substring(0, 1000) + '...', 'info');
+                
+            } catch (error) {
+                log('loadLog', `❌ Load failed: ${error.message}`, 'error');
+                console.error('Load error:', error);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // Test full workflow
+        async function testFullWorkflow() {
+            const btn = document.getElementById('fullTestBtn');
+            const logEl = document.getElementById('fullTestLog');
+            logEl.innerHTML = '';
+            logEl.style.display = 'block';
+            
+            btn.disabled = true;
+            
+            try {
+                log('fullTestLog', '🔄 Starting full workflow test...', 'info');
+                log('fullTestLog', '='.repeat(60), 'info');
+                
+                // Step 1: Upload
+                log('fullTestLog', '\n📤 STEP 1: Uploading design...', 'info');
+                const designName = `test-full-${Date.now()}`;
+                const subject = document.getElementById('subject').value || 'SCIENCE';
+                const quarter = document.getElementById('quarter').value || 'quarter1';
+                const gradeLevel = document.getElementById('gradeLevel').value || '';
+                
+                const testJson = createTestPolotnoJson();
+                const uploadResult = await uploadPolotno(testJson, {
+                    designName: designName,
+                    subject: subject,
+                    quarter: quarter,
+                    gradeLevel: gradeLevel || undefined
+                });
+                
+                log('fullTestLog', `✅ Uploaded! Design ID: ${uploadResult.designId}`, 'success');
+                
+                // Step 2: Wait a moment
+                log('fullTestLog', '\n⏳ Waiting 2 seconds...', 'info');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Step 3: Load
+                log('fullTestLog', '\n📥 STEP 2: Loading design back...', 'info');
+                const loadedDesign = await loadPolotnoDesign(uploadResult.designId, {
+                    subject: subject,
+                    quarter: quarter,
+                    gradeLevel: gradeLevel || undefined
+                });
+                
+                log('fullTestLog', `✅ Loaded!`, 'success');
+                
+                // Step 4: Verify
+                log('fullTestLog', '\n🔍 STEP 3: Verifying...', 'info');
+                const originalPages = testJson.pages.length;
+                const loadedPages = loadedDesign.pages?.length || loadedDesign.slides?.length || 0;
+                
+                const pagesMatch = loadedPages === originalPages;
+                const widthMatch = loadedDesign.width === testJson.width;
+                const heightMatch = loadedDesign.height === testJson.height;
+                
+                log('fullTestLog', `   Pages: ${loadedPages} (expected: ${originalPages}) ${pagesMatch ? '✅' : '❌'}`, pagesMatch ? 'success' : 'error');
+                log('fullTestLog', `   Width: ${loadedDesign.width} (expected: ${testJson.width}) ${widthMatch ? '✅' : '❌'}`, widthMatch ? 'success' : 'error');
+                log('fullTestLog', `   Height: ${loadedDesign.height} (expected: ${testJson.height}) ${heightMatch ? '✅' : '❌'}`, heightMatch ? 'success' : 'error');
+                
+                const allPassed = pagesMatch && widthMatch && heightMatch;
+                
+                log('fullTestLog', '\n' + '='.repeat(60), 'info');
+                if (allPassed) {
+                    log('fullTestLog', '🎉 ALL TESTS PASSED! ✅', 'success');
+                } else {
+                    log('fullTestLog', '⚠️  SOME TESTS FAILED', 'warning');
+                }
+                log('fullTestLog', '='.repeat(60), 'info');
+                
+                // Update design ID field
+                document.getElementById('designId').value = uploadResult.designId;
+                
+            } catch (error) {
+                log('fullTestLog', `\n❌ TEST FAILED: ${error.message}`, 'error');
+                console.error('Full test error:', error);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
+

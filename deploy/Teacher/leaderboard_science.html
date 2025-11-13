@@ -161,7 +161,15 @@
                         </ul>
                     </li>
                     <li><a href="studentlist.html">Student</a></li>
-                        <li class="dropdown">
+                    <li><a href="grading.html">Grading</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Assessments <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="assessment-builder.html">Create Assessment</a></li>
+                            <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
                             <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
                             <ul class="dropdown-content">
                                 <li><a href="leaderboard_math.html">Math</a></li>
@@ -357,18 +365,23 @@
             // Calculate Math-specific scores
             students.forEach(s => {
                 // Math quiz points - only from math quizzes
-                let mathQuizPoints = 0;
-                if (s.quizzes) {
-                    Object.keys(s.quizzes).forEach(quizKey => {
-                        // Only count math-related quizzes
-                        if (quizKey.includes('math') || quizKey.includes('lesson1') || quizKey.includes('clock-quiz')) {
-                            const summary = s.quizzes[quizKey]?.summary;
-                            if (summary && typeof summary.best === 'number') {
-                                mathQuizPoints += summary.best;
-                            }
+               let scienceQuizPoints = 0;
+                if (s.quizzes && Array.isArray(s.quizzes.subject_science)) {
+                    s.quizzes.subject_science.forEach(quarterObj => {
+                        if (quarterObj && typeof quarterObj === 'object') {
+                            Object.values(quarterObj).forEach(quizObj => {
+                                if (
+                                    quizObj &&
+                                    quizObj.summary &&
+                                    typeof quizObj.summary.totalScore === 'number'
+                                ) {
+                                    scienceQuizPoints += quizObj.summary.totalScore;
+                                }
+                            });
                         }
                     });
                 }
+                s.quizPoints = scienceQuizPoints;
                 
                 // Math assessment points - only from math assessments
                 let mathAssessmentPoints = 0;

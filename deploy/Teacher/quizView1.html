@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Presentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <link rel="stylesheet" href="../CSS/fonts.css">
+<!-- ...inside <head> -->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+    /* Make presentation area strictly 4:3 and responsive */
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: #222;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        font-family: inherit;
+    }
+
+    /* Presentation wrapper enforces 4:3 aspect ratio */
+    .presentation-canvas-wrapper {
+        width: min(1024px, 95vw);
+        aspect-ratio: 4 / 3; /* strict 4:3 */
+        background: #000000;
+        border-radius: 8px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 12px 40px rgba(2,6,23,0.6);
+    }
+
+    /* Canvas fills the wrapper exactly (keeps logical size in Fabric) */
+    canvas#presentation-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        background: #fff;
+    }
+
+    /* Game iframe must also fill the 4:3 area */
+    #game-iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        z-index: 10;
+    }
+
+    /* Back button kept visible but unobtrusive */
+    .back-btn {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 100;
+    }
+
+    /* Responsive tweaks (maintain 4:3 on small screens) */
+    @media (max-width: 640px) {
+        .presentation-canvas-wrapper { width: calc(100vw - 24px); }
+    }
+
+    /* Prevent scrolling and ensure full viewport usage */
+    html, body { 
+        margin: 0; 
+        padding: 0;
+        background: #222; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        min-height: 100vh;
+        max-height: 100vh;
+        overflow: hidden; /* Prevent scrolling */
+        position: fixed;
+        width: 100%;
+        height: 100%;
+    }
+    
+    /* Canvas styling with proper constraints - use 4:3 (1024x768) */
+    #presentation-canvas { 
+        width: 1024px; 
+        height: 768px; 
+        max-width: 100vw; 
+        max-height: 90vh; 
+        display: block;
+        object-fit: contain;
+    }
+
+    /* Back button styling */
+    .back-btn { 
+        position: fixed; 
+        top: 16px; 
+        left: 16px; 
+        background: #fff; 
+        color: #232946; 
+        border: none; 
+        border-radius: 6px; 
+        padding: 8px 18px; 
+        font-weight: 600; 
+        cursor: pointer; 
+        font-size: 1rem;
+        z-index: 100;
+    }
+
+    /* GIF overlay styling */
+    .canvas-gif-overlay {
+        pointer-events: none;
+        z-index: 50;
+        position: absolute;
+    }
+
+    /* Canvas wrapper with no overflow */
+    .presentation-canvas-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 100vw;
+        max-height: 90vh;
+    }
+
+    /* Navigation bar styling */
+    .nav-bar {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        display: flex;
+        gap: 12px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 8px 16px;
+        border-radius: 8px;
+        backdrop-filter: blur(4px);
+    }
+
+    /* Navigation buttons */
+    .nav-btn {
+        padding: 8px 18px;
+        border-radius: 6px;
+        border: none;
+        background: #b39ddb;
+        color: #232946;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+        background: #9575cd;
+        transform: translateY(-1px);
+    }
+
+    .nav-btn:disabled {
+        background: #666;
+        color: #999;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Slide indicator */
+    .slide-indicator {
+        font-size: 1.1em;
+        font-weight: bold;
+        color: white;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+    }
+
+    /* Game iframe styling */
+    #game-iframe {
+        position: absolute;
+        border: none;
+        z-index: 10;
+        pointer-events: auto;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1400px) {
+        #presentation-canvas {
+            width: 90vw;
+            height: calc(90vw * 0.75); /* 4:3 aspect ratio */
+            max-height: 80vh;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .nav-bar {
+            bottom: 12px;
+            gap: 8px;
+            padding: 6px 12px;
+        }
+        
+        #presentation-canvas { width:1280px; height:720px; max-width:100vw; max-height:90vh; display:block; }
+        .back-btn { position:fixed; top:16px; left:16px; background:#fff; color:#232946; border:none; border-radius:6px; padding:8px 18px; font-weight:600; cursor:pointer; font-size:1rem; }
+
+        .canvas-gif-overlay {
+            pointer-events: none;
+            z-index: 50;
+            position: absolute;
+        }
+
+        .presentation-canvas-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+  
+    <div class="presentation-canvas-wrapper">
+        <canvas id="presentation-canvas"></canvas>
+    </div>
+    <script>    
+    // Firebase config
+    const firebaseConfig = {
+        apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+        authDomain: "edutaktika.firebaseapp.com",
+        databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+        projectId: "edutaktika",
+        storageBucket: "edutaktika.appspot.com",
+        messagingSenderId: "676848575316",
+        appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+        measurementId: "G-X3GT5TNN87"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Get URL params
+    function getParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+    }
+    const subject = getParam('subject');
+    const quarter = getParam('quarter');
+    const name = getParam('name');
+
+    // Setup Fabric canvas
+const canvas = new fabric.Canvas('presentation-canvas', {
+        backgroundColor: '#fff',
+        width: 1024,
+        height: 768,
+        selection: false
+    });
+
+    // Make all objects unselectable and not editable after loading
+    function lockCanvasObjects() {
+        canvas.getObjects().forEach(obj => {
+            obj.selectable = false;
+            obj.evented = false;
+            obj.hasControls = false;
+            obj.hasBorders = false;
+            if (obj.type === 'group' && obj._objects) {
+                obj._objects.forEach(child => {
+                    child.selectable = false;
+                    child.evented = false;
+                    child.hasControls = false;
+                    child.hasBorders = false;
+                });
+            }
+        });
+        canvas.selection = false;
+        canvas.discardActiveObject();
+        canvas.renderAll();
+    }
+
+    let slides = [];
+    let currentSlide = 0;
+
+    // Create navigation UI for presentation
+    const navBar = document.createElement('div');
+    navBar.style = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:12px;';
+    navBar.innerHTML = `
+        <button id="prev-slide-btn" style="padding:8px 18px;border-radius:6px;border:none;background:#b39ddb;color:#232946;font-weight:600;cursor:pointer;">Prev Slide</button>
+        <span id="slide-indicator" style="font-size:1.1em;font-weight:bold; color:white;">Slide 1/1</span>
+        <button id="next-slide-btn" style="padding:8px 18px;border-radius:6px;border:none;background:#b39ddb;color:#232946;font-weight:600;cursor:pointer;">Next Slide</button>
+    `;
+    document.body.appendChild(navBar);
+
+    function updateSlideIndicator() {
+        document.getElementById('slide-indicator').textContent = `Slide ${currentSlide+1}/${slides.length}`;
+    }
+    function loadSlide(idx) {
+        if (slides[idx]) {
+            canvas.loadFromJSON(slides[idx], function() {
+                canvas.renderAll();
+                overlayGifsOnCanvasPresent(canvas);
+                lockCanvasObjects(); // <-- Add this line
+                updateSlideIndicator();
+                showGameIframe(slides[currentSlide], document.getElementById('presentation-canvas'));
+            });
+        }
+    }
+
+    // Show game iframe if exists for the slide
+function showGameIframe(slide, canvasEl) {
+    let existing = document.getElementById('game-iframe');
+    // Remove if no game
+    if (!slide.game || !slide.game.url) {
+        if (existing) existing.remove();
+        return;
+    }
+    const wrapper = document.querySelector('.presentation-canvas-wrapper');
+    // Always remove old iframe and create a new one for the current slide
+    if (existing) existing.remove();
+
+    const rect = canvasEl.getBoundingClientRect();
+    const iframe = document.createElement('iframe');
+    iframe.id = 'game-iframe';
+    iframe.src = slide.game.url;
+    iframe.style.position = 'absolute';
+    iframe.style.top = canvasEl.offsetTop + 'px';
+    iframe.style.left = canvasEl.offsetLeft + 'px';
+    iframe.style.width = rect.width + 'px';
+    iframe.style.height = rect.height + 'px';
+    iframe.style.border = 'none';
+    iframe.style.zIndex = '10';
+    iframe.allow = 'fullscreen';
+    wrapper.style.position = 'relative';
+    wrapper.appendChild(iframe);
+}
+
+    // Add this function to keep the iframe in sync with the canvas size
+    function syncGameIframeSize() {
+        const iframe = document.getElementById('game-iframe');
+        const canvasEl = document.getElementById('presentation-canvas');
+        if (iframe && canvasEl) {
+            const rect = canvasEl.getBoundingClientRect();
+            iframe.style.width = rect.width + 'px';
+            iframe.style.height = rect.height + 'px';
+            iframe.style.top = canvasEl.offsetTop + 'px';
+            iframe.style.left = canvasEl.offsetLeft + 'px';
+            iframe.style.transform = '';
+        }
+    }
+    window.addEventListener('resize', syncGameIframeSize);
+
+    // Function to list all presentations for the selected subject and quarter
+    function listPresentations() {
+        if (!subject || !quarter) {
+            document.body.insertAdjacentHTML('beforeend', `<div style="color:white;text-align:center;margin-top:40px;">Please specify both subject and quarter in the URL.<br>Example: <code>?subject=subject_math&quarter=1</code></div>`);
+            return;
+        }
+        db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter).once('value', function(snapshot) {
+            if (!snapshot.exists()) {
+                document.body.insertAdjacentHTML('beforeend', `<div style="color:white;text-align:center;margin-top:40px;">No quizzes found for this subject and quarter.</div>`);
+                return;
+            }
+            const listDiv = document.createElement('div');
+            listDiv.style = 'margin:40px auto 0 auto;max-width:600px;background:#fff;border-radius:12px;padding:32px;box-shadow:0 4px 24px #0002;';
+            listDiv.innerHTML = `<h2 style="margin-top:0;">Quizzes for ${subject.replace('subject_','').toUpperCase()} - Quarter ${quarter}</h2><ul id="quiz-list" style="list-style:none;padding:0;"></ul>`;
+            document.body.appendChild(listDiv);
+            const ul = document.getElementById('quiz-list');
+            snapshot.forEach(child => {
+                const data = child.val();
+                const li = document.createElement('li');
+                li.style = 'margin-bottom:18px;padding:12px 0;border-bottom:1px solid #eee;';
+                li.innerHTML = `
+                    <strong>${data.title || child.key}</strong>
+                    <div style="font-size:0.95em;color:#444;">${data.description || ''}</div>
+                    <button style="margin-top:6px;padding:6px 18px;border-radius:6px;border:none;background:#b39ddb;color:#232946;font-weight:600;cursor:pointer;"
+                        onclick="window.location.href='quizView.html?subject=${encodeURIComponent(subject)}&quarter=${encodeURIComponent(quarter)}&name=${encodeURIComponent(child.key)}'">
+                        View Quiz
+                    </button>
+                `;
+                ul.appendChild(li);
+            });
+        });
+    }
+
+    // If no name param, show all presentations for the subject and quarter
+    if (!name) {
+        listPresentations();
+    } else {
+       firebase.auth().onAuthStateChanged(async function(user) {
+        if (!user || !subject || !quarter || !name) {
+            document.body.insertAdjacentHTML('beforeend', `<div style="color:white;text-align:center;margin-top:40px;">Presentation not found or not logged in.</div>`);
+            return;
+        }
+        const teacherUID = user.uid;
+        const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+        const teacher = teacherSnap.val();
+        const section = teacher && teacher.section ? teacher.section : null;
+        if (!section) {
+            document.body.insertAdjacentHTML('beforeend', `<div style="color:white;text-align:center;margin-top:40px;">No section found for this teacher.</div>`);
+            return;
+        }
+        db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subject + '/' + quarter + '/' + name).once('value', function(snapshot) {
+            if (snapshot.exists() && snapshot.val().slides) {
+                slides = JSON.parse(snapshot.val().slides);
+                currentSlide = 0;
+                loadSlide(currentSlide);
+                updateSlideIndicator();
+            } else if (snapshot.exists() && snapshot.val().json) {
+                canvas.loadFromJSON(snapshot.val().json, function() {
+                    canvas.renderAll();
+                    slides = [canvas.toJSON()];
+                    currentSlide = 0;
+                    updateSlideIndicator();
+                });
+            } else {
+                
+            }
+        });
+    });
+    }
+
+    // Navigation events
+    document.getElementById('next-slide-btn').onclick = function() {
+        if (currentSlide < slides.length-1) {
+            currentSlide++;
+            loadSlide(currentSlide);
+            updateSlideIndicator();
+        }
+    };
+    document.getElementById('prev-slide-btn').onclick = function() {
+        if (currentSlide > 0) {
+            currentSlide--;
+            loadSlide(currentSlide);
+            updateSlideIndicator();
+        }
+    };
+
+    function overlayGifsOnCanvasPresent(canvas) {
+        document.querySelectorAll('.canvas-gif-overlay').forEach(el => el.remove());
+        const wrapper = document.querySelector('.presentation-canvas-wrapper');
+        const canvasEl = document.getElementById('presentation-canvas');
+        if (!wrapper || !canvasEl) return;
+
+        // Get the canvas's offset inside the wrapper
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const canvasRect = canvasEl.getBoundingClientRect();
+        const offsetLeft = canvasRect.left - wrapperRect.left;
+        const offsetTop = canvasRect.top - wrapperRect.top;
+
+        // Calculate scale between canvas logical size and displayed size
+        const scaleX = canvasEl.offsetWidth / canvasEl.width;
+        const scaleY = canvasEl.offsetHeight / canvasEl.height;
+
+        canvas.getObjects().forEach(obj => {
+            if (
+                obj.type === 'image' &&
+                obj._element &&
+                obj._element.src &&
+                (obj._element.src.includes('.gif') || obj._element.src.startsWith('data:image/gif'))
+            ) {
+                const rect = obj.getBoundingRect();
+                const left = rect.left * scaleX + offsetLeft;
+                const top = rect.top * scaleY + offsetTop;
+                const width = rect.width * scaleX;
+                const height = rect.height * scaleY;
+
+                const img = document.createElement('img');
+                img.src = obj._element.src;
+                img.className = 'canvas-gif-overlay';
+                img.style.position = 'absolute';
+                img.style.left = left + 'px';
+                img.style.top = top + 'px';
+                img.style.width = width + 'px';
+                img.style.height = height + 'px';
+                img.style.pointerEvents = 'none';
+                img.style.zIndex = 50;
+                wrapper.appendChild(img);
+            }
+        });
+    }
+    </script>
+</body>
+</html>
