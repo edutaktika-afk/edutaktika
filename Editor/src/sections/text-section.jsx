@@ -232,7 +232,7 @@ export const TextPanel = observer(({ store }) => {
 
       {/* Status */}
       <div style={{ padding: '10px', fontSize: '10px', color: '#999', textAlign: 'center' }}>
-        {fontsLoaded ? '✓ Google Fonts loaded' : 'Loading fonts...'}
+        Using Polotno default fonts
       </div>
     </div>
   );
