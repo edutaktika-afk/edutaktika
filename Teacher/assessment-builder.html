@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assessment Builder - Edutaktika</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.6/quill.snow.css" />
     <link rel="stylesheet" href="../CSS/header.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/dropdown.css">
@@ -542,9 +543,17 @@
                         <i class="fas fa-question-circle"></i> Questions
                     </h3>
                     
-                    <button class="add-question-btn" onclick="openQuestionModal()">
-                        <i class="fas fa-plus"></i> Add Question
-                    </button>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="add-question-btn" onclick="openQuestionModal()" style="flex: 1;">
+                            <i class="fas fa-plus"></i> Add Single Question
+                        </button>
+                        <button class="btn btn-secondary" onclick="openMultipleQuestionsModal()" style="flex: 1; background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%);">
+                            <i class="fas fa-list"></i> Add Multiple Questions
+                        </button>
+                        <button class="btn btn-secondary" onclick="openBulkImportModal()" style="flex: 1;">
+                            <i class="fas fa-file-upload"></i> CSV Import
+                        </button>
+                    </div>
 
                     <div id="questionsContainer">
                         <!-- Questions will be added here -->
@@ -582,9 +591,160 @@
                     </div>
                 </div>
 
+                <div style="margin-bottom: 15px;">
+                    <div id="autoSaveIndicator" style="display: none; color: #28a745; font-size: 12px; text-align: center; padding: 5px;">
+                        <i class="fas fa-check-circle"></i> Draft saved
+                    </div>
+                </div>
                 <button class="save-assessment-btn" onclick="saveAssessment()">
                     <i class="fas fa-save"></i> Save Assessment
                 </button>
+                <button class="btn btn-secondary" onclick="saveDraft()" style="width: 100%; margin-top: 10px;">
+                    <i class="fas fa-save"></i> Save Draft Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Multiple Questions Modal -->
+    <div id="multipleQuestionsModal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3><i class="fas fa-list"></i> Add Multiple Questions</h3>
+                <button class="close-btn" onclick="closeMultipleQuestionsModal()">&times;</button>
+            </div>
+
+            <div style="padding: 20px;">
+                <!-- Question Type Selector -->
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label>Select Question Type</label>
+                    <div class="question-type-selector" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                        <div class="question-type-btn" onclick="selectMultipleQuestionType('multiple-choice')" id="multipleTypeBtn">
+                            <i class="fas fa-list-ul"></i>
+                            <span>Multiple Choice</span>
+                        </div>
+                        <div class="question-type-btn" onclick="selectMultipleQuestionType('true-false')" id="trueFalseTypeBtn">
+                            <i class="fas fa-check-circle"></i>
+                            <span>True/False</span>
+                        </div>
+                        <div class="question-type-btn" onclick="selectMultipleQuestionType('short-answer')" id="shortAnswerTypeBtn">
+                            <i class="fas fa-edit"></i>
+                            <span>Short Answer</span>
+                        </div>
+                        <div class="question-type-btn" onclick="selectMultipleQuestionType('essay')" id="essayTypeBtn">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Essay</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Default Points -->
+                <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label for="defaultPoints">Default Points (per question)</label>
+                        <input type="number" id="defaultPoints" value="10" min="1" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label for="questionCount">Number of Questions</label>
+                        <input type="number" id="questionCount" value="5" min="1" max="50" onchange="generateQuestionInputs()" style="width: 100%;">
+                    </div>
+                </div>
+
+                <!-- Questions Container -->
+                <div id="multipleQuestionsContainer" style="margin-top: 20px;">
+                    <!-- Questions will be generated here -->
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px; padding-top: 20px; border-top: 2px solid #e9ecef;">
+                    <button class="btn btn-secondary" onclick="closeMultipleQuestionsModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="addMultipleQuestions()">
+                        <i class="fas fa-check"></i> Add All Questions
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Import Modal -->
+    <div id="bulkImportModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-upload"></i> Bulk Import Questions</h3>
+                <button class="close-btn" onclick="closeBulkImportModal()">&times;</button>
+            </div>
+
+            <div style="padding: 20px;">
+                <!-- Tabs for different import methods -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e9ecef;">
+                    <button class="tab-btn" id="csvTab" onclick="showImportTab('csv')" style="background: #2e8b57; color: white;">CSV Import</button>
+                    <button class="tab-btn" id="quickTab" onclick="showImportTab('quick')" style="background: #6c757d; color: white;">Quick Entry</button>
+                </div>
+
+                <!-- CSV Import Tab -->
+                <div id="csvImportTab" class="import-tab">
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2e8b57;">
+                        <strong><i class="fas fa-info-circle"></i> CSV Format:</strong>
+                        <p style="margin: 10px 0 0 0; font-size: 14px;">
+                            Format: <code>Question Text,Type,Points,Option1,Option2,Option3,Option4,Correct Answer</code><br>
+                            Types: <code>multiple-choice</code>, <code>true-false</code>, <code>short-answer</code>, <code>essay</code><br>
+                            For True/False: Use "True" and "False" as options, correct answer is 0 or 1<br>
+                            For Short Answer/Essay: Leave options blank, correct answer is ignored
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-download"></i> Download CSV Template
+                        </label>
+                        <button type="button" class="btn btn-secondary" onclick="downloadCSVTemplate()" style="width: 100%;">
+                            <i class="fas fa-file-csv"></i> Download Template
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="csvFileInput">Upload CSV File</label>
+                        <input type="file" id="csvFileInput" accept=".csv,.txt" onchange="handleCSVUpload(event)" style="padding: 10px;">
+                        <small style="color: #6c757d; display: block; margin-top: 5px;">
+                            Select a CSV file with questions
+                        </small>
+                    </div>
+
+                    <div id="csvPreview" style="display: none; margin-top: 20px;">
+                        <h4>Preview (first 3 questions):</h4>
+                        <div id="csvPreviewContent" style="background: #f8f9fa; padding: 15px; border-radius: 8px; max-height: 300px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+
+                <!-- Quick Entry Tab -->
+                <div id="quickImportTab" class="import-tab" style="display: none;">
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2e8b57;">
+                        <strong><i class="fas fa-info-circle"></i> Quick Entry Format:</strong>
+                        <p style="margin: 10px 0 0 0; font-size: 14px;">
+                            Enter questions one per line. Use this format:<br>
+                            <code>Q: Question text here | Type: multiple-choice | Points: 10 | Options: A, B, C, D | Correct: 0</code><br>
+                            Or simply: <code>Question text here</code> (defaults to multiple-choice, 10 points)
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quickEntryText">Paste Questions (one per line)</label>
+                        <textarea id="quickEntryText" placeholder="Q: What is 2+2? | Type: multiple-choice | Points: 10 | Options: 3, 4, 5, 6 | Correct: 1&#10;Q: What is the capital of France? | Type: short-answer | Points: 5" style="min-height: 300px; font-family: monospace; font-size: 13px;"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="quickEntryDefaults" checked>
+                            Use defaults for missing fields (Multiple Choice, 10 points, 4 options)
+                        </label>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="closeBulkImportModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="processBulkImport()">
+                        <i class="fas fa-check"></i> Import Questions
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -618,7 +778,25 @@
 
             <div class="form-group">
                 <label for="questionText">Question Text</label>
-                <textarea id="questionText" placeholder="Enter your question"></textarea>
+                <div id="questionTextEditor" style="min-height: 150px; background: white; border: 2px solid #e9ecef; border-radius: 8px;"></div>
+                <input type="hidden" id="questionText" />
+            </div>
+
+            <div class="form-group">
+                <label>Question Image (Optional)</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="file" id="questionImageInput" accept="image/*" style="display: none;" onchange="handleQuestionImageUpload(event)">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('questionImageInput').click()">
+                        <i class="fas fa-image"></i> Upload Image
+                    </button>
+                    <div id="questionImagePreview" style="display: none;">
+                        <img id="questionImagePreviewImg" src="" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 2px solid #e9ecef;">
+                        <button type="button" class="btn btn-danger" onclick="removeQuestionImage()" style="margin-left: 10px; padding: 5px 10px;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <input type="hidden" id="questionImageUrl" />
             </div>
 
             <div class="form-group">
@@ -647,6 +825,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <!-- Rich Text Editor -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <script>
         // Firebase configuration
@@ -664,11 +845,32 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const auth = firebase.auth();
+        const storage = firebase.storage();
 
         // Global variables
         let questions = [];
         let currentQuestionType = '';
         let editingQuestionIndex = -1;
+        let questionEditor = null; // Rich text editor instance
+        let autoSaveInterval = null;
+        let currentDraftId = null;
+
+        // Initialize Rich Text Editor
+        function initQuestionEditor() {
+            questionEditor = new Quill('#questionTextEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                },
+                placeholder: 'Enter your question...'
+            });
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -676,9 +878,144 @@
             auth.onAuthStateChanged(function(user) {
                 if (!user) {
                     window.location.href = 'logreg.html';
+                } else {
+                    // Initialize rich text editor
+                    initQuestionEditor();
+                    
+                    // Load draft if exists
+                    loadDraft();
+                    
+                    // Start auto-save (every 30 seconds)
+                    startAutoSave();
+                    
+                    // Check if editing existing assessment
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const assessmentId = urlParams.get('id');
+                    if (assessmentId) {
+                        loadAssessmentForEdit(assessmentId);
+                    }
                 }
             });
         });
+
+        // Auto-save functionality
+        function startAutoSave() {
+            autoSaveInterval = setInterval(() => {
+                saveDraft();
+            }, 30000); // Auto-save every 30 seconds
+        }
+
+        function saveDraft() {
+            const title = document.getElementById('assessmentTitle').value.trim();
+            if (!title && questions.length === 0) return; // Don't save empty drafts
+
+            const draft = {
+                title: title || 'Untitled Assessment',
+                description: document.getElementById('assessmentDescription').value.trim(),
+                subject: document.getElementById('subject').value,
+                gradeLevel: document.getElementById('gradeLevel').value,
+                timeLimit: parseInt(document.getElementById('timeLimit').value) || 60,
+                passingScore: parseInt(document.getElementById('passingScore').value) || 70,
+                questions: questions,
+                settings: {
+                    shuffleQuestions: document.getElementById('shuffleQuestions').checked,
+                    showResults: document.getElementById('showResults').checked,
+                    allowReview: document.getElementById('allowReview').checked
+                },
+                lastSaved: new Date().toISOString()
+            };
+
+            const user = auth.currentUser;
+            if (!user) return;
+
+            const draftRef = currentDraftId 
+                ? db.ref(`drafts/${user.uid}/${currentDraftId}`)
+                : db.ref(`drafts/${user.uid}`).push();
+
+            if (!currentDraftId) {
+                currentDraftId = draftRef.key;
+            }
+
+            draftRef.set(draft)
+                .then(() => {
+                    console.log('Draft auto-saved');
+                    showAutoSaveIndicator();
+                })
+                .catch(error => {
+                    console.error('Error saving draft:', error);
+                });
+        }
+
+        function loadDraft() {
+            const user = auth.currentUser;
+            if (!user) return;
+
+            db.ref(`drafts/${user.uid}`).once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const drafts = snapshot.val();
+                        const draftKeys = Object.keys(drafts);
+                        if (draftKeys.length > 0) {
+                            const latestDraftKey = draftKeys[draftKeys.length - 1];
+                            const draft = drafts[latestDraftKey];
+                            currentDraftId = latestDraftKey;
+
+                            if (confirm('Found a saved draft. Would you like to continue where you left off?')) {
+                                loadDraftData(draft);
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading draft:', error);
+                });
+        }
+
+        function loadDraftData(draft) {
+            document.getElementById('assessmentTitle').value = draft.title || '';
+            document.getElementById('assessmentDescription').value = draft.description || '';
+            document.getElementById('subject').value = draft.subject || '';
+            document.getElementById('gradeLevel').value = draft.gradeLevel || '';
+            document.getElementById('timeLimit').value = draft.timeLimit || '';
+            document.getElementById('passingScore').value = draft.passingScore || '';
+            
+            if (draft.questions) {
+                questions = draft.questions;
+                renderQuestions();
+                updatePreview();
+            }
+
+            if (draft.settings) {
+                document.getElementById('shuffleQuestions').checked = draft.settings.shuffleQuestions || false;
+                document.getElementById('showResults').checked = draft.settings.showResults || false;
+                document.getElementById('allowReview').checked = draft.settings.allowReview || false;
+            }
+        }
+
+        function showAutoSaveIndicator() {
+            const indicator = document.getElementById('autoSaveIndicator');
+            if (indicator) {
+                indicator.style.display = 'block';
+                indicator.textContent = 'Draft saved';
+                setTimeout(() => {
+                    indicator.style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        // Load assessment for editing
+        function loadAssessmentForEdit(assessmentId) {
+            db.ref('assessments/' + assessmentId).once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const assessment = snapshot.val();
+                        loadDraftData(assessment);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading assessment:', error);
+                });
+        }
 
         // Question type selection
         function selectQuestionType(type) {
@@ -766,8 +1103,13 @@
 
         // Reset question form
         function resetQuestionForm() {
+            if (questionEditor) {
+                questionEditor.setContents([]);
+            }
             document.getElementById('questionText').value = '';
             document.getElementById('questionPoints').value = '10';
+            document.getElementById('questionImageUrl').value = '';
+            document.getElementById('questionImagePreview').style.display = 'none';
             currentQuestionType = '';
             editingQuestionIndex = -1;
             
@@ -778,12 +1120,74 @@
             document.getElementById('optionsContainer').style.display = 'none';
         }
 
+        // Handle question image upload
+        function handleQuestionImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                alert('Image size must be less than 5MB');
+                return;
+            }
+
+            const user = auth.currentUser;
+            if (!user) return;
+
+            // Show loading
+            const preview = document.getElementById('questionImagePreview');
+            preview.style.display = 'flex';
+            preview.innerHTML = '<p>Uploading...</p>';
+
+            // Upload to Firebase Storage
+            const storageRef = storage.ref(`assessment-images/${user.uid}/${Date.now()}_${file.name}`);
+            const uploadTask = storageRef.put(file);
+
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    // Progress tracking (optional)
+                },
+                (error) => {
+                    console.error('Error uploading image:', error);
+                    alert('Error uploading image. Please try again.');
+                    preview.style.display = 'none';
+                },
+                () => {
+                    // Upload complete
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        document.getElementById('questionImageUrl').value = downloadURL;
+                        document.getElementById('questionImagePreviewImg').src = downloadURL;
+                        preview.innerHTML = `
+                            <img id="questionImagePreviewImg" src="${downloadURL}" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 2px solid #e9ecef;">
+                            <button type="button" class="btn btn-danger" onclick="removeQuestionImage()" style="margin-left: 10px; padding: 5px 10px;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                    });
+                }
+            );
+        }
+
+        // Remove question image
+        function removeQuestionImage() {
+            document.getElementById('questionImageUrl').value = '';
+            document.getElementById('questionImagePreview').style.display = 'none';
+            document.getElementById('questionImageInput').value = '';
+        }
+
         // Add question
         function addQuestion() {
-            const questionText = document.getElementById('questionText').value.trim();
+            // Get text from rich text editor
+            const questionTextHtml = questionEditor ? questionEditor.root.innerHTML : '';
+            const questionTextPlain = questionEditor ? questionEditor.getText().trim() : '';
+            const questionImageUrl = document.getElementById('questionImageUrl').value;
             const questionPoints = parseInt(document.getElementById('questionPoints').value) || 10;
 
-            if (!questionText) {
+            if (!questionTextPlain) {
                 alert('Please enter question text');
                 return;
             }
@@ -796,7 +1200,9 @@
             const question = {
                 id: Date.now(),
                 type: currentQuestionType,
-                text: questionText,
+                text: questionTextPlain, // Plain text for compatibility
+                textHtml: questionTextHtml, // Rich text HTML
+                imageUrl: questionImageUrl || null,
                 points: questionPoints,
                 options: [],
                 correctAnswer: null
@@ -837,8 +1243,25 @@
             const question = questions[index];
             editingQuestionIndex = index;
 
-            document.getElementById('questionText').value = question.text;
+            // Set rich text editor content
+            if (questionEditor) {
+                if (question.textHtml) {
+                    questionEditor.root.innerHTML = question.textHtml;
+                } else {
+                    questionEditor.setText(question.text || '');
+                }
+            }
+            document.getElementById('questionText').value = question.text || '';
             document.getElementById('questionPoints').value = question.points;
+
+            // Load image if exists
+            if (question.imageUrl) {
+                document.getElementById('questionImageUrl').value = question.imageUrl;
+                document.getElementById('questionImagePreviewImg').src = question.imageUrl;
+                document.getElementById('questionImagePreview').style.display = 'flex';
+            } else {
+                document.getElementById('questionImagePreview').style.display = 'none';
+            }
 
             // Select question type
             document.querySelectorAll('.question-type-btn').forEach(btn => {
@@ -906,7 +1329,10 @@
                             </button>
                         </div>
                     </div>
-                    <div class="question-text">${question.text}</div>
+                    <div class="question-text">
+                        ${question.textHtml ? question.textHtml : question.text}
+                        ${question.imageUrl ? `<img src="${question.imageUrl}" alt="Question image" style="max-width: 100%; margin-top: 10px; border-radius: 8px;">` : ''}
+                    </div>
                     ${question.options.length > 0 ? `
                         <div class="question-options">
                             ${question.options.map((option, i) => `
@@ -1006,6 +1432,15 @@
             const assessmentRef = db.ref('assessments').push();
             assessmentRef.set(assessment)
                 .then(() => {
+                    // Delete draft after successful save
+                    if (currentDraftId) {
+                        const user = auth.currentUser;
+                        if (user) {
+                            db.ref(`drafts/${user.uid}/${currentDraftId}`).remove();
+                            currentDraftId = null;
+                        }
+                    }
+
                     alert('Assessment saved successfully!');
                     // Reset form
                     document.getElementById('assessmentTitle').value = '';
@@ -1022,6 +1457,470 @@
                     console.error('Error saving assessment:', error);
                     alert('Error saving assessment. Please try again.');
                 });
+        }
+
+        // Multiple Questions Functions
+        let currentMultipleQuestionType = 'multiple-choice';
+
+        function openMultipleQuestionsModal() {
+            document.getElementById('multipleQuestionsModal').style.display = 'flex';
+            currentMultipleQuestionType = 'multiple-choice';
+            selectMultipleQuestionType('multiple-choice');
+            generateQuestionInputs();
+        }
+
+        function closeMultipleQuestionsModal() {
+            document.getElementById('multipleQuestionsModal').style.display = 'none';
+            document.getElementById('multipleQuestionsContainer').innerHTML = '';
+            document.getElementById('questionCount').value = '5';
+            document.getElementById('defaultPoints').value = '10';
+        }
+
+        function selectMultipleQuestionType(type) {
+            currentMultipleQuestionType = type;
+            
+            // Update UI
+            document.querySelectorAll('#multipleQuestionsModal .question-type-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            const btnMap = {
+                'multiple-choice': 'multipleTypeBtn',
+                'true-false': 'trueFalseTypeBtn',
+                'short-answer': 'shortAnswerTypeBtn',
+                'essay': 'essayTypeBtn'
+            };
+            
+            const btn = document.getElementById(btnMap[type]);
+            if (btn) btn.classList.add('selected');
+            
+            generateQuestionInputs();
+        }
+
+        function generateQuestionInputs() {
+            const count = parseInt(document.getElementById('questionCount').value) || 5;
+            const container = document.getElementById('multipleQuestionsContainer');
+            container.innerHTML = '';
+
+            for (let i = 0; i < count; i++) {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'multiple-question-item';
+                questionDiv.style.cssText = 'background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 12px; padding: 20px; margin-bottom: 15px;';
+
+                let questionHtml = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4 style="color: #2e8b57; margin: 0;">Question ${i + 1}</h4>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label style="font-size: 12px; color: #6c757d;">Points:</label>
+                            <input type="number" class="question-points-input" value="${document.getElementById('defaultPoints').value}" min="1" style="width: 60px; padding: 5px; border: 1px solid #e9ecef; border-radius: 4px;">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label>Question Text</label>
+                        <textarea class="question-text-input" placeholder="Enter question text..." style="width: 100%; min-height: 80px; padding: 10px; border: 2px solid #e9ecef; border-radius: 8px; resize: vertical;"></textarea>
+                    </div>
+                `;
+
+                // Add options for multiple choice and true/false
+                if (currentMultipleQuestionType === 'multiple-choice') {
+                    questionHtml += `
+                        <div class="form-group">
+                            <label>Options (select correct answer)</label>
+                            <div class="options-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="correct_${i}" value="0" class="correct-answer-radio">
+                                    <input type="text" class="option-input" placeholder="Option A" style="flex: 1; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px;">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="correct_${i}" value="1" class="correct-answer-radio">
+                                    <input type="text" class="option-input" placeholder="Option B" style="flex: 1; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px;">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="correct_${i}" value="2" class="correct-answer-radio">
+                                    <input type="text" class="option-input" placeholder="Option C" style="flex: 1; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px;">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="correct_${i}" value="3" class="correct-answer-radio">
+                                    <input type="text" class="option-input" placeholder="Option D" style="flex: 1; padding: 8px; border: 1px solid #e9ecef; border-radius: 6px;">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (currentMultipleQuestionType === 'true-false') {
+                    questionHtml += `
+                        <div class="form-group">
+                            <label>Correct Answer</label>
+                            <div style="display: flex; gap: 15px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="radio" name="correct_${i}" value="0" class="correct-answer-radio">
+                                    <span>True</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="radio" name="correct_${i}" value="1" class="correct-answer-radio">
+                                    <span>False</span>
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                questionDiv.innerHTML = questionHtml;
+                container.appendChild(questionDiv);
+            }
+        }
+
+        function addMultipleQuestions() {
+            const questionItems = document.querySelectorAll('.multiple-question-item');
+            const defaultPoints = parseInt(document.getElementById('defaultPoints').value) || 10;
+            let added = 0;
+            let skipped = 0;
+
+            questionItems.forEach((item, index) => {
+                const questionText = item.querySelector('.question-text-input').value.trim();
+                if (!questionText) {
+                    skipped++;
+                    return;
+                }
+
+                const points = parseInt(item.querySelector('.question-points-input').value) || defaultPoints;
+                
+                const question = {
+                    id: Date.now() + index,
+                    type: currentMultipleQuestionType,
+                    text: questionText,
+                    textHtml: questionText,
+                    imageUrl: null,
+                    points: points,
+                    options: [],
+                    correctAnswer: null
+                };
+
+                if (currentMultipleQuestionType === 'multiple-choice') {
+                    const optionInputs = item.querySelectorAll('.option-input');
+                    const correctRadio = item.querySelector('.correct-answer-radio:checked');
+                    
+                    const options = Array.from(optionInputs)
+                        .map(input => input.value.trim())
+                        .filter(val => val);
+
+                    if (options.length < 2) {
+                        skipped++;
+                        return;
+                    }
+
+                    question.options = options;
+                    question.correctAnswer = correctRadio ? parseInt(correctRadio.value) : 0;
+                } else if (currentMultipleQuestionType === 'true-false') {
+                    const correctRadio = item.querySelector('.correct-answer-radio:checked');
+                    question.options = ['True', 'False'];
+                    question.correctAnswer = correctRadio ? parseInt(correctRadio.value) : 0;
+                }
+
+                questions.push(question);
+                added++;
+            });
+
+            if (added > 0) {
+                renderQuestions();
+                updatePreview();
+                closeMultipleQuestionsModal();
+                alert(`Successfully added ${added} question(s)${skipped > 0 ? ` (${skipped} skipped - empty questions)` : ''}`);
+            } else {
+                alert('No valid questions to add. Please fill in at least one question.');
+            }
+        }
+
+        // Bulk Import Functions
+        function openBulkImportModal() {
+            document.getElementById('bulkImportModal').style.display = 'flex';
+            showImportTab('csv'); // Default to CSV tab
+        }
+
+        function closeBulkImportModal() {
+            document.getElementById('bulkImportModal').style.display = 'none';
+            document.getElementById('csvFileInput').value = '';
+            document.getElementById('quickEntryText').value = '';
+            document.getElementById('csvPreview').style.display = 'none';
+        }
+
+        function showImportTab(tab) {
+            // Hide all tabs
+            document.getElementById('csvImportTab').style.display = 'none';
+            document.getElementById('quickImportTab').style.display = 'none';
+            document.getElementById('csvTab').style.background = '#6c757d';
+            document.getElementById('quickTab').style.background = '#6c757d';
+
+            // Show selected tab
+            if (tab === 'csv') {
+                document.getElementById('csvImportTab').style.display = 'block';
+                document.getElementById('csvTab').style.background = '#2e8b57';
+            } else {
+                document.getElementById('quickImportTab').style.display = 'block';
+                document.getElementById('quickTab').style.background = '#2e8b57';
+            }
+        }
+
+        function downloadCSVTemplate() {
+            const template = `Question Text,Type,Points,Option1,Option2,Option3,Option4,Correct Answer
+What is 2+2?,multiple-choice,10,3,4,5,6,1
+What is the capital of France?,short-answer,5,,,,
+The Earth is round.,true-false,10,True,False,,,0
+Explain photosynthesis.,essay,20,,,,,
+What is 5*3?,multiple-choice,10,10,15,20,25,1`;
+
+            const blob = new Blob([template], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'question_template.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                parseCSVPreview(text);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSVPreview(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim());
+            if (lines.length === 0) {
+                alert('CSV file is empty');
+                return;
+            }
+
+            // Skip header if it exists
+            const startIndex = lines[0].toLowerCase().includes('question') ? 1 : 0;
+            const previewLines = lines.slice(startIndex, Math.min(startIndex + 3, lines.length));
+
+            let previewHtml = '<table style="width: 100%; border-collapse: collapse; font-size: 12px;"><thead><tr style="background: #2e8b57; color: white;"><th>Question</th><th>Type</th><th>Points</th><th>Options</th></tr></thead><tbody>';
+
+            previewLines.forEach((line, index) => {
+                const parts = parseCSVLine(line);
+                if (parts.length >= 3) {
+                    previewHtml += `<tr style="border-bottom: 1px solid #e9ecef;">
+                        <td style="padding: 8px;">${parts[0].substring(0, 50)}${parts[0].length > 50 ? '...' : ''}</td>
+                        <td style="padding: 8px;">${parts[1] || 'N/A'}</td>
+                        <td style="padding: 8px;">${parts[2] || '10'}</td>
+                        <td style="padding: 8px;">${parts.slice(3, 7).filter(o => o).join(', ') || 'N/A'}</td>
+                    </tr>`;
+                }
+            });
+
+            previewHtml += '</tbody></table>';
+            previewHtml += `<p style="margin-top: 10px; color: #6c757d; font-size: 12px;">Total questions found: ${lines.length - startIndex}</p>`;
+
+            document.getElementById('csvPreviewContent').innerHTML = previewHtml;
+            document.getElementById('csvPreview').style.display = 'block';
+        }
+
+        function parseCSVLine(line) {
+            const parts = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    parts.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            parts.push(current.trim());
+            return parts;
+        }
+
+        function processBulkImport() {
+            const activeTab = document.getElementById('csvTab').style.background === 'rgb(46, 139, 87)' ? 'csv' : 'quick';
+
+            if (activeTab === 'csv') {
+                processCSVImport();
+            } else {
+                processQuickEntry();
+            }
+        }
+
+        function processCSVImport() {
+            const fileInput = document.getElementById('csvFileInput');
+            if (!fileInput.files[0]) {
+                alert('Please select a CSV file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csvText = e.target.result;
+                const lines = csvText.split('\n').filter(line => line.trim());
+                
+                // Skip header
+                const startIndex = lines[0].toLowerCase().includes('question') ? 1 : 0;
+                const questionLines = lines.slice(startIndex);
+
+                let imported = 0;
+                let errors = [];
+
+                questionLines.forEach((line, index) => {
+                    try {
+                        const parts = parseCSVLine(line);
+                        if (parts.length < 3) {
+                            errors.push(`Line ${index + startIndex + 1}: Not enough columns`);
+                            return;
+                        }
+
+                        const questionText = parts[0];
+                        const questionType = (parts[1] || 'multiple-choice').toLowerCase();
+                        const points = parseInt(parts[2]) || 10;
+                        const options = parts.slice(3, 7).filter(o => o && o.trim());
+                        const correctAnswer = parts[7] ? parseInt(parts[7]) : 0;
+
+                        if (!questionText) {
+                            errors.push(`Line ${index + startIndex + 1}: Missing question text`);
+                            return;
+                        }
+
+                        const question = {
+                            id: Date.now() + index,
+                            type: questionType,
+                            text: questionText,
+                            textHtml: questionText, // Plain text for now
+                            imageUrl: null,
+                            points: points,
+                            options: [],
+                            correctAnswer: null
+                        };
+
+                        // Handle different question types
+                        if (questionType === 'multiple-choice') {
+                            if (options.length < 2) {
+                                errors.push(`Line ${index + startIndex + 1}: Multiple choice needs at least 2 options`);
+                                return;
+                            }
+                            question.options = options;
+                            question.correctAnswer = correctAnswer;
+                        } else if (questionType === 'true-false') {
+                            question.options = ['True', 'False'];
+                            question.correctAnswer = correctAnswer;
+                        } else if (questionType === 'short-answer' || questionType === 'essay') {
+                            // No options needed
+                        } else {
+                            errors.push(`Line ${index + startIndex + 1}: Unknown question type: ${questionType}`);
+                            return;
+                        }
+
+                        questions.push(question);
+                        imported++;
+                    } catch (error) {
+                        errors.push(`Line ${index + startIndex + 1}: ${error.message}`);
+                    }
+                });
+
+                if (imported > 0) {
+                    renderQuestions();
+                    updatePreview();
+                    closeBulkImportModal();
+                    alert(`Successfully imported ${imported} question(s)${errors.length > 0 ? `\n\nErrors:\n${errors.slice(0, 5).join('\n')}${errors.length > 5 ? `\n... and ${errors.length - 5} more` : ''}` : ''}`);
+                } else {
+                    alert(`Failed to import questions.\n\nErrors:\n${errors.join('\n')}`);
+                }
+            };
+            reader.readAsText(fileInput.files[0]);
+        }
+
+        function processQuickEntry() {
+            const text = document.getElementById('quickEntryText').value.trim();
+            if (!text) {
+                alert('Please enter questions');
+                return;
+            }
+
+            const lines = text.split('\n').filter(line => line.trim());
+            const useDefaults = document.getElementById('quickEntryDefaults').checked;
+
+            let imported = 0;
+            let errors = [];
+
+            lines.forEach((line, index) => {
+                try {
+                    let questionText = '';
+                    let questionType = 'multiple-choice';
+                    let points = 10;
+                    let options = ['Option A', 'Option B', 'Option C', 'Option D'];
+                    let correctAnswer = 0;
+
+                    // Parse line format: Q: text | Type: type | Points: points | Options: a,b,c,d | Correct: 0
+                    if (line.includes('|')) {
+                        const parts = line.split('|').map(p => p.trim());
+                        
+                        parts.forEach(part => {
+                            if (part.toLowerCase().startsWith('q:')) {
+                                questionText = part.substring(2).trim();
+                            } else if (part.toLowerCase().startsWith('type:')) {
+                                questionType = part.substring(5).trim().toLowerCase();
+                            } else if (part.toLowerCase().startsWith('points:')) {
+                                points = parseInt(part.substring(7).trim()) || 10;
+                            } else if (part.toLowerCase().startsWith('options:')) {
+                                const opts = part.substring(8).trim().split(',').map(o => o.trim());
+                                if (opts.length > 0) options = opts;
+                            } else if (part.toLowerCase().startsWith('correct:')) {
+                                correctAnswer = parseInt(part.substring(8).trim()) || 0;
+                            }
+                        });
+                    } else {
+                        // Simple format: just question text
+                        questionText = line;
+                    }
+
+                    if (!questionText) {
+                        errors.push(`Line ${index + 1}: Missing question text`);
+                        return;
+                    }
+
+                    const question = {
+                        id: Date.now() + index,
+                        type: questionType,
+                        text: questionText,
+                        textHtml: questionText,
+                        imageUrl: null,
+                        points: points,
+                        options: [],
+                        correctAnswer: null
+                    };
+
+                    if (questionType === 'multiple-choice' || questionType === 'true-false') {
+                        if (questionType === 'true-false') {
+                            question.options = ['True', 'False'];
+                        } else {
+                            question.options = options;
+                        }
+                        question.correctAnswer = correctAnswer;
+                    }
+
+                    questions.push(question);
+                    imported++;
+                } catch (error) {
+                    errors.push(`Line ${index + 1}: ${error.message}`);
+                }
+            });
+
+            if (imported > 0) {
+                renderQuestions();
+                updatePreview();
+                closeBulkImportModal();
+                alert(`Successfully imported ${imported} question(s)${errors.length > 0 ? `\n\nErrors:\n${errors.slice(0, 5).join('\n')}${errors.length > 5 ? `\n... and ${errors.length - 5} more` : ''}` : ''}`);
+            } else {
+                alert(`Failed to import questions.\n\nErrors:\n${errors.join('\n')}`);
+            }
         }
 
         // Logout function
