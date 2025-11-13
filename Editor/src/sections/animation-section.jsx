@@ -195,9 +195,6 @@ export const AnimationPanel = observer(({ store }) => {
   );
 });
 
-// Export the panel component separately for debugging
-export { AnimationPanel };
-
 export const AnimationSection = {
   name: 'custom-animate', // Changed from 'animate' to avoid conflict with Polotno's built-in section
   Tab: observer((props) => {
