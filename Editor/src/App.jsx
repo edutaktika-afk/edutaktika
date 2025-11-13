@@ -397,19 +397,22 @@ const App = observer(({ store }) => {
         }
         
         // Build paths to try in priority order (matches save logic):
-        // If grade exists: grade/quarter > grade (fallback) > quarter > root
-        // If no grade: quarter > root
+        // IMPORTANT: Only use grade-specific paths when gradeLevel is provided
+        // This prevents Grade 5 lessons from loading when looking for Grade 6
         const quarterFolder = `quarter${quarter}`;
         const pathsToTry = [];
         
         if (gradeLevel) {
-          // Grade-based paths (new structure)
+          // Grade-based paths only - no fallback to non-grade paths
           pathsToTry.push(`${subjectFolder}/${gradeLevel}/${quarterFolder}/${designId}.json`);
           pathsToTry.push(`${subjectFolder}/${gradeLevel}/${designId}.json`);
+          console.log(`📚 Using grade-specific paths for loading: ${gradeLevel}`);
+        } else {
+          // Only use non-grade paths if no grade level is specified
+          console.warn(`⚠️ No grade level provided when loading design! This may load wrong grade's lesson.`);
+          pathsToTry.push(`${subjectFolder}/${quarterFolder}/${designId}.json`);
+          pathsToTry.push(`${subjectFolder}/${designId}.json`);
         }
-        // Fallback paths (old structure without grade)
-        pathsToTry.push(`${subjectFolder}/${quarterFolder}/${designId}.json`);
-        pathsToTry.push(`${subjectFolder}/${designId}.json`);
         
         console.log(`📁 Trying paths in order: ${pathsToTry.join(', ')}`);
         
