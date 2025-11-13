@@ -341,60 +341,9 @@ const App = observer(({ store }) => {
           throw new Error(`Invalid subject: "${subject}". Cannot determine folder.`);
         }
         
-        // Try to get teacher's grade level - priority: URL params > sessionStorage > Firebase (matches save logic)
-        let gradeLevel = null;
-        
-        // First try URL params (most reliable for new windows/tabs)
-        if (gradeFromUrl) {
-          gradeLevel = gradeFromUrl;
-          console.log(`📚 Found grade level from URL params: ${gradeLevel}`);
-          // Store in sessionStorage for future use
-          try {
-            sessionStorage.setItem('supabase-design-grade', gradeLevel);
-          } catch (error) {
-            console.warn('Could not store grade in sessionStorage:', error);
-          }
-        }
-        
-        // Then try sessionStorage (from when Editor was opened from subject page in same tab)
-        if (!gradeLevel) {
-          try {
-            const storedGrade = sessionStorage.getItem('supabase-design-grade');
-            if (storedGrade) {
-              gradeLevel = storedGrade;
-              console.log(`📚 Found grade level from sessionStorage: ${gradeLevel}`);
-            }
-          } catch (error) {
-            console.warn('Could not read grade from sessionStorage:', error);
-          }
-        }
-        
-        // If not in URL or sessionStorage, try Firebase (matches save logic)
-        if (!gradeLevel) {
-          try {
-            if (typeof window !== 'undefined' && window.firebase) {
-              const user = window.firebase.auth().currentUser;
-              if (user) {
-                const teacherSnap = await window.firebase.database().ref('teachers/' + user.uid).once('value');
-                const teacher = teacherSnap.val();
-                if (teacher && teacher.gradelevel) {
-                  const grade = teacher.gradelevel.toString();
-                  gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
-                  console.log(`📚 Found teacher grade level from Firebase: ${teacher.gradelevel} → normalized: ${gradeLevel}`);
-                  
-                  // Store it in sessionStorage for future use
-                  try {
-                    sessionStorage.setItem('supabase-design-grade', gradeLevel);
-                  } catch (error) {
-                    console.warn('Could not store grade in sessionStorage:', error);
-                  }
-                }
-              }
-            }
-          } catch (error) {
-            console.warn('Could not fetch grade level from Firebase:', error);
-          }
-        }
+        // Get teacher's grade level using utility function (Firebase > sessionStorage > URL params)
+        const { getUserGradeLevelWithFallback } = await import('./utils/getUserGradeLevel');
+        const gradeLevel = await getUserGradeLevelWithFallback();
         
         // Build paths to try in priority order (matches save logic):
         // IMPORTANT: Only use grade-specific paths when gradeLevel is provided
