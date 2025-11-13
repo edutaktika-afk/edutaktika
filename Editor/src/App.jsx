@@ -90,6 +90,13 @@ const isElementsSection = (sec) => {
   return name === 'elements';
 };
 
+// Helper to detect Polotno's default animation section (we'll replace it with our custom one)
+const isDefaultAnimationSection = (sec) => {
+  const s = sec || {};
+  const name = String(s.name || '').toLowerCase();
+  return name === 'animate' || name === 'animations';
+};
+
 // Helper to detect templates section (we want to preserve the default polotno templates)
 const isTemplatesSection = (sec) => {
   const s = sec || {};
@@ -107,7 +114,7 @@ for (let i = DEFAULT_SECTIONS.length - 1; i >= 0; i--) {
     DEFAULT_SECTIONS.splice(i, 1);
     continue;
   }
-  if (isVideoSection(sec) || isBackgroundSection(sec) || isPhotosSection(sec) || isIconsSection(sec) || isDefaultTextSection(sec) || isElementsSection(sec)) {
+  if (isVideoSection(sec) || isBackgroundSection(sec) || isPhotosSection(sec) || isIconsSection(sec) || isDefaultTextSection(sec) || isElementsSection(sec) || isDefaultAnimationSection(sec)) {
     DEFAULT_SECTIONS.splice(i, 1);
   }
 }
@@ -115,12 +122,12 @@ for (let i = DEFAULT_SECTIONS.length - 1; i >= 0; i--) {
 // Guard against future insertions of video, background, photos, icons, default text, and elements sections
 // But allow our custom TextSection (it has a Tab property)
 const _push = DEFAULT_SECTIONS.push.bind(DEFAULT_SECTIONS);
-DEFAULT_SECTIONS.push = (...items) => _push(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s)));
+DEFAULT_SECTIONS.push = (...items) => _push(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s) && !isDefaultAnimationSection(s)));
 const _unshift = DEFAULT_SECTIONS.unshift.bind(DEFAULT_SECTIONS);
-DEFAULT_SECTIONS.unshift = (...items) => _unshift(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s)));
+DEFAULT_SECTIONS.unshift = (...items) => _unshift(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s) && !isDefaultAnimationSection(s)));
 const _splice = DEFAULT_SECTIONS.splice.bind(DEFAULT_SECTIONS);
 DEFAULT_SECTIONS.splice = (start, deleteCount, ...items) =>
-  _splice(start, deleteCount, ...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s)));
+  _splice(start, deleteCount, ...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s) && !isDefaultAnimationSection(s)));
 
 // add backgrounds section (Photos and Icons removed)
 DEFAULT_SECTIONS.splice(3, 0, BackgroundsSection);
