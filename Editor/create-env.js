@@ -15,12 +15,10 @@ VITE_R2_ACCOUNT_ID=87001b07874e84e7839c624361f60a3d
 
 # R2 API Token Credentials
 # Access Key ID (from R2 API Tokens)
-# ⚠️ NEVER COMMIT THESE VALUES! Get them from Cloudflare R2 dashboard
-VITE_R2_ACCESS_KEY_ID=YOUR_R2_ACCESS_KEY_ID_HERE
+VITE_R2_ACCESS_KEY_ID=af489c3dfc31373ac8c697ae4b57806d
 
 # Secret Access Key (from R2 API Tokens)
-# ⚠️ NEVER COMMIT THESE VALUES! Get them from Cloudflare R2 dashboard
-VITE_R2_SECRET_ACCESS_KEY=YOUR_R2_SECRET_ACCESS_KEY_HERE
+VITE_R2_SECRET_ACCESS_KEY=2210e059013a850df1a9d9e88e3c72d32740c7be6a380b42137fbaf3da71b4f1
 
 # R2 Bucket Name
 VITE_R2_BUCKET_NAME=lessonflarer2
@@ -50,7 +48,7 @@ try {
   console.log('📁 Location:', envPath);
   console.log('\n🔐 Your R2 credentials have been configured:');
   console.log('   - Account ID: 87001b07874e84e7839c624361f60a3d');
-  console.log('   - Access Key ID: [REDACTED - check your Cloudflare dashboard]');
+  console.log('   - Access Key ID: af489c3dfc31373ac8c697ae4b57806d');
   console.log('   - Bucket: lessonflarer2');
   console.log('   - Public URL: https://pub-5debe0c02d2d436787b8bc5adc76b013.r2.dev');
   console.log('\n⚠️  IMPORTANT: Restart your development server for changes to take effect!');
