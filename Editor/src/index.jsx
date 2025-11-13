@@ -16,6 +16,7 @@ import { initializeEnvironment } from './utils/environment';
 import licenseHandler from './utils/licenseHandler';
 import './utils/animationManager'; // Load animation manager
 import './utils/polotno-animations'; // Load custom Polotno animations (Wiggle, Blur, Pan, Rise)
+import './utils/polotno-animations-new'; // Load new animation effects (Flip, Elastic, Swing, Tada, etc.)
 import { getStoreKey, getKeyDebugInfo } from './utils/polotno-keys';
 import './utils/verify-polotno-key'; // Load verification utility
 

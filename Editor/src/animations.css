@@ -1242,11 +1242,11 @@ img:hover {
 }
 
 .animate-glow {
-  animation: glow 2s ease-in-out infinite;
+  animation: glow 2s ease-in-out;
 }
 
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: float 3s ease-in-out;
 }
 
 .animate-sink {
