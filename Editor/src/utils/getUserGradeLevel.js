@@ -1,7 +1,7 @@
 /**
  * Utility to get the current user's grade level from Firebase
  * This ensures the editor always has access to the teacher's grade level
- * for proper file organization in R2 storage.
+ * for proper file organization in Supabase storage.
  */
 
 /**

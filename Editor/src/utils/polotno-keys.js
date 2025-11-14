@@ -2,11 +2,11 @@
 // Manages multiple Polotno API keys with fallback support
 // Supports environment variables for production deployment
 
-// Primary key (original) - fallback if env var not set
-const PRIMARY_KEY = 'nFA5H9elEytDyPyvKL7T';
+// Primary key - use the active key as default
+const PRIMARY_KEY = 'KZiuYryOVcs9sz8q8A1l';
 
-// Secondary key (new key to use in conjunction)
-export const SECONDARY_KEY = 'KZiuYryOVcs9sz8q8A1l';
+// Secondary key (backup/old key)
+export const SECONDARY_KEY = 'nFA5H9elEytDyPyvKL7T';
 
 // Video key (for Pexels videos)
 export const VIDEO_KEY = 'XWaPcWabeqo2TJSU2Ob5';

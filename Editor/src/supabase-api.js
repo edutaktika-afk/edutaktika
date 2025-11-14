@@ -2,35 +2,24 @@ import { nanoid } from 'nanoid';
 import { storage } from './storage';
 import { supabase, BUCKET_DESIGNS, BUCKET_ASSETS, shouldUseSupabase, BUCKET_LESSON_STORAGE, getSubjectFolder } from './supabase';
 import { uploadFileInChunks, needsChunkedUpload, getFileSizeString } from './chunked-upload';
-import { extractEmbeddedMedia, getSizeReduction } from './media-extractor';
-import { shouldUseR2, writeFileToR2, readFileFromR2, deleteFileFromR2, getR2FileUrl } from './r2-api';
 
 /**
- * Hybrid Storage API Implementation
+ * Supabase Storage API Implementation
  * 
- * This file provides the same interface as api.js but uses:
- * - Cloudflare R2 for large files (JSON lesson files, media) - NO egress fees, no size limits
- * - Supabase Storage for thumbnails/previews (small files) - free tier is sufficient
- * - Supabase Database for metadata (design lists, references) - fast queries
+ * This file provides the same interface as api.js but uses Supabase Storage exclusively.
  * 
  * Architecture:
- * - Large JSON lesson files → R2 Storage (no egress fees, unlimited size)
- * - Images/media files → R2 Storage (no egress fees)
- * - Thumbnails/previews → Supabase Storage (small files, free tier bandwidth)
+ * - All files (JSON lessons, images, media, thumbnails) → Supabase Storage
  * - Metadata (design lists, references) → Supabase Database (fast queries)
  * 
  * Setup Required:
- * 1. Cloudflare R2 (for file storage):
- *    - Create R2 bucket at https://dash.cloudflare.com
- *    - Generate API tokens
- *    - Add environment variables: VITE_R2_ACCOUNT_ID, VITE_R2_ACCESS_KEY_ID, VITE_R2_SECRET_ACCESS_KEY, VITE_R2_BUCKET_NAME
- * 
- * 2. Supabase (for metadata):
+ * 1. Supabase Project:
  *    - Create a Supabase project at https://supabase.com
- *    - Create 'designs_metadata' table for key-value storage
+ *    - Create 'LessonStorage' bucket in Storage
+ *    - Create 'designs_metadata' table for key-value storage (optional)
  *    - Add environment variables: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
  * 
- * See R2_SETUP.md for detailed setup instructions.
+ * Note: Supabase Pro supports files up to 500GB. Free tier supports up to 50MB per file.
  */
 
 /**
@@ -82,9 +71,8 @@ const ensureFolderExists = async function ensureFolderExists(folderPath, bucket 
 };
 
 /**
- * Save thumbnail/preview directly to Supabase Storage (bypasses R2)
+ * Save thumbnail/preview directly to Supabase Storage
  * Thumbnails are small files, so Supabase free tier is sufficient
- * This reduces load on R2 for frequently accessed small files
  */
 const writeThumbnailToSupabase = async function writeThumbnailToSupabase(fileName, data) {
   if (!shouldUseSupabase()) {
@@ -130,9 +118,9 @@ const writeThumbnailToSupabase = async function writeThumbnailToSupabase(fileNam
 };
 
 /**
- * Save file to R2 Storage (or Supabase Storage if R2 not configured) or local storage
- * R2 is used for large files (JSON lessons, media) - no egress fees, no size limits
- * Thumbnails should use writeThumbnailToSupabase() instead
+ * Save file to Supabase Storage or local storage
+ * All files (JSON lessons, media, thumbnails) go to Supabase Storage
+ * Thumbnails can use writeThumbnailToSupabase() for direct upload
  */
 const writeFile = async function writeFile(fileName, data, onProgress = null) {
   // Check if this is a thumbnail/preview - send directly to Supabase
@@ -141,22 +129,12 @@ const writeFile = async function writeFile(fileName, data, onProgress = null) {
     try {
       return await writeThumbnailToSupabase(fileName, data);
     } catch (error) {
-      console.error('Failed to upload thumbnail to Supabase, trying R2 fallback:', error);
-      // Fall through to R2 fallback
+      console.error('Failed to upload thumbnail to Supabase:', error);
+      throw error;
     }
   }
 
-  // Try R2 first (primary storage for large files: JSON lessons, media)
-  if (shouldUseR2()) {
-    try {
-      return await writeFileToR2(fileName, data, onProgress);
-    } catch (error) {
-      console.error('Failed to upload to R2, trying Supabase fallback:', error);
-      // Fall through to Supabase fallback
-    }
-  }
-
-  // Fallback to Supabase Storage (for backward compatibility)
+  // Upload all files to Supabase Storage
   if (shouldUseSupabase()) {
     try {
       // Extract folder path from filename (everything except the filename)
@@ -273,26 +251,20 @@ const writeFile = async function writeFile(fileName, data, onProgress = null) {
 };
 
 /**
- * Read file from R2 Storage (or Supabase Storage if R2 not configured) or local storage
- * R2 is now the primary storage for files
+ * Read file from Supabase Storage or local storage
  */
 const readFile = async function readFile(fileName) {
-  // Try R2 first (primary storage for files)
-  if (shouldUseR2()) {
-    try {
-      return await readFileFromR2(fileName);
-    } catch (error) {
-      console.error('Failed to read from R2, trying Supabase fallback:', error);
-      // Fall through to Supabase fallback
-    }
-  }
-
-  // Fallback to Supabase Storage (for backward compatibility)
+  // Read from Supabase Storage
   if (shouldUseSupabase()) {
     try {
+      // Determine the correct bucket based on file path
+      const bucketToUse = fileName.includes('SCIENCE/') || fileName.includes('ENGLISH/') || fileName.includes('MATH/') 
+        ? BUCKET_LESSON_STORAGE 
+        : BUCKET_DESIGNS;
+      
       // Download from Supabase Storage
       const { data, error } = await supabase.storage
-        .from(BUCKET_DESIGNS)
+        .from(bucketToUse)
         .download(fileName);
 
       if (error) {
@@ -311,26 +283,19 @@ const readFile = async function readFile(fileName) {
 };
 
 /**
- * Delete file from R2 Storage (or Supabase Storage if R2 not configured) or local storage
- * R2 is now the primary storage for files
+ * Delete file from Supabase Storage or local storage
  */
 const deleteFile = async function deleteFile(fileName) {
-  // Try R2 first (primary storage for files)
-  if (shouldUseR2()) {
-    try {
-      await deleteFileFromR2(fileName);
-      return;
-    } catch (error) {
-      console.error('Failed to delete from R2, trying Supabase fallback:', error);
-      // Fall through to Supabase fallback
-    }
-  }
-
-  // Fallback to Supabase Storage (for backward compatibility)
+  // Delete from Supabase Storage
   if (shouldUseSupabase()) {
     try {
+      // Determine the correct bucket based on file path
+      const bucketToUse = fileName.includes('SCIENCE/') || fileName.includes('ENGLISH/') || fileName.includes('MATH/') 
+        ? BUCKET_LESSON_STORAGE 
+        : BUCKET_DESIGNS;
+      
       const { error } = await supabase.storage
-        .from(BUCKET_DESIGNS)
+        .from(bucketToUse)
         .remove([fileName]);
 
       if (error) {
@@ -478,8 +443,16 @@ export async function loadById({ id }) {
  */
 export async function saveDesign({ storeJSON, preview, name, id }) {
   console.log('saving to Supabase');
+  
+  // Use sanitized design name as ID if no ID provided
   if (!id) {
-    id = nanoid(10);
+    if (name) {
+      id = sanitizeFilename(name);
+      console.log(`📝 Using sanitized design name as ID: "${id}" (from "${name}")`);
+    } else {
+      id = nanoid(10);
+      console.log(`⚠️ No design name provided, using random ID: "${id}"`);
+    }
   }
 
   const previewPath = `designs/${id}.jpg`;
@@ -497,13 +470,12 @@ export async function saveDesign({ storeJSON, preview, name, id }) {
   
   console.log(`📊 Design JSON size: ${finalSizeMB}MB (self-contained with all embedded data)`);
   
-  if (finalSize > 100 * 1024 * 1024) {
-    console.warn(`⚠️ Design JSON is very large (${finalSizeMB}MB).`);
-    console.warn(`💡 R2 supports large files, but loading may be slower.`);
+  if (finalSize > 45 * 1024 * 1024) {
+    console.log(`📊 Design JSON is large (${finalSizeMB}MB) - no worries, paid Supabase plan has no size limits!`);
   }
   
   await writeFile(storePath, designJSON);
-  console.log(`✅ Design saved to R2: ${storePath} (${finalSizeMB}MB, self-contained)`);
+  console.log(`✅ Design saved to Supabase: ${storePath} (${finalSizeMB}MB, self-contained)`);
 
   let list = await listDesigns();
   const existing = list.find((design) => design.id === id);
@@ -520,12 +492,11 @@ export async function saveDesign({ storeJSON, preview, name, id }) {
 /**
  * Get preview URL
  * Thumbnails are stored in Supabase Storage (small files, free tier)
- * Checks Supabase first, then R2 fallback, then local storage
  */
 export const getPreview = async ({ id }) => {
   const previewPath = `designs/${id}.jpg`;
   
-  // Thumbnails are stored in Supabase Storage - try Supabase first
+  // Thumbnails are stored in Supabase Storage
   if (shouldUseSupabase()) {
     try {
       const { data } = supabase.storage
@@ -535,15 +506,7 @@ export const getPreview = async ({ id }) => {
         return data.publicUrl;
       }
     } catch (error) {
-      console.warn('Failed to get preview from Supabase, trying R2:', error);
-    }
-  }
-  
-  // Fallback to R2 (for backward compatibility with old thumbnails)
-  if (shouldUseR2()) {
-    const r2Url = getR2FileUrl(previewPath);
-    if (r2Url) {
-      return r2Url;
+      console.warn('Failed to get preview from Supabase:', error);
     }
   }
   
@@ -592,20 +555,12 @@ export const listAssets = async () => {
 
 /**
  * Get asset source URL
- * Uses R2 if configured, otherwise Supabase, otherwise local blob URL
+ * Uses Supabase Storage or local blob URL
  */
 export const getAssetSrc = async ({ id }) => {
   const assetPath = `uploads/${id}`;
   
-  // Try R2 first
-  if (shouldUseR2()) {
-    const r2Url = getR2FileUrl(assetPath);
-    if (r2Url) {
-      return r2Url;
-    }
-  }
-  
-  // Fallback to Supabase
+  // Get from Supabase Storage
   if (shouldUseSupabase()) {
     try {
       const { data } = supabase.storage
@@ -624,20 +579,12 @@ export const getAssetSrc = async ({ id }) => {
 
 /**
  * Get asset preview URL
- * Uses R2 if configured, otherwise Supabase, otherwise local blob URL
+ * Uses Supabase Storage or local blob URL
  */
 export const getAssetPreviewSrc = async ({ id }) => {
   const previewPath = `uploads/${id}-preview`;
   
-  // Try R2 first
-  if (shouldUseR2()) {
-    const r2Url = getR2FileUrl(previewPath);
-    if (r2Url) {
-      return r2Url;
-    }
-  }
-  
-  // Fallback to Supabase
+  // Get from Supabase Storage
   if (shouldUseSupabase()) {
     try {
       const { data } = supabase.storage
@@ -791,26 +738,8 @@ function sanitizeFilename(name) {
 }
 
 export async function saveDesignBySubject({ storeJSON, preview, name, subject, quarter, gradeLevel, id }) {
-  console.log(`💾 Saving to R2 - Subject: "${subject}", Quarter: "${quarter}", Name: "${name}"`);
+  console.log(`💾 Saving to Supabase - Subject: "${subject}", Quarter: "${quarter}", Name: "${name}"`);
   
-  // Use sanitized name as ID if no ID provided, or if we want to use title-based naming
-  if (!id) {
-    // Use sanitized name as the filename/ID for better clarity
-    id = sanitizeFilename(name);
-    console.log(`📝 Using sanitized name as ID: "${id}" (from "${name}")`);
-  }
-  
-  // Validate subject and quarter
-  if (!subject) {
-    console.error('❌ Error: No subject provided!');
-    throw new Error('Subject is required');
-  }
-  
-  if (!quarter) {
-    console.error('❌ Error: No quarter provided!');
-    throw new Error('Quarter is required');
-  }
-
   // Normalize subject to lowercase for consistent storage
   // This ensures "math", "Math", "MATH" all become "math"
   let normalizedSubjectForStorage = String(subject).toLowerCase().trim();
@@ -835,12 +764,72 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
     finalGradeLevel = await getUserGradeLevelWithFallback();
   }
   
-  // Build paths with grade: subject/gradeX/quarterX/id.json
-  const quarterFolder = `quarter${quarter}`;
-  let previewPath, storePath;
+  // Normalize grade level format to match bucket structure (Grade5, Grade6, etc.)
+  // Convert grade5 -> Grade5, grade6 -> Grade6 to match your Supabase bucket structure
+  let normalizedGradeLevel = null;
+  if (finalGradeLevel) {
+    normalizedGradeLevel = String(finalGradeLevel);
+    if (!normalizedGradeLevel.startsWith('Grade') && !normalizedGradeLevel.startsWith('grade')) {
+      normalizedGradeLevel = `Grade${normalizedGradeLevel}`;
+    } else if (normalizedGradeLevel.startsWith('grade')) {
+      // Convert grade5 -> Grade5, grade6 -> Grade6
+      normalizedGradeLevel = `Grade${normalizedGradeLevel.substring(5)}`;
+    }
+  }
+  const quarterFolder = `Quarter${quarter}`;
+  
+  // Use sanitized name as ID if no ID provided, or if we want to use title-based naming
+  if (!id) {
+    // Use sanitized name as the filename/ID for better clarity
+    let baseId = sanitizeFilename(name);
+    
+    // Check if a design with this name already exists in the same folder
+    if (normalizedGradeLevel) {
+      const existingPath = `${normalizedGradeLevel}/${subjectFolder}/${quarterFolder}/${baseId}.json`;
+      
+      // Check if file exists in Supabase Storage (only if we're not editing the same design)
+      if (shouldUseSupabase()) {
+        try {
+          const { data: existingFiles, error } = await supabase.storage
+            .from(BUCKET_LESSON_STORAGE)
+            .list(`${normalizedGradeLevel}/${subjectFolder}/${quarterFolder}`, {
+              search: baseId
+            });
+          
+          if (!error && existingFiles && existingFiles.length > 0) {
+            // Check if any file matches exactly (excluding the current design if editing)
+            const exactMatch = existingFiles.find(f => f.name === `${baseId}.json`);
+            if (exactMatch) {
+              // Append timestamp to make it unique
+              const timestamp = Date.now();
+              baseId = `${baseId}-${timestamp}`;
+              console.log(`⚠️ Design with name "${name}" already exists in this folder, using unique ID: "${baseId}"`);
+            }
+          }
+        } catch (error) {
+          console.warn('Could not check for duplicate names:', error);
+          // Continue with base name anyway
+        }
+      }
+    }
+    
+    id = baseId;
+    console.log(`📝 Using sanitized design name as ID: "${id}" (from "${name}")`);
+  }
+  
+  // Validate subject and quarter
+  if (!subject) {
+    console.error('❌ Error: No subject provided!');
+    throw new Error('Subject is required');
+  }
+  
+  if (!quarter) {
+    console.error('❌ Error: No quarter provided!');
+    throw new Error('Quarter is required');
+  }
   
   // REQUIRE grade level - don't allow saving without it
-  if (!finalGradeLevel) {
+  if (!normalizedGradeLevel) {
     const errorMsg = `❌ Grade level is required! Cannot save lesson without grade level.\n\n` +
       `Please select a grade level in the upload dialog.\n\n` +
       `This prevents Grade 5 lessons from appearing for Grade 6 teachers.`;
@@ -849,13 +838,16 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
     throw new Error('Grade level is required to save lessons. This prevents cross-grade contamination.');
   }
   
-  // Normalize grade level format
-  const normalizedGradeLevel = finalGradeLevel.startsWith('grade') ? finalGradeLevel : `grade${finalGradeLevel}`;
+  // Build paths matching Supabase bucket structure: GradeLevel/Subject/Quarter/id.json
+  // Example: Grade5/MATH/Quarter1/design.json or Grade6/SCIENCE/Quarter2/design.json
+  // This structure ensures grade-level isolation (Grade 5 can't see Grade 6 lessons)
+  let previewPath, storePath;
   
-  // Always use grade-based structure
-  previewPath = `${subjectFolder}/${normalizedGradeLevel}/${quarterFolder}/${id}.jpg`;
-  storePath = `${subjectFolder}/${normalizedGradeLevel}/${quarterFolder}/${id}.json`;
-  console.log(`✅ Using grade-based path structure: ${normalizedGradeLevel}/${quarterFolder}/`);
+  // Always use grade-first structure: GradeLevel/Subject/Quarter/
+  // Structure: Grade5/MATH/Quarter1/design.json
+  previewPath = `${normalizedGradeLevel}/${subjectFolder}/${quarterFolder}/${id}.jpg`;
+  storePath = `${normalizedGradeLevel}/${subjectFolder}/${quarterFolder}/${id}.json`;
+  console.log(`✅ Using grade-first path structure: ${normalizedGradeLevel}/${subjectFolder}/${quarterFolder}/`);
   
   console.log(`📤 Upload paths: preview="${previewPath}", design="${storePath}"`);
 
@@ -871,20 +863,9 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
     await ensureFolderExists(designFolder, BUCKET_LESSON_STORAGE);
   }
 
-  // Thumbnails: Save to R2 if available (no egress fees), otherwise Supabase
-  if (shouldUseR2()) {
-    try {
-      await writeFileToR2(previewPath, preview);
-      console.log(`✅ Preview/thumbnail saved to R2: ${previewPath}`);
-    } catch (error) {
-      console.warn('⚠️ Failed to save thumbnail to R2, trying Supabase:', error);
-      await writeThumbnailToSupabase(previewPath, preview);
-      console.log(`✅ Preview/thumbnail saved to Supabase Storage: ${previewPath}`);
-    }
-  } else {
-    await writeThumbnailToSupabase(previewPath, preview);
-    console.log(`✅ Preview/thumbnail saved to Supabase Storage: ${previewPath}`);
-  }
+  // Thumbnails: Save to Supabase Storage
+  await writeThumbnailToSupabase(previewPath, preview);
+  console.log(`✅ Preview/thumbnail saved to Supabase Storage: ${previewPath}`);
   
   // Keep the JSON file intact as one piece (no media extraction)
   // This preserves the original Polotno design structure with all embedded base64 data
@@ -894,37 +875,17 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
   
   console.log(`📊 Design JSON size: ${finalSizeMB}MB (self-contained with all embedded data)`);
   
-  if (finalSize > 100 * 1024 * 1024) {
-    console.warn(`⚠️ Design JSON is very large (${finalSizeMB}MB).`);
-    console.warn(`💡 R2 supports large files, but loading may be slower.`);
+  if (finalSize > 45 * 1024 * 1024) {
+    console.log(`📊 Design JSON is large (${finalSizeMB}MB) - no worries, paid Supabase plan has no size limits!`);
   }
   
   // Save design JSON as one complete file (no media extraction)
   await writeFile(storePath, designJSON);
-  console.log(`✅ Design saved to R2: ${storePath} (${finalSizeMB}MB, self-contained)`);
+  console.log(`✅ Design saved to Supabase: ${storePath} (${finalSizeMB}MB, self-contained)`);
 
   // Update metadata list with proper name and grade level
-  // Try to load existing metadata from R2 first (more reliable than Supabase table)
-  let list = [];
-  
-  if (shouldUseR2()) {
-    try {
-      // Try to load metadata from R2
-      const metadataPath = 'metadata/designs-list.json';
-      const metadataBlob = await readFileFromR2(metadataPath);
-      if (metadataBlob) {
-        const metadataText = await metadataBlob.text();
-        list = JSON.parse(metadataText);
-        console.log(`📦 Loaded ${list.length} designs from R2 metadata`);
-      }
-    } catch (error) {
-      console.log('📦 No existing metadata in R2, starting fresh');
-      // Try Supabase as fallback
-      list = await listDesigns();
-    }
-  } else {
-    list = await listDesigns();
-  }
+  // Load existing metadata from Supabase
+  let list = await listDesigns();
   
   const existing = list.find((design) => design.id === id);
   if (existing) {
@@ -945,54 +906,39 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
   console.log(`📝 Metadata entry: id="${id}", name="${name}", subject="${normalizedSubjectForStorage}", quarter="${quarter}", grade="${normalizedGradeLevel}"`);
 
   // Save simple design-ids.json file in the folder (much simpler than global metadata)
-  let folderIdsSaved = false;
-  if (shouldUseR2()) {
-    try {
-      // Create a simple list of design IDs for this specific folder
-      const folderIdsPath = `${storePath.replace(`/${id}.json`, '')}/design-ids.json`;
-      const folderDesigns = list.filter(d => 
-        d.subject === normalizedSubjectForStorage && 
-        d.quarter === quarter && 
-        (d.gradeLevel || d.grade) === normalizedGradeLevel
-      );
-      const designIds = folderDesigns.map(d => ({
-        id: d.id,
-        name: d.name || d.id
-      }));
-      const folderIdsJSON = JSON.stringify(designIds, null, 2);
-      await writeFileToR2(folderIdsPath, folderIdsJSON);
-      console.log(`✅ Design IDs saved to R2: ${folderIdsPath} (${designIds.length} designs)`);
-      folderIdsSaved = true;
-    } catch (error) {
-      console.error('❌ Failed to save design IDs to R2:', error);
-    }
+  // This file is used by the loader to quickly list designs for a specific folder
+  try {
+    // Create a simple list of design IDs for this specific folder
+    const folderIdsPath = `${storePath.replace(`/${id}.json`, '')}/design-ids.json`;
+    const folderDesigns = list.filter(d => 
+      d.subject === normalizedSubjectForStorage && 
+      d.quarter === quarter && 
+      (d.gradeLevel || d.grade) === normalizedGradeLevel
+    );
+    const designIds = folderDesigns.map(d => ({
+      id: d.id,
+      name: d.name || d.id
+    }));
+    const folderIdsJSON = JSON.stringify(designIds, null, 2);
+    await writeFile(folderIdsPath, folderIdsJSON);
+    console.log(`✅ Design IDs saved to Supabase: ${folderIdsPath} (${designIds.length} designs)`);
+  } catch (error) {
+    console.error('❌ Failed to save design IDs to Supabase:', error);
   }
 
-  // Also save global metadata for backward compatibility (optional)
+  // Also save global metadata for backward compatibility
   let metadataSaved = false;
-  if (shouldUseR2()) {
-    try {
-      const metadataPath = 'metadata/designs-list.json';
-      const metadataJSON = JSON.stringify(list, null, 2);
-      await writeFileToR2(metadataPath, metadataJSON);
-      console.log(`✅ Global metadata saved to R2: ${metadataPath} (${list.length} designs)`);
-      metadataSaved = true;
-    } catch (error) {
-      console.error('❌ Failed to save global metadata to R2:', error);
-    }
-  } else {
-    try {
-      await writeKv('designs-list', list);
-      console.log(`✅ Metadata saved to Supabase: ${list.length} designs`);
-      metadataSaved = true;
-    } catch (error) {
-      console.error('❌ Failed to save metadata:', error);
-    }
+  try {
+    await writeKv('designs-list', list);
+    console.log(`✅ Metadata saved to Supabase: ${list.length} designs`);
+    metadataSaved = true;
+  } catch (error) {
+    console.error('❌ Failed to save metadata:', error);
   }
   
   if (!metadataSaved) {
     console.error('❌ CRITICAL: Metadata was NOT saved! Lessons will not appear on subject pages.');
-    console.error('💡 Check R2 configuration and permissions.');
+    console.error('💡 Check Supabase configuration and permissions.');
   }
   
   console.log(`✅ Design saved successfully: id="${id}", name="${name}", subject="${normalizedSubjectForStorage}", quarter="${quarter}", grade="${normalizedGradeLevel}"`);
@@ -1045,7 +991,7 @@ export const getPreviewBySubject = async ({ id, subject }) => {
   const subjectFolder = getSubjectFolder(subject);
   const previewPath = `${subjectFolder}/${id}.jpg`;
   
-  // Thumbnails are stored in Supabase Storage - try Supabase first
+  // Thumbnails are stored in Supabase Storage
   if (shouldUseSupabase()) {
     try {
       const { data } = supabase.storage
@@ -1055,15 +1001,7 @@ export const getPreviewBySubject = async ({ id, subject }) => {
         return data.publicUrl;
       }
     } catch (error) {
-      console.warn('Failed to get preview from Supabase, trying R2:', error);
-    }
-  }
-  
-  // Fallback to R2 (for backward compatibility with old thumbnails)
-  if (shouldUseR2()) {
-    const r2Url = getR2FileUrl(previewPath);
-    if (r2Url) {
-      return r2Url;
+      console.warn('Failed to get preview from Supabase:', error);
     }
   }
   
