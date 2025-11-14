@@ -1,0 +1,240 @@
+/* Loading Indicator Styles - Matches Site Theme */
+
+/* Loading Overlay (for viewer/editor) */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease-in-out;
+    margin: 0;
+    padding: 0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Loading Container */
+.loading-container {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 40px 50px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.26);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    border: 3px solid #2e8b57;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Animated Spinner - Using Graduation Cap Icon */
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 20px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.loading-spinner i {
+    font-size: 50px;
+    color: #2e8b57;
+    animation: spinBounce 1.5s ease-in-out infinite;
+    display: block;
+}
+
+@keyframes spinBounce {
+    0%, 100% {
+        transform: rotate(0deg) translateY(0px);
+        opacity: 1;
+    }
+    25% {
+        transform: rotate(90deg) translateY(-5px);
+        opacity: 0.9;
+    }
+    50% {
+        transform: rotate(180deg) translateY(-8px);
+        opacity: 0.8;
+    }
+    75% {
+        transform: rotate(270deg) translateY(-5px);
+        opacity: 0.9;
+    }
+}
+
+/* Loading Text */
+.loading-text {
+    font-family: "Space Grotesk", "Poppins", system-ui, sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0 auto 8px auto;
+    text-align: center;
+    width: 100%;
+}
+
+.loading-subtext {
+    font-family: "Manrope", "Poppins", system-ui, sans-serif;
+    font-size: 14px;
+    color: #64748b;
+    margin: 4px auto 0 auto;
+    text-align: center;
+    width: 100%;
+}
+
+/* Progress Bar Container */
+.loading-progress-container {
+    width: 100%;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    margin: 20px auto 0 auto;
+    overflow: hidden;
+    display: block;
+}
+
+.loading-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #2e8b57 0%, #3ac28d 50%, #2e8b57 100%);
+    background-size: 200% 100%;
+    border-radius: 10px;
+    animation: progress 1.5s ease-in-out infinite;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+@keyframes progress {
+    0% {
+        background-position: 0% 0;
+        width: 0%;
+    }
+    50% {
+        width: 70%;
+    }
+    100% {
+        background-position: 200% 0;
+        width: 100%;
+    }
+}
+
+/* Lesson List Loading State */
+.lessons-loading {
+    text-align: center;
+    padding: 60px 20px;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+}
+
+.lessons-loading-spinner {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 20px;
+    position: relative;
+}
+
+.lessons-loading-spinner::before {
+    content: '';
+    position: absolute;
+    border: 4px solid #e2e8f0;
+    border-top-color: #2e8b57;
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    animation: spin 0.8s linear infinite;
+}
+
+.lessons-loading-text {
+    font-family: "Space Grotesk", "Poppins", system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.lessons-loading-subtext {
+    font-family: "Manrope", "Poppins", system-ui, sans-serif;
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* Pulse Animation for Cards */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.loading-card {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Compact Loading (for inline use) */
+.loading-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    background: #f0f3f7;
+    border-radius: 10px;
+    font-family: "Manrope", "Poppins", system-ui, sans-serif;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.loading-inline-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #2e8b57;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+/* Button Loading State */
+.button-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.button-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+

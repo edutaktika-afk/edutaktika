@@ -319,15 +319,50 @@ const App = observer(({ store }) => {
     try {
       console.log('🎨 Loading Supabase design:', designId, subject);
       
-      // Try sessionStorage first (works if opened from same tab)
-      let designJSONString = sessionStorage.getItem('supabase-design-to-load');
+      // Check if JSON URL was provided as parameter (avoids sessionStorage quota issues)
+      const urlParams = new URLSearchParams(window.location.search);
+      const jsonUrl = urlParams.get('jsonUrl');
       let designData;
       
-      if (designJSONString) {
-        console.log('✅ Found design in sessionStorage');
-        designData = JSON.parse(designJSONString);
-      } else {
-        // Fallback: download directly from Supabase
+      if (jsonUrl) {
+        // Fetch directly from provided URL (no sessionStorage needed)
+        console.log('📥 Fetching design from provided JSON URL:', jsonUrl);
+        try {
+          const response = await fetch(jsonUrl);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch design: ${response.status} ${response.statusText}`);
+          }
+          const responseText = await response.text();
+          
+          // Check for quota errors
+          if (responseText.includes('quota has been exceeded') || responseText.includes('quota exceeded')) {
+            throw new Error('Supabase Quota Exceeded: Please check your Supabase dashboard for quota limits.');
+          }
+          
+          designData = JSON.parse(responseText);
+          console.log('✅ Downloaded design from provided JSON URL');
+        } catch (fetchError) {
+          console.error('❌ Failed to fetch from jsonUrl, trying Supabase SDK...', fetchError);
+          // Fall through to Supabase SDK method
+        }
+      }
+      
+      // Try sessionStorage next (works if opened from same tab) - but only if small
+      if (!designData) {
+        try {
+          let designJSONString = sessionStorage.getItem('supabase-design-to-load');
+          if (designJSONString) {
+            console.log('✅ Found design in sessionStorage');
+            designData = JSON.parse(designJSONString);
+          }
+        } catch (storageError) {
+          // If sessionStorage read fails (quota exceeded), continue to fetch from Supabase
+          console.warn('⚠️ Could not read from sessionStorage, fetching from Supabase:', storageError);
+        }
+      }
+      
+      // Final fallback: download directly from Supabase
+      if (!designData) {
         console.log('📥 Downloading design directly from Supabase');
         
         const { supabase } = await import('./supabase');
@@ -349,21 +384,33 @@ const App = observer(({ store }) => {
         const { getUserGradeLevelWithFallback } = await import('./utils/getUserGradeLevel');
         const gradeLevel = await getUserGradeLevelWithFallback();
         
-        // Build paths to try in priority order (matches save logic):
+        // Build paths matching Supabase bucket structure: GradeLevel/Subject/Quarter/id.json
+        // Example: Grade5/MATH/Quarter1/design.json or Grade6/SCIENCE/Quarter2/design.json
         // IMPORTANT: Only use grade-specific paths when gradeLevel is provided
         // This prevents Grade 5 lessons from loading when looking for Grade 6
-        const quarterFolder = `quarter${quarter}`;
+        const quarterFolder = `Quarter${quarter}`;
         const pathsToTry = [];
         
         if (gradeLevel) {
-          // Grade-based paths only - no fallback to non-grade paths
-          pathsToTry.push(`${subjectFolder}/${gradeLevel}/${quarterFolder}/${designId}.json`);
-          pathsToTry.push(`${subjectFolder}/${gradeLevel}/${designId}.json`);
-          console.log(`📚 Using grade-specific paths for loading: ${gradeLevel}`);
+          // Normalize grade format (ensure it starts with uppercase "Grade")
+          let normalizedGrade = String(gradeLevel);
+          if (!normalizedGrade.startsWith('Grade') && !normalizedGrade.startsWith('grade')) {
+            normalizedGrade = `Grade${normalizedGrade}`;
+          } else if (normalizedGrade.startsWith('grade')) {
+            // Convert grade5 -> Grade5, grade6 -> Grade6
+            normalizedGrade = `Grade${normalizedGrade.substring(5)}`;
+          }
+          
+          // Use structure: GradeLevel/Subject/Quarter/ (matches your bucket setup)
+          // This ensures grade-level isolation - Grade 5 can ONLY see Grade 5 lessons
+          pathsToTry.push(`${normalizedGrade}/${subjectFolder}/${quarterFolder}/${designId}.json`);
+          // Fallback: try without quarter (in case it's saved in grade/subject folder)
+          pathsToTry.push(`${normalizedGrade}/${subjectFolder}/${designId}.json`);
+          console.log(`📚 Using grade-specific paths for loading: ${normalizedGrade} (prevents cross-grade access)`);
         } else {
-          // Only use non-grade paths if no grade level is specified
+          // Only use non-grade paths if no grade level is specified (shouldn't happen)
           console.warn(`⚠️ No grade level provided when loading design! This may load wrong grade's lesson.`);
-          pathsToTry.push(`${subjectFolder}/${quarterFolder}/${designId}.json`);
+          pathsToTry.push(`${subjectFolder}/quarter${quarter}/${designId}.json`);
           pathsToTry.push(`${subjectFolder}/${designId}.json`);
         }
         

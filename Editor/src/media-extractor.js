@@ -9,7 +9,6 @@
 import { nanoid } from 'nanoid';
 import { supabase, shouldUseSupabase, BUCKET_ASSETS, BUCKET_LESSON_STORAGE } from './supabase';
 import { uploadFileInChunks } from './chunked-upload';
-import { shouldUseR2, writeFileToR2, getR2FileUrl } from './r2-api';
 
 /**
  * Check if a string is a base64 data URL
@@ -69,7 +68,7 @@ function getMediaInfo(dataURL) {
 }
 
 /**
- * Upload a base64 media file to R2 Storage (or Supabase Storage if R2 not configured)
+ * Upload a base64 media file to Supabase Storage
  * @param {string} dataURL - Base64 data URL
  * @param {string} designId - Design ID for organizing files
  * @param {Object} options - Optional parameters for organizing files
@@ -77,7 +76,7 @@ function getMediaInfo(dataURL) {
  * @param {string} options.gradeLevel - Grade level (e.g., "grade5", "grade6")
  * @param {string} options.quarterFolder - Quarter folder (e.g., "quarter1", "quarter2")
  * @param {Function} onProgress - Optional progress callback
- * @returns {Promise<string>} Storage URL (R2 or Supabase)
+ * @returns {Promise<string>} Storage URL (Supabase)
  */
 async function uploadMediaToStorage(dataURL, designId, options = {}, onProgress = null) {
   const blob = dataURLToBlob(dataURL);
@@ -97,30 +96,21 @@ async function uploadMediaToStorage(dataURL, designId, options = {}, onProgress 
   const fileSizeMB = (blob.size / 1024 / 1024).toFixed(2);
   console.log(`📤 Uploading embedded media: ${fileName} (${fileSizeMB}MB, type: ${mimeType})`);
   
-  // Try R2 first (primary storage)
-  if (shouldUseR2()) {
-    try {
-      await writeFileToR2(fileName, blob, onProgress);
-      const r2Url = getR2FileUrl(fileName);
-      if (r2Url) {
-        console.log(`✅ Media uploaded to R2: ${r2Url} (${fileSizeMB}MB)`);
-        return r2Url;
-      }
-    } catch (error) {
-      console.error(`❌ Failed to upload media to R2: ${error.message}`);
-      // Fall through to Supabase fallback
-    }
-  }
-  
-  // Fallback to Supabase Storage
+  // Upload to Supabase Storage
   if (shouldUseSupabase()) {
     try {
+      // Determine the correct bucket based on file path
+      const bucketToUse = fileName.includes('SCIENCE/') || fileName.includes('ENGLISH/') || fileName.includes('MATH/') 
+        ? BUCKET_LESSON_STORAGE 
+        : BUCKET_ASSETS;
+      
       // Upload to Supabase Storage using chunked upload for large files
+      // Note: uploadFileInChunks automatically determines bucket from file path
       await uploadFileInChunks(fileName, blob, onProgress);
       
-      // Get public URL from assets bucket
+      // Get public URL
       const { data } = supabase.storage
-        .from(BUCKET_ASSETS)
+        .from(bucketToUse)
         .getPublicUrl(fileName);
       
       console.log(`✅ Media uploaded to Supabase: ${data.publicUrl} (${fileSizeMB}MB)`);
@@ -131,7 +121,7 @@ async function uploadMediaToStorage(dataURL, designId, options = {}, onProgress 
     }
   }
   
-  throw new Error('Neither R2 nor Supabase is configured');
+  throw new Error('Supabase is not configured');
 }
 
 /**
@@ -213,7 +203,7 @@ async function extractAndReplaceMedia(obj, designId, onProgress = null, replacem
 }
 
 /**
- * Extract embedded media from design JSON and upload to R2 (or Supabase if R2 not configured)
+ * Extract embedded media from design JSON and upload to Supabase Storage
  * @param {Object} storeJSON - Design JSON object
  * @param {string} designId - Design ID for organizing files
  * @param {Function} onProgress - Optional progress callback
@@ -224,8 +214,8 @@ async function extractAndReplaceMedia(obj, designId, onProgress = null, replacem
  * @returns {Promise<Object>} Updated design JSON with storage URLs
  */
 export async function extractEmbeddedMedia(storeJSON, designId, onProgress = null, options = {}) {
-  if (!shouldUseR2() && !shouldUseSupabase()) {
-    console.warn('⚠️ Neither R2 nor Supabase configured, skipping media extraction');
+  if (!shouldUseSupabase()) {
+    console.warn('⚠️ Supabase not configured, skipping media extraction');
     return storeJSON;
   }
 
