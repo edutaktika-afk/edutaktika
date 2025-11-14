@@ -239,8 +239,8 @@
                 document.getElementById('mainContent').style.display = "block";
                 
                 // Store teacher's grade level in sessionStorage for Editor
-                if (teacher && teacher.gradelevel) {
-                    const grade = teacher.gradelevel.toString();
+                if (teacher && teacher.grade) {
+                    const grade = teacher.grade.toString();
                     const gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
                     sessionStorage.setItem('supabase-design-grade', gradeLevel);
                     console.log(`📚 Stored teacher grade level in sessionStorage: ${gradeLevel}`);
@@ -272,10 +272,10 @@
                         if (user) {
                             const teacherSnap = await db.ref('teachers/' + user.uid).once('value');
                             const teacher = teacherSnap.val();
-                            if (teacher && teacher.gradelevel) {
-                                const grade = teacher.gradelevel.toString();
+                            if (teacher && teacher.grade) {
+                                const grade = teacher.grade.toString();
                                 gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
-                                console.log(`📚 Found teacher grade level: ${teacher.gradelevel} → normalized: ${gradeLevel}`);
+                                console.log(`📚 Found teacher grade level: ${teacher.grade} → normalized: ${gradeLevel}`);
                             }
                         }
                     } catch (error) {
@@ -1794,13 +1794,13 @@ document.getElementById('createQuizForm').onsubmit = async function(e) {
         const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
         const teacher = teacherSnap.val();
         
-        if (!teacher || !teacher.section || !teacher.gradelevel) {
+        if (!teacher || !teacher.section || !teacher.grade) {
             alert("Your section and grade level must be set. Please update your profile.");
             return;
         }
         
         const section = teacher.section;
-        const gradeLevel = teacher.gradelevel;
+        const gradeLevel = teacher.grade;
         const teacherName = `${teacher.firstname || ''} ${teacher.lastname || ''}`.trim();
 
         console.log('Creating quiz for:', { section, gradeLevel, teacherName, teacherUID });
@@ -1814,7 +1814,7 @@ document.getElementById('createQuizForm').onsubmit = async function(e) {
             description: description,
             quarter: quarter,
             section: section,
-            gradeLevel: gradeLevel,
+            grade: grade,
             createdAt: new Date().toISOString(),
             savedAt: new Date().toISOString(),
             createdBy: teacherUID,
@@ -1846,7 +1846,7 @@ document.getElementById('createQuizForm').onsubmit = async function(e) {
                 // Flexible matching - handle different data types and case sensitivity
                 const studentSection = (student.section || '').toString().trim().toLowerCase();
                 const teacherSectionLower = (section || '').toString().trim().toLowerCase();
-                const studentGrade = (student.gradelevel || '').toString().trim();
+                const studentGrade = (student.grade || '').toString().trim();
                 const teacherGrade = (gradeLevel || '').toString().trim();
                 
                 console.log(`Checking student ${studentUID}:`, {
@@ -1870,7 +1870,7 @@ document.getElementById('createQuizForm').onsubmit = async function(e) {
                         description: description,
                         quarter: quarter,
                         section: section,
-                        gradeLevel: gradeLevel,
+                        grade: grade,
                         createdAt: new Date().toISOString(),
                         savedAt: new Date().toISOString(),
                         createdBy: teacherUID,
@@ -1914,7 +1914,7 @@ document.getElementById('createQuizForm').onsubmit = async function(e) {
         closeCreateQuizModal();
         
         // Show detailed success message with password
-        alert(`Quiz created successfully!\n\n🔐 Quiz Password: ${quizPassword}\n\n✅ Quiz "${title}" assigned to ${studentsFound} student${studentsFound !== 1 ? 's' : ''} in:\n- Section: ${section}\n- Grade Level: ${gradeLevel}\n- Subject: Math\n- Quarter: ${quarter}\n\nShare this password with your students to unlock the quiz.`);
+        alert(`Quiz created successfully!\n\n🔐 Quiz Password: ${quizPassword}\n\n✅ Quiz "${title}" assigned to ${studentsFound} student${studentsFound !== 1 ? 's' : ''} in:\n- Section: ${section}\n- Grade Level: ${grade}\n- Subject: Math\n- Quarter: ${quarter}\n\nShare this password with your students to unlock the quiz.`);
         
         // Redirect to quiz editor with parameters
         const params = new URLSearchParams({
