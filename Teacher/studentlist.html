@@ -306,17 +306,14 @@ table::-webkit-scrollbar {
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown subject-dropdown">
-                        <button id="navSubjectBtn" class="dropbtn" type="button" aria-haspopup="listbox" aria-expanded="false">
-                            <span id="navSubjectLabel">Subject</span>
-                            <i class="fa fa-caret-down" aria-hidden="true" style="margin-left:6px;font-size:.75rem;"></i>
-                        </button>
-                        <ul id="navSubjectMenu" class="dropdown-content" role="listbox" aria-labelledby="navSubjectBtn">
-                            <li><a href="subject_math.html" data-subject="Math" role="option">Math</a></li>
-                            <li><a href="subject_english.html" data-subject="English" role="option">English</a></li>
-                            <li><a href="subject_science.html" data-subject="Science" role="option">Science</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="subject_math.html">Math</a></li>
+                            <li><a href="subject_english.html">English</a></li>
+                            <li><a href="subject_science.html">Science</a></li>
                         </ul>
-                    </li>
+                        </li>
                     <li><a href="studentlist.html">Student</a></li>
                     <li><a href="grading.html">Grading</a></li>
                     <li class="dropdown">
@@ -335,13 +332,12 @@ table::-webkit-scrollbar {
                             </ul>
                         </li>
                     <li>
-                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                        <a href="#" id="profileBtn">Profile</a>
                     </li>
                 </ul>
             </nav>
         </div>
     </header>
-
         
 <!-- Overlay for navbar -->
 <div class="sidebar-overlay" id="navOverlay"></div>
@@ -582,15 +578,15 @@ const rowsPerPage = 10;
         const teacher = teacherSnap.val();
         const teacherSection = teacher && teacher.section ? teacher.section : null;
         const teacherSY = teacher && teacher.school_year ? teacher.school_year : null;
-        let teacherGrade = teacher && teacher.gradelevel ? teacher.gradelevel : null;
+        let teacherGrade = teacher && teacher.grade ? teacher.grade : null;
 
         // If teacher grade level is not set, try to determine it from the students
         if (!teacherGrade) {
             const gradeCounts = {};
             snapshot.forEach(child => {
                 const s = child.val();
-                if (s.section === teacherSection && s.gradelevel) {
-                    gradeCounts[s.gradelevel] = (gradeCounts[s.gradelevel] || 0) + 1;
+                if (s.section === teacherSection && s.grade) {
+                    gradeCounts[s.grade] = (gradeCounts[s.grade] || 0) + 1;
                 }
             });
             
@@ -607,7 +603,7 @@ const rowsPerPage = 10;
                 teacherGrade = mostCommonGrade;
                 // Update the teacher's grade level in Firebase
                 await db.ref('teachers/' + firebase.auth().currentUser.uid).update({
-                    gradelevel: teacherGrade
+                    grade: teacherGrade
                 });
             } else {
                 teacherGrade = '5'; // Default to Grade 5
@@ -619,7 +615,7 @@ const rowsPerPage = 10;
             if (sy && s.school_year !== sy) return;
             if (teacherSection && s.section !== teacherSection) return;
             if (teacherSY && s.school_year !== teacherSY) return;
-            if (teacherGrade && s.gradelevel !== teacherGrade) return;
+            if (teacherGrade && s.grade !== teacherGrade) return;
             studentsArr.push({ key: child.key, ...s });
         });
 
@@ -646,7 +642,7 @@ const rowsPerPage = 10;
                 </td>
                 <td>${s.email || ''}</td>
                 <td>${s.age || ''}</td>
-                <td>${s.gradelevel || ''}</td>
+                <td>${s.grade || ''}</td>
                 <td>
                     <button type="button" class="mini-btn remove"
                         onclick="showRemoveModal('${s.key}', '${(s.fname || '') + ' ' + (s.lname || '')}')">
@@ -685,7 +681,7 @@ const rowsPerPage = 10;
     const teacher = teacherSnap.val();
     const teacherSection = teacher && teacher.section ? teacher.section : null;
     const teacherSY = teacher && teacher.school_year ? teacher.school_year : null;
-    let teacherGrade = teacher && teacher.gradelevel ? teacher.gradelevel : null;
+    let teacherGrade = teacher && teacher.grade ? teacher.grade : null;
 
     let ref = db.ref('students');
     const snapshot = await ref.once('value');
@@ -697,8 +693,8 @@ const rowsPerPage = 10;
         const gradeCounts = {};
         snapshot.forEach(child => {
             const s = child.val();
-            if (s.section === teacherSection && s.gradelevel) {
-                gradeCounts[s.gradelevel] = (gradeCounts[s.gradelevel] || 0) + 1;
+            if (s.section === teacherSection && s.grade) {
+                gradeCounts[s.grade] = (gradeCounts[s.grade] || 0) + 1;
             }
         });
         
@@ -715,7 +711,7 @@ const rowsPerPage = 10;
             teacherGrade = mostCommonGrade;
             // Update the teacher's grade level in Firebase
             await db.ref('teachers/' + firebase.auth().currentUser.uid).update({
-                gradelevel: teacherGrade
+                grade: teacherGrade
             });
         } else {
             teacherGrade = '5'; // Default to Grade 5
@@ -727,7 +723,7 @@ const rowsPerPage = 10;
         // Only show students with the same section, school year, and grade level as the teacher
         if (teacherSection && s.section !== teacherSection) return;
         if (teacherSY && s.school_year !== teacherSY) return;
-        if (teacherGrade && s.gradelevel !== teacherGrade) return;
+        if (teacherGrade && s.grade !== teacherGrade) return;
         total++;
         if (s.gender === 'Male') male++;
         if (s.gender === 'Female') female++;
@@ -782,7 +778,7 @@ async function filterAndSearchStudents() {
     const teacher = teacherSnap.val();
     const teacherSection = teacher && teacher.section ? teacher.section : null;
     const teacherSY = teacher && teacher.school_year ? teacher.school_year : null;
-    const teacherGrade = teacher && teacher.gradelevel ? teacher.gradelevel : null;
+    const teacherGrade = teacher && teacher.grade ? teacher.grade : null;
 
     // If teacher grade level is not set, try to determine it from the students or set a default
     let effectiveTeacherGrade = teacherGrade;
@@ -791,8 +787,8 @@ async function filterAndSearchStudents() {
         const gradeCounts = {};
         snapshot.forEach(child => {
             const s = child.val();
-            if (s.section === teacherSection && s.gradelevel) {
-                gradeCounts[s.gradelevel] = (gradeCounts[s.gradelevel] || 0) + 1;
+            if (s.section === teacherSection && s.grade) {
+                gradeCounts[s.grade] = (gradeCounts[s.grade] || 0) + 1;
             }
         });
         
@@ -811,7 +807,7 @@ async function filterAndSearchStudents() {
             
             // Update the teacher's grade level in Firebase
             await db.ref('teachers/' + firebase.auth().currentUser.uid).update({
-                gradelevel: effectiveTeacherGrade
+                grade: effectiveTeacherGrade
             });
         } else {
             // If we can't determine from students, default to Grade 5
@@ -826,7 +822,7 @@ async function filterAndSearchStudents() {
         
         if (teacherSection && s.section !== teacherSection) return;
         if (teacherSY && s.school_year !== teacherSY) return;
-        if (effectiveTeacherGrade && s.gradelevel !== effectiveTeacherGrade) return;
+        if (effectiveTeacherGrade && s.grade !== effectiveTeacherGrade) return;
         
         total++;
         if (s.gender === 'Male') male++;
@@ -841,7 +837,7 @@ async function filterAndSearchStudents() {
         const s = child.val();
         if (teacherSection && s.section !== teacherSection) return;
         if (teacherSY && s.school_year !== teacherSY) return;
-        if (effectiveTeacherGrade && s.gradelevel !== effectiveTeacherGrade) return;
+        if (effectiveTeacherGrade && s.grade !== effectiveTeacherGrade) return;
         const fullName = `${s.fname || ''} ${s.mname || ''} ${s.lname || ''}`.toLowerCase();
         if (search && !fullName.includes(search)) return;
         html += `<tr>
@@ -854,7 +850,7 @@ async function filterAndSearchStudents() {
             </td>
             <td>${s.email || ''}</td>
             <td>${s.age || ''}</td>
-            <td>${s.gradelevel || ''}</td>
+            <td>${s.grade || ''}</td>
             <td>
                 <button type="button" class="mini-btn remove"
                     onclick="showRemoveModal('${child.key}', '${(s.fname || '') + ' ' + (s.lname || '')}')">
@@ -888,7 +884,7 @@ async function showStudentDetails(studentId) {
     document.getElementById('studentDetailsEmail').textContent = s.email || '-';
     document.getElementById('studentDetailsAge').textContent = s.age || '-';
     document.getElementById('studentDetailsGender').textContent = s.gender || '-';
-    document.getElementById('studentDetailsGrade').textContent = s.gradelevel || '-';
+    document.getElementById('studentDetailsGrade').textContent = s.grade || '-';
     document.getElementById('studentDetailsSection').textContent = s.section || '-';
     document.getElementById('studentDetailsSY').textContent = s.school_year || '-';
     document.getElementById('studentPoints').textContent = s.points !== undefined ? s.points : 0;

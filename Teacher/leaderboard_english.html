@@ -180,7 +180,7 @@
                             </ul>
                         </li>
                     <li>
-                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                        <a href="#" id="profileBtn">Profile</a>
                     </li>
                 </ul>
             </nav>
@@ -338,7 +338,7 @@
             const teacherSnapshot = await db.ref('teachers/' + currentUser.uid).once('value');
             const teacherData = teacherSnapshot.val();
             const teacherSection = teacherData ? teacherData.section : null;
-            const teacherGrade = teacherData ? teacherData.gradelevel : null;
+            const teacherGrade = teacherData ? teacherData.grade : null;
             
             if (!teacherSection || !teacherGrade) {
                 console.error('Could not determine teacher section or grade level');
@@ -404,7 +404,7 @@
             });
 
             // Filter for teacher's section and grade level only
-            students = students.filter(s => s.section === teacherSection && s.gradelevel == teacherGrade);
+            students = students.filter(s => s.section === teacherSection && s.grade == teacherGrade);
 
             // Sort descending by combined, then assessment, then quiz, then name
             students.sort((a,b) => {
@@ -569,7 +569,7 @@
                     document.getElementById('profileFirstName').textContent = data.fname || '';
                     document.getElementById('profileMiddleName').textContent = data.mname || '';
                     document.getElementById('profileLastName').textContent = data.lname || '';
-                    document.getElementById('profileGrade').textContent = data.gradelevel || '-';
+                    document.getElementById('profileGrade').textContent = data.grade || '-';
                     document.getElementById('profileSection').textContent = data.section || '-';
                     document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "teacher");
                 }

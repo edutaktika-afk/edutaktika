@@ -178,7 +178,7 @@
                             </ul>
                         </li>
                     <li>
-                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                        <a href="#" id="profileBtn">Profile</a>
                     </li>
                 </ul>
             </nav>
@@ -336,7 +336,7 @@
             const teacherSnapshot = await db.ref('teachers/' + currentUser.uid).once('value');
             const teacherData = teacherSnapshot.val();
             const teacherSection = teacherData ? teacherData.section : null;
-            const teacherGrade = teacherData ? teacherData.gradelevel : null;
+            const teacherGrade = teacherData ? teacherData.grade : null;
             
             if (!teacherSection || !teacherGrade) {
                 console.error('Could not determine teacher section or grade level');
@@ -363,10 +363,9 @@
 
             // Calculate Math-specific scores
             students.forEach(s => {
-                // Math quiz points - only from math quizzes
                 let mathQuizPoints = 0;
-                if (s.quizzes && Array.isArray(s.quizzes.subject_math)) {
-                    s.quizzes.subject_math.forEach(quarterObj => {
+                if (s.quizzes && s.quizzes.subject_math && typeof s.quizzes.subject_math === 'object') {
+                    Object.values(s.quizzes.subject_math).forEach(quarterObj => {
                         if (quarterObj && typeof quarterObj === 'object') {
                             Object.values(quarterObj).forEach(quizObj => {
                                 if (
@@ -382,12 +381,12 @@
                 }
                 s.quizPoints = mathQuizPoints;
                 
-                // Math assessment points - only from math assessments
+                // Math assessment points - only from Science assessments
                 let mathAssessmentPoints = 0;
                 if (s.assessments) {
                     Object.keys(s.assessments).forEach(aid => {
-                        // Only count math-related assessments
-                        if (aid.includes('math') || aid === 'assessment1') {
+                        // Only count Science-related assessments
+                        if (aid.includes('science') || aid === 'assessment2') {
                             const summary = s.assessments[aid]?.summary;
                             if (summary && typeof summary.best === 'number') {
                                 mathAssessmentPoints += summary.best;
@@ -402,7 +401,7 @@
             });
 
             // Filter for teacher's section and grade level only
-            students = students.filter(s => s.section === teacherSection && s.gradelevel == teacherGrade);
+            students = students.filter(s => s.section === teacherSection && s.grade == teacherGrade);
 
             // Sort descending by combined, then assessment, then quiz, then name
             students.sort((a,b) => {
@@ -452,7 +451,7 @@
                             <img src="${avatar}" alt="${s.fname||''}">
                             <span>${(s.fname||'') + ' ' + (s.lname||'')}</span>
                         </td>
-                        <td>${s.quizPoints}</td> <!-- This shows the combined math quiz score -->
+                        <td>${s.quizPoints}</td> <!-- Math quiz points -->
                         <td>${s.assessmentPoints}</td>
                         <td>${s.combinedPoints}</td>
                         <td>${s.badges || ''}</td>
@@ -592,7 +591,7 @@
                     document.getElementById('profileFirstName').textContent = data.fname || '';
                     document.getElementById('profileMiddleName').textContent = data.mname || '';
                     document.getElementById('profileLastName').textContent = data.lname || '';
-                    document.getElementById('profileGrade').textContent = data.gradelevel || '-';
+                    document.getElementById('profileGrade').textContent = data.grade || '-';
                     document.getElementById('profileSection').textContent = data.section || '-';
                     document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "teacher");
                 }

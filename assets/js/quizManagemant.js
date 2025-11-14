@@ -68,10 +68,7 @@ async function loadQuizManagement() {
                                 style="background:#3498db;color:white;border:none;padding:5px 12px;border-radius:4px;margin-right:8px;cursor:pointer;">
                             New Password
                         </button>
-                        <button onclick="viewQuizStudentAccess('${quiz.quarter}', '${quiz.title}')" 
-                                style="background:#9b59b6;color:white;border:none;padding:5px 12px;border-radius:4px;cursor:pointer;">
-                            View Access Log
-                        </button>
+                        
                     </div>
                 </div>
             `).join('')}

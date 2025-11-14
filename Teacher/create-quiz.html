@@ -504,7 +504,7 @@
     updateSubjectUI();
 
     // Tests: Add Test 1 -> Test 2 -> ...
-    const TEST_TYPES = ['Multiple Choice','True or False','Identification','Matching Type','Short Answer','Sorting','Multiple Choice (2)'];
+    const TEST_TYPES = ['Multiple Choice (2)','Identification','Word Search','Multiple Choice','Matching Pairs','Fill in the Blanks','Short Answer','Graph Quiz','Memory Card Math','Sorting','True or False'];
     const testsList = document.getElementById('tests_list');
     const btnAddTest = document.getElementById('btnAddTest');
     let testCount = 0;
@@ -523,10 +523,19 @@
 
     // Map quiz test types to Games/Quiz pages
 const TEST_TYPE_TO_PAGE = {
-  'Multiple Choice': '../Games/Quiz/game4.html',
-  'True or False': '../Games/Quiz/trueorfals.html',
+  'Multiple Choice (2)': '../Games/Quiz/game1.html',
   'Identification': '../Games/Quiz/game2.html',
-  'Multiple Choice (2)': '../Games/Quiz/game1.html'
+  'Word Search': '../Games/Quiz/game3.html',
+  'Multiple Choice': '../Games/Quiz/game4.html',
+  'Matching Pairs': '../Games/Quiz/game5.html',
+  'Fill in the Blanks': '../Games/Quiz/game6.html',
+  'Short Answer': '../Games/Quiz/game7.html',
+  'Graph Quiz': '../Games/Quiz/game8.html',
+  'Memory Card Math': '../Games/Quiz/game9.html',
+  'Sorting': '../Games/Quiz/game10.html',
+  'True or False': '../Games/Quiz/trueorfals.html'
+
+
 };
 
 function buildGameUrl(page, { subjectKey, quarter, title, testIndex }) {
