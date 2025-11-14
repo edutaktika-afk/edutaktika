@@ -1377,9 +1377,16 @@ function hideButtonLoading(type) {
 
 // Environment-aware editor URL function
 function getEditorBaseUrl() {
-    // Always use the built Editor from deploy/editor folder
-    // This ensures we use the production build with Firebase SDK included
-    return '../deploy/editor/index.html';
+    // Detect correct editor path based on current URL
+    const currentPath = window.location.pathname;
+    
+    // If current path includes /deploy/, editor is at /deploy/editor/index.html
+    // Otherwise, editor is at /editor/index.html
+    if (currentPath.includes('/deploy/') || currentPath.startsWith('/deploy/')) {
+        return '/deploy/editor/index.html';
+    } else {
+        return '/editor/index.html';
+    }
 }
 
 // Use buildEditorUrl from editorEnv.js if available, otherwise create one

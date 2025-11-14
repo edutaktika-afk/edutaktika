@@ -562,10 +562,24 @@ async function openDesignViewer(designId, subject, designName = 'Design', quarte
 
     // Open in viewer mode - pass JSON URL as parameter instead of storing in sessionStorage
     let editorBaseUrl = '/editor/index.html';
-    if (typeof getEditorBaseUrl === 'function') {
+    
+    // Check for environment-specific editor path function
+    if (typeof getEditorBase === 'function') {
+      editorBaseUrl = getEditorBase();
+    } else if (typeof getEditorBaseUrl === 'function') {
       editorBaseUrl = getEditorBaseUrl();
     } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       editorBaseUrl = 'http://localhost:5173/';
+    } else {
+      // For Netlify deployments, check if we're in the deploy folder structure
+      // If current path includes /deploy/, use /deploy/editor/index.html
+      // Otherwise, use /editor/index.html
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/deploy/') || currentPath.startsWith('/deploy/')) {
+        editorBaseUrl = '/deploy/editor/index.html';
+      } else {
+        editorBaseUrl = '/editor/index.html';
+      }
     }
     
     const params = new URLSearchParams();
@@ -735,10 +749,24 @@ async function openDesignEditor(designId, subject, designName = 'Design', quarte
 
     // Open in editor mode - pass JSON URL as parameter instead of storing in sessionStorage
     let editorBaseUrl = '/editor/index.html';
-    if (typeof getEditorBaseUrl === 'function') {
+    
+    // Check for environment-specific editor path function
+    if (typeof getEditorBase === 'function') {
+      editorBaseUrl = getEditorBase();
+    } else if (typeof getEditorBaseUrl === 'function') {
       editorBaseUrl = getEditorBaseUrl();
     } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       editorBaseUrl = 'http://localhost:5173/';
+    } else {
+      // For Netlify deployments, check if we're in the deploy folder structure
+      // If current path includes /deploy/, use /deploy/editor/index.html
+      // Otherwise, use /editor/index.html
+      const currentPath = window.location.pathname;
+      if (currentPath.includes('/deploy/') || currentPath.startsWith('/deploy/')) {
+        editorBaseUrl = '/deploy/editor/index.html';
+      } else {
+        editorBaseUrl = '/editor/index.html';
+      }
     }
     
     const params = new URLSearchParams();
