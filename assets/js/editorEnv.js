@@ -9,12 +9,32 @@
   }
   function getEditorBase(){
     // For development: use local dev server
-    // For production: use the built editor (Netlify publishes from deploy folder, so use absolute path)
-    const base = isLocalHost() ? 'http://localhost:5173/' : '/editor/index.html';
+    if (isLocalHost()) {
+      return 'http://localhost:5173/';
+    }
+    
+    // For production: detect the correct editor path based on current URL
+    // If current path includes /deploy/, editor is at /deploy/editor/index.html
+    // Otherwise, editor is at /editor/index.html
+    const currentPath = location.pathname;
+    let base;
+    
+    if (currentPath.includes('/deploy/') || currentPath.startsWith('/deploy/')) {
+      base = '/deploy/editor/index.html';
+    } else {
+      base = '/editor/index.html';
+    }
+    
     if (!global.__EDITOR_ENV_LOGGED__) {
-      console.debug('[editor-env]', { hostname: location.hostname, chosen: base, local: isLocalHost() });
+      console.debug('[editor-env]', { 
+        hostname: location.hostname, 
+        pathname: location.pathname,
+        chosen: base, 
+        local: isLocalHost() 
+      });
       global.__EDITOR_ENV_LOGGED__ = true;
     }
+    
     return base;
   }
   function buildEditorUrl(paramsObj){
