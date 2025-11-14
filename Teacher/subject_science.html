@@ -120,7 +120,7 @@
                             </ul>
                         </li>
                     <li>
-                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                        <a href="#" id="profileBtn">Profile</a>
                     </li>
                 </ul>
             </nav>
@@ -1339,8 +1339,16 @@ if (typeof buildEditorUrl === 'undefined') {
 
 
 <style>
-    #quiz-list {
+#quiz-list {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 18px !important;
+    justify-content: stretch;
+    align-items: stretch;
     margin-top: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 320px;
 }
 .lesson-item {
     flex: 1 1 260px;

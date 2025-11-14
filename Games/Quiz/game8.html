@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Graph Quiz Game</title>
+  <style>
+body {
+  font-family: "Comic Sans MS", sans-serif;
+  background: #f7f9fc;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* Center vertically */
+}
+    h1 {
+      color: #2b3a67;
+    }
+    .question-container {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .choices {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .choices-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 16px;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .choice-btn {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      width: 100%;
+      padding: 10px 12px;
+      background: #4c84ff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s;
+      position: relative;
+      min-height: 44px;
+    }
+    .choice-btn:hover {
+      background: #2b3a67;
+    }
+    .choice-btn.selected {
+  background: #22c55e !important;
+  color: #fff !important;
+}
+.choice-btn.selected .choice-label {
+  background: #bbf7d0;
+  color: #166534;
+}
+    .choice-label {
+      display: inline-block;
+      font-weight: bold;
+      background: #e0e7ff;
+      color: #3730a3;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      text-align: center;
+      line-height: 28px;
+      margin-right: 10px;
+      font-size: 1.1em;
+    }
+    #feedback {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    canvas {
+      margin-top: 15px;
+    }
+    #editOpen {
+      display: none;
+      position: fixed;
+      top: 18px;
+      right: 24px;
+      z-index: 100;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      font-size: 22px;
+      box-shadow: 0 2px 8px #0002;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    #editOpen:hover { background: #1741a6; }
+    #editorModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30, 41, 59, 0.18);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      overflow: auto;
+    }
+    #editorCard {
+      background: #fff;
+      border-radius: 18px;
+      padding: 32px 28px 22px 28px;
+      width: 96vw;
+      max-width: 520px;
+      box-sizing: border-box;
+      box-shadow: 0 8px 32px rgba(30,41,59,0.18), 0 1.5px 6px #0001;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      animation: modalPop 0.22s cubic-bezier(.4,1.6,.6,1) 1;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    @keyframes modalPop {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .editor-row {
+      margin-bottom: 14px;
+      text-align: left;
+    }
+    .editor-row label {
+      font-size: 1em;
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: #2b3a67;
+      display: block;
+    }
+    .editor-row input, .editor-row select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 7px;
+      font-size: 1em;
+      background: #f8fafc;
+      transition: border 0.2s;
+      outline: none;
+    }
+    .editor-row input:focus, .editor-row select:focus {
+      border-color: #2563eb;
+      background: #fff;
+    }
+    .editor-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .editor-actions button {
+      padding: 8px 22px;
+      border: none;
+      border-radius: 7px;
+      font-size: 1em;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    #saveQ {
+      background: #2563eb;
+      color: #fff;
+    }
+    #saveQ:hover {
+      background: #1741a6;
+    }
+    #cancelQ {
+      background: #e2e8f0;
+      color: #334155;
+    }
+    #cancelQ:hover {
+      background: #cbd5e1;
+    }
+    #editorStatus {
+      font-size: 0.98em;
+      color: #e11d48;
+      margin-top: 8px;
+      min-height: 1.2em;
+      text-align: left;
+    }
+    #graph {
+      display: block;
+      margin: 10px auto 10px auto;
+      width: 500px !important;
+      height: 180px !important;
+      max-width: 100%;
+      background: #f8fafc;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px #0001;
+    }
+    @media (max-width: 400px) {
+      #graph { width: 98vw !important; }
+    }
+    @media (max-width: 600px) {
+      .question-container { max-width: 99vw; padding: 8px; }
+      #editorCard { padding: 16px 6vw 12px 6vw; }
+    }
+    #prevQ, #nextQ {
+  background: #e2e8f0;
+  color: #334155;
+}
+#prevQ:hover, #nextQ:hover {
+  background: #cbd5e1;
+}
+#deleteQ {
+  background: #ef4444;
+  color: #fff;
+}
+#deleteQ:hover {
+  background: #b91c1c;
+}
+#addQ {
+  background: #22c55e;
+  color: #fff;
+}
+#addQ:hover {
+  background: #15803d;
+}
+.nav-btns {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.nav-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+.nav-btn:hover {
+  background: #1741a6;
+}
+  </style>
+</head>
+<body>
+  <button id="editOpen" title="Edit">&#9998;</button>
+
+  <div class="question-container">
+    <h3 id="graph-title" style="margin-bottom:8px;color:#2563eb;"></h3>
+    <h2 id="question-text"></h2>
+    <canvas id="graph" width="320" height="130"></canvas>
+    <div class="choices" id="choices"></div>
+    <div class="nav-btns" style="margin-top:18px;display:flex;gap:12px;justify-content:center;">
+    <button id="prevBtn" class="nav-btn">Prev</button>
+    <button id="nextBtn" class="nav-btn" disabled>Next</button>
+  </div>
+  </div>
+
+  <!-- Editor Modal -->
+  <div id="editorModal" aria-hidden="true">
+    <div id="editorCard">
+      <h2 style="margin-top:0;margin-bottom:18px;font-size:1.3em;color:#2563eb;">Edit Graph Question</h2>
+      <div class="editor-row">
+        <label for="editPrompt">Question</label>
+        <input type="text" id="editPrompt" autocomplete="off" />
+      </div>
+      <div class="editor-row">
+        <label for="editGraphType">Graph Type</label>
+        <select id="editGraphType">
+          <option value="bar">Bar</option>
+          <option value="line">Line</option>
+          <option value="pie">Pie</option>
+          <option value="doughnut">Doughnut</option>
+        </select>
+      </div>
+      <div class="editor-row">
+        <label for="editGraphTitle">Graph Title</label>
+        <input type="text" id="editGraphTitle" placeholder="e.g. Number of Apples Picked" autocomplete="off" />
+      </div>
+      <div class="editor-row">
+        <label for="editLabels">Labels <span style="color:#64748b;font-size:0.95em;">(comma separated)</span></label>
+        <input type="text" id="editLabels" placeholder="e.g. Ana, Ben, Carla" autocomplete="off" />
+      </div>
+      <div class="editor-row">
+        <label for="editData">Data <span style="color:#64748b;font-size:0.95em;">(comma separated numbers)</span></label>
+        <input type="text" id="editData" placeholder="e.g. 5, 8, 6" autocomplete="off" />
+      </div>
+      <div class="editor-row">
+        <label for="editColors">Colors <span style="color:#64748b;font-size:0.95em;">(comma separated hex or names)</span></label>
+        <input type="text" id="editColors" placeholder="#ff6384, #36a2eb, #ffcd56" autocomplete="off" />
+      </div>
+      <div class="editor-row">
+        <label for="editChoices">Choices <span style="color:#64748b;font-size:0.95em;">(comma separated, first is correct)</span></label>
+        <input type="text" id="editChoices" placeholder="e.g. Ana, Ben, Carla, None" autocomplete="off" />
+      </div>
+      <div class="editor-row">
+        <label for="editCorrect">Correct Answer <span style="color:#64748b;font-size:0.95em;">(must match a choice)</span></label>
+        <input type="text" id="editCorrect" placeholder="e.g. Ben" autocomplete="off" />
+      </div>
+      <div class="editor-actions">
+        <div>
+          <button id="prevQ" type="button">&larr; Prev</button>
+        <button id="nextQ" type="button">Next &rarr;</button>
+        </div>
+        <button id="addQ" type="button" style="background:#22c55e;color:#fff;">Add</button>
+        <button id="deleteQ" type="button" style="background:#ef4444;color:#fff;">Delete</button>
+        <button id="saveQ" type="button">Save</button>
+        <button id="cancelQ" type="button">Cancel</button>
+      </div>
+      <div id="editorStatus"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    let parentTestIndex = 0;
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'setTestIndex') {
+    parentTestIndex = event.data.index;
+  }
+});
+
+let questions = [
+      {
+        question: "Who picked the most apples?",
+        graphTitle: "Number of Apples Picked",
+        graphData: {
+          labels: ["Ana", "Ben", "Carla"],
+          data: [5, 8, 6],
+          backgroundColors: ["#ff6384", "#36a2eb", "#ffcd56"]
+        },
+        choices: ["Ana", "Ben", "Carla", "None"],
+        correct: "Ben"
+      },
+      {
+        question: "Which fruit was chosen the least?",
+        graphTitle: "Number of Fruits Chosen",
+        graphData: {
+          labels: ["Apples", "Bananas", "Grapes", "Oranges"],
+          data: [12, 9, 5, 8],
+          backgroundColors: ["#ff9f40", "#9966ff", "#4bc0c0", "#ff6384"]
+        },
+        choices: ["Apples", "Bananas", "Grapes", "Oranges"],
+        correct: "Grapes"
+      }
+    ];
+    let currentQuestion = 0;
+    let userAnswers = new Array(questions.length).fill(null);
+    let score = 0;
+    let chart;
+
+    function loadQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById("graph-title").textContent = q.graphTitle || "";
+      document.getElementById("question-text").textContent = q.question;
+      const choicesDiv = document.getElementById("choices");
+      choicesDiv.innerHTML = "";
+
+      // Two-column choices with A/B/C/D labels
+      const grid = document.createElement("div");
+      grid.className = "choices-grid";
+      const labels = ["A", "B", "C", "D", "E", "F", "G", "H"];
+      q.choices.forEach((choice, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "choice-btn";
+        btn.disabled = userAnswers[currentQuestion] !== null;
+        if (userAnswers[currentQuestion] === idx) {
+          btn.classList.add("selected");
+        }
+        btn.onclick = () => selectAnswer(idx);
+
+        const labelSpan = document.createElement("span");
+        labelSpan.className = "choice-label";
+        labelSpan.textContent = labels[idx] || String.fromCharCode(65 + idx);
+
+        btn.appendChild(labelSpan);
+        btn.appendChild(document.createTextNode(choice));
+        grid.appendChild(btn);
+      });
+      choicesDiv.appendChild(grid);
+
+      // Draw graph
+      const ctx = document.getElementById("graph").getContext("2d");
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: q.graphType || 'bar',
+        data: {
+          labels: q.graphData.labels,
+          datasets: [{
+            label: q.graphTitle || 'Data',
+            data: q.graphData.data,
+            backgroundColor: q.graphData.backgroundColors
+          }]
+        },
+        options: {
+          responsive: false,
+          maintainAspectRatio: false,
+          scales: (q.graphType === 'bar' || q.graphType === 'line') ? { y: { beginAtZero: true } } : {}
+        }
+      });
+
+      // Navigation buttons
+      document.getElementById('prevBtn').disabled = currentQuestion === 0;
+      document.getElementById('nextBtn').disabled = userAnswers[currentQuestion] === null;
+      document.getElementById('nextBtn').textContent = currentQuestion === questions.length - 1 ? "Finish" : "Next";
+    }
+
+    function selectAnswer(idx) {
+      if (userAnswers[currentQuestion] !== null) return; // already answered
+      userAnswers[currentQuestion] = idx;
+      // Record score (first choice is correct)
+      if (questions[currentQuestion].choices[idx] === questions[currentQuestion].correct) {
+        score++;
+      }
+      // Disable all choice buttons and highlight the selected one
+      const btns = document.querySelectorAll('.choice-btn');
+      btns.forEach((btn, i) => {
+        btn.disabled = true;
+        btn.classList.toggle('selected', i === idx);
+      });
+      document.getElementById('nextBtn').disabled = false;
+    }
+
+    document.getElementById('prevBtn').onclick = function() {
+      if (currentQuestion > 0) {
+        currentQuestion--;
+        loadQuestion();
+      }
+    };
+    document.getElementById('nextBtn').onclick = function() {
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+      } else {
+        // Quiz finished, send score to parent
+        document.querySelector(".question-container").innerHTML =
+          "<h2>🎉 You finished the quiz!</h2>";
+        window.parent.postMessage({
+          type: 'quizResult',
+          payload: {
+            score: score,
+            maxScore: questions.length,
+            answers: userAnswers,
+            quizId: window.location.pathname.split('/').pop(),
+            slideIndex: parentTestIndex
+          }
+        }, '*');
+      }
+    };
+
+    // --- Edit button logic ---
+    document.getElementById('editOpen').onclick = () => {
+      mainQuizCurrent = currentQuestion; // store which question was showing in the main quiz
+      openEditor(currentQuestion);
+    };
+    function openEditor(idx) {
+      const q = questions[idx];
+      document.getElementById('editPrompt').value = q.question || '';
+      document.getElementById('editGraphType').value = q.graphType || 'bar';
+      document.getElementById('editGraphTitle').value = q.graphTitle || '';
+      document.getElementById('editLabels').value = (q.graphData.labels || []).join(', ');
+      document.getElementById('editData').value = (q.graphData.data || []).join(', ');
+      document.getElementById('editColors').value = (q.graphData.backgroundColors || []).join(', ');
+      document.getElementById('editChoices').value = (q.choices || []).join(', ');
+      document.getElementById('editCorrect').value = q.correct || '';
+      document.getElementById('editorStatus').textContent = '';
+      document.getElementById('editorModal').style.display = 'flex';
+    }
+    document.getElementById('cancelQ').onclick = () => {
+      document.getElementById('editorModal').style.display = 'none';
+      currentQuestion = mainQuizCurrent;
+      loadQuestion();
+    };
+    document.getElementById('saveQ').onclick = function() {
+      saveEditorFieldsToCurrent();
+      document.getElementById('editorStatus').textContent = "✅ Saved!";
+      setTimeout(() => { document.getElementById('editorStatus').textContent = ""; }, 1200);
+
+      // Notify parent window (iframes)
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'saveQuizGameData',
+          gameData: { questions },
+          quizId: window.location.pathname.split('/').pop(),
+          source: 'game-editor'
+        }, '*');
+      }
+    };
+
+    document.getElementById('prevQ').onclick = function() {
+  if (currentQuestion > 0) {
+    saveEditorFieldsToCurrent();
+    currentQuestion--;
+    openEditor(currentQuestion);
+  }
+};
+document.getElementById('nextQ').onclick = function() {
+  if (currentQuestion < questions.length - 1) {
+    saveEditorFieldsToCurrent();
+    currentQuestion++;
+    openEditor(currentQuestion);
+  }
+};
+document.getElementById('addQ').onclick = function() {
+  // Save ALL fields, even if incomplete, before adding
+  const question = document.getElementById('editPrompt').value.trim();
+  const graphType = document.getElementById('editGraphType').value;
+  const labels = document.getElementById('editLabels').value.split(',').map(s => s.trim()).filter(Boolean);
+  const data = document.getElementById('editData').value.split(',').map(s => Number(s.trim())).filter(n => !isNaN(n));
+  const colors = document.getElementById('editColors').value.split(',').map(s => s.trim()).filter(Boolean);
+  const choices = document.getElementById('editChoices').value.split(',').map(s => s.trim()).filter(Boolean);
+  const correct = document.getElementById('editCorrect').value.trim();
+  const graphTitle = document.getElementById('editGraphTitle').value.trim();
+
+questions[currentQuestion] = {
+  question,
+  graphTitle,
+  graphType,
+  graphData: { labels, data, backgroundColors: colors },
+  choices,
+  correct
+};
+
+  // Insert a new blank question after the current one
+  const newQuestion = {
+    question: "",
+    graphTitle: "",
+    graphType: "bar",
+    graphData: { labels: [], data: [], backgroundColors: [] },
+    choices: ["", "", "", ""],
+    correct: ""
+  };
+  questions.splice(currentQuestion + 1, 0, newQuestion);
+  currentQuestion++;
+  openEditor(currentQuestion);
+};
+document.getElementById('deleteQ').onclick = function() {
+  if (questions.length <= 1) {
+    document.getElementById('editorStatus').textContent = "You must have at least one question.";
+    return;
+  }
+  if (!confirm("Delete this question?")) return;
+  questions.splice(currentQuestion, 1);
+  if (currentQuestion >= questions.length) currentQuestion = questions.length - 1;
+  // Instead of closing the modal, just open the next/previous question in the editor:
+  openEditor(currentQuestion);
+
+  // Notify parent window (iframes)
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({
+      type: 'saveQuizGameData',
+      gameData: { questions },
+      quizId: window.location.pathname.split('/').pop(),
+      source: 'game-editor'
+    }, '*');
+  }
+};
+
+// Helper to save current editor fields before navigating
+function saveEditorFieldsToCurrent() {
+  const question = document.getElementById('editPrompt').value.trim();
+  const graphType = document.getElementById('editGraphType').value;
+  const labels = document.getElementById('editLabels').value.split(',').map(s => s.trim()).filter(Boolean);
+  const data = document.getElementById('editData').value.split(',').map(s => Number(s.trim())).filter(n => !isNaN(n));
+  const colors = document.getElementById('editColors').value.split(',').map(s => s.trim()).filter(Boolean);
+  const choices = document.getElementById('editChoices').value.split(',').map(s => s.trim()).filter(Boolean);
+  const correct = document.getElementById('editCorrect').value.trim();
+  const graphTitle = document.getElementById('editGraphTitle').value.trim();
+
+  if (!question || !labels.length || !data.length || !colors.length || !choices.length || !correct) return;
+  if (!choices.includes(correct)) return;
+  questions[currentQuestion] = {
+    question,
+    graphType,
+    graphTitle,
+    graphData: { labels, data, backgroundColors: colors },
+    choices,
+    correct
+  };
+}
+
+// --- Show edit button only in quizEditor mode ---
+    (function(){
+      let showEdit = false;
+      try {
+        const params = new URLSearchParams(window.location.search);
+        showEdit =
+          params.get('edit') === 'true' ||
+          params.get('mode') === 'edit' ||
+          params.get('quizEditor') === '1' ||
+          window.name === 'quizEditor' ||
+          window._isQuizEditor === true;
+      } catch {}
+      if (showEdit) document.getElementById('editOpen').style.display = 'flex';
+    })();
+
+    loadQuestion();
+
+    window.addEventListener('message', function(event) {
+      if (
+        event.data &&
+        (
+          (event.data.type === 'loadQuizGameData' && event.data.gameData?.questions) ||
+          (event.data.type === 'currentGameData' && event.data.gameData?.questions)
+        )
+      ) {
+        questions = event.data.gameData.questions;
+        currentQuestion = 0;
+        loadQuestion();
+      }
+    });
+
+
+  </script>
+</body>
+</html>

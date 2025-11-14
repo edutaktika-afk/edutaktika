@@ -469,3 +469,206 @@
   }
 }
 
+/* --- ENHANCED ROOT VARIABLES --- */
+:root {
+    --primary: #2e8b57;       /* Forest Green */
+    --forest-green: #2e8b57;
+    --secondary: #ffd700;     /* Gold */
+    --accent: #ff69b4;        /* Hot Pink */
+    --background: #f0f8ff;    /* Alice Blue */
+    --card-bg: #ffffff;
+    --text-main: #22223b;
+    --text-light: #5f6972;
+    --shadow: 0 8px 30px rgba(46,139,87,0.15); /* Slightly stronger shadow */
+    --radius: 18px;
+    /* New: Interactive States */
+    --hover-pulse: rgba(255, 105, 180, 0.6); /* For a colorful pulse on hover */
+}
+
+/* --- Student Navigation Tabs: More Pop! --- */
+.student-tab {
+    /* Existing styles... */
+    transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), /* Springy transform */
+                box-shadow 0.3s;
+    /* Add a subtle initial shadow */
+    box-shadow: 0 4px 12px rgba(46,139,87,0.1); 
+}
+
+.student-tab.active, .student-tab:hover {
+    background: var(--secondary);
+    color: var(--text-main); /* Use a darker text for contrast */
+    /* Stronger, "popping" effect */
+    transform: translateY(-6px) scale(1.05);
+    /* Vibrant active/hover shadow */
+    box-shadow: 0 8px 20px var(--hover-pulse); 
+}
+
+/* --- Stat Boxes: Bouncier, More Rewarding --- */
+.stat-box {
+    /* Existing styles... */
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), /* Custom 'bounce' timing */
+                box-shadow 0.3s,
+                background 0.3s;
+    box-shadow: var(--shadow); /* Use the slightly stronger general shadow */
+    /* Add a subtle tilt for extra flair */
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg); 
+}
+
+.stat-box:hover {
+    /* Enhance the hover effect */
+    transform: scale(1.1) rotate(0deg) perspective(1000px) rotateX(5deg) rotateY(3deg); /* Slight 3D tilt */
+    /* The pulse effect on hover */
+    box-shadow: 0 10px 30px rgba(255, 105, 180, 0.4), 
+                0 0 0 4px var(--hover-pulse) inset; /* Inner glow/ring */
+    background: #fffbe6;
+}
+
+.stat-box i {
+    /* Make the icon slightly grow on hover */
+    transition: transform 0.2s;
+}
+
+.stat-box:hover i {
+    transform: scale(1.2);
+}
+
+/* --- Filter Selects: Clear Focus State --- */
+.filters-form select {
+    /* Existing styles... */
+    transition: border 0.3s, box-shadow 0.3s, background 0.3s;
+}
+
+.filters-form select:focus {
+    /* More pronounced focus border and shadow */
+    border: 3px solid var(--accent); /* Hot Pink border on focus */
+    background: #fff;
+    box-shadow: 0 0 0 2px var(--secondary), 0 4px 15px rgba(255, 105, 180, 0.15);
+}
+
+/* --- Table Rows: Smooth and Highlighted --- */
+.minimal-table td {
+    transition: background 0.3s, color 0.3s, transform 0.1s;
+}
+
+.minimal-table tr:hover td {
+    background: #fffbe6;
+    color: var(--text-main); /* Use main text color for clarity */
+    /* Subtle 'lift' effect on the row */
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); 
+    border-color: var(--secondary); /* Add a subtle border change */
+}
+
+/* --- Mini Buttons: Active Press Effect --- */
+.mini-btn {
+    /* Existing styles... */
+    transition: background 0.2s, color 0.2s, transform 0.15s, box-shadow 0.15s;
+}
+
+.mini-btn:active {
+    /* Simulates pressing a physical button */
+    transform: scale(0.95); 
+    box-shadow: 0 0 0 2px var(--accent) inset; /* Inner ring on press */
+}
+
+.mini-btn.remove:hover {
+    background: #ff4f4f;
+    color: #fff;
+    transform: scale(1.1); /* Slightly larger scale on hover */
+    box-shadow: 0 4px 10px rgba(255, 79, 79, 0.3);
+}
+
+/* --- Scrollable Section: Visual Scrollbar --- */
+/* (This depends on the browser, but we can target webkit) */
+#listSection::-webkit-scrollbar, #student-2::-webkit-scrollbar {
+    width: 8px;
+}
+
+#listSection::-webkit-scrollbar-thumb, #student-2::-webkit-scrollbar-thumb {
+    background-color: var(--primary); /* Green thumb */
+    border-radius: 4px;
+    border: 2px solid var(--background);
+}
+
+
+/* --- Old table rules to replace/override --- */
+.minimal-table-wrapper {
+    /* Keep this for scrollable container */
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 10px; /* Add slight space above the table container */
+    border: 1px solid #e0ffe6; 
+    border-radius: 18px; /* Match the root radius */
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05); /* Soft outer shadow */
+}
+
+.minimal-table {
+    width: 100%;
+    border-collapse: collapse; /* Switch from separate to collapse for clean edges */
+    border-spacing: 0;
+    min-width: 700px; /* Ensure columns don't squish */
+    background: var(--card-bg); /* White background for the table body */
+}
+
+/* Table Header (The most noticeable change) */
+.minimal-table thead tr th {
+    background: linear-gradient(90deg, var(--primary) 0%, #059981 100%); /* Green-Teal Gradient */
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 18px 14px; /* Increased padding */
+    text-align: center;
+    border-bottom: 4px solid var(--secondary); /* Thick gold separator */
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Round the header corners */
+.minimal-table thead tr:first-child th:first-child {
+    border-top-left-radius: 14px;
+}
+.minimal-table thead tr:first-child th:last-child {
+    border-top-right-radius: 14px;
+}
+
+
+/* Table Body Cells */
+.minimal-table td {
+    padding: 12px 14px;
+    text-align: center;
+    font-size: 1rem;
+    color: var(--text-main); /* Darker text for readability */
+    border-bottom: 1px dashed #e0ffe6; /* Light dashed separator for subtlety */
+    background: var(--card-bg);
+    transition: background 0.3s, transform 0.3s;
+}
+
+/* Alternating Row Color (Stripe) */
+.minimal-table tbody tr:nth-child(even) td {
+    background: #fcfcfc; /* Very subtle off-white for even rows */
+}
+
+/* Hover Effect: The 'Card' Lift */
+.minimal-table tr:hover td {
+    background: #fffbe6; /* Lightest yellow on hover */
+    color: var(--primary); /* Highlight text color */
+    transform: scale(1.005); /* Slight scale to simulate "pop" */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Subtle shadow on hover */
+    z-index: 1;
+}
+
+/* Remove the specific radius on row cells for a cleaner, unified look */
+.minimal-table th,
+.minimal-table td {
+    border-radius: 0; 
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 160px;
+}

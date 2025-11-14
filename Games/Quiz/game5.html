@@ -5,13 +5,292 @@
 <title>Matching Pairs Quiz</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="../../CSS/game5.css">
+<style>
+  #editorModal {
+  position: fixed;
+  z-index: 2000;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+#editorModal[style*="display: flex"] {
+  display: flex !important;
+}
+
+#editorCard {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 32px #0003;
+  padding: 2.2em 2.2em 1.5em 2.2em;
+  min-width: 340px;
+  max-width: 100vw;
+  max-height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+</style>
+<style>
+    /* Global Variables from previous style for consistency */
+    :root {
+        --primary-color: #26a69a; /* Teal */
+        --accent-color: #ff9800; /* Amber/Orange */
+        --background-color: #f7f9fc;
+        --card-background: #ffffff;
+        --text-color: #37474f;
+        --success-color: #4caf50; /* Green */
+        --danger-color: #e53935; /* Red */
+        --border-color: #cfd8dc;
+    }
+
+    /* Editor Modal Container */
+    #editorModal {
+        display: none;
+        position: fixed;
+        z-index: 2000; /* Higher than main modal */
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6); /* Darker overlay */
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    /* Editor Card Styling */
+    #editorCard {
+        background: var(--card-background);
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        max-width: 800px;
+        width: 100%;
+        color: var(--text-color);
+        display: flex;
+        flex-direction: column;
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+    
+    /* Header and Notice */
+    #editorCard h2 {
+        color: var(--primary-color);
+        font-size: 1.8em !important;
+        margin-bottom: 10px !important;
+        font-weight: 800;
+    }
+    .notice {
+        font-size: 0.85em;
+        color: #78909c;
+        border-left: 4px solid var(--accent-color);
+        padding-left: 10px;
+        margin-bottom: 20px;
+    }
+
+    /* Editor Layout */
+    .editor-flex {
+        display: flex;
+        gap: 20px;
+        flex-grow: 1;
+        min-height: 0;
+    }
+    .col-edit {
+        display: flex;
+        flex-direction: column;
+    }
+    .col-edit:first-child {
+        flex: 0 0 200px; /* Fixed width for question list */
+    }
+    .col-edit:last-child {
+        flex: 1 1 auto; /* Main editing area */
+    }
+
+    /* Labels and Inputs */
+    .small {
+        font-size: 0.9em;
+        font-weight: 600;
+        margin-top: 10px;
+        margin-bottom: 5px;
+        color: var(--text-color);
+    }
+    #editPrompt, 
+    #pairsBox input {
+        border: 2px solid var(--border-color);
+        border-radius: 6px;
+        padding: 10px;
+        font-family: inherit;
+        font-size: 1em;
+        color: var(--text-color);
+        background: #fcfcfc;
+        transition: border-color 0.2s;
+        padding-bottom:30px;
+    }
+    #editPrompt:focus,
+    #pairsBox input:focus {
+        border-color: var(--primary-color);
+        outline: none;
+    }
+
+    #editPrompt {
+        min-height: 60px; /* INCREASED MIN HEIGHT */
+        resize: vertical; /* Allow vertical resizing, but not horizontal */
+    }
+
+    /* Question List (Left Column) */
+    .q-list {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding-right: 5px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background: #ffffff;
+    }
+    .qrow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px;
+        border-bottom: 1px solid #eee;
+        transition: background 0.1s;
+    }
+    .qrow:hover {
+        background: #e0f2f1;
+    }
+    .qrow.active {
+        background: var(--primary-color);
+        color: white;
+        font-weight: 700;
+    }
+    .qrow.active div {
+        color: white !important;
+    }
+    .qrow.active button {
+        background: white;
+        color: var(--primary-color);
+    }
+
+    /* Pair Editing Rows */
+    .pair-edit-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    .pair-edit-row input {
+        flex: 1 1 45%;
+    }
+    .pair-edit-row button {
+        flex-shrink: 0;
+        background: var(--danger-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 1.1em;
+        line-height: 1;
+        transition: background 0.2s;
+    }
+    .pair-edit-row button:hover {
+        background: #c03636;
+    }
+
+    /* Action Buttons (Footer) */
+    .editor-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border-color);
+    }
+    .editor-actions button,
+    .addBtn {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    /* Primary & Add Buttons */
+    #saveQuestion,
+    .addBtn {
+        background: var(--primary-color);
+        color: white;
+    }
+    #saveQuestion:hover,
+    .addBtn:hover {
+        background: #1de9b6;
+    }
+
+    /* Secondary Buttons */
+    #closeEditor {
+        background: #bdbdbd;
+        color: #37474f;
+    }
+    #closeEditor:hover {
+        background: #a0a0a0;
+    }
+
+    /* Delete Button (Specific overrides from inline style) */
+    #deleteQuestion {
+        background: var(--danger-color) !important;
+        color: white !important;
+        margin-left: auto;
+    }
+    #deleteQuestion:hover {
+        background: #c03636 !important;
+    }
+    
+    /* Status Message */
+    .status {
+        margin-top: 10px;
+        font-weight: 600;
+    }
+    #editStatus {
+        color: var(--success-color);
+    }
+    
+    /* Media Query for small screens */
+    @media (max-width: 650px) {
+        .editor-flex {
+            flex-direction: column;
+        }
+        .col-edit:first-child {
+            flex: 1 1 auto;
+            max-height: 200px; /* Limit list height on small screens */
+        }
+        .pair-edit-row {
+            flex-wrap: wrap;
+        }
+        .pair-edit-row input {
+            flex: 1 1 100%;
+        }
+        .pair-edit-row button {
+            width: 100%;
+        }
+        .editor-actions {
+            flex-wrap: wrap;
+        }
+        .editor-actions button {
+            flex: 1 1 auto;
+        }
+        #deleteQuestion {
+            margin-left: 0;
+        }
+    }
+</style>
 </head>
 <body>
 <div id="embedRoot">
   <div class="quiz-scale">
-    <div class="quiz-wrap">
-      <button id="editOpen">Edit</button>
-      <h1>Matching Pairs</h1>
+  <div class="quiz-wrap" style="position:relative;">
+    <button id="editOpen" style="position:absolute;top:18px;right:18px;z-index:10;display:none;">Edit</button>
+    <h1>Matching Pairs</h1>
       <div id="progress"><div id="bar"></div></div>
       <div id="questionText"></div>
 
@@ -44,7 +323,7 @@
   <div class="modal-card">
     <h2>Thank You!</h2>
     <p id="finalMsg" style="margin:0;font-size:1.05rem;color:#42596b">Your matches have been saved.</p>
-    <button class="primary" id="restartBtn"style="display:none;>Play Again</button>
+    <button class="primary" id="restartBtn"style="display:none";>Play Again</button>
   </div>
 </div>
 
@@ -52,7 +331,7 @@
 <div id="editorModal" aria-hidden="true">
   <div id="editorCard">
     <h2 style="margin:0 0 -6px;font-size:1.9rem;color:#153b56">Edit Matching Sets</h2>
-    <p class="notice">Each question contains several left/right pairs. Students only match; no correctness feedback is shown. Order of right items is shuffled automatically.</p>
+    <p class="notice">Each question contains several left/right pairs. Order of right items is shuffled automatically.</p>
     <div class="editor-flex">
       <div class="col-edit">
         <label class="small">Question List</label>
@@ -77,10 +356,13 @@
 </div>
 
 <script>
+  // ...existing code...
+const quizId = window.location.pathname.split('/').pop().replace('.html','');
+// ...existing code...
 /* ========= DATA & STATE ========= */
 const LS_KEY='match_pairs_v1';
 const PROGRESS_KEY = 'match_pairs_progress_v1';
-let questions=[
+const defaultQuestions = [
   {
     prompt:'Match the animals to their habitats.',
     pairs:[
@@ -99,12 +381,8 @@ let questions=[
     ]
   }
 ];
-try{
-  const saved=JSON.parse(localStorage.getItem(LS_KEY)||'null');
-  if(Array.isArray(saved) && saved.every(q=>q && Array.isArray(q.pairs))){
-    questions=saved;
-  }
-}catch(e){}
+let questions = []; // Will be loaded
+
 let current=0;
 let userMatches=questions.map(q=>[]); // array of {left,right}
 let selectedLeft=null; // DOM element
@@ -260,8 +538,9 @@ nextBtn.addEventListener('click', () => {
   if (!allMatched()) return;
   current++;
   saveProgress();
-  renderQuestion();
+  renderQuestion(); // <-- Add this line
 });
+
 finishBtn.addEventListener('click', () => {
   if (!allMatched()) return;
   saveProgress();
@@ -271,7 +550,7 @@ prevBtn.addEventListener('click', () => {
   if (current > 0) {
     current--;
     saveProgress();
-    renderQuestion();
+    renderQuestion(); // <-- Add this line
   }
 });
 
@@ -283,7 +562,7 @@ qs('#restartBtn').addEventListener('click', () => {
   current = 0;
   userMatches = questions.map(q => []);
   localStorage.removeItem(PROGRESS_KEY);
-  renderQuestion();
+  
 });
 function finishQuiz(){
   // lock lists
@@ -302,6 +581,9 @@ function finishQuiz(){
       slideIndex: parentTestIndex
     }
   }, '*');
+  // Always close the editor modal if open
+  editorModal.style.display = 'none';
+  editorModal.setAttribute('aria-hidden','true');
   openFinal();
 }
 function openFinal(){
@@ -328,7 +610,6 @@ const deleteQuestionBtn=qs('#deleteQuestion');
 const closeEditorBtn=qs('#closeEditor');
 let editingIndex=0;
 
-qs('#editOpen').addEventListener('click',openEditor);
 closeEditorBtn.addEventListener('click',closeEditor);
 addQuestionBtn.addEventListener('click',addQuestion);
 addPairBtn.addEventListener('click',()=>addPairRow('',''));
@@ -379,56 +660,69 @@ function addPairRow(left='',right=''){
   row.querySelector('button').addEventListener('click',()=>row.remove());
   pairsBox.appendChild(row);
 }
+
 function saveEditingQuestion(){
-  const prompt=editPrompt.value.trim();
-  const rows=[...pairsBox.querySelectorAll('.pair-edit-row')];
-  const pairs=[];
-  rows.forEach(r=>{
-    const l=r.querySelectorAll('input')[0].value.trim();
-    const rt=r.querySelectorAll('input')[1].value.trim();
-    if(l && rt) pairs.push({left:l,right:rt});
+  const prompt = editPrompt.value.trim();
+  const rows = [...pairsBox.querySelectorAll('.pair-edit-row')];
+  const pairs = [];
+  rows.forEach(r => {
+    const l = r.querySelectorAll('input')[0].value.trim();
+    const rt = r.querySelectorAll('input')[1].value.trim();
+    if (l && rt) pairs.push({left: l, right: rt});
   });
-  if(!pairs.length){ status('Add at least one complete pair',true); return; }
-  questions[editingIndex]={prompt, pairs};
-  persist();
-  status('Saved');
-  buildQList();
-  current=0;
-  userMatches=questions.map(q=>[]);
-  renderQuestion();
-  if(window.__quizFit) setTimeout(window.__quizFit,0);
-}
-function deleteEditingQuestion(){
-  if(!questions.length) return;
-  if(!confirm('Delete this set?')) return;
-  questions.splice(editingIndex,1);
-  if(!questions.length){
-    questions.push({prompt:'Sample set',pairs:[{left:'Sun',right:'Star'}]});
+  if (!pairs.length) {
+    status('Add at least one complete pair', true);
+    return;
   }
-  editingIndex=Math.min(editingIndex,questions.length-1);
-  persist();
+  questions[editingIndex] = {prompt, pairs};
+
+  // Update UI immediately
   buildQList();
-  loadEditingQuestion(editingIndex);
-  current=0;
-  userMatches=questions.map(q=>[]);
+  current = 0;
+  userMatches = questions.map(q => []);
   renderQuestion();
-  if(window.__quizFit) setTimeout(window.__quizFit,0);
-}
-function addQuestion(){
-  questions.push({prompt:'New matching set',pairs:[{left:'Left',right:'Right'}]});
-  editingIndex=questions.length-1;
+  if (window.__quizFit) setTimeout(window.__quizFit, 0);
+
+  // Show a temporary "Saved!" indicator
+  editStatus.textContent = "Saved!";
+  editStatus.style.display = '';
+  setTimeout(() => { editStatus.textContent = ""; }, 1200);
+
+  // Send to parent (quizEditor) for saving
   persist();
-  buildQList();
-  loadEditingQuestion(editingIndex);
-  if(window.__quizFit) setTimeout(window.__quizFit,0);
 }
-function status(msg,err){
-  editStatus.textContent=msg;
-  editStatus.style.color= err? 'var(--danger)':'var(--accent)';
-}
-function persist(){
-  localStorage.setItem(LS_KEY, JSON.stringify(questions));
-}
+
+  function deleteEditingQuestion(){
+    if(!questions.length) return;
+    if(!confirm('Delete this set?')) return;
+    questions.splice(editingIndex,1);
+    persist();
+    if(!questions.length){
+      questions.push({prompt:'Sample set',pairs:[{left:'Sun',right:'Star'}]});
+    }
+    editingIndex=Math.min(editingIndex,questions.length-1);
+    buildQList();
+    loadEditingQuestion(editingIndex);
+    current=0;
+    userMatches=questions.map(q=>[]);
+    
+    if(window.__quizFit) setTimeout(window.__quizFit,0);
+  }
+
+  function addQuestion(){
+    questions.push({prompt:'New matching set',pairs:[{left:'Left',right:'Right'}]});
+    editingIndex=questions.length-1;
+    persist();
+    buildQList();
+    loadEditingQuestion(editingIndex);
+    if(window.__quizFit) setTimeout(window.__quizFit,0);
+  }
+
+  function status(msg,err){
+    editStatus.textContent=msg;
+    editStatus.style.color= err? 'var(--danger)':'var(--accent)';
+  }
+
 
 function saveProgress() {
   localStorage.setItem(PROGRESS_KEY, JSON.stringify({
@@ -493,38 +787,37 @@ function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','
 })();
 
 /* ========= INIT ========= */
-renderQuestion();
+
 
 let parentTestIndex = 0;
 window.addEventListener('message', function(event) {
+  // Handle test index
   if (event.data && event.data.type === 'setTestIndex') {
     parentTestIndex = event.data.index;
   }
-});
-
-// Detect if running inside quizEditor (iframe parent sends a message or sets a flag)
-let isQuizEditor = false;
-
-// Option 1: Use a URL param or window.name (if you control quizEditor)
-if (window.location.search.includes('editor=1') || window.name === 'quizEditor') {
-  isQuizEditor = true;
-}
-
-// Option 2: Listen for a message from the parent
-window.addEventListener('message', function(event) {
-  if (event.data && event.data.type === 'quizEditor') {
-    isQuizEditor = true;
-    document.getElementById('editOpen').style.display = '';
+  // Handle updated game data from parent (quizEditor)
+  if (
+    event.data &&
+    (
+      (event.data.type === 'loadQuizGameData' && event.data.gameData?.questions) ||
+      (event.data.type === 'currentGameData' && event.data.gameData?.questions)
+    )
+  ) {
+    questions = event.data.gameData.questions;
+    userMatches = questions.map(q => []);
+    current = 0;
+    renderQuestion();
+    if (typeof buildQList === 'function') buildQList();
+    if (typeof loadEditingQuestion === 'function') loadEditingQuestion(current);
+    // Optionally show a status message
+    editStatus.textContent = "Loaded updated questions!";
+    setTimeout(() => { editStatus.textContent = ""; }, 1200);
   }
 });
 
-// Hide edit button by default
-document.getElementById('editOpen').style.display = 'none';
-// Show if in quizEditor
-if (isQuizEditor) {
-  document.getElementById('editOpen').style.display = '';
-  saveQuestionsToFirebase(quizId, questions);
-}
+
+
+
 
 // When sending the score:
 window.parent.postMessage({
@@ -537,11 +830,12 @@ window.parent.postMessage({
     slideIndex: parentTestIndex // <-- Always use this!
   }
 }, '*');
-function saveQuestionsToFirebase(quizId, questions) {
+function saveQuestionsToFirebase(quizId, questions, callback) {
   // Use your Firebase setup here
   firebase.database().ref('quizzes/' + quizId + '/game5Questions').set(questions)
     .then(() => {
       status('Saved to Firebase!');
+      if (typeof callback === 'function') callback();
     })
     .catch((e) => {
       status('Error saving to Firebase', true);
@@ -559,13 +853,134 @@ function loadQuestionsFromFirebase(quizId, callback) {
     });
 }
 
-// On page load:
-loadQuestionsFromFirebase(quizId, function(firebaseQuestions) {
-  if (firebaseQuestions) {
-    questions = firebaseQuestions;
+function isQuizEditor() {
+  const params = new URLSearchParams(window.location.search);
+  return (
+    params.get('edit') === 'true' ||
+    params.get('mode') === 'edit' ||
+    params.get('quizEditor') === '1' ||
+    window.name === 'quizEditor' ||
+    window._isQuizEditor === true
+  );
+}
+
+function loadQuestions(callback) {
+  if (isQuizEditor() && typeof firebase !== 'undefined') {
+    // In quizEditor, load from Firebase if available, else localStorage, else default
+    loadQuestionsFromFirebase(quizId, function(firebaseQuestions) {
+      if (firebaseQuestions && Array.isArray(firebaseQuestions)) {
+        questions = firebaseQuestions;
+      } else {
+        const saved = JSON.parse(localStorage.getItem(LS_KEY) || 'null');
+        if (Array.isArray(saved) && saved.every(q => q && Array.isArray(q.pairs))) {
+          questions = saved;
+        } else {
+          questions = JSON.parse(JSON.stringify(defaultQuestions));
+        }
+      }
+      callback();
+    });
+  } else {
+    // In normal quiz view, ALWAYS use defaultQuestions
+    questions = JSON.parse(JSON.stringify(defaultQuestions));
+    callback();
   }
+}
+
+function persist() {
+  if (isQuizEditor()) {
+    // Prepare game data object
+    const gameData = {
+      questions: questions,
+      lastModified: new Date().toISOString(),
+      gameType: 'matching-pairs',
+      gameUrl: window.location.href.split('?')[0],
+      isCustomized: true,
+      totalQuestions: questions.length
+    };
+    // Send to parent (quizEditor) for saving
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'saveQuizGameData',
+        gameData,
+        quizId: quizId,
+        source: 'game-editor'
+      }, '*');
+      window.parent.postMessage({
+        type: 'gameDataUpdate',
+        gameData,
+        quizId: quizId,
+        action: 'immediate-save'
+      }, '*');
+    }
+  } else {
+    // Standalone mode: save to localStorage
+    localStorage.setItem(LS_KEY, JSON.stringify(questions));
+  }
+}
+
+// Listen for updated questions from parent (quizEditor)
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'loadQuizGameData' && event.data.gameData?.questions) {
+    questions = event.data.gameData.questions;
+    userMatches = questions.map(q => []);
+    current = 0;
+    renderQuestion();
+    buildQList && buildQList();
+    loadEditingQuestion && loadEditingQuestion(current);
+    // Optionally show a status message
+    editStatus.textContent = "Loaded updated questions!";
+    setTimeout(() => { editStatus.textContent = ""; }, 1200);
+  }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const editBtn = document.getElementById('editOpen');
+  // Hide by default
+  editBtn.style.display = 'none';
+
+  // Show only in quizEditor (reference: other games)
+  const params = new URLSearchParams(window.location.search);
+  const isQuizEditor =
+    params.get('edit') === 'true' ||
+    params.get('mode') === 'edit' ||
+    params.get('quizEditor') === '1' ||
+    window.name === 'quizEditor' ||
+    window._isQuizEditor === true;
+  if (isQuizEditor) {
+    editBtn.style.display = '';
+  }
+
+  // Listen for parent message (if quizEditor sends one)
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'quizEditor') {
+      editBtn.style.display = '';
+    }
+  });
+
+  // Attach the click handler here to ensure it works
+  editBtn.addEventListener('click', function() {
+    buildQList();
+    loadEditingQuestion(editingIndex);
+    editStatus.textContent = '';
+    editorModal.style.display = 'flex';
+    editorModal.setAttribute('aria-hidden', 'false');
+    if (window.__quizFit) setTimeout(window.__quizFit, 0);
+  });
+});
+
+
+
+
+// At the end of your main <script> block:
+loadQuestions(function() {
+  userMatches = questions.map(q => []);
+  current = 0;
   renderQuestion();
 });
 </script>
+
 </body>
 </html>

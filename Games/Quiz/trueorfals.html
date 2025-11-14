@@ -3,262 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <title>Math True or False Game</title>
-    <style>
-        :root {
-            --primary: #2e8b57;
-            --secondary: #ffd700;
-            --peach: #ff69b4;
-            --forest-green: #3f4d34;
-            --sun-yellow: #ffd700;
-            --white: #ffffff;
-        }
-        body {
-            font-family: 'Comic Neue', Arial, sans-serif;
-            background: var(--primary);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .game-container {
-            background: var(--white);
-            border-radius: 16px;
-            box-shadow: 0 4px 24px var(--peach);
-            padding: 32px 32px 40px;
-            text-align: center;
-            max-width: 440px;
-            width: 96vw;
-            position: relative;
-        }
-        /* top bar / progress */
-        .top-bar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:6px; }
-        #progress { color:var(--forest-green); font-weight:700; font-size:0.95rem; }
-        .hint { font-size:0.82rem; color:#666; }
+<style>
+    :root {
+        --primary: #4CAF50; /* A more vibrant Green */
+        --secondary: #FFC107; /* Amber/Yellow for buttons */
+        --peach: #FF69B4; /* Hot Pink Accent */
+        --forest-green: #388E3C; /* Darker green for text */
+        --sun-yellow: #FFEB3B; /* Lighter yellow accent */
+        --white: #ffffff;
+        --dark-text: #212121;
+        --correct: #43A047; /* Darker green for correct feedback */
+        --incorrect: #F44336; /* Red for incorrect feedback */
+    }
+    body {
+        font-family: 'Comic Neue', Arial, sans-serif;
+        background: var(--primary);
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .game-container {
+        background: var(--white);
+        border-radius: 20px; /* Slightly rounder */
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* Deeper shadow for pop */
+        padding: 35px 35px 45px;
+        text-align: center;
+        max-width: 480px; /* Wider container */
+        width: 96vw;
+        position: relative;
+        transition: transform 0.3s ease;
+    }
+    .game-container:hover {
+        transform: scale(1.02);
+    }
+    /* top bar / progress */
+    .top-bar { display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:10px; }
+    #progress { color:var(--forest-green); font-weight:800; font-size:1rem; letter-spacing: 0.5px; }
+    .hint { font-size:0.82rem; color:#666; }
 
-        .question {
-            font-size: 1.6rem;
-            margin: 26px 0 28px;
-            color: var(--forest-green);
-            font-weight: bold;
-            min-height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        .btn {
-            padding: 14px 44px;
-            border-radius: 10px;
-            background: var(--secondary);
-            color: var(--forest-green);
-            border: 0;
-            font-size: 1.25rem;
-            font-weight: bold;
-            margin: 10px;
-            cursor: pointer;
-            box-shadow: 0 2px 8px var(--peach);
-            transition: .2s;
-            position: relative; /* allow checkmark pseudo */
-        }
-        .btn:hover {
-            background: var(--peach);
-            color: var(--white);
-        }
-        /* Selected option styling */
-        .btn.selected {
-            outline: 3px solid rgba(46,139,87,0.18);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(46,139,87,0.12);
-        }
-        /* visible check badge on selected option */
-        .btn.selected::after{
-            content: "✓";
-            position: absolute;
-            right: 10px;
-            top: 6px;
-            background: var(--primary);
-            color: #fff;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-weight:800;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-            font-size:0.9rem;
-        }
+    .question {
+        font-size: 1.8rem; /* Larger question text */
+        margin: 30px 0 35px;
+        color: var(--dark-text);
+        font-weight: 900; /* Extra bold */
+        min-height: 60px; /* More space for question */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border-bottom: 2px solid var(--secondary);
+    }
+    .btn {
+        padding: 16px 50px;
+        border-radius: 12px;
+        background: var(--secondary);
+        color: var(--dark-text);
+        border: 4px solid var(--secondary); /* Border for depth */
+        font-size: 1.35rem;
+        font-weight: bold;
+        margin: 12px;
+        cursor: pointer;
+        box-shadow: 0 6px 0 var(--forest-green); /* 3D effect */
+        transition: all .15s ease;
+        position: relative;
+        user-select: none;
+        outline: none;
+    }
+    .btn:active {
+        box-shadow: 0 2px 0 var(--forest-green);
+        transform: translateY(4px);
+    }
+    .btn:hover:not(.selected) {
+        background: var(--sun-yellow);
+        border-color: var(--sun-yellow);
+    }
+    /* Selected option styling - More prominent */
+    .btn.selected {
+        background: var(--primary);
+        color: var(--white);
+        border-color: var(--primary);
+        outline: 4px solid rgba(255, 255, 255, 0.5); /* White highlight on selection */
+        box-shadow: 0 4px 0 var(--forest-green);
+        transform: translateY(2px);
+    }
+    /* visible check badge on selected option */
+    .btn.selected::after{
+        content: "⭐"; /* Changed to star for more fun */
+        position: absolute;
+        right: 8px;
+        top: 4px;
+        background: var(--peach);
+        color: var(--white);
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-weight:800;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        font-size:1.1rem;
+        line-height: 1;
+        padding-top: 2px;
+    }
 
-        #feedback {
-            font-size: 1.15rem;
-            margin: 16px 0 8px;
-            min-height: 28px;
-        }
-        /* Edit button prominent style (visible only in editor mode) */
-        .edit-open-btn {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: linear-gradient(90deg,#ffb86b,#ff6b6b);
-            color: #112;
-            border: none;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-weight: 800;
-            box-shadow: 0 6px 22px rgba(255,107,107,0.18);
-            display: inline-flex;
-            gap:8px;
-            align-items:center;
-            cursor: pointer;
-            transition: transform .18s ease, box-shadow .18s ease;
-            z-index: 5000;
-        }
-        .edit-open-btn .dot {
-            width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,0.06);
-        }
-        .edit-open-btn.pulse { animation: pulse 1.7s infinite; }
-        @keyframes pulse { 0%{ transform: translateY(0);}50%{ transform: translateY(-3px);}100%{ transform: translateY(0);} }
+    #feedback {
+        font-size: 1.25rem;
+        margin: 18px 0 10px;
+        min-height: 30px;
+        font-weight: bold;
+        transition: color 0.3s;
+    }
+    /* Re-enable feedback display for visual results (Added custom styles) */
+    #feedback.correct { color: var(--correct); }
+    #feedback.incorrect { color: var(--incorrect); }
+    #feedback:empty { display: none; } /* Hide only when empty */
 
-        #final-modal, #edit-modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, .35);
-            z-index: 100000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        #final-modal > div, #edit-modal > div {
-            background: #fff;
-            padding: 42px 40px 46px;
-            border-radius: 18px;
-            max-width: 520px;
-            width: 96vw;
-            box-shadow: 0 4px 30px -4px var(--peach);
-            text-align: center;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            max-height: 92vh;
-            overflow: auto;
-        }
-        #play-again-btn {
-            padding: 16px 42px;
-            border-radius: 12px;
-            background: var(--primary);
-            color: #fff;
-            border: 0;
-            font-size: 1.6rem;
-            font-weight: bold;
-            margin-top: 6px;
-            cursor: pointer;
-        }
-        #next-btn {
-            display: none;
-            margin-top: 8px;
-            background: var(--primary);
-            color: #fff;
-            border: 0;
-            padding: 12px 28px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            box-shadow: 0 4px 14px -3px rgba(0, 0, 0, .3);
-        }
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-        }
-        .small-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #fff;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            padding: 6px 14px;
-            font-size: .85rem;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .small-btn:hover {
-            background: var(--primary);
-            color: #fff;
-        }
-        .edit-list-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .edit-list-row:last-child {
-            border-bottom: 0;
-        }
-        .edit-list-row input[type=text] {
-            flex: 1;
-            padding: 8px 10px;
-            border: 1px solid #cfd9e2;
-            border-radius: 6px;
-            font-size: .9rem;
-        }
-        .edit-list-row select {
-            padding: 8px 10px;
-            border: 1px solid #cfd9e2;
-            border-radius: 6px;
-        }
-        .edit-list-row button {
-            background: #ff5f5f;
-            color: #fff;
-            border: 0;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: .7rem;
-            cursor: pointer;
-        }
-        #add-question-btn {
-            background: var(--primary);
-            color: #fff;
-            border: 0;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: .85rem;
-        }
-        #save-questions-btn {
-            background: var(--peach);
-            color: #fff;
-            border: 0;
-            padding: 10px 22px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: .95rem;
-        }
-        .status-msg {
-            font-size: .8rem;
-            min-height: 16px;
-            color: #2e8b57;
-            text-align: left;
-        }
-        /* (optional) hide feedback area completely */
-        #feedback{display:none}
-    </style>
+    /* Edit button prominent style (visible only in editor mode) */
+    .edit-open-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: var(--peach); /* Solid color for consistency */
+        color: var(--white);
+        border: none;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-weight: 800;
+        box-shadow: 0 4px 0 #cc5490;
+        display: inline-flex;
+        gap:8px;
+        align-items:center;
+        cursor: pointer;
+        transition: all .15s ease;
+        z-index: 5000;
+    }
+    .edit-open-btn:active {
+        box-shadow: 0 1px 0 #cc5490;
+        transform: translateY(3px);
+    }
+    .edit-open-btn .dot {
+        width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,0.06);
+    }
+
+    #final-modal, #edit-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .6);
+        z-index: 100000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        backdrop-filter: blur(4px);
+    }
+    #final-modal > div, #edit-modal > div {
+        background: var(--white);
+        padding: 40px;
+        border-radius: 20px;
+        max-width: 550px;
+        width: 96vw;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        max-height: 90vh;
+        overflow: auto;
+    }
+    #play-again-btn {
+        padding: 18px 48px;
+        border-radius: 12px;
+        background: var(--primary);
+        color: #fff;
+        border: 0;
+        font-size: 1.7rem;
+        font-weight: bold;
+        margin-top: 10px;
+        cursor: pointer;
+        box-shadow: 0 6px 0 var(--forest-green);
+        transition: all .15s ease;
+    }
+    #play-again-btn:active {
+        box-shadow: 0 2px 0 var(--forest-green);
+        transform: translateY(4px);
+    }
+    /* Style for Previous/Next buttons */
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+    /* Apply 3D and hover effect to navigation buttons */
+    #prev-btn, #next-btn {
+        padding: 12px 28px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        cursor: pointer;
+        border: 0;
+        box-shadow: 0 4px 0 #28602B; /* Darker green shadow */
+        transition: all .15s ease;
+    }
+    #prev-btn {
+        background: #C8E6C9; /* Light green background */
+        color: var(--dark-text);
+        box-shadow: 0 4px 0 #9E9E9E;
+    }
+    #next-btn {
+        background: var(--primary);
+        color: #fff;
+    }
+    #prev-btn:active, #next-btn:active {
+        box-shadow: 0 1px 0 #28602B;
+        transform: translateY(3px);
+    }
+
+    #done-btn {
+        background: var(--peach); /* Use peach for final action */
+        color: var(--white);
+        border: 0;
+        padding: 16px 50px;
+        font-size: 1.35rem;
+        font-weight: bold;
+        border-radius: 12px;
+        margin-top: 20px;
+        cursor: pointer;
+        box-shadow: 0 6px 0 #cc5490;
+        transition: all .15s ease;
+    }
+    #done-btn:active {
+        box-shadow: 0 2px 0 #cc5490;
+        transform: translateY(4px);
+    }
+
+    .small-btn {
+        /* ... existing styles ... */
+        box-shadow: 0 2px 0 var(--forest-green);
+    }
+
+    /* Edit Modal Button Styles */
+    #add-question-btn {
+        background: var(--primary);
+        box-shadow: 0 4px 0 var(--forest-green);
+    }
+    #add-question-btn:active {
+        box-shadow: 0 1px 0 var(--forest-green);
+        transform: translateY(3px);
+    }
+    #save-questions-btn {
+        background: var(--peach);
+        box-shadow: 0 4px 0 #cc5490;
+    }
+    #save-questions-btn:active {
+        box-shadow: 0 1px 0 #cc5490;
+        transform: translateY(3px);
+    }
+    .edit-list-row button {
+        background: var(--incorrect);
+    }
+    .status-msg {
+        font-size: .9rem;
+        font-weight: 600;
+    }
+    /* Remove original explicit hide from feedback */
+    /* #feedback{display:none} */
+</style>
 </head>
 <body>
   <div class="game-container">
     <button id="edit-open-btn" class="small-btn">Edit</button>
-    <h2 style="color:var(--primary);margin:0;">Math True or False</h2>
-
+<div id="quiz-instruction" style="font-size:1.08rem;color:#000000;margin-bottom:10px;font-weight:500;"></div>
     <!-- Add this inside .game-container, just above the .question div -->
     <div class="top-bar" style="justify-content: center; margin-top: 5px;">
       <span id="progress"></span>
@@ -281,6 +301,10 @@
   <div id="edit-modal" aria-hidden="true">
     <div>
       <h3 style="margin:0;font-size:1.4rem;color:var(--primary);">Edit Questions</h3>
+      <div class="editor-row">
+  <label for="edit-instruction" style="font-weight:600;">Instruction</label>
+  <textarea id="edit-instruction" rows="2" style="width:100%;resize:vertical;"></textarea>
+</div>
       <div id="edit-list"></div>
       <div class="status-msg" id="edit-status"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -310,6 +334,7 @@ let score = 0;
 let answeredCurrent = false;
 let userAnswers = []; // NEW: store student selections
 let parentTestIndex = 0;
+let quizInstruction = "Read each statement carefully. Choose True or False for each question.";
 
 const qEl = document.getElementById('question');
 const feedbackEl = document.getElementById('feedback');
@@ -323,6 +348,20 @@ const progressEl = document.getElementById('progress');
 const doneBtn = document.getElementById('done-btn');
 
 window.addEventListener('message', function(event) {
+  if (
+    event.data &&
+    (
+      (event.data.type === 'loadQuizGameData' && event.data.gameData?.questions) ||
+      (event.data.type === 'currentGameData' && event.data.gameData?.questions)
+    )
+  ) {
+    questions = event.data.gameData.questions;
+    quizInstruction = event.data.gameData.instruction || quizInstruction;
+    current = 0;
+    userAnswers = new Array(questions.length).fill(undefined);
+    score = 0;
+    loadQuestion();
+  }
   if (event.data && event.data.type === 'setTestIndex') {
     parentTestIndex = event.data.index;
   }
@@ -342,6 +381,8 @@ function loadQuestion(){
   doneBtn.style.display = (current === questions.length - 1 && typeof userAnswers[current] !== 'undefined') ? 'inline-block' : 'none';
   enableAnswerButtons(true);
   updateSelectionUI();
+  document.getElementById('quiz-instruction').textContent = quizInstruction || "";
+  document.getElementById('edit-instruction').value = quizInstruction || "";
 }
 
 // enable or disable answer buttons
@@ -444,6 +485,9 @@ function addRow(text='',ans=true){
 }
 
 function saveEditorQuestions(){
+  // Get the edited instruction
+  quizInstruction = document.getElementById('edit-instruction').value.trim();
+
   const rows=[...editList.querySelectorAll('.edit-list-row')];
   const newQs=[];
   for(const r of rows){
@@ -454,7 +498,19 @@ function saveEditorQuestions(){
   }
   if(!newQs.length){ editStatus.style.color='#c0392b'; editStatus.textContent='Add at least one question.'; return; }
   questions=newQs;
-  localStorage.setItem(LS_KEY, JSON.stringify(questions));
+  // Only save to localStorage if not in quizEditor mode
+  if (!isQuizEditor) {
+    localStorage.setItem(LS_KEY, JSON.stringify(questions));
+  }
+  // Send updated questions and instruction to parent for saving in Firebase (quizEditor mode)
+  if (isQuizEditor && window.parent && window.parent !== window) {
+    window.parent.postMessage({
+      type: 'saveQuizGameData',
+      gameData: { questions, instruction: quizInstruction },
+      quizId: window.location.pathname.split('/').pop(),
+      source: 'game-editor'
+    }, '*');
+  }
   // Reset game
   current=0; score=0;
   loadQuestion();
@@ -523,7 +579,13 @@ loadQuestion();
     openEditor();
   });
 })();
-  
+
+let isQuizEditor = false;
+try {
+  const params = new URLSearchParams(location.search);
+  isQuizEditor = params.get('editor') === 'true' || params.get('edit') === 'true' || params.get('mode') === 'edit' || window.name === 'quizEditor' || window._isQuizEditor === true;
+} catch {}
+
 doneBtn.onclick = () => {
   // Calculate score
   let score = 0;
@@ -544,6 +606,15 @@ doneBtn.onclick = () => {
   // Optionally disable the button or show a message
   doneBtn.disabled = true;
   doneBtn.textContent = "Submitted!";
+
+  if (isQuizEditor && window.parent && window.parent !== window) {
+    window.parent.postMessage({
+      type: 'saveQuizGameData',
+      gameData: { questions, instruction: quizInstruction },
+      quizId: window.location.pathname.split('/').pop(),
+      source: 'game-editor'
+    }, '*');
+  }
 };
 </script>
 </body>

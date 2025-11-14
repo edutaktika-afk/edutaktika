@@ -29,7 +29,7 @@ Add interactive elements like drag & drop, clickable areas, or answer fields.
 
 https://codepen.io/Coding_Journey/pen/LYPNmpe
 
-whenever a user edits and saves, their changes will be stored and automatically loaded next time they open the game
+
 
 
 <div id="slide-preview-bar" style="
@@ -136,7 +136,7 @@ updateSlidePreviewBar();
 
 hide the edit button in quiz view for teacher and students, but show it only in quizEditor
 
-
+whenever a user edits and saves, their changes will be stored and automatically loaded next time they open the game
 Edit button: Hidden by default, shown only in quizEditor (via param, window.name, or postMessage).
 Edits: Only affect Firebase/localStorage, not the original file.
 Saving: Save edited questions to Firebase in quizEditor.
@@ -163,3 +163,36 @@ window.parent.postMessage({
     slideIndex: parentTestIndex // <-- Always use this!
   }
 }, '*');
+
+
+
+
+    <!-- Instructions Modal -->
+    <div class="modal" id="infoModal">
+        <div class="modal-content" style="max-width:420px;text-align:left;">
+        <button class="close-btn" id="closeInfoBtn">&times;</button>
+        <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">
+            How to Play
+        </div>
+        <ul style="font-size:1.1em;line-height:1.7;">
+            <li>Read each question carefully.</li>
+            <img src="../../images/instructions.gif" alt="Example game with letters and image" style="width:90%;max-width:320px;border-radius:12px;box-shadow:0 2px 8px #0002;margin-top:0.5em;">
+        </ul>
+        </div>
+    </div>
+
+    const infoBtn = document.getElementById('infoBtn');
+    const infoModal = document.getElementById('infoModal');
+    const closeInfoBtn = document.getElementById('closeInfoBtn');
+
+    // --- Instruction modal logic ---
+    infoBtn.onclick = () => { infoModal.style.display = 'flex'; };
+    closeInfoBtn.onclick = () => { infoModal.style.display = 'none'; };
+    // Optional: close modal when clicking outside content
+    infoModal.onclick = e => { if (e.target === infoModal) infoModal.style.display = 'none'; };
+
+    // At the end of your script, after all other code:
+    window.addEventListener('DOMContentLoaded', () => {
+    // Show instructions modal at start
+    infoModal.style.display = 'flex';
+    });

@@ -163,7 +163,7 @@
                             </ul>
                         </li>
                         <li>
-                            <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                            <a href="#" id="profileBtn">Profile</a>
                         </li>
                     </ul>
                 </nav>
@@ -357,8 +357,11 @@
             students.forEach(s => {
                 // Science quiz points - only from Science quizzes
                 let scienceQuizPoints = 0;
-                if (s.quizzes && Array.isArray(s.quizzes.subject_science)) {
-                    s.quizzes.subject_science.forEach(quarterObj => {
+                if (s.quizzes && s.quizzes.subject_science) {
+                    const quarters = Array.isArray(s.quizzes.subject_science)
+                        ? s.quizzes.subject_science
+                        : Object.values(s.quizzes.subject_science);
+                    quarters.forEach(quarterObj => {
                         if (quarterObj && typeof quarterObj === 'object') {
                             Object.values(quarterObj).forEach(quizObj => {
                                 if (

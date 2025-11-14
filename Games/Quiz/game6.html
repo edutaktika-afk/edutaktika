@@ -1,516 +1,913 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Memory Card Match Game</title>
+  <meta charset="utf-8" />
+  <title>English Fill in the Blanks (Drag & Drop)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-html, body {
-  height: 100vh;
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;      /* Center vertically */
-  justify-content: center;  /* Center horizontally */
-  background: #f7f9fc;
-  overflow-x: hidden;
+<style>
+    :root {
+        --primary-blue: #007bff; /* Vibrant Blue */
+        --light-blue: #e8f4ff; /* Very Light Blue background */
+        --dark-text: #2c3e50; /* Darker Text */
+        --success-green: #28a745; /* Success Green */
+        --danger-red: #dc3545; /* Danger Red */
+        --light-grey: #f8f9fa; /* Background accents - used for card */
+        --background-color: #f0fff0; /* Very light mint green for overall background */
+        --pattern-light: #e6ffe6; /* Light green/mint for pattern base */
+        --pattern-dark: #d4f8d4; /* Slightly darker mint for pattern check */
+        --shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* Increased shadow */
+        --inner-highlight: inset 0 0 10px #ffffff; /* New: Inner card highlight */
+    }
+
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background: var(--background-color);
+        font-family: 'Poppins', "Segoe UI", Arial, sans-serif;
+        width: 100vw;
+        min-height: 100vh;
+        box-sizing: border-box;
+    }
+    body {
+        width: 100vw;
+        height: 100vh;
+        min-height: 100vh;
+        min-width: 100vw;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: stretch;
+    }
+    .main-game-area {
+        flex: 1 1 0;
+        width: 100vw;
+        height: 100vh;
+        min-height: 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        /* --- NEW ENGAGING BACKGROUND --- */
+        background-color: var(--pattern-light);
+        background-image: 
+            linear-gradient(45deg, var(--pattern-dark) 25%, transparent 25%), 
+            linear-gradient(-45deg, var(--pattern-dark) 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, var(--pattern-dark) 75%),
+            linear-gradient(-45deg, transparent 75%, var(--pattern-dark) 75%);
+        background-size: 40px 40px; /* Size of the checker square */
+        /* ------------------------------- */
+    }
+.card {
+    background-color: var(--light-grey); /* Base color */
+    /* --- NEW FUN BACKGROUND PATTERN (Stripes) --- */
+    background-image: repeating-linear-gradient(
+        90deg, 
+        var(--light-blue) 0, 
+        var(--light-blue) 4px, 
+        #ffffff 4px, 
+        #ffffff 8px
+    );
+    background-size: 100% 100%; /* Ensure full coverage */
+    /* ------------------------------------------- */
+    
+    /* Updated box-shadow for lift, inner shadow, and an extra border-like shadow */
+    box-shadow: 
+        var(--shadow), 
+        var(--inner-highlight),
+        0 0 0 8px #d1e7ff; /* Lighter blue inner frame/border (hex code for light blue) */
+
+    border-radius: 20px;
+    padding: 30px 0;
+    margin: 20px;
+    max-width: 800px; /* Wider card */
+    min-height: 480px;
+    width: 95%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    box-sizing: border-box;
+    /* Changed to dashed border for a fun, stylized look */
+    border: 4px dashed var(--primary-blue); 
 }
-    .game-container {
-      max-width: 900px;
-      margin: 40px auto;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 16px #0002;
-      padding: 32px 24px;
-      width: 90vw;
-      text-align: center;
-      position: relative;
+    #score {
+        margin-top: 24px;
+        font-size: 1.2em;
+        text-align: center;
+        color: var(--dark-text);
     }
-    .edit-button {
-      position: absolute;
-      top: 1em;
-      right: 1em;
-      background: #198754;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 0.5em 1.2em;
-      font-size: 1em;
-      cursor: pointer;
-      font-weight: 600;
-      box-shadow: 0 2px 8px #0001;
-      z-index: 10;
+    .sentence {
+        font-size: clamp(1.2rem, 3vw, 1.8rem); /* Larger and responsive */
+        margin: 0 0 24px 0;
+        line-height: 2.2;
+        text-align: center;
+        word-break: break-word;
+        padding: 15px 5vw;
+        min-height: 4em;
+        width: 100%;
+        box-sizing: border-box;
+        color: var(--dark-text);
+        font-weight: 500;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
-    .edit-button[hidden] { display: none; }
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 2000;
-      left: 0; top: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.35);
-      align-items: center;
-      justify-content: center;
+    .blank {
+        display: inline-flex; /* Use flex for better alignment */
+        align-items: center;
+        justify-content: center;
+        min-width: 90px;
+        border-bottom: 3px solid var(--primary-blue);
+        background: var(--light-blue);
+        margin: 0 8px;
+        padding: 8px 18px;
+        border-radius: 8px; /* Slightly less round */
+        vertical-align: middle;
+        font-weight: 700;
+        color: var(--primary-blue);
+        cursor: pointer;
+        transition: all .2s;
+        user-select: none;
+        font-size: 1em;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
     }
-    .modal.show { display: flex; }
-    .modal-content {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 2px 24px #0003;
-      padding: 2em 2em 1em 2em;
-      text-align: center;
-      min-width: 320px;
-      max-width: 95vw;
+    .blank.filled {
+        background: var(--success-green);
+        color: var(--light-grey);
+        border-color: var(--success-green);
+        box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
     }
-    .modal-header {
-      font-size: 1.2em;
-      font-weight: 600;
-      margin-bottom: 1em;
+    .blank.incorrect {
+        background: var(--danger-red);
+        color: var(--light-grey);
+        border-color: var(--danger-red);
+        box-shadow: 0 4px 6px rgba(220, 53, 69, 0.2);
     }
-    .close-btn {
-      position: absolute;
-      top: 1em;
-      right: 1em;
-      background: none;
-      border: none;
-      font-size: 1.5em;
-      color: #888;
-      cursor: pointer;
+    .blank.drag-over {
+        transform: scale(1.05);
+        background: #fff3cd;
+        border-color: #ffc107;
     }
-    .completion-modal {
-      display: none;
-      position: fixed;
-      z-index: 3000;
-      left: 0; top: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.35);
-      align-items: center;
-      justify-content: center;
+    .word-bank {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        align-items: center;
+        padding: 20px 5vw;
+        width: 100%;
+        margin-bottom: 20px;
+        min-height: 80px;
+        box-sizing: border-box;
+        border-top: 1px solid #ddd;
+        border-bottom: 1px solid #ddd;
     }
-    .completion-modal.show { display: flex; }
-    .completion-content {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 2px 24px #0003;
-      padding: 2em 2em 1em 2em;
-      text-align: center;
-      min-width: 320px;
-      max-width: 95vw;
-      font-size: 1.2em;
-      color: #198754;
-      font-weight: 600;
+    .word {
+        background: #ffffff;
+        color: var(--primary-blue);
+        border: 2px solid var(--primary-blue);
+        border-radius: 25px; /* Pill shape */
+        padding: 12px 24px;
+        font-size: 1.1em;
+        cursor: grab;
+        user-select: none;
+        white-space: nowrap;
+        transition: all .2s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        font-weight: 600;
     }
-    .btn {
-      background: #198754;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 0.7em 2em;
-      font-size: 1em;
-      font-weight: 600;
-      box-shadow: 0 2px 8px #0001;
-      cursor: pointer;
-      margin-top: 1em;
+    .word:hover {
+        background: var(--primary-blue);
+        color: var(--light-grey);
+        border-color: var(--primary-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     }
-    .memory-board {
-      display: grid;
-      grid-template-rows: repeat(2, 1fr);
-      grid-auto-flow: column;
-      grid-auto-columns: 1fr;
-      gap: 12px;
-      width: min(90vw, 420px);
-      margin: 2em auto 1em auto;
-      justify-items: center;
-      align-items: center;
+    .word:active, .word.dragging {
+        cursor: grabbing;
+        transform: scale(0.95);
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
     }
-    .memory-card {
-      width: 70px;
-      height: 90px;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      perspective: 600px;
-      position: relative;
-      cursor: pointer;
-      user-select: none;
-      transition: transform 0.2s;
+    .word[style*="opacity: 0.35"] {
+        opacity: 0.45 !important;
+        pointer-events: none !important;
+        background: #ddd;
+        color: #888;
+        border-color: #aaa;
+        transform: none;
+        box-shadow: none;
+        cursor: default;
     }
-    .memory-card-inner {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      transition: transform 0.5s;
-      transform-style: preserve-3d;
+    .controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        padding-top: 10px;
+        width: 100%;
     }
-    .memory-card.flipped .memory-card-inner,
-    .memory-card.matched .memory-card-inner {
-      transform: rotateY(180deg);
+    .controls button {
+        padding: 14px 40px;
+        font-size: 1.1em;
+        border-radius: 10px;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        font-weight: 700;
+        transition: all .2s;
+        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
     }
-    .memory-card-front, .memory-card-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.3em;
-      font-weight: 600;
-      user-select: none;
-      box-shadow: 0 2px 8px #0001;
-      background: #e9ecef;
-      color: #198754;
-      transition: background 0.2s, color 0.2s;
+    .controls button:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
     }
-    .memory-card-front {
-      background: #e9ecef;
-      color: #198754;
-      cursor: pointer;
+
+    #reset-btn {
+        background: #6c757d; /* Grey button */
+        box-shadow: 0 4px 0 #5a6268;
     }
-    .memory-card-back {
-      background: #4f8cff;
-      color: #fff;
-      transform: rotateY(180deg);
-      cursor: default;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    #reset-btn:hover {
+        background: #5a6268;
     }
-    .memory-card.matched .memory-card-back {
-      background: #27ae60;
-      opacity: 0.7;
+
+    #next-btn {
+        background: #bdbdbd;
+        box-shadow: 0 4px 0 #9e9e9e;
     }
-    .memory-card img {
-      max-width: 80%;
-      max-height: 80%;
-      border-radius: 6px;
-      box-shadow: 0 1px 4px #0002;
-      background: #fff;
+    button#next-btn:enabled {
+        background: var(--primary-blue);
+        box-shadow: 0 4px 0 #0056b3;
     }
-    .memory-card:active .memory-card-inner {
-      transform: scale(1.07);
+    button#next-btn:enabled:hover {
+        background: #0056b3;
+    }
+    button#next-btn:disabled {
+        cursor: not-allowed;
+    }
+
+    #done-btn {
+        background: var(--success-green);
+        box-shadow: 0 4px 0 #1e7e34;
+    }
+    #done-btn:hover {
+        background: #1e7e34;
+    }
+    #done-btn:disabled {
+        background: #bdbdbd;
+        box-shadow: 0 4px 0 #9e9e9e;
+        cursor: not-allowed;
+    }
+
+
+    #result {
+        font-size: 1.4em;
+        font-weight: 700;
+        margin-top: 20px;
+        min-height: 1.5em;
+        color: var(--primary-blue);
+        letter-spacing: 0.5px;
     }
     @media (max-width: 700px) {
-      .memory-board {
-        width: min(98vw, 340px);
-        gap: 8px;
-      }
-      .memory-card {
-        width: 54px;
-        height: 70px;
-        font-size: 1.1em;
-      }
+        .sentence { font-size: 1.2em; padding: 10px 4vw; line-height: 1.8;}
+        .blank { min-width: 70px; padding: 8px 12px; font-size: .95em; }
+        .word { font-size: 1em; padding: 10px 18px; }
+        .word-bank { gap: 8px; padding: 15px 4vw; }
+        .controls button { padding: 10px 24px; font-size: 1em; }
+        .card { padding: 20px 0; }
     }
-    @media (max-width: 500px) {
-      .memory-board {
-        width: min(99vw, 260px);
-        gap: 6px;
-      }
-      .memory-card {
-        width: 38px;
-        height: 48px;
-        font-size: 0.9em;
-      }
-      .modal-content, .completion-content { min-width: 140px; padding: 1em; }
+
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5); /* Darker overlay */
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(3px); /* Blur effect */
     }
-  </style>
+    .modal-content {
+        background: #fff;
+        border-radius: 25px;
+        box-shadow: var(--shadow);
+        padding: 2.5em;
+        text-align: center;
+        min-width: 350px;
+        max-width: 90vw;
+        position: relative;
+        animation: popInModal .3s ease-out;
+    }
+    .modal-header {
+        font-size: 1.4em;
+        font-weight: 700;
+        margin-bottom: 1em;
+        color: var(--dark-text);
+    }
+    .close-btn {
+        position: absolute;
+        top: 1.2em;
+        right: 1.2em;
+        background: none;
+        border: none;
+        font-size: 1.8em;
+        color: #aaa;
+        cursor: pointer;
+        transition: color .2s;
+    }
+    .close-btn:hover {
+        color: var(--danger-red);
+    }
+    textarea {
+        width: 100%;
+        margin-bottom: 1em;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+    .btn {
+        background: var(--success-green);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.8em 2em;
+        font-size: 1em;
+        font-weight: 600;
+        box-shadow: 0 4px 0 #1e7e34;
+        cursor: pointer;
+        margin-top: 1em;
+    }
+    .btn:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 #1e7e34;
+    }
+    #saveStatus {
+        margin-top: 0.5em;
+        color: var(--success-green);
+        display: none;
+    }
+    @keyframes popInModal {
+        0% { transform: scale(0.7); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    #completionModal .modal-content {
+        background: #ffffff;
+        border-radius: 30px;
+        box-shadow: 0 10px 50px rgba(40, 167, 69, 0.4);
+        animation: popInModal .5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    #completionMessage {
+        font-size: 1.8em;
+        font-weight: 700;
+        margin-bottom: 1.5em;
+        color: var(--success-green);
+    }
+    #playAgainBtn {
+        background: var(--primary-blue);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 1em 2.5em;
+        font-size: 1.2em;
+        font-weight: 700;
+        box-shadow: 0 6px 0 #0056b3;
+        cursor: pointer;
+        margin-top: 1.5em;
+        transition: all .2s;
+    }
+    #playAgainBtn:hover {
+        background: #0056b3;
+        transform: scale(1.05);
+    }
+    #playAgainBtn:active {
+        transform: translateY(3px);
+        box-shadow: 0 3px 0 #0056b3;
+    }
+
+    /* Edit Button Style */
+    #editBtn {
+        background: #ffc107; /* Amber for edit */
+        color: var(--dark-text);
+        border: 2px solid #ff9800;
+        padding: 8px 15px;
+        border-radius: 10px;
+        font-weight: 700;
+        box-shadow: 0 2px 0 #ff9800;
+        transition: all .2s;
+    }
+    #editBtn:active {
+        transform: translateY(1px);
+        box-shadow: 0 1px 0 #ff9800;
+    }
+</style>
 </head>
 <body>
-  <div class="game-container">
-    <button class="edit-button" id="editBtn" hidden>Edit Game</button>
-    <div class="memory-board" id="memoryBoard"></div>
-  </div>
-
-  <!-- Editor Modal -->
-  <div class="modal" id="editorModal">
-    <div class="modal-content">
-      <div class="modal-header">Edit Word List</div>
-      <button class="close-btn" id="closeEditorBtn">&times;</button>
-      <textarea id="wordsInput" rows="6" style="width:100%;margin-bottom:1em;"></textarea>
-      <button class="btn" id="saveWordsBtn">Save</button>
-      <div id="saveStatus" style="margin-top:0.5em;color:#198754;display:none;">Saved!</div>
+  <div class="main-game-area" style="position:relative;">
+    <button id="editBtn" style="position:absolute;top:18px;right:18px;z-index:10;display:none;">Edit Game</button>
+    <div class="card" role="main" aria-label="Fill in the blanks game">
+      <div id="quiz-instruction" style="font-size:1.08rem;color:#2e8b57;margin-bottom:10px;font-weight:500;"></div>
+        <div class="sentence" id="sentence" aria-hidden="false"></div>
+        <div class="word-bank" id="word-bank" aria-label="Word bank"></div>
+      <div class="controls">
+          <button id="reset-btn" type="button">Reset</button>
+        <button id="next-btn" disabled>Next</button>
+        <button id="done-btn" style="display:none;">Done</button>
+      </div>
+        <div id="result" aria-live="polite"></div>
     </div>
   </div>
 
-  <!-- Completion Modal -->
-  <div class="completion-modal" id="completionModal">
-    <div class="completion-content">
-      🎉 Congratulations! You matched all the cards!
-      <button class="btn" id="doneBtn">Done</button>
+  <div class="modal" id="editorModal" style="display:none;position:fixed;z-index:2000;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;">
+    <div class="modal-content" style="background:#fff;border-radius:18px;box-shadow:0 4px 32px #0003;padding:2.2em 2.2em 1.5em 2.2em;text-align:left;min-width:340px;max-width:98vw;max-height:90vh;position:relative;display:flex;flex-direction:column;">
+      <button class="close-btn" id="closeEditorBtn" style="position:absolute;top:1.2em;right:1.2em;background:none;border:none;font-size:1.7em;color:#888;cursor:pointer;">&times;</button>
+      <div class="modal-header" style="font-size:1.25em;font-weight:700;margin-bottom:0.7em;text-align:center;">
+        Edit Quiz Questions
+      </div>
+      <form id="quizEditForm" style="flex:1 1 auto;display:flex;flex-direction:column;min-height:0;">
+        <div class="editor-row">
+          <label for="edit-instruction" style="font-weight:600;">Instruction</label>
+          <textarea id="edit-instruction" rows="2" style="width:100%;resize:vertical;"></textarea>
+        </div>
+        <div id="questionsList" style="overflow-y:auto;max-height:48vh;min-height:120px;padding-right:4px;"></div>
+        <button type="button" id="addQuestionBtn" style="margin:1em 0 0.5em 0;background:#0d6efd;color:#fff;border:none;border-radius:7px;padding:0.5em 1.5em;font-size:1em;font-weight:600;cursor:pointer;">+ Add Question</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:1em;margin-top:1.2em;">
+          <button class="btn" id="saveQuizBtn" type="submit" style="background:#198754;color:#fff;border:none;border-radius:8px;padding:0.7em 2em;font-size:1em;font-weight:600;box-shadow:0 2px 8px #0001;cursor:pointer;">💾 Save</button>
+          <span id="saveStatus" style="margin-left:1em;color:#198754;display:none;font-weight:500;">Saved!</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="completionModal" style="display:none;position:fixed;z-index:3000;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;">
+    <div class="modal-content" style="text-align:center;min-width:320px;max-width:95vw;position:relative;">
+      <button class="close-btn" id="closeCompletionBtn" style="position:absolute;top:1.2em;right:1.2em;background:none;border:none;font-size:1.7em;color:#888;cursor:pointer;display:none;">&times;</button>
+      <div style="font-size:2.5em;margin-bottom:0.3em;">🎉</div>
+      <div id="completionMessage"></div>
+      <button id="playAgainBtn" style="display:none">Play Again</button>
     </div>
   </div>
 
   <script>
-    // --- Editable Content State ---
-    let words = [
-      "APPLE",
-      "DOG",
-      "HOUSE",
-      "MOON",
-      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=256&q=80", // Example image
-      "SUN",
-      "TREE",
-      "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=facearea&w=256&q=80"
+    let quizInstruction = "Drag the correct words into the blanks to complete each sentence.";
+
+    const quiz = [
+      { sentence: "The ___ jumps over the ___ dog.", blanks: ["quick","lazy"], distractors: ["brown","happy","sleepy"] },
+      { sentence: "She ___ to school every morning.", blanks: ["walks"], distractors: ["run","walk","walking"] },
+      { sentence: "I have ___ apples and ___ bananas.", blanks: ["three","two"], distractors: ["ten","red","yellow"] },
+      { sentence: "They are ___ a movie right now.", blanks: ["watching"], distractors: ["watched","watches","play"] }
     ];
-    let cards = [];
-    let flipped = [];
-    let matched = [];
-    let lockBoard = false;
-    let moves = 0;
 
-    // --- Quiz Editor Detection ---
-    const editBtn = document.getElementById('editBtn');
-    const isQuizEditor =
-      window.location.search.includes('quizEditor') ||
-      window.name === 'quizEditor' ||
-      (window.parent !== window && window.parent !== null && window.name === 'quizEditor');
+    let current = 0, score = 0;
+    let filled = [], correct = [], usedWords = [];
+    let dragWord = null;
+    let userAnswers = [];
 
-    // Hide edit button by default, show only in quizEditor
-    if (editBtn) {
-      editBtn.hidden = !isQuizEditor;
-    }
+    const sentenceEl = document.getElementById('sentence');
+    const wordBankEl = document.getElementById('word-bank');
+    const nextBtn = document.getElementById('next-btn');
+    const doneBtn = document.getElementById('done-btn');
+    const scoreEl = document.getElementById('score');
+    const resultEl = document.getElementById('result');
 
-    // --- Load words for quizEditor preview ---
-    if (isQuizEditor) {
-      try {
-        const saved = localStorage.getItem('quizEditor_game6_words');
-        if (saved) {
-          const arr = JSON.parse(saved);
-          if (Array.isArray(arr) && arr.every(w => typeof w === 'string')) {
-            words = arr;
-          }
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
+
+    function renderQuestion(){
+      const q = quiz[current];
+      filled = Array(q.blanks.length).fill(null);
+      correct = Array(q.blanks.length).fill(false);
+      usedWords = [];
+      dragWord = null;
+      sentenceEl.innerHTML = '';
+      resultEl.textContent = '';
+      nextBtn.disabled = true;
+
+      // build sentence with blanks
+      const parts = q.sentence.split("___");
+      for(let i=0;i<parts.length;i++){
+        sentenceEl.append(document.createTextNode(parts[i]));
+        if(i < q.blanks.length){
+          const span = document.createElement('span');
+          span.className = 'blank';
+          span.setAttribute('data-idx', i);
+          span.tabIndex = 0;
+          span.addEventListener('dragover', e => { e.preventDefault(); span.classList.add('drag-over'); });
+          span.addEventListener('dragleave', e => { span.classList.remove('drag-over'); });
+          span.addEventListener('drop', e => {
+            e.preventDefault();
+            span.classList.remove('drag-over');
+            if(dragWord) fillBlank(i, dragWord);
+          });
+          span.addEventListener('touchend', e => {
+            if(dragWord) fillBlank(i, dragWord);
+          }, {passive:true});
+          span.addEventListener('click', () => {
+            if(filled[i] !== null){
+              usedWords = usedWords.filter(w => w !== filled[i]);
+              filled[i] = null;
+              correct[i] = false;
+              updateUI();
+            }
+          });
+          sentenceEl.appendChild(span);
         }
-      } catch (e) {}
-      startGame();
-    } else if (!isQuizEditor && window.parent === window) {
-      // Not in quizEditor and not embedded, show default game
-      startGame();
+      }
+
+      // build word bank
+      let words = q.blanks.concat(q.distractors);
+      shuffle(words);
+      wordBankEl.innerHTML = '';
+      words.forEach(w => {
+        const wordEl = document.createElement('div');
+        wordEl.className = 'word';
+        wordEl.textContent = w;
+        wordEl.draggable = true;
+        wordEl.addEventListener('dragstart', e => {
+          dragWord = w;
+          wordEl.classList.add('dragging');
+        });
+        wordEl.addEventListener('dragend', e => { dragWord = null; wordEl.classList.remove('dragging'); });
+        wordEl.addEventListener('touchstart', e => {
+          dragWord = w;
+          wordEl.classList.add('dragging');
+        }, {passive:true});
+        wordEl.addEventListener('touchend', e => {
+          const idx = filled.findIndex(f => f === null);
+          if(idx !== -1) fillBlank(idx, w);
+          dragWord = null;
+          wordEl.classList.remove('dragging');
+        }, {passive:true});
+        wordEl.addEventListener('click', () => {
+          const idx = filled.findIndex(f => f === null);
+          if(idx !== -1) fillBlank(idx, w);
+        });
+        wordBankEl.appendChild(wordEl);
+      });
+
+      // --- Hide Next button at last question, show Done instead ---
+      if(current === quiz.length - 1){
+        nextBtn.style.display = 'none';
+        doneBtn.style.display = '';
+        doneBtn.disabled = true; // will be enabled by checkCompletion
+      } else {
+        nextBtn.style.display = '';
+        doneBtn.style.display = 'none';
+      }
+
+      document.getElementById('quiz-instruction').textContent = quizInstruction || "";
+
+      updateUI();
     }
 
-    // --- Listen for parent data for students/teachers ---
-    window.addEventListener('message', function(event) {
-      if (event.data && event.data.type === 'loadQuizGameData' && event.data.gameData?.words) {
-        words = event.data.gameData.words;
-        startGame();
+function fillBlank(idx, word){
+  // Remove the word from any other blank first
+  const prevIdx = filled.findIndex(f => f === word);
+  if(prevIdx !== -1) {
+    filled[prevIdx] = null;
+  }
+  filled[idx] = word;
+  usedWords = filled.filter(Boolean);
+  updateUI();
+  checkCompletion(); // <-- THIS LINE ENSURES NEXT BUTTON WORKS!
+}
+
+    function updateUI(){
+      const blanks = sentenceEl.querySelectorAll('.blank');
+      blanks.forEach((b, i) => {
+        b.textContent = filled[i] || '';
+        b.classList.toggle('filled', Boolean(filled[i]));
+        b.classList.remove('incorrect'); // Never show incorrect
+      });
+      Array.from(wordBankEl.children).forEach(n => {
+        n.style.opacity = usedWords.includes(n.textContent) ? '0.35' : '1';
+        n.style.pointerEvents = usedWords.includes(n.textContent) ? 'none' : 'auto';
+      });
+      // Hide score from user
+      // scoreEl.textContent = '';
+      checkCompletion(); // <--- Ensure this is always called
+    }
+function checkCompletion(){
+  // Enable next button as soon as all blanks are filled (not null/empty/undefined)
+  if(filled.length && filled.every(w => !!w)){
+    nextBtn.disabled = false;
+    if(current === quiz.length - 1) {
+      doneBtn.disabled = false;
+    }
+  } else {
+    nextBtn.disabled = true;
+    if(current === quiz.length - 1) {
+      doneBtn.disabled = true;
+    }
+  }
+}
+
+    nextBtn.addEventListener('click', () => {
+      // Score is tracked silently
+      const q = quiz[current];
+      let allCorrect = true;
+      for(let i=0;i<q.blanks.length;i++){
+        if(filled[i] !== q.blanks[i]){
+          allCorrect = false;
+          break;
+        }
       }
-      if (event.data && event.data.type === 'setTestIndex') {
-        parentTestIndex = event.data.index;
+      if(allCorrect) score++;
+      userAnswers.push([...filled]); // Collect user answers for each question
+      current++;
+      if(current < quiz.length){
+        renderQuestion();
+      }else {
+        // Hide Next, show Done
+        nextBtn.style.display = 'none';
+        doneBtn.style.display = '';
+        // Optionally, disable Done until all blanks are filled
+        checkCompletion();
       }
     });
 
-    // --- Game Logic ---
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
+    document.getElementById('reset-btn').onclick = function() {
+      const q = quiz[current];
+      filled = Array(q.blanks.length).fill(null);
+      usedWords = [];
+      updateUI();
+      checkCompletion();
+    };
+    
 
-    function isImage(word) {
-      return /^https?:\/\/.+\.(jpg|jpeg|png|gif)$/i.test(word) || /^https?:\/\/.+unsplash\.com/.test(word);
-    }
-    function isEmoji(str) {
-      // Simple emoji detection
-      return /\p{Emoji}/u.test(str);
-    }
 
-    function startGame() {
-      matched = [];
-      flipped = [];
-      lockBoard = false;
-      moves = 0;
-      // Each word appears twice
-      cards = shuffle([...words, ...words].map((word, i) => ({
-        id: i,
-        word,
-        matched: false,
-        flipped: false
-      })));
-      renderBoard();
-    }
+    document.getElementById('closeCompletionBtn').onclick = function() {
+      document.getElementById('completionModal').style.display = 'none';
+    };
+    document.getElementById('playAgainBtn').onclick = function() {
+      document.getElementById('completionModal').style.display = 'none';
+      current = 0; score = 0;
+      renderQuestion();
+    };
 
-    function renderBoard() {
-      const board = document.getElementById('memoryBoard');
-      board.innerHTML = '';
-      // Set columns so that all cards fit in 2 rows
-      const total = cards.length;
-      const cols = Math.ceil(total / 2);
-      board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-      cards.forEach((card, idx) => {
-        const cardDiv = document.createElement('div');
-        cardDiv.className = 'memory-card' +
-          (card.flipped || card.matched ? ' flipped' : '') +
-          (card.matched ? ' matched' : '');
-        cardDiv.tabIndex = 0;
-        cardDiv.setAttribute('aria-label', 'Memory card');
-        cardDiv.onclick = () => flipCard(idx);
-
-        // Card inner for flip effect
-        const inner = document.createElement('div');
-        inner.className = 'memory-card-inner';
-
-        // Card front (hidden side)
-        const front = document.createElement('div');
-        front.className = 'memory-card-front';
-        front.innerHTML = '?';
-
-        // Card back (revealed side)
-        const back = document.createElement('div');
-        back.className = 'memory-card-back';
-        if (isImage(card.word)) {
-          const img = document.createElement('img');
-          img.src = card.word;
-          img.alt = "Card image";
-          back.appendChild(img);
-        } else if (isEmoji(card.word)) {
-          back.innerHTML = `<span style="font-size:2em;">${card.word}</span>`;
-        } else {
-          back.textContent = card.word;
-        }
-
-        inner.appendChild(front);
-        inner.appendChild(back);
-        cardDiv.appendChild(inner);
-        board.appendChild(cardDiv);
-      });
-    }
-
-    function flipCard(idx) {
-      if (lockBoard) return;
-      if (cards[idx].flipped || cards[idx].matched) return;
-      cards[idx].flipped = true;
-      flipped.push(idx);
-      renderBoard();
-      if (flipped.length === 2) {
-        lockBoard = true;
+    // Simple confetti effect
+    function launchConfetti() {
+      const colors = ["#4f8cff","#198754","#ffb300","#ff4081","#00bcd4"];
+      for(let i=0;i<32;i++){
+        const conf = document.createElement('div');
+        conf.style.position = 'fixed';
+        conf.style.left = (Math.random()*100)+'vw';
+        conf.style.top = '-40px';
+        conf.style.width = conf.style.height = (8+Math.random()*8)+'px';
+        conf.style.background = colors[Math.floor(Math.random()*colors.length)];
+        conf.style.borderRadius = '50%';
+        conf.style.opacity = 0.85;
+        conf.style.zIndex = 4000;
+        conf.style.pointerEvents = 'none';
+        conf.style.transition = 'top 1.2s cubic-bezier(.4,2,.6,1), opacity .7s';
+        document.body.appendChild(conf);
         setTimeout(() => {
-          checkMatch();
-        }, 700);
+          conf.style.top = (60+Math.random()*30)+'vh';
+          conf.style.opacity = 0;
+        }, 10);
+        setTimeout(() => conf.remove(), 1400);
       }
     }
 
-    function checkMatch() {
-      const [i1, i2] = flipped;
-      if (cards[i1].word === cards[i2].word) {
-        cards[i1].matched = true;
-        cards[i2].matched = true;
-        matched.push(i1, i2);
-      } else {
-        cards[i1].flipped = false;
-        cards[i2].flipped = false;
-      }
-      flipped = [];
-      lockBoard = false;
-      renderBoard();
-      if (matched.length === cards.length) {
-        setTimeout(showCompletion, 400);
-      }
+    // --- Edit Button Logic ---
+    const editBtn = document.getElementById('editBtn');
+    const urlParams = new URLSearchParams(window.location.search);
+    const isQuizEditor = urlParams.get('quizEditor') === '1' || window.name === 'quizEditor';
+    if (editBtn) {
+      editBtn.style.display = '';
+      editBtn.onclick = function() {
+        document.getElementById('editorModal').style.display = 'flex';
+        renderQuestionsEditor();
+        document.getElementById('saveStatus').style.display = 'none';
+      };
     }
-
-    function showCompletion() {
-      document.getElementById('completionModal').classList.add('show');
-    }
-
-    // --- Done button handler: send score to parent ---
-    let parentTestIndex = 0;
-    document.getElementById('doneBtn').onclick = function() {
-      document.getElementById('doneBtn').disabled = true;
-      setTimeout(() => {
-        document.getElementById('completionModal').classList.remove('show');
-      }, 1200);
-      window.parent.postMessage({
-        type: 'quizResult',
-        payload: {
-          score: words.length,
-          maxScore: words.length,
-          answers: words,
-          quizId: window.location.pathname.split('/').pop(),
-          slideIndex: parentTestIndex
-        }
-      }, '*');
-    };
-
-    // --- Editor Modal Logic ---
-    editBtn.onclick = function() {
-      document.getElementById('editorModal').classList.add('show');
-      document.getElementById('wordsInput').value = words.join('\n');
-      document.getElementById('saveStatus').style.display = 'none';
-    };
     document.getElementById('closeEditorBtn').onclick = function() {
-      document.getElementById('editorModal').classList.remove('show');
+      document.getElementById('editorModal').style.display = 'none';
     };
+    document.getElementById('addQuestionBtn').onclick = function() {
+      quiz.push({ sentence: "", blanks: [""], distractors: [] });
+      renderQuestionsEditor();
+    };
+    document.getElementById('quizEditForm').onsubmit = function(e) {
+      e.preventDefault();
+      // ADD THIS LINE:
+      quizInstruction = document.getElementById('edit-instruction').value.trim();
 
-    document.getElementById('saveWordsBtn').onclick = function() {
-      let newWords = document.getElementById('wordsInput').value
-        .split(/[\n,]+/)
-        .map(w => w.trim())
-        .filter(w => w.length > 1);
-      if (newWords.length < 2) {
-        alert("Please enter at least two valid words or image URLs (min 2 chars).");
+      const sentences = Array.from(document.querySelectorAll('.edit-sentence')).map(i => i.value.trim());
+      const blanks = Array.from(document.querySelectorAll('.edit-blanks')).map(i => i.value.split(',').map(s => s.trim()).filter(Boolean));
+      const distractors = Array.from(document.querySelectorAll('.edit-distractors')).map(i => i.value.split(',').map(s => s.trim()).filter(Boolean));
+      const newQuiz = [];
+      for (let i = 0; i < sentences.length; i++) {
+        if (!sentences[i] || blanks[i].length === 0) continue;
+        newQuiz.push({ sentence: sentences[i], blanks: blanks[i], distractors: distractors[i] });
+      }
+      if (newQuiz.length < 1) {
+        alert("Please enter at least one valid question.");
         return;
       }
-      words = newWords;
-      document.getElementById('editorModal').classList.remove('show');
-      // Save to localStorage for preview
-      if (isQuizEditor) {
-        localStorage.setItem('quizEditor_game6_words', JSON.stringify(newWords));
-        // Send edited data to parent/canvas for saving to database
-        const quizId = window.location.pathname.split('/').pop();
-        const quizGameData = {
-          words: newWords,
-          lastModified: new Date().toISOString(),
-          quizId: quizId,
-          gameType: 'memorymatch',
-          gameUrl: window.location.href.split('?')[0],
-          isCustomized: true,
-          totalWords: newWords.length
-        };
-        window.parent.postMessage({
-          type: 'saveQuizGameData',
-          gameData: quizGameData,
-          quizId: quizId,
-          source: 'game-editor'
-        }, '*');
-        window.parent.postMessage({
-          type: 'gameDataUpdate',
-          gameData: quizGameData,
-          quizId: quizId,
-          action: 'immediate-save'
-        }, '*');
-      }
-      startGame();
+      quiz.length = 0;
+      newQuiz.forEach(q => quiz.push(q));
+      current = 0; score = 0;
+      document.getElementById('editorModal').style.display = 'none';
+      renderQuestion();
+      saveQuiz(); // <-- Save to parent or localStorage
       document.getElementById('saveStatus').textContent = "Saved!";
       document.getElementById('saveStatus').style.display = '';
       setTimeout(() => { document.getElementById('saveStatus').style.display = 'none'; }, 1200);
     };
 
-    // --- Hide Edit Button for Students/Teachers ---
-    (function hideEditButtonForStudents(){
-      const params = new URLSearchParams(window.location.search);
-      const isEditMode = params.get('edit') === 'true';
-      function hideAllEditControls() {
-        const selectors = [
-          '.edit-button',
-          '#quiz-edit-controls',
-          '.btn-edit',
-          '.edit-btn',
-          '#editorModal'
-        ].join(',');
-        document.querySelectorAll(selectors).forEach(el => {
-          if (el) el.style.display = 'none';
-        });
+    function renderQuestionsEditor() {
+      const questionsList = document.getElementById('questionsList');
+      questionsList.innerHTML = '';
+      quiz.forEach((q, idx) => {
+        const qDiv = document.createElement('div');
+        qDiv.style = "border:1px solid #e0e0e0;border-radius:8px;padding:1em;margin-bottom:1em;background:#f8fafc;position:relative;";
+        // Highlight correct answers in the sentence
+        let highlightedSentence = q.sentence;
+        if (q.blanks && q.blanks.length) {
+          let blankIdx = 0;
+          highlightedSentence = highlightedSentence.replace(/___/g, () => {
+            const ans = q.blanks[blankIdx] ? `<span style='background:#d1e7dd;color:#198754;border-radius:5px;padding:2px 7px;margin:0 2px;font-weight:600;'>${q.blanks[blankIdx]}</span>` : "___";
+            blankIdx++;
+            return ans;
+          });
+        }
+        qDiv.innerHTML = `
+          <label style="font-weight:600;">Sentence:<br>
+            <input type="text" class="edit-sentence" value="${q.sentence.replace(/"/g, '&quot;')}" style="width:100%;margin-bottom:0.5em;padding:0.5em;border-radius:6px;border:1.2px solid #bcd;" required>
+          </label>
+          <div style="font-size:.97em;color:#198754;margin-bottom:0.5em;">Correct answer preview: ${highlightedSentence}</div>
+          <label style="font-weight:600;">Blanks (comma separated):<br>
+            <input type="text" class="edit-blanks" value="${q.blanks.join(', ')}" style="width:100%;margin-bottom:0.5em;padding:0.5em;border-radius:6px;border:1.2px solid #bcd;" required>
+          </label><br>
+          <label style="font-weight:600;">Distractors (comma separated):<br>
+            <input type="text" class="edit-distractors" value="${q.distractors.join(', ')}" style="width:100%;margin-bottom:0.5em;padding:0.5em;border-radius:6px;border:1.2px solid #bcd;">
+          </label>
+          <button type="button" class="remove-question-btn" data-idx="${idx}" style="position:absolute;top:0.7em;right:0.7em;background:#f44336;color:#fff;border:none;border-radius:50%;width:2em;height:2em;font-size:1.2em;cursor:pointer;">&times;</button>
+        `;
+        questionsList.appendChild(qDiv);
+      });
+      // Remove question handler
+      questionsList.querySelectorAll('.remove-question-btn').forEach(btn => {
+        btn.onclick = function() {
+          const idx = parseInt(btn.getAttribute('data-idx'));
+          quiz.splice(idx, 1);
+          renderQuestionsEditor();
+        };
+      });
+      document.getElementById('edit-instruction').value = quizInstruction || "";
+    }
+
+    renderQuestion();
+let parentTestIndex = 0;
+window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'setTestIndex') {
+        parentTestIndex = event.data.index;
+        // Optional: log for debugging
+        console.log('Received parentTestIndex:', parentTestIndex);
+    }
+});
+
+    function showResult(){
+  sentenceEl.innerHTML = '';
+  wordBankEl.innerHTML = '';
+  nextBtn.style.display = 'none';
+  document.getElementById('completionMessage').textContent =
+    `🎉 Quiz complete! Well done!\nYour score: ${score} / ${quiz.length}`;
+  document.getElementById('completionModal').style.display = 'flex';
+  launchConfetti();
+
+  // Send score to parent for saving (just like other games)
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({
+      type: 'quizResult',
+      payload: {
+        score: score,
+        maxScore: quiz.length,
+        answers: userAnswers, // now collected per question
+        quizId: window.location.pathname.split('/').pop(),
+        slideIndex: parentTestIndex // Always use this!
       }
-      if (!isQuizEditor && !isEditMode) {
-        hideAllEditControls();
-        const mo = new MutationObserver(hideAllEditControls);
-        mo.observe(document.body, { childList: true, subtree: true });
-        window._hideEditButtonsObserver = mo;
-      }
-    })();
+    }, '*');
+  }
+} 
+
+  window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'quizResult') {
+    const { score, maxScore, answers, quizId, slideIndex } = event.data.payload;
+    // Save to Firebase here
+    // Example:
+    // firebase.database().ref('results/' + userId + '/' + quizId).set({ score, maxScore, answers, slideIndex });
+  }
+});
+
+doneBtn.addEventListener('click', () => {
+  // Score is tracked for the last question
+  const q = quiz[current];
+  let allCorrect = true;
+  for(let i=0;i<q.blanks.length;i++){
+    if(filled[i] !== q.blanks[i]){
+      allCorrect = false;
+      break;
+    }
+  }
+  if(allCorrect) score++;
+  userAnswers.push([...filled]); // record the last answer
+  showResult();
+  doneBtn.style.display = 'none';
+});
+
+function saveQuiz() {
+  // Send to parent (quizEditor/quizView) for saving to Firebase
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({
+      type: 'saveQuizGameData',
+      gameData: {
+        questions: quiz,
+        instruction: quizInstruction,
+        lastModified: new Date().toISOString(),
+        gameType: 'fill-in-the-blanks',
+        gameUrl: window.location.href.split('?')[0],
+        isCustomized: true,
+        totalQuestions: quiz.length
+      },
+      quizId: window.location.pathname.split('/').pop(),
+      source: 'game-editor'
+    }, '*');
+    document.getElementById('saveStatus').textContent = "Saved!";
+    document.getElementById('saveStatus').style.display = '';
+  } else {
+    // Fallback for standalone use
+    localStorage.setItem('quiz-fill-in-the-blanks', JSON.stringify(quiz));
+    document.getElementById('saveStatus').textContent = "Saved!";
+    document.getElementById('saveStatus').style.display = '';
+  }
+}
+
+async function loadQuiz() {
+  // If parent provides questions, use them (quizEditor will send them via postMessage)
+  if (window.quizGameData && window.quizGameData.questions) {
+    quiz.length = 0;
+    window.quizGameData.questions.forEach(q => quiz.push(q));
+  } else {
+    let saved = localStorage.getItem('quiz-fill-in-the-blanks');
+    if (saved) {
+      quiz.length = 0;
+      JSON.parse(saved).forEach(q => quiz.push(q));
+    }
+    // else: quiz is already initialized with default questions at the top of your script
+  }
+}
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'loadQuizGameData' && event.data.gameData) {
+    quiz.length = 0;
+    event.data.gameData.questions.forEach(q => quiz.push(q));
+    quizInstruction = event.data.gameData.instruction || quizInstruction;
+    renderQuestion();
+  }
+});
+
+// Place this after your editBtn is defined
+
+(function showEditButtonOnlyInQuizEditor() {
+  // Show Edit button only in quizEditor (not in quizView or student/teacher view)
+  function isQuizEditor() {
+    const params = new URLSearchParams(window.location.search);
+    // Reference: game1 uses edit=true or mode=edit or quizEditor=1 or window.name
+    return (
+      params.get('edit') === 'true' ||
+      params.get('mode') === 'edit' ||
+      params.get('quizEditor') === '1' ||
+      window.name === 'quizEditor' ||
+      window._isQuizEditor === true
+    );
+  }
+
+  function updateEditBtn() {
+    if (editBtn) {
+      editBtn.style.display = isQuizEditor() ? '' : 'none';
+    }
+  }
+
+  // Initial check
+  updateEditBtn();
+
+  // Also update on navigation changes
+  window.addEventListener('popstate', updateEditBtn);
+  window.addEventListener('hashchange', updateEditBtn);
+
+  // If MutationObserver or other code might hide the button, re-apply after DOM changes
+  const mo = new MutationObserver(updateEditBtn);
+  mo.observe(document.body, { childList: true, subtree: true });
+})();
   </script>
+  
 </body>
 </html>
