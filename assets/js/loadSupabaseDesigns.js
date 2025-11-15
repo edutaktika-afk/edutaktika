@@ -232,76 +232,97 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
     
     let files = [];
     
+    // Initialize client for direct listing (always needed as fallback)
+    let client = getSupabaseClient();
+    if (!client) {
+      client = await initializeSupabaseClient();
+    }
+    
     // Try to load design-ids.json first (faster and more efficient)
     const designIdsPath = `${prefix}design-ids.json`;
     const designIdsUrl = getSupabaseFileUrl(designIdsPath);
     console.log(`📦 [Supabase] Loading design IDs from: ${designIdsUrl}`);
     
+    let designIdsFromFile = [];
     try {
       const idsResponse = await fetch(designIdsUrl);
       if (idsResponse.ok) {
         const idsData = await idsResponse.json();
-        console.log(`✅ [Supabase] Loaded design IDs:`, idsData);
-        
-        // Convert IDs to file objects
-        files = idsData.map(design => ({
-          key: `${prefix}${design.id}.json`,
-          url: getSupabaseFileUrl(`${prefix}${design.id}.json`),
-          isJson: true,
-          thumbnailKey: `${prefix}${design.id}.jpg`,
-          thumbnailUrl: getSupabaseFileUrl(`${prefix}${design.id}.jpg`),
-          name: design.name || design.id,
-          id: design.id
-        }));
-        console.log(`✅ [Supabase] Converted to ${files.length} file objects`);
+        console.log(`✅ [Supabase] Loaded ${idsData.length} design IDs from file:`, idsData);
+        designIdsFromFile = idsData;
       } else {
-        console.log(`⚠️ [Supabase] Design IDs file not found (${idsResponse.status}), trying direct listing...`);
-        
-        // Fallback: List files directly from Supabase Storage
-        // Initialize client if needed
-        let client = getSupabaseClient();
-        if (!client) {
-          client = await initializeSupabaseClient();
-        }
-        
-        if (client && client.storage) {
-          try {
-            const { data, error } = await client.storage
-              .from(SUPABASE_BUCKET)
-              .list(prefix, {
-                limit: 100,
-                offset: 0,
-                sortBy: { column: 'name', order: 'asc' }
-              });
-            
-            if (error) {
-              console.error('❌ Supabase list error:', error);
-            } else if (data) {
-              // Filter for JSON files and extract design info
-              const jsonFiles = data.filter(file => file.name && file.name.endsWith('.json') && file.name !== 'design-ids.json');
-              files = jsonFiles.map(file => {
-                const id = file.name.replace('.json', '');
-                return {
-                  key: `${prefix}${file.name}`,
-                  url: getSupabaseFileUrl(`${prefix}${file.name}`),
-                  isJson: true,
-                  thumbnailKey: `${prefix}${id}.jpg`,
-                  thumbnailUrl: getSupabaseFileUrl(`${prefix}${id}.jpg`),
-                  name: id, // Use ID as name if design-ids.json doesn't exist
-                  id: id
-                };
-              });
-              console.log(`✅ [Supabase] Listed ${files.length} designs directly from storage`);
-            }
-          } catch (listError) {
-            console.error('❌ Error listing files from Supabase:', listError);
-          }
-        } else {
-          console.warn('⚠️ Supabase client not available for direct listing');
-        }
+        console.log(`⚠️ [Supabase] Design IDs file not found (${idsResponse.status}), will use direct listing only`);
       }
     } catch (idsError) {
-      console.log(`⚠️ [Supabase] Error loading design IDs:`, idsError.message);
+      console.log(`⚠️ [Supabase] Error loading design IDs file:`, idsError.message);
+    }
+    
+    // ALWAYS do direct listing to ensure we get ALL files (design-ids.json might be outdated)
+    let directListFiles = [];
+    if (client && client.storage) {
+      try {
+        console.log(`📂 [Supabase] Listing files directly from storage with prefix: ${prefix}`);
+        const { data, error } = await client.storage
+          .from(SUPABASE_BUCKET)
+          .list(prefix, {
+            limit: 100,
+            offset: 0,
+            sortBy: { column: 'name', order: 'asc' }
+          });
+        
+        if (error) {
+          console.error('❌ Supabase list error:', error);
+        } else if (data) {
+          // Filter for JSON files and extract design info
+          const jsonFiles = data.filter(file => file.name && file.name.endsWith('.json') && file.name !== 'design-ids.json');
+          directListFiles = jsonFiles.map(file => {
+            const id = file.name.replace('.json', '');
+            return {
+              key: `${prefix}${file.name}`,
+              url: getSupabaseFileUrl(`${prefix}${file.name}`),
+              isJson: true,
+              thumbnailKey: `${prefix}${id}.jpg`,
+              thumbnailUrl: getSupabaseFileUrl(`${prefix}${id}.jpg`),
+              name: id, // Use ID as name initially
+              id: id
+            };
+          });
+          console.log(`✅ [Supabase] Listed ${directListFiles.length} designs directly from storage`);
+        }
+      } catch (listError) {
+        console.error('❌ Error listing files from Supabase:', listError);
+      }
+    } else {
+      console.warn('⚠️ Supabase client not available for direct listing');
+    }
+    
+    // Merge results: Use direct listing as source of truth, but use names from design-ids.json if available
+    if (directListFiles.length > 0) {
+      // Create a map of IDs to names from design-ids.json
+      const nameMap = {};
+      designIdsFromFile.forEach(design => {
+        nameMap[design.id] = design.name || design.id;
+      });
+      
+      // Use direct listing files, but update names from design-ids.json if available
+      files = directListFiles.map(file => ({
+        ...file,
+        name: nameMap[file.id] || file.name || file.id
+      }));
+      
+      console.log(`✅ [Supabase] Merged results: ${files.length} designs (${directListFiles.length} from direct listing, ${designIdsFromFile.length} names from design-ids.json)`);
+    } else if (designIdsFromFile.length > 0) {
+      // Fallback: If direct listing failed but design-ids.json exists, use it
+      files = designIdsFromFile.map(design => ({
+        key: `${prefix}${design.id}.json`,
+        url: getSupabaseFileUrl(`${prefix}${design.id}.json`),
+        isJson: true,
+        thumbnailKey: `${prefix}${design.id}.jpg`,
+        thumbnailUrl: getSupabaseFileUrl(`${prefix}${design.id}.jpg`),
+        name: design.name || design.id,
+        id: design.id
+      }));
+      console.log(`✅ [Supabase] Using design-ids.json only (${files.length} designs) - direct listing unavailable`);
     }
     
     // Convert files to metadata format for compatibility
@@ -324,17 +345,7 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
 
     if (metadataList.length === 0) {
       if (container) {
-        container.innerHTML = `
-          <div style="text-align:center;padding:20px;color:#666;">
-            <p>No lessons found.</p>
-            <p style="font-size:0.9rem;color:#999;margin-top:10px;">
-              Click <strong>"Create Lesson"</strong> to save your first lesson.
-            </p>
-            <p style="font-size:0.8rem;color:#999;margin-top:10px;">
-              Looking in: <code style="background:#f0f0f0;padding:2px 4px;border-radius:3px;">${prefix}</code>
-            </p>
-          </div>
-        `;
+        container.innerHTML = ''; // Empty - no message shown
       }
       return [];
     }
@@ -382,7 +393,7 @@ function renderDesigns(designs, quarter, container, subject, isTeacher) {
   if (!container) return;
 
   if (designs.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No designs found.<br><small>Click "Create Lesson" to get started!</small></div>';
+    container.innerHTML = ''; // Empty - no message shown
     return;
   }
 
@@ -404,15 +415,19 @@ function renderDesigns(designs, quarter, container, subject, isTeacher) {
         <div class="card-content" style="padding: 16px;">
           <div class="card-title" style="font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 8px;">${design.name}</div>
           <div class="card-description" style="font-size: 0.9rem; color: #666; margin-bottom: 12px;">${design.description}</div>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <button onclick="event.stopPropagation(); openDesignViewer('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')" 
-                    style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600;">
+                    style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600;">
               <i class="fas fa-eye" style="margin-right: 6px;"></i>View
             </button>
             ${isTeacher ? `
             <button onclick="event.stopPropagation(); openDesignEditor('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')" 
-                    style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600;">
+                    style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600;">
               <i class="fas fa-edit" style="margin-right: 6px;"></i>Edit
+            </button>
+            <button onclick="event.stopPropagation(); (async function() { try { if(typeof window.renameDesign === 'function') { await window.renameDesign('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}', '${design.gradeLevel || ''}'); } else { alert('Rename function not loaded. Please refresh the page.'); console.error('window.renameDesign:', typeof window.renameDesign); } } catch(err) { console.error('Error calling renameDesign:', err); alert('Error: ' + err.message); } })();" 
+                    style="background: #9C27B0; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600;">
+              <i class="fas fa-tag" style="margin-right: 6px;"></i>Rename
             </button>
             ` : ''}
           </div>
@@ -801,16 +816,205 @@ async function openDesignEditor(designId, subject, designName = 'Design', quarte
   }
 }
 
+/**
+ * Rename a design/lesson
+ * Updates the name in design-ids.json and global metadata
+ */
+async function renameDesign(designId, subject, currentName, quarter, gradeLevel = null) {
+  console.log('🔄 Rename function called:', { designId, subject, currentName, quarter, gradeLevel });
+  
+  try {
+    // Show a more user-friendly prompt
+    const promptMessage = `Rename Lesson\n\n` +
+      `Current Name: "${currentName}"\n\n` +
+      `Enter the new name for this lesson:`;
+    
+    const newName = prompt(promptMessage, currentName);
+    
+    if (!newName) {
+      console.log('❌ User cancelled rename');
+      return; // User cancelled
+    }
+    
+    const trimmedName = newName.trim();
+    
+    if (trimmedName === '') {
+      alert('❌ Lesson name cannot be empty. Please enter a valid name.');
+      return;
+    }
+    
+    if (trimmedName === currentName) {
+      console.log('ℹ️ Name unchanged, no update needed');
+      // User didn't change the name, but that's okay - just return silently
+      return;
+    }
+    
+    console.log(`📝 Renaming: "${currentName}" → "${trimmedName}"`);
+    // Get grade level if not provided
+    if (!gradeLevel) {
+      const user = firebase.auth().currentUser;
+      if (user) {
+        const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
+        const teacher = teacherSnap.val();
+        if (teacher) {
+          const gradeValue = teacher.grade || teacher.gradelevel;
+          if (gradeValue) {
+            gradeLevel = gradeValue.toString();
+          }
+        }
+      }
+    }
+    
+    // Normalize grade format
+    let normalizedGrade = null;
+    if (gradeLevel) {
+      normalizedGrade = String(gradeLevel);
+      if (!normalizedGrade.startsWith('Grade') && !normalizedGrade.startsWith('grade')) {
+        normalizedGrade = `Grade${normalizedGrade}`;
+      } else if (normalizedGrade.startsWith('grade')) {
+        normalizedGrade = `Grade${normalizedGrade.substring(5)}`;
+      }
+    }
+    
+    // Normalize subject
+    const subjectFolder = SUBJECT_FOLDERS[subject.toLowerCase()] || subject.toUpperCase();
+    let normalizedSubject = subject.toLowerCase();
+    if (normalizedSubject.startsWith('subject_')) {
+      normalizedSubject = normalizedSubject.replace('subject_', '');
+    }
+    
+    // Build prefix path
+    const quarterFolder = `Quarter${quarter}`;
+    const prefix = normalizedGrade ? `${normalizedGrade}/${subjectFolder}/${quarterFolder}/` : `${subjectFolder}/${quarterFolder}/`;
+    
+    // Get Supabase client
+    let client = getSupabaseClient();
+    if (!client) {
+      console.log('⚠️ Supabase client not found, initializing...');
+      client = await initializeSupabaseClient();
+    }
+    
+    if (!client || !client.storage) {
+      console.error('❌ Supabase client not available:', { client, hasStorage: client?.storage });
+      alert('Error: Supabase client not available. Please refresh the page and make sure Supabase SDK is loaded.');
+      return;
+    }
+    
+    console.log('✅ Supabase client ready');
+    
+    // Load current design-ids.json
+    const designIdsPath = `${prefix}design-ids.json`;
+    const designIdsUrl = getSupabaseFileUrl(designIdsPath);
+    
+    let designIds = [];
+    try {
+      const response = await fetch(designIdsUrl);
+      if (response.ok) {
+        designIds = await response.json();
+      }
+    } catch (error) {
+      console.log('design-ids.json not found or error loading, will create new one');
+    }
+    
+    // Update the name in the design IDs array
+    const designIndex = designIds.findIndex(d => d.id === designId);
+    if (designIndex >= 0) {
+      designIds[designIndex].name = trimmedName;
+    } else {
+      // If not found, add it
+      designIds.push({ id: designId, name: trimmedName });
+    }
+    
+    // Save updated design-ids.json
+    const designIdsJSON = JSON.stringify(designIds, null, 2);
+    console.log(`💾 Saving design-ids.json to: ${designIdsPath}`);
+    
+    const { error: uploadError } = await client.storage
+      .from(SUPABASE_BUCKET)
+      .update(designIdsPath, new Blob([designIdsJSON], { type: 'application/json' }), {
+        contentType: 'application/json',
+        upsert: true
+      });
+    
+    if (uploadError) {
+      console.log(`⚠️ Update failed, trying upload instead: ${uploadError.message}`);
+      // Try upload if update fails (file might not exist)
+      const { error: uploadError2 } = await client.storage
+        .from(SUPABASE_BUCKET)
+        .upload(designIdsPath, new Blob([designIdsJSON], { type: 'application/json' }), {
+          contentType: 'application/json',
+          upsert: true
+        });
+      
+      if (uploadError2) {
+        console.error('❌ Upload also failed:', uploadError2);
+        throw new Error(`Failed to save design-ids.json: ${uploadError2.message}`);
+      } else {
+        console.log('✅ Successfully uploaded design-ids.json');
+      }
+    } else {
+      console.log('✅ Successfully updated design-ids.json');
+    }
+    
+    // Also update global metadata if available (using Supabase Database)
+    // Note: This is optional - the design-ids.json file is the primary source
+    try {
+      if (client && typeof client.from === 'function') {
+        const { data: kvData, error: kvError } = await client
+          .from('designs_metadata')
+          .select('value')
+          .eq('key', 'designs-list')
+          .maybeSingle();
+        
+        if (!kvError && kvData && kvData.value) {
+          let globalList = kvData.value;
+          const globalIndex = globalList.findIndex(d => d.id === designId);
+          if (globalIndex >= 0) {
+            globalList[globalIndex].name = trimmedName;
+            // Update in database
+            await client
+              .from('designs_metadata')
+              .upsert({ key: 'designs-list', value: globalList }, { onConflict: 'key' });
+            console.log('✅ Updated global metadata');
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Could not update global metadata (this is optional):', error);
+    }
+    
+    console.log(`✅ Lesson renamed: "${currentName}" → "${trimmedName}"`);
+    
+    // Show success message with option to refresh
+    const shouldRefresh = confirm(
+      `✅ Lesson renamed successfully!\n\n` +
+      `"${currentName}" → "${trimmedName}"\n\n` +
+      `Click OK to refresh the page and see the updated name.\n` +
+      `Click Cancel to stay on this page.`
+    );
+    
+    if (shouldRefresh) {
+      window.location.reload();
+    }
+    
+  } catch (error) {
+    console.error('Error renaming design:', error);
+    alert(`Error renaming lesson: ${error.message}`);
+  }
+}
+
 // Export for use in HTML pages
 window.loadSupabaseDesignsForQuarter = loadSupabaseDesignsForQuarter;
 window.openDesignViewer = openDesignViewer;
 window.openSupabaseDesignViewer = openDesignViewer; // Alias for backward compatibility
 window.openDesignEditor = openDesignEditor;
 window.openSupabaseDesignEditor = openDesignEditor; // Alias for backward compatibility
+window.renameDesign = renameDesign;
 
 // Log that functions are available
 console.log('✅ [Supabase Loader] Functions loaded:', {
   loadSupabaseDesignsForQuarter: typeof window.loadSupabaseDesignsForQuarter,
   openDesignViewer: typeof window.openDesignViewer,
-  openDesignEditor: typeof window.openDesignEditor
+  openDesignEditor: typeof window.openDesignEditor,
+  renameDesign: typeof window.renameDesign
 });
