@@ -17,7 +17,7 @@
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
+
             background: #f8f9fa;
             color: #1a1a1a;
             line-height: 1.8;
@@ -419,7 +419,7 @@
     </style>
 </head>
 <body>
-    <!-- Site Header -->
+
     <header>
         <div class="floating-elements">
             <div class="floating-element"></div>
@@ -472,6 +472,95 @@
             </nav>
         </div>
     </header>
+
+    
+<!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
+
+ <!-- Profile Sidebar (Dynamic with Firebase) -->
+<div id="profileSidebar" class="profile-sidebar">
+    <div class="sidebar-content">
+        <button class="close-btn" id="closeSidebar">&times;</button>
+        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+            <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+            <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+        </div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <br>
+        <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+            <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+            Teacher
+        </div>
+            <div>
+                <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                <strong>ID:</strong> <span id="profileId">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                <strong>First Name:</strong> <span id="profileFirstName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                <strong>Last Name:</strong> <span id="profileLastName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                <strong>Section:</strong> <span id="profileSection">-</span>
+            </div>
+            <div>
+    <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+    <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+    <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+    <strong>City:</strong> <span id="profileAddressCity">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+    <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+    <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+    <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+</div>
+        </div>
+        <div class="logout-switch-row">
+            <div class="logout-switch" id="logoutSwitch">
+                <div class="logout-switch-circle"></div>
+            </div>
+            <span class="logout-label" id="logoutLabel">LOGOUT</span>
+        </div>
+    </div>
+</div>
+
+        <!-- Firebase App (the core Firebase SDK) -->
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+
+        <script src="../assets/js/Teacher Side/profile.js"></script>
+        
+
+    <script src="../assets/js/Teacher Side/header.js"></script>
 
     <div class="container">
         <!-- Header -->
@@ -1602,5 +1691,7 @@
             <p>&copy; 2025 Eduktaktika. All rights reserved.</p>
         </div>
     </footer>
+
+    <script src="../assets/js/navbar.js"></script>
 </body>
 </html>

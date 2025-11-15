@@ -383,6 +383,8 @@ small.muted{color:var(--muted);font-size:12px;font-weight:500;letter-spacing:.3p
   </div>
 </div>
 
+
+
 <script>
 /* Responsive fit (no scaling transforms) */
 (function(){
@@ -1062,6 +1064,46 @@ window.addEventListener('message', function(event) {
     if (typeof loadEditorQuestion === 'function') loadEditorQuestion(currentIndex);
   }
 });
+</script>
+
+    <style>
+        #infoModal .modal-content ul {
+            padding-left: 1.2em;
+        }
+        .modal-content {
+            background-color:rgb(237, 201, 153);
+        }
+    </style>
+
+<!-- Instructions Modal -->
+<div class="modal" id="infoModal" style="display:none;position:fixed;z-index:10000;left:0;top:0;width:100vw;height:100vh;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);">
+    <div class="modal-content" style="max-width:620px;width:90vw;max-height:720px;text-align:left;background:rgb(237,201,153);padding:32px 24px;border-radius:14px;box-shadow:0 4px 24px #0002;position:relative;">
+        <button class="close-btn" id="closeInfoBtn" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+        <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">
+            How to Play
+        </div>
+        <ul style="font-size:1.1em;line-height:1.7;padding-left:1.2em;">
+            <li>Drag the correct answers from the Choices panel into the Answer Zone. Double‑click to remove.</li>
+            <img src="../../images/GIF/game2.gif" alt="Example game with letters and image" style="width:90%;max-width:520px;height:40vh;border-radius:12px;box-shadow:0 2px 8px #0002;margin-top:0.5em;">
+        </ul>
+    </div>
+</div>
+    
+<script>
+// Place this at the end of your script section
+
+const infoModal = document.getElementById('infoModal');
+const closeInfoBtn = document.getElementById('closeInfoBtn');
+
+// Show modal at start
+window.addEventListener('DOMContentLoaded', () => {
+    infoModal.style.display = 'flex';
+});
+
+// Optional: close modal when clicking close or outside content
+closeInfoBtn.onclick = () => { infoModal.style.display = 'none'; };
+infoModal.onclick = e => { if (e.target === infoModal) infoModal.style.display = 'none'; };
+
 </script>
 </body>
 </html>

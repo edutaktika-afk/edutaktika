@@ -391,12 +391,6 @@
         .map(line => line.split(',').map(s => s.trim()))
         .filter(arr => arr.length === 2 && arr[0] && arr[1])
         .map(arr => ({ front: arr[0], back: arr[1] }));
-
-      // Limit to 6 pairs (12 cards)
-      if (newPairs.length > 6) {
-        alert("You can only have up to 6 pairs (12 cards)!");
-        newPairs = newPairs.slice(0, 6);
-      }
       if (newPairs.length < 2) {
         alert("Please enter at least two valid pairs.");
         return;

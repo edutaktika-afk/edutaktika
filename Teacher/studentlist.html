@@ -96,6 +96,7 @@ html, body {
   scrollbar-width: none;        /* Firefox */
   -ms-overflow-style: none;     /* IE/Edge legacy */
 }
+
 html::-webkit-scrollbar,
 body::-webkit-scrollbar,
 #mainContent::-webkit-scrollbar,
@@ -1078,6 +1079,18 @@ async function showStudentDetails(studentId) {
 </style>
 
 <script src="../assets/js/navbar.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const navLinks = document.querySelectorAll("nav ul li a");
+    const current = window.location.pathname.split('/').pop();
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
+        }
+    });
+});
+</script>
 
 </body>
 </html>

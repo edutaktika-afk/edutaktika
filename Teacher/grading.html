@@ -1804,24 +1804,17 @@
             <div class="grading-controls">
                 <div class="filter-controls">
                     <select id="subjectFilter" class="filter-select">
-                        <option value="">All Subjects</option>
                         <option value="math">Math</option>
                         <option value="english">English</option>
                         <option value="science">Science</option>
                     </select>
                     <select id="quarterFilter" class="filter-select">
-                        <option value="">All Quarters</option>
                         <option value="1">Quarter 1</option>
                         <option value="2">Quarter 2</option>
                         <option value="3">Quarter 3</option>
                         <option value="4">Quarter 4</option>
                     </select>
                     <select id="gradeLevelFilter" class="filter-select">
-                        <option value="">All Grade Levels</option>
-                        <option value="1">Grade 1</option>
-                        <option value="2">Grade 2</option>
-                        <option value="3">Grade 3</option>
-                        <option value="4">Grade 4</option>
                         <option value="5">Grade 5</option>
                         <option value="6">Grade 6</option>
                     </select>
@@ -1833,7 +1826,7 @@
                     <button id="bulkGradeBtn" class="export-btn" style="background: #ff9800;">
                         <i class="fas fa-upload"></i> Bulk Grade Entry
                     </button>
-                    <button id="gradeHistoryBtn" class="export-btn" style="background: #9c27b0;">
+                    <button id="gradeHistoryBtn" class="export-btn">
                         <i class="fas fa-history"></i> Grade History
                     </button>
                     <button id="addGradeBtn" class="add-grade-btn">
@@ -2143,13 +2136,12 @@
                     <div class="grading-controls">
                         <div class="filter-controls">
                             <select id="attendanceSubjectFilter" class="filter-select">
-                                <option value="">All Subjects</option>
+                               
                                 <option value="math">Math</option>
                                 <option value="english">English</option>
                                 <option value="science">Science</option>
                             </select>
                             <select id="attendanceQuarterFilter" class="filter-select">
-                                <option value="">All Quarters</option>
                                 <option value="1">Quarter 1</option>
                                 <option value="2">Quarter 2</option>
                                 <option value="3">Quarter 3</option>
@@ -2346,24 +2338,18 @@
                     <div class="viewonly-controls">
                         <div class="filter-controls">
                             <select id="viewonlySubjectFilter" class="filter-select">
-                                <option value="">All Subjects</option>
+
                                 <option value="math">Math</option>
                                 <option value="english">English</option>
                                 <option value="science">Science</option>
                             </select>
                             <select id="viewonlyQuarterFilter" class="filter-select">
-                                <option value="">All Quarters</option>
                                 <option value="1">Quarter 1</option>
                                 <option value="2">Quarter 2</option>
                                 <option value="3">Quarter 3</option>
                                 <option value="4">Quarter 4</option>
                             </select>
                             <select id="viewonlyGradeLevelFilter" class="filter-select">
-                                <option value="">All Grade Levels</option>
-                                <option value="1">Grade 1</option>
-                                <option value="2">Grade 2</option>
-                                <option value="3">Grade 3</option>
-                                <option value="4">Grade 4</option>
                                 <option value="5">Grade 5</option>
                                 <option value="6">Grade 6</option>
                             </select>
@@ -3398,7 +3384,7 @@
                       <th rowspan="2">Student Name</th>
                       <th rowspan="2">Subject</th>
                       <th rowspan="2">Quarter</th>
-                      <th colspan="${writtenWorks.length}" style="background: #e3f2fd; color: #1976d2; font-weight: bold;">WRITTEN WORKS (40%)</th>
+                      <th colspan="${writtenWorks.length}" style="background: #8A8AFF; color: white; font-weight: bold;">WRITTEN WORKS (40%)</th>
                       <th colspan="${performanceTask.length}" style="background: #f3e5f5; color: #7b1fa2; font-weight: bold;">PERFORMANCE TASK (40%)</th>
                       <th colspan="${quarterlyAssessment.length}" style="background: #e8f5e8; color: #388e3c; font-weight: bold;">QUARTERLY ASSESSMENT (20%)</th>
                       <th rowspan="2">Final Grade</th>
@@ -3428,15 +3414,15 @@
             if (hasCategorizedAttributes) {
                 // Add sub-category headers for categorized attributes
                 writtenWorks.forEach(attr => {
-                    headerHTML += `<th style="background: #e3f2fd; font-size: 0.85rem;">${attr.name}<br><small>(${attr.percentage}%)</small></th>`;
+                    headerHTML += `<th style="background: #5C5CFF; font-size: 0.85rem;">${attr.name}<br><small>(${attr.percentage}%)</small></th>`;
                 });
                 
                 performanceTask.forEach(attr => {
-                    headerHTML += `<th style="background: #f3e5f5; font-size: 0.85rem;">${attr.name}<br><small>(${attr.percentage}%)</small></th>`;
+                    headerHTML += `<th style="background: #C784CF; font-size: 0.85rem;">${attr.name}<br><small>(${attr.percentage}%)</small></th>`;
                 });
                 
                 quarterlyAssessment.forEach(attr => {
-                    headerHTML += `<th style="background: #e8f5e8; font-size: 0.85rem;">${attr.name}<br><small>(${attr.percentage}%)</small></th>`;
+                    headerHTML += `<th style="background: #8BCC8B; font-size: 0.85rem;">${attr.name}<br><small>(${attr.percentage}%)</small></th>`;
                 });
                 
                 headerHTML += '</tr>';
@@ -5186,5 +5172,17 @@
             });
         });
     </script>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function() {
+    const navLinks = document.querySelectorAll("nav ul li a");
+    const current = window.location.pathname.split('/').pop();
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
+        }
+    });
+});
+</script>
 </body>
 </html>
