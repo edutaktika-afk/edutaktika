@@ -121,6 +121,12 @@
   .leaderboard-table td { font-size: .68rem !important; }
   .player-cell img { width: 26px; height: 26px; }
 }
+nav ul li a.active,
+nav ul li .dropdown-content a.active {
+    background-color: #2e8b57 !important; /* Green background */
+    color: #fff !important;               /* White text */
+    border-radius: 8px;
+}
     </style>
 </head>
 <body>
@@ -631,5 +637,17 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Add to each leaderboard page -->
 <script src="../assets/js/leaderboardPagination.js"></script>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const navLinks = document.querySelectorAll("nav ul li a");
+    const current = window.location.pathname.split('/').pop();
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
+        }
+    });
+});
+</script>
+
 </body>
 </html>
