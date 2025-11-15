@@ -765,16 +765,12 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
   }
   
   // Normalize grade level format to match bucket structure (Grade5, Grade6, etc.)
-  // Convert grade5 -> Grade5, grade6 -> Grade6 to match your Supabase bucket structure
+  // Convert grade=5 -> Grade5, grade=6 -> Grade6 to match your Supabase bucket structure
   let normalizedGradeLevel = null;
   if (finalGradeLevel) {
-    normalizedGradeLevel = String(finalGradeLevel);
-    if (!normalizedGradeLevel.startsWith('Grade') && !normalizedGradeLevel.startsWith('grade')) {
-      normalizedGradeLevel = `Grade${normalizedGradeLevel}`;
-    } else if (normalizedGradeLevel.startsWith('grade')) {
-      // Convert grade5 -> Grade5, grade6 -> Grade6
-      normalizedGradeLevel = `Grade${normalizedGradeLevel.substring(5)}`;
-    }
+    // Use the grade normalizer utility to convert Firebase format (grade=5) to Supabase format (Grade5)
+    const { normalizeGrade } = await import('./utils/grade-normalizer');
+    normalizedGradeLevel = normalizeGrade(finalGradeLevel);
   }
   const quarterFolder = `Quarter${quarter}`;
   
@@ -863,13 +859,25 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
     await ensureFolderExists(designFolder, BUCKET_LESSON_STORAGE);
   }
 
-  // Thumbnails: Save to Supabase Storage
-  await writeThumbnailToSupabase(previewPath, preview);
-  console.log(`✅ Preview/thumbnail saved to Supabase Storage: ${previewPath}`);
+  // Thumbnails: Save to Supabase Storage with error handling
+  try {
+    await writeThumbnailToSupabase(previewPath, preview);
+    console.log(`✅ Preview/thumbnail saved to Supabase Storage: ${previewPath}`);
+  } catch (error) {
+    console.error(`❌ Failed to save thumbnail: ${error.message}`);
+    throw new Error(`Failed to save thumbnail: ${error.message}`);
+  }
   
   // Keep the JSON file intact as one piece (no media extraction)
   // This preserves the original Polotno design structure with all embedded base64 data
-  const designJSON = JSON.stringify(storeJSON);
+  let designJSON;
+  try {
+    designJSON = JSON.stringify(storeJSON);
+  } catch (error) {
+    console.error('❌ Failed to stringify design JSON:', error);
+    throw new Error(`Failed to serialize design: ${error.message}`);
+  }
+  
   const finalSize = new Blob([designJSON], { type: 'application/json' }).size;
   const finalSizeMB = (finalSize / 1024 / 1024).toFixed(2);
   
@@ -879,9 +887,14 @@ export async function saveDesignBySubject({ storeJSON, preview, name, subject, q
     console.log(`📊 Design JSON is large (${finalSizeMB}MB) - no worries, paid Supabase plan has no size limits!`);
   }
   
-  // Save design JSON as one complete file (no media extraction)
-  await writeFile(storePath, designJSON);
-  console.log(`✅ Design saved to Supabase: ${storePath} (${finalSizeMB}MB, self-contained)`);
+  // Save design JSON as one complete file (no media extraction) with error handling
+  try {
+    await writeFile(storePath, designJSON);
+    console.log(`✅ Design saved to Supabase: ${storePath} (${finalSizeMB}MB, self-contained)`);
+  } catch (error) {
+    console.error(`❌ Failed to save design JSON: ${error.message}`);
+    throw new Error(`Failed to save design: ${error.message}`);
+  }
 
   // Update metadata list with proper name and grade level
   // Load existing metadata from Supabase

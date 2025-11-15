@@ -134,12 +134,61 @@ function getSupabaseFileUrl(key) {
 }
 
 /**
+ * Normalize grade level from Firebase format (grade=5) to Supabase format (Grade5)
+ * Handles various formats: "grade=5", "grade5", "5", "Grade5", etc.
+ * @param {string} gradeLevel - Grade level in various formats
+ * @returns {string} Normalized grade (Grade5, Grade6, etc.)
+ */
+function normalizeGradeForSupabase(gradeLevel) {
+  if (!gradeLevel) return null;
+  
+  let normalized = String(gradeLevel);
+  
+  // Handle Firebase format: "grade=5" or "grade=6"
+  if (normalized.includes('=')) {
+    const parts = normalized.split('=');
+    if (parts.length === 2 && parts[0].toLowerCase().trim() === 'grade') {
+      normalized = parts[1].trim();
+    }
+  }
+  
+  // Remove common suffixes like "th", "st", "nd", "rd"
+  normalized = normalized.replace(/(\d+)(th|st|nd|rd)/i, '$1');
+  
+  // Remove "grade" prefix if present (case-insensitive)
+  if (/^grade/i.test(normalized)) {
+    normalized = normalized.replace(/^grade/i, '');
+  }
+  
+  // Remove "Grade" prefix if present
+  if (/^Grade/.test(normalized)) {
+    normalized = normalized.replace(/^Grade/, '');
+  }
+  
+  // Extract just the number if there's text before it
+  const numberMatch = normalized.match(/(\d+)/);
+  if (numberMatch) {
+    normalized = numberMatch[1];
+  }
+  
+  // Validate it's a number
+  const gradeNum = parseInt(normalized, 10);
+  if (isNaN(gradeNum) || gradeNum < 1 || gradeNum > 12) {
+    console.warn(`⚠️ Invalid grade level: "${gradeLevel}"`);
+    return null;
+  }
+  
+  // Format as "Grade5", "Grade6", etc. (for Supabase storage)
+  return `Grade${gradeNum}`;
+}
+
+/**
  * Load designs for a specific subject and quarter from Supabase Storage
  * @param {string} subject - Subject name (math, science, english or subject_math, etc.)
  * @param {string} quarter - Quarter number (1, 2, 3, 4)
  * @param {HTMLElement} container - Container element to render designs into (optional)
  * @param {boolean} isTeacher - Whether user is a teacher (can edit)
- * @param {string} gradeLevel - Grade level (grade5, grade6, etc.) - optional
+ * @param {string} gradeLevel - Grade level (grade=5, grade=6, etc.) - optional
  * @returns {Promise<Array>} Array of designs
  */
 async function loadSupabaseDesignsForQuarter(subject, quarter, container = null, isTeacher = false, gradeLevel = null) {
@@ -163,8 +212,24 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
           // Check both 'grade' and 'gradelevel' fields (Firebase stores as 'grade')
           const gradeValue = teacher.grade || teacher.gradelevel;
           if (gradeValue) {
-            gradeLevel = gradeValue.toString();
-            console.log(`📚 Grade level from Firebase: ${gradeLevel}`);
+            // Normalize to Firebase format: grade=5, grade=6, etc.
+            const grade = gradeValue.toString();
+            if (grade.includes('=')) {
+              gradeLevel = grade; // Already in correct format
+            } else {
+              const numberMatch = grade.match(/(\d+)/);
+              if (numberMatch) {
+                const gradeNum = parseInt(numberMatch[1], 10);
+                if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
+                  gradeLevel = `grade=${gradeNum}`;
+                } else {
+                  gradeLevel = grade; // Keep as-is if invalid
+                }
+              } else {
+                gradeLevel = grade; // Keep as-is if no number found
+              }
+            }
+            console.log(`📚 Grade level from Firebase: ${gradeValue} → normalized: ${gradeLevel}`);
           } else {
             console.error('❌ No grade level found in teacher profile! Cannot load lessons.');
             if (container) {
@@ -195,14 +260,14 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
     }
   }
   
-  // Normalize grade format: "5" -> "Grade5", "grade5" -> "Grade5"
-  let normalizedGrade = String(gradeLevel);
-  if (!normalizedGrade.startsWith('Grade') && !normalizedGrade.startsWith('grade')) {
-    // If it's just a number like "5", convert to "Grade5"
-    normalizedGrade = `Grade${normalizedGrade}`;
-  } else if (normalizedGrade.startsWith('grade')) {
-    // Convert "grade5" -> "Grade5"
-    normalizedGrade = `Grade${normalizedGrade.substring(5)}`;
+  // Normalize grade format: "grade=5" -> "Grade5", "grade5" -> "Grade5", "5" -> "Grade5"
+  const normalizedGrade = normalizeGradeForSupabase(gradeLevel);
+  if (!normalizedGrade) {
+    console.error('❌ Invalid grade level format:', gradeLevel);
+    if (container) {
+      container.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">⚠️ Invalid grade level format.<br>Please update your profile.</div>';
+    }
+    return [];
   }
   
   console.log(`🔄 [Supabase] Loading: ${subjectFolder}, quarter=${quarter}, grade=${normalizedGrade} (STRICT ISOLATION)`);
@@ -482,8 +547,24 @@ async function openDesignViewer(designId, subject, designName = 'Design', quarte
           // Check both 'grade' and 'gradelevel' fields (Firebase stores as 'grade')
           const gradeValue = teacher.grade || teacher.gradelevel;
           if (gradeValue) {
-            gradeLevel = gradeValue.toString();
-            console.log(`📚 Grade level for viewer: ${gradeLevel}`);
+            // Normalize to Firebase format: grade=5, grade=6, etc.
+            const grade = gradeValue.toString();
+            if (grade.includes('=')) {
+              gradeLevel = grade; // Already in correct format
+            } else {
+              const numberMatch = grade.match(/(\d+)/);
+              if (numberMatch) {
+                const gradeNum = parseInt(numberMatch[1], 10);
+                if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
+                  gradeLevel = `grade=${gradeNum}`;
+                } else {
+                  gradeLevel = grade; // Keep as-is if invalid
+                }
+              } else {
+                gradeLevel = grade; // Keep as-is if no number found
+              }
+            }
+            console.log(`📚 Grade level for viewer: ${gradeValue} → normalized: ${gradeLevel}`);
           } else {
             throw new Error('Grade level not found in teacher profile. Cannot open lesson.');
           }
@@ -499,12 +580,12 @@ async function openDesignViewer(designId, subject, designName = 'Design', quarte
       return;
     }
     
-    // Normalize grade format: "5" -> "Grade5", "grade5" -> "Grade5"
-    let normalizedGrade = String(gradeLevel);
-    if (!normalizedGrade.startsWith('Grade') && !normalizedGrade.startsWith('grade')) {
-      normalizedGrade = `Grade${normalizedGrade}`;
-    } else if (normalizedGrade.startsWith('grade')) {
-      normalizedGrade = `Grade${normalizedGrade.substring(5)}`;
+    // Normalize grade format: "grade=5" -> "Grade5", "grade5" -> "Grade5", "5" -> "Grade5"
+    const normalizedGrade = normalizeGradeForSupabase(gradeLevel);
+    if (!normalizedGrade) {
+      console.error('❌ Invalid grade level format:', gradeLevel);
+      alert(`Error: Invalid grade level format: ${gradeLevel}`);
+      return;
     }
     
     // Build Supabase URL matching bucket structure: GradeLevel/Subject/Quarter/id.json
@@ -669,8 +750,24 @@ async function openDesignEditor(designId, subject, designName = 'Design', quarte
           // Check both 'grade' and 'gradelevel' fields (Firebase stores as 'grade')
           const gradeValue = teacher.grade || teacher.gradelevel;
           if (gradeValue) {
-            gradeLevel = gradeValue.toString();
-            console.log(`📚 Grade level for viewer: ${gradeLevel}`);
+            // Normalize to Firebase format: grade=5, grade=6, etc.
+            const grade = gradeValue.toString();
+            if (grade.includes('=')) {
+              gradeLevel = grade; // Already in correct format
+            } else {
+              const numberMatch = grade.match(/(\d+)/);
+              if (numberMatch) {
+                const gradeNum = parseInt(numberMatch[1], 10);
+                if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
+                  gradeLevel = `grade=${gradeNum}`;
+                } else {
+                  gradeLevel = grade; // Keep as-is if invalid
+                }
+              } else {
+                gradeLevel = grade; // Keep as-is if no number found
+              }
+            }
+            console.log(`📚 Grade level for viewer: ${gradeValue} → normalized: ${gradeLevel}`);
           } else {
             throw new Error('Grade level not found in teacher profile. Cannot open lesson.');
           }
@@ -686,12 +783,12 @@ async function openDesignEditor(designId, subject, designName = 'Design', quarte
       return;
     }
     
-    // Normalize grade format: "5" -> "Grade5", "grade5" -> "Grade5"
-    let normalizedGrade = String(gradeLevel);
-    if (!normalizedGrade.startsWith('Grade') && !normalizedGrade.startsWith('grade')) {
-      normalizedGrade = `Grade${normalizedGrade}`;
-    } else if (normalizedGrade.startsWith('grade')) {
-      normalizedGrade = `Grade${normalizedGrade.substring(5)}`;
+    // Normalize grade format: "grade=5" -> "Grade5", "grade5" -> "Grade5", "5" -> "Grade5"
+    const normalizedGrade = normalizeGradeForSupabase(gradeLevel);
+    if (!normalizedGrade) {
+      console.error('❌ Invalid grade level format:', gradeLevel);
+      alert(`Error: Invalid grade level format: ${gradeLevel}`);
+      return;
     }
     
     // Build Supabase URL matching bucket structure: GradeLevel/Subject/Quarter/id.json

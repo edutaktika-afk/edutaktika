@@ -59,6 +59,38 @@
         gap: 12px !important;
     }
 }
+
+/* Make lessons-container display in grid layout like quizzes */
+.quarter-section .lessons-container:not(#assessmentsContainer) {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 18px !important;
+    justify-content: stretch;
+    align-items: stretch;
+    margin-top: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure quiz-list maintains its own grid layout */
+.quarter-section .lessons-container #quiz-list {
+    grid-column: 1 / -1;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+}
+
+/* Responsive adjustments for lessons-container */
+@media (max-width: 1200px) {
+    .quarter-section .lessons-container:not(#assessmentsContainer) {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .quarter-section .lessons-container:not(#assessmentsContainer) {
+        grid-template-columns: 1fr !important;
+    }
+}
 </style>
 </head>
 
@@ -242,7 +274,23 @@
                 // Store teacher's grade level in sessionStorage for Editor
                 if (teacher && teacher.grade) {
                     const grade = teacher.grade.toString();
-                    const gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+                    // Normalize to Firebase format: grade=5, grade=6, etc.
+                    let gradeLevel;
+                    if (grade.includes('=')) {
+                        gradeLevel = grade; // Already in correct format
+                    } else {
+                        const numberMatch = grade.match(/(\d+)/);
+                        if (numberMatch) {
+                            const gradeNum = parseInt(numberMatch[1], 10);
+                            if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
+                                gradeLevel = `grade=${gradeNum}`;
+                            } else {
+                                gradeLevel = grade; // Keep as-is if invalid
+                            }
+                        } else {
+                            gradeLevel = grade; // Keep as-is if no number found
+                        }
+                    }
                     sessionStorage.setItem('supabase-design-grade', gradeLevel);
                     console.log(`📚 Stored teacher grade level in sessionStorage: ${gradeLevel}`);
                 }
@@ -275,7 +323,22 @@
                             const teacher = teacherSnap.val();
                             if (teacher && teacher.grade) {
                                 const grade = teacher.grade.toString();
-                                gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+                                // Normalize to Firebase format: grade=5, grade=6, etc.
+                                if (grade.includes('=')) {
+                                    gradeLevel = grade; // Already in correct format
+                                } else {
+                                    const numberMatch = grade.match(/(\d+)/);
+                                    if (numberMatch) {
+                                        const gradeNum = parseInt(numberMatch[1], 10);
+                                        if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
+                                            gradeLevel = `grade=${gradeNum}`;
+                                        } else {
+                                            gradeLevel = grade; // Keep as-is if invalid
+                                        }
+                                    } else {
+                                        gradeLevel = grade; // Keep as-is if no number found
+                                    }
+                                }
                                 console.log(`📚 Found teacher grade level: ${teacher.grade} → normalized: ${gradeLevel}`);
                             }
                         }

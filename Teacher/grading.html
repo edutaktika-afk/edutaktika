@@ -3280,8 +3280,10 @@
                     const student = child.val();
                     
                     // Filter by section, grade level, and school year
+                    // Students use "grade" field (not "gradelevel") - check both for backward compatibility
                     const sectionMatch = student.section && student.section.trim().toLowerCase() === currentSection.trim().toLowerCase();
-                    const gradeMatch = !teacherGrade || student.gradelevel === teacherGrade;
+                    const studentGrade = student.grade || student.gradelevel;
+                    const gradeMatch = !teacherGrade || studentGrade === teacherGrade;
                     const schoolYearMatch = !teacherSchoolYear || student.school_year === teacherSchoolYear;
                     
                     if (sectionMatch && gradeMatch && schoolYearMatch) {
@@ -3341,8 +3343,10 @@
                 const matchQuarter = !quarterFilter || grade.quarter === quarterFilter;
                 
                 // Find the student to check their grade level
+                // Students use "grade" field (not "gradelevel") - check both for backward compatibility
                 const student = studentsData.find(s => s.uid === grade.studentUID);
-                const matchGradeLevel = !gradeLevelFilter || (student && student.gradelevel === gradeLevelFilter);
+                const studentGrade = student ? (student.grade || student.gradelevel) : null;
+                const matchGradeLevel = !gradeLevelFilter || studentGrade === gradeLevelFilter;
                 
                 return matchSubject && matchQuarter && matchGradeLevel;
             });
@@ -3372,19 +3376,10 @@
             const tableHead = document.getElementById('gradingTableHead');
             const tableBody = document.getElementById('gradingTableBody');
             
-            // Debug: Log current grading attributes
-            console.log('Generating table with attributes:', gradingAttributes);
-            console.log('Number of attributes:', gradingAttributes.length);
-
             // Group attributes by category
             const writtenWorks = gradingAttributes.filter(attr => attr.category === 'Written Works' && attr.percentage > 0);
             const performanceTask = gradingAttributes.filter(attr => attr.category === 'Performance Task' && attr.percentage > 0);
             const quarterlyAssessment = gradingAttributes.filter(attr => attr.category === 'Quarterly Assessment' && attr.percentage > 0);
-            
-            // Debug: Log filtered categories
-            console.log('Written Works:', writtenWorks);
-            console.log('Performance Task:', performanceTask);
-            console.log('Quarterly Assessment:', quarterlyAssessment);
 
             // Check if we have any categorized attributes
             const hasCategorizedAttributes = writtenWorks.length > 0 || performanceTask.length > 0 || quarterlyAssessment.length > 0;
@@ -3899,9 +3894,6 @@
         // Calculate final grade in real-time
         function calculateFinalGrade() {
             let finalGrade = 0;
-            
-            // Debug: Log calculation details
-            console.log('Calculating final grade with attributes:', gradingAttributes.map(a => `${a.name}: ${a.percentage}%`));
             
             gradingAttributes.forEach(attr => {
                 if (attr.percentage > 0) {
@@ -5094,7 +5086,8 @@
                                 document.getElementById('profileLastName').textContent = data.lname || '-';
                             }
                             if (document.getElementById('profileGrade')) {
-                                document.getElementById('profileGrade').textContent = data.gradelevel || data.grade || '-';
+                                // Students use "grade" field (not "gradelevel") - check both for backward compatibility
+                                document.getElementById('profileGrade').textContent = data.grade || data.gradelevel || '-';
                             }
                             if (document.getElementById('profileSection')) {
                                 document.getElementById('profileSection').textContent = data.section || '-';

@@ -1515,7 +1515,8 @@ async function autoSaveCanvas() {
 
                     const studentSection = (student.section || '').toString().trim().toLowerCase();
                     const teacherSectionLower = (section || '').toString().trim().toLowerCase();
-                    const studentGrade = (student.gradelevel || '').toString().trim();
+                    // Students use "grade" field (not "gradelevel") - check both for backward compatibility
+                    const studentGrade = (student.grade || student.gradelevel || '').toString().trim();
                     const teacherGrade = (gradeLevel || '').toString().trim();
 
                     if (studentSection === teacherSectionLower && studentGrade === teacherGrade) {

@@ -1197,6 +1197,15 @@ function loadTeachers() {
 
             snapshot.forEach(child => {
                 const t = child.val();
+                // Normalize grade level to Firebase format
+                if (t.grade || t.gradelevel) {
+                    const rawGrade = t.grade || t.gradelevel;
+                    const normalizedGrade = normalizeGradeForFirebase(rawGrade);
+                    if (normalizedGrade) {
+                        t.grade = normalizedGrade;
+                        t.gradelevel = normalizedGrade;
+                    }
+                }
                 // Count students in the same section as this teacher
                 const studentCount = students.filter(s => s.section === t.section).length;
                 const tr = document.createElement('tr');
@@ -1209,7 +1218,7 @@ function loadTeachers() {
                         <button class="review" onclick="reviewTeacher('${child.key}')">${(t.fname || '') + ' ' + (t.lname || '')}</button>
                     </td>
                     <td>${t.email || ''}</td>
-                    <td>${t.grade || ''}</td>
+                    <td>${formatGradeForDisplay(t.grade || t.gradelevel || '')}</td>
                     <td>${t.section || ''}</td>
                     <td>${studentCount}</td>
                     <td>
@@ -1300,7 +1309,7 @@ function loadTeachers() {
                 <div><span class="modal-label">Middle Name:</span> <span>${t.mname || ''}</span></div>
                 <div><span class="modal-label">Last Name:</span> <span>${t.lname || ''}</span></div>
                 <div><span class="modal-label">Email:</span> <span>${t.email || ''}</span></div>
-                <div><span class="modal-label">Grade Level:</span> <span>${t.gradelevel || ''}</span></div>
+                <div><span class="modal-label">Grade Level:</span> <span>${formatGradeForDisplay(t.grade || t.gradelevel || '')}</span></div>
                 <div><span class="modal-label">Section:</span> <span>${t.section || ''}</span></div>
                 <div><span class="modal-label">Address:</span> <span>${t.address || ''}</span></div>
                 <div><span class="modal-label">Gender:</span> <span>${t.gender || ''}</span></div>
@@ -1319,6 +1328,59 @@ function loadTeachers() {
     }
 
 
+// Helper function to normalize grade level to Firebase format (grade=5, grade=6, etc.)
+function normalizeGradeForFirebase(grade) {
+    if (!grade) return null;
+    
+    let normalized = String(grade).trim();
+    
+    // Handle Firebase format: "grade=5" or "grade=6" (already in correct format)
+    if (normalized.includes('=')) {
+        const parts = normalized.split('=');
+        if (parts.length === 2 && parts[0].toLowerCase().trim() === 'grade') {
+            const gradeNum = parseInt(parts[1].trim(), 10);
+            if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
+                return `grade=${gradeNum}`;
+            }
+        }
+    }
+    
+    // Remove common suffixes like "th", "st", "nd", "rd"
+    normalized = normalized.replace(/(\d+)(th|st|nd|rd)/i, '$1');
+    
+    // Remove "grade" prefix if present (case-insensitive)
+    if (/^grade/i.test(normalized)) {
+        normalized = normalized.replace(/^grade/i, '');
+    }
+    
+    // Extract just the number if there's text before it
+    const numberMatch = normalized.match(/(\d+)/);
+    if (numberMatch) {
+        normalized = numberMatch[1];
+    }
+    
+    // Validate it's a number
+    const gradeNum = parseInt(normalized, 10);
+    if (isNaN(gradeNum) || gradeNum < 1 || gradeNum > 12) {
+        return null;
+    }
+    
+    // Format as "grade=5", "grade=6", etc. (for Firebase)
+    return `grade=${gradeNum}`;
+}
+
+// Helper function to format grade level for display (grade=5 -> "Grade 5" or "grade=5")
+function formatGradeForDisplay(grade) {
+    if (!grade) return '';
+    if (grade.includes('=')) {
+        const parts = grade.split('=');
+        if (parts.length === 2 && parts[0].toLowerCase().trim() === 'grade') {
+            return `Grade ${parts[1].trim()}`;
+        }
+    }
+    return grade; // Return as-is if not in expected format
+}
+
 function loadStudents() {
     db.ref('students').once('value').then(snapshot => {
         const students = [];
@@ -1327,9 +1389,24 @@ function loadStudents() {
 
         snapshot.forEach(child => {
             const s = child.val();
+            // Students use "grade" field (not "gradelevel") - check both for backward compatibility
+            const studentGrade = s.grade || s.gradelevel;
+            // Normalize grade level to Firebase format
+            if (studentGrade) {
+                const normalizedGrade = normalizeGradeForFirebase(studentGrade);
+                if (normalizedGrade) {
+                    // Update both fields for consistency
+                    s.grade = normalizedGrade;
+                    s.gradelevel = normalizedGrade;
+                    gradesSet.add(normalizedGrade);
+                } else {
+                    // If normalization fails, still add it but log a warning
+                    console.warn('Invalid grade level format:', studentGrade);
+                    gradesSet.add(studentGrade);
+                }
+            }
             students.push(s);
             if (s.section) sectionsSet.add(s.section);
-            if (s.gradelevel) gradesSet.add(s.gradelevel); // <-- use gradelevel
         });
 
         // Populate dynamic section filter
@@ -1346,7 +1423,9 @@ function loadStudents() {
         if (gradeFilter) {
             gradeFilter.innerHTML = '<option value="">All Grades</option>';
             Array.from(gradesSet).sort().forEach(grade => {
-                gradeFilter.innerHTML += `<option value="${grade}">${grade}</option>`;
+                // Display formatted grade in dropdown, but use original value for filtering
+                const displayGrade = formatGradeForDisplay(grade) || grade;
+                gradeFilter.innerHTML += `<option value="${grade}">${displayGrade}</option>`;
             });
         }
 
@@ -1356,11 +1435,13 @@ function loadStudents() {
             const grade = gradeFilter?.value || '';
             const section = sectionFilter?.value || '';
 
-            // Group students by gradelevel and section
+            // Group students by grade and section
             const grouped = {};
             students.forEach(s => {
+                // Students use "grade" field (not "gradelevel") - check both for backward compatibility
+                const studentGrade = s.grade || s.gradelevel || 'Not Set';
                 if (
-                    (grade === '' || s.gradelevel === grade) &&
+                    (grade === '' || studentGrade === grade) &&
                     (section === '' || s.section === section) &&
                     (
                         !search ||
@@ -1370,9 +1451,9 @@ function loadStudents() {
                         (s.id && s.id.toLowerCase().includes(search))
                     )
                 ) {
-                    if (!grouped[s.gradelevel]) grouped[s.gradelevel] = {};
-                    if (!grouped[s.gradelevel][s.section]) grouped[s.gradelevel][s.section] = [];
-                    grouped[s.gradelevel][s.section].push(s);
+                    if (!grouped[studentGrade]) grouped[studentGrade] = {};
+                    if (!grouped[studentGrade][s.section]) grouped[studentGrade][s.section] = [];
+                    grouped[studentGrade][s.section].push(s);
                 }
             });
 
@@ -1384,8 +1465,10 @@ function loadStudents() {
                     // Add a group row for grade/section
                     const groupTr = document.createElement('tr');
                     groupTr.style.background = '#e0ffe6';
+                    // Format grade for display (grade=5 -> "Grade 5")
+                    const displayGrade = formatGradeForDisplay(gradeKey || 'Not Set');
                     groupTr.innerHTML = `<td colspan="9" style="text-align:center;font-weight:bold;">
-                        Grade: ${gradeKey} &nbsp; / &nbsp; Section: ${sectionKey}
+                        Grade: ${displayGrade} &nbsp; / &nbsp; Section: ${sectionKey}
                     </td>`;
                     tbody.appendChild(groupTr);
 
@@ -1398,7 +1481,7 @@ function loadStudents() {
                             <td>${s.id || ''}</td>
                             <td>${(s.fname || '') + ' ' + (s.lname || '')}</td>
                             <td>${s.email || ''}</td>
-                            <td>${s.gradelevel || ''}</td>
+                            <td>${formatGradeForDisplay(s.grade || s.gradelevel || '')}</td>
                             <td>${s.section || ''}</td>
                             <td>${s.subject || ''}</td>
                             <td>${s.registeredAt ? new Date(s.registeredAt).toLocaleString() : ''}</td>
@@ -1551,7 +1634,9 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
             document.getElementById('editStudentFname').value = student.fname || '';
             document.getElementById('editStudentLname').value = student.lname || '';
             document.getElementById('editStudentEmail').value = student.email || '';
-            document.getElementById('editStudentGrade').value = student.gradelevel || '';
+            // Display grade level in edit form (show as-is, user can edit)
+            // Students use "grade" field (not "gradelevel") - check both for backward compatibility
+            document.getElementById('editStudentGrade').value = student.grade || student.gradelevel || '';
             document.getElementById('editStudentSection').value = student.section || '';
             document.getElementById('editStudentSubject').value = student.subject || '';
             document.getElementById('editStudentModal').style.display = 'flex';
@@ -1567,11 +1652,16 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
     document.getElementById('editStudentForm')?.addEventListener('submit', function(e) {
         e.preventDefault();
         const id = document.getElementById('editStudentId').value;
+        // Normalize grade level to Firebase format before saving
+        const rawGrade = document.getElementById('editStudentGrade').value.trim();
+        const normalizedGrade = normalizeGradeForFirebase(rawGrade) || rawGrade; // Use normalized if valid, otherwise keep original
+        
         const updates = {
             fname: document.getElementById('editStudentFname').value,
             lname: document.getElementById('editStudentLname').value,
             email: document.getElementById('editStudentEmail').value,
-            gradelevel: document.getElementById('editStudentGrade').value,
+            grade: normalizedGrade, // Students use "grade" field
+            gradelevel: normalizedGrade, // Also update gradelevel for backward compatibility
             section: document.getElementById('editStudentSection').value,
             subject: document.getElementById('editStudentSubject').value
         };
@@ -1603,6 +1693,7 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
             document.getElementById('editTeacherFname').value = teacher.fname || '';
             document.getElementById('editTeacherLname').value = teacher.lname || '';
             document.getElementById('editTeacherEmail').value = teacher.email || '';
+            // Display grade level in edit form (show as-is, user can edit)
             document.getElementById('editTeacherGrade').value = teacher.grade || teacher.gradelevel || '';
             document.getElementById('editTeacherSection').value = teacher.section || '';
             document.getElementById('editTeacherModal').style.display = 'flex';
@@ -1618,12 +1709,16 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
     document.getElementById('editTeacherForm')?.addEventListener('submit', function(e) {
         e.preventDefault();
         const key = document.getElementById('editTeacherKey').value;
+        // Normalize grade level to Firebase format before saving
+        const rawGrade = document.getElementById('editTeacherGrade').value.trim();
+        const normalizedGrade = normalizeGradeForFirebase(rawGrade) || rawGrade; // Use normalized if valid, otherwise keep original
+        
         const updates = {
             fname: document.getElementById('editTeacherFname').value,
             lname: document.getElementById('editTeacherLname').value,
             email: document.getElementById('editTeacherEmail').value,
-            grade: document.getElementById('editTeacherGrade').value,
-            gradelevel: document.getElementById('editTeacherGrade').value, // Support both fields
+            grade: normalizedGrade,
+            gradelevel: normalizedGrade, // Support both fields
             section: document.getElementById('editTeacherSection').value
         };
         
@@ -2074,11 +2169,16 @@ function exportStudentsCSV() {
         const students = [];
         snapshot.forEach(child => {
             const s = child.val();
+            // Normalize and format grade level for CSV
+            // Students use "grade" field (not "gradelevel") - check both for backward compatibility
+            const rawGrade = s.grade || s.gradelevel || '';
+            const formattedGrade = formatGradeForDisplay(rawGrade) || rawGrade;
+            
             students.push({
                 id: s.id || '',
                 name: (s.fname || '') + ' ' + (s.lname || ''),
                 email: s.email || '',
-                grade: s.gradelevel || '',
+                grade: formattedGrade,
                 section: s.section || '',
                 subject: s.subject || '',
                 registered: s.registeredAt ? new Date(s.registeredAt).toLocaleString() : ''
@@ -2109,11 +2209,15 @@ function exportTeachersCSV(type) {
             if (type === 'pending' && t.approved) return;
             if (type === 'approved' && !t.approved) return;
             
+            // Normalize and format grade level for CSV
+            const rawGrade = t.grade || t.gradelevel || '';
+            const formattedGrade = formatGradeForDisplay(rawGrade) || rawGrade;
+            
             teachers.push({
                 id: t.id || '',
                 name: (t.fname || '') + ' ' + (t.lname || ''),
                 email: t.email || '',
-                grade: t.grade || '',
+                grade: formattedGrade,
                 section: t.section || '',
                 status: t.approved ? 'Approved' : 'Pending',
                 registered: t.registeredAt ? new Date(t.registeredAt).toLocaleString() : ''
@@ -2140,116 +2244,212 @@ function exportTeachersCSV(type) {
     // Load admin analytics
     async function loadAdminAnalytics() {
         try {
-            // Load all students
-            const studentsSnap = await db.ref('students').once('value');
-            const totalStudents = studentsSnap.exists() ? Object.keys(studentsSnap.val()).length : 0;
-            document.getElementById('analyticsTotalStudents').textContent = totalStudents;
-            document.getElementById('analyticsActiveStudents').textContent = totalStudents; // Assuming all are active
+            // Initialize all analytics elements with default values
+            const setDefaultValue = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            };
             
-            // Load all teachers
-            const teachersSnap = await db.ref('teachers').once('value');
-            const totalTeachers = teachersSnap.exists() ? Object.keys(teachersSnap.val()).length : 0;
-            document.getElementById('analyticsTotalTeachers').textContent = totalTeachers;
-            document.getElementById('analyticsActiveTeachers').textContent = totalTeachers; // Assuming all are active
+            // Set defaults for all metrics
+            setDefaultValue('analyticsTotalStudents', '0');
+            setDefaultValue('analyticsActiveStudents', '0');
+            setDefaultValue('analyticsTotalTeachers', '0');
+            setDefaultValue('analyticsActiveTeachers', '0');
+            setDefaultValue('analyticsTotalAssessments', '0');
+            setDefaultValue('analyticsTotalQuizAttempts', '0');
+            setDefaultValue('analyticsTotalGrades', '0');
+            setDefaultValue('analyticsAverageGrade', '0.00');
+            setDefaultValue('analyticsPassingRate', '0%');
+            setDefaultValue('analyticsMathAverage', '0.00');
+            setDefaultValue('analyticsEnglishAverage', '0.00');
+            setDefaultValue('analyticsScienceAverage', '0.00');
+            setDefaultValue('analyticsLessonsCreated', '0');
+            setDefaultValue('analyticsQuizzesCreated', '0');
             
-            // Load all assessments
-            const assessmentsSnap = await db.ref('assessments').once('value');
-            const totalAssessments = assessmentsSnap.exists() ? Object.keys(assessmentsSnap.val()).length : 0;
-            document.getElementById('analyticsTotalAssessments').textContent = totalAssessments;
-            
-            // Load quiz attempts
-            const quizSummariesSnap = await db.ref('quizSummaries').once('value');
-            let totalQuizAttempts = 0;
-            if (quizSummariesSnap.exists()) {
-                quizSummariesSnap.forEach(quizSnap => {
-                    if (quizSnap.exists()) {
-                        totalQuizAttempts += Object.keys(quizSnap.val()).length;
-                    }
-                });
+            // Load all students with error handling
+            let totalStudents = 0;
+            try {
+                const studentsSnap = await db.ref('students').once('value');
+                totalStudents = studentsSnap.exists() ? Object.keys(studentsSnap.val()).length : 0;
+            } catch (error) {
+                console.warn('Error loading students:', error);
             }
-            document.getElementById('analyticsTotalQuizAttempts').textContent = totalQuizAttempts;
+            setDefaultValue('analyticsTotalStudents', totalStudents);
+            setDefaultValue('analyticsActiveStudents', totalStudents);
             
-            // Load all grades from all teachers
+            // Load all teachers with error handling
+            let totalTeachers = 0;
+            let teachersSnap = null;
+            try {
+                teachersSnap = await db.ref('teachers').once('value');
+                totalTeachers = teachersSnap.exists() ? Object.keys(teachersSnap.val()).length : 0;
+            } catch (error) {
+                console.warn('Error loading teachers:', error);
+            }
+            setDefaultValue('analyticsTotalTeachers', totalTeachers);
+            setDefaultValue('analyticsActiveTeachers', totalTeachers);
+            
+            // Load all assessments with error handling
+            let totalAssessments = 0;
+            try {
+                const assessmentsSnap = await db.ref('assessments').once('value');
+                totalAssessments = assessmentsSnap.exists() ? Object.keys(assessmentsSnap.val()).length : 0;
+            } catch (error) {
+                console.warn('Error loading assessments:', error);
+            }
+            setDefaultValue('analyticsTotalAssessments', totalAssessments);
+            
+            // Load quiz attempts with error handling
+            let totalQuizAttempts = 0;
+            try {
+                const quizSummariesSnap = await db.ref('quizSummaries').once('value');
+                if (quizSummariesSnap.exists()) {
+                    quizSummariesSnap.forEach(quizSnap => {
+                        if (quizSnap.exists() && quizSnap.val()) {
+                            const attempts = quizSnap.val();
+                            totalQuizAttempts += typeof attempts === 'object' ? Object.keys(attempts).length : 0;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.warn('Error loading quiz attempts:', error);
+            }
+            setDefaultValue('analyticsTotalQuizAttempts', totalQuizAttempts);
+            
+            // Load all grades from all teachers with error handling
             let allGrades = [];
             let mathGrades = [];
             let englishGrades = [];
             let scienceGrades = [];
             
-            if (teachersSnap.exists()) {
+            if (teachersSnap && teachersSnap.exists()) {
                 const gradePromises = [];
                 teachersSnap.forEach(teacherSnap => {
-                    const teacher = teacherSnap.val();
-                    if (teacher && teacher.section) {
-                        const section = teacher.section;
-                        gradePromises.push(
-                            db.ref(`teachers/${teacherSnap.key}/sections/${section}/grades`).once('value')
-                                .then(gradesSnap => {
-                                    if (gradesSnap.exists()) {
-                                        gradesSnap.forEach(gradeSnap => {
-                                            const grade = gradeSnap.val();
-                                            allGrades.push(grade);
-                                            
-                                            // Categorize by subject
-                                            if (grade.subject === 'subject_math' || grade.subject === 'Math') {
-                                                mathGrades.push(grade);
-                                            } else if (grade.subject === 'subject_english' || grade.subject === 'English') {
-                                                englishGrades.push(grade);
-                                            } else if (grade.subject === 'subject_science' || grade.subject === 'Science') {
-                                                scienceGrades.push(grade);
-                                            }
-                                        });
-                                    }
-                                })
-                        );
+                    try {
+                        const teacher = teacherSnap.val();
+                        if (teacher && teacher.section) {
+                            const section = teacher.section;
+                            gradePromises.push(
+                                db.ref(`teachers/${teacherSnap.key}/sections/${section}/grades`).once('value')
+                                    .then(gradesSnap => {
+                                        if (gradesSnap.exists() && gradesSnap.val()) {
+                                            gradesSnap.forEach(gradeSnap => {
+                                                const grade = gradeSnap.val();
+                                                if (grade && typeof grade === 'object') {
+                                                    allGrades.push(grade);
+                                                    
+                                                    // Categorize by subject (handle various formats)
+                                                    const subject = grade.subject || '';
+                                                    if (subject === 'subject_math' || subject === 'Math' || subject === 'math') {
+                                                        mathGrades.push(grade);
+                                                    } else if (subject === 'subject_english' || subject === 'English' || subject === 'english') {
+                                                        englishGrades.push(grade);
+                                                    } else if (subject === 'subject_science' || subject === 'Science' || subject === 'science') {
+                                                        scienceGrades.push(grade);
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.warn(`Error loading grades for teacher ${teacherSnap.key}:`, error);
+                                    })
+                            );
+                        }
+                    } catch (error) {
+                        console.warn(`Error processing teacher ${teacherSnap.key}:`, error);
                     }
                 });
                 
-                await Promise.all(gradePromises);
+                try {
+                    await Promise.all(gradePromises);
+                } catch (error) {
+                    console.warn('Error loading some teacher grades:', error);
+                }
             }
             
-            // Calculate grade analytics
-            document.getElementById('analyticsTotalGrades').textContent = allGrades.length;
+            // Calculate grade analytics with safe defaults
+            setDefaultValue('analyticsTotalGrades', allGrades.length);
             
             if (allGrades.length > 0) {
-                const averageGrade = allGrades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / allGrades.length;
-                document.getElementById('analyticsAverageGrade').textContent = averageGrade.toFixed(2);
+                const validGrades = allGrades.filter(grade => 
+                    grade && typeof grade === 'object' && 
+                    (typeof grade.finalGrade === 'number' || typeof grade.finalGrade === 'string')
+                );
                 
-                const passingCount = allGrades.filter(grade => (grade.finalGrade || 0) >= 75).length;
-                const passingRate = (passingCount / allGrades.length) * 100;
-                document.getElementById('analyticsPassingRate').textContent = Math.round(passingRate) + '%';
+                if (validGrades.length > 0) {
+                    const numericGrades = validGrades.map(grade => {
+                        const gradeValue = typeof grade.finalGrade === 'string' ? parseFloat(grade.finalGrade) : grade.finalGrade;
+                        return isNaN(gradeValue) ? 0 : gradeValue;
+                    });
+                    
+                    const averageGrade = numericGrades.reduce((sum, grade) => sum + grade, 0) / numericGrades.length;
+                    setDefaultValue('analyticsAverageGrade', averageGrade.toFixed(2));
+                    
+                    const passingCount = numericGrades.filter(grade => grade >= 75).length;
+                    const passingRate = (passingCount / numericGrades.length) * 100;
+                    setDefaultValue('analyticsPassingRate', Math.round(passingRate) + '%');
+                }
             }
             
-            // Calculate subject averages
+            // Calculate subject averages with safe defaults
             if (mathGrades.length > 0) {
-                const mathAvg = mathGrades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / mathGrades.length;
-                document.getElementById('analyticsMathAverage').textContent = mathAvg.toFixed(2);
+                const validMathGrades = mathGrades
+                    .filter(g => g && typeof g.finalGrade !== 'undefined')
+                    .map(g => {
+                        const val = typeof g.finalGrade === 'string' ? parseFloat(g.finalGrade) : g.finalGrade;
+                        return isNaN(val) ? 0 : val;
+                    });
+                if (validMathGrades.length > 0) {
+                    const mathAvg = validMathGrades.reduce((sum, grade) => sum + grade, 0) / validMathGrades.length;
+                    setDefaultValue('analyticsMathAverage', mathAvg.toFixed(2));
+                }
             }
             
             if (englishGrades.length > 0) {
-                const englishAvg = englishGrades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / englishGrades.length;
-                document.getElementById('analyticsEnglishAverage').textContent = englishAvg.toFixed(2);
+                const validEnglishGrades = englishGrades
+                    .filter(g => g && typeof g.finalGrade !== 'undefined')
+                    .map(g => {
+                        const val = typeof g.finalGrade === 'string' ? parseFloat(g.finalGrade) : g.finalGrade;
+                        return isNaN(val) ? 0 : val;
+                    });
+                if (validEnglishGrades.length > 0) {
+                    const englishAvg = validEnglishGrades.reduce((sum, grade) => sum + grade, 0) / validEnglishGrades.length;
+                    setDefaultValue('analyticsEnglishAverage', englishAvg.toFixed(2));
+                }
             }
             
             if (scienceGrades.length > 0) {
-                const scienceAvg = scienceGrades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / scienceGrades.length;
-                document.getElementById('analyticsScienceAverage').textContent = scienceAvg.toFixed(2);
+                const validScienceGrades = scienceGrades
+                    .filter(g => g && typeof g.finalGrade !== 'undefined')
+                    .map(g => {
+                        const val = typeof g.finalGrade === 'string' ? parseFloat(g.finalGrade) : g.finalGrade;
+                        return isNaN(val) ? 0 : val;
+                    });
+                if (validScienceGrades.length > 0) {
+                    const scienceAvg = validScienceGrades.reduce((sum, grade) => sum + grade, 0) / validScienceGrades.length;
+                    setDefaultValue('analyticsScienceAverage', scienceAvg.toFixed(2));
+                }
             }
             
             // Count lessons and quizzes (from Supabase or Firebase)
-            // For now, we'll count from Firebase assessments
-            document.getElementById('analyticsLessonsCreated').textContent = totalAssessments; // Using assessments as proxy
-            document.getElementById('analyticsQuizzesCreated').textContent = totalQuizAttempts > 0 ? Math.ceil(totalQuizAttempts / 10) : 0; // Estimate
-            
-            console.log('📊 Admin Analytics loaded:', {
-                students: totalStudents,
-                teachers: totalTeachers,
-                assessments: totalAssessments,
-                grades: allGrades.length,
-                quizAttempts: totalQuizAttempts
-            });
+            setDefaultValue('analyticsLessonsCreated', totalAssessments);
+            setDefaultValue('analyticsQuizzesCreated', totalQuizAttempts > 0 ? Math.ceil(totalQuizAttempts / 10) : 0);
             
         } catch (error) {
             console.error('Error loading admin analytics:', error);
+            // Ensure all elements have default values even on error
+            const elements = [
+                'analyticsTotalStudents', 'analyticsActiveStudents', 'analyticsTotalTeachers',
+                'analyticsActiveTeachers', 'analyticsTotalAssessments', 'analyticsTotalQuizAttempts',
+                'analyticsTotalGrades', 'analyticsAverageGrade', 'analyticsPassingRate',
+                'analyticsMathAverage', 'analyticsEnglishAverage', 'analyticsScienceAverage',
+                'analyticsLessonsCreated', 'analyticsQuizzesCreated'
+            ];
+            elements.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = id.includes('Rate') || id.includes('Average') ? '0.00' : '0';
+            });
         }
     }
 

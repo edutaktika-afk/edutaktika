@@ -19,7 +19,23 @@
                 // Store teacher's grade level in sessionStorage for Editor
                 if (teacher && teacher.grade) {
                     const grade = teacher.grade.toString();
-                    const gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+                    // Normalize to Firebase format: grade=5, grade=6, etc.
+                    let gradeLevel;
+                    if (grade.includes('=')) {
+                        gradeLevel = grade; // Already in correct format
+                    } else {
+                        const numberMatch = grade.match(/(\d+)/);
+                        if (numberMatch) {
+                            const gradeNum = parseInt(numberMatch[1], 10);
+                            if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
+                                gradeLevel = `grade=${gradeNum}`;
+                            } else {
+                                gradeLevel = grade; // Keep as-is if invalid
+                            }
+                        } else {
+                            gradeLevel = grade; // Keep as-is if no number found
+                        }
+                    }
                     sessionStorage.setItem('supabase-design-grade', gradeLevel);
                     console.log(`📚 Stored teacher grade level in sessionStorage: ${gradeLevel}`);
                 }
@@ -87,6 +103,38 @@
     #student-quiz-cards {
         grid-template-columns: 1fr 1fr !important;
         gap: 12px !important;
+    }
+}
+
+/* Make lessons-container display in grid layout like quizzes */
+.quarter-section .lessons-container:not(#assessmentsContainer) {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 18px !important;
+    justify-content: stretch;
+    align-items: stretch;
+    margin-top: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure quiz-list maintains its own grid layout */
+.quarter-section .lessons-container #quiz-list {
+    grid-column: 1 / -1;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+}
+
+/* Responsive adjustments for lessons-container */
+@media (max-width: 1200px) {
+    .quarter-section .lessons-container:not(#assessmentsContainer) {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .quarter-section .lessons-container:not(#assessmentsContainer) {
+        grid-template-columns: 1fr !important;
     }
 }
 </style>
@@ -277,7 +325,22 @@ document.getElementById('createLessonBtn').onclick = async function() {
             const teacher = teacherSnap.val();
             if (teacher && teacher.grade) {
                 const grade = teacher.grade.toString();
-                gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+                // Normalize to Firebase format: grade=5, grade=6, etc.
+                if (grade.includes('=')) {
+                    gradeLevel = grade; // Already in correct format
+                } else {
+                    const numberMatch = grade.match(/(\d+)/);
+                    if (numberMatch) {
+                        const gradeNum = parseInt(numberMatch[1], 10);
+                        if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
+                            gradeLevel = `grade=${gradeNum}`;
+                        } else {
+                            gradeLevel = grade; // Keep as-is if invalid
+                        }
+                    } else {
+                        gradeLevel = grade; // Keep as-is if no number found
+                    }
+                }
                 console.log(`📚 Found teacher grade level: ${teacher.grade} → normalized: ${gradeLevel}`);
             }
         }
@@ -576,61 +639,6 @@ document.getElementById('createQuizBtn').onclick = function() {
     </div>
 
     <script src="../assets/js/Teacher Side/subject.js"></script>
-
-    <script>
-    // --- Inject Assessment Card for Math ---
-    (function(){
-        const container = document.getElementById('assessmentsContainer');
-        if(!container) return;
-        
-        // Ensure the container has the proper grid styling
-        container.style.display = 'grid';
-        container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
-        container.style.gap = '20px';
-        container.style.marginBottom = '30px';
-
-        // Create Assessment 1 card for Math
-        const card = document.createElement('div');
-        card.className = 'lesson-item clickable-card';
-        card.setAttribute('tabindex','0');
-        card.setAttribute('role','button');
-        card.setAttribute('aria-label','Open Assessment 1: Everyday Math');
-        card.innerHTML = `
-            <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;">A1</div>
-            <div class="lesson-title">
-                <h3>Assessment 1: Everyday Math</h3>
-                <p>10-item real‑life math skills check.</p>
-                <span class="lesson-badge" style="cursor:pointer;" data-action="start">Start</span>
-                <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="a1LastScore">Last Score: -</div>
-            </div>`;
-        container.appendChild(card);
-        card.addEventListener('click', (e)=>{
-            if(e.target.closest('[data-action="start"]')) { window.location.href='../Games/Assessment/Assexam.html'; return; }
-            window.location.href='../Games/Assessment/Assexam.html';
-        });
-        card.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); window.location.href='../Games/Assessment/Assexam.html'; }});
-
-        // Fetch last score if user logged in
-        firebase.auth().onAuthStateChanged(function(user){
-            if(!user) return;
-            const uid = user.uid;
-            firebase.database().ref('assessmentScores/assessment1/' + uid).orderByChild('timestamp').limitToLast(1).once('value', snap => {
-                if(!snap.exists()) return;
-                let val; snap.forEach(c=> val = c.val ? c.val() : c); // handle object or direct
-                const dataObj = (typeof val === 'object') ? val : null;
-                const scoreEl = document.getElementById('a1LastScore');
-                if(scoreEl && dataObj) {
-                    scoreEl.textContent = `Last Score: ${dataObj.score}/${dataObj.total} (${dataObj.percentage}%)`;
-                } else if(scoreEl && !dataObj){
-                    // If stored as direct leaf (score object)
-                    const raw = snap.val();
-                    if(raw && raw.score !== undefined) {
-                        scoreEl.textContent = `Last Score: ${raw.score}/${raw.total} (${raw.percentage}%)`;
-                    }
-                }
-            });
-        });
-    })();
 
     // --- Add Student Quiz Cards to existing Quizzes section ---
     (function(){

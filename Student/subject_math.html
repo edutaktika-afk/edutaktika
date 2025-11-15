@@ -709,7 +709,28 @@ async function loadStudentLessons() {
         if (typeof loadSupabaseDesignsForQuarter === 'function') {
             try {
                 // Get student's grade level for proper folder structure
-                const studentGrade = student.gradelevel ? (student.gradelevel.toString().startsWith('grade') ? student.gradelevel.toString() : `grade${student.gradelevel}`) : null;
+                // Normalize to Firebase format: grade=5, grade=6, etc.
+                // Students use "grade" field (not "gradelevel") - check both for backward compatibility
+                let studentGrade = null;
+                const rawGrade = student.grade || student.gradelevel;
+                if (rawGrade) {
+                    const grade = rawGrade.toString();
+                    if (grade.includes('=')) {
+                        studentGrade = grade; // Already in correct format
+                    } else {
+                        const numberMatch = grade.match(/(\d+)/);
+                        if (numberMatch) {
+                            const gradeNum = parseInt(numberMatch[1], 10);
+                            if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
+                                studentGrade = `grade=${gradeNum}`;
+                            } else {
+                                studentGrade = grade; // Keep as-is if invalid
+                            }
+                        } else {
+                            studentGrade = grade; // Keep as-is if no number found
+                        }
+                    }
+                }
                 supabaseDesigns = await loadSupabaseDesignsForQuarter('subject_math', q.toString(), null, false, studentGrade);
                 if (supabaseDesigns && supabaseDesigns.length > 0) {
                     supabaseDesigns.forEach(design => {
@@ -1013,7 +1034,6 @@ function openLesson(lessonTitle, quarter, source, teacherUID) {
                         <i class="fas fa-clipboard-list" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
                         <p>No assessments available yet.</p>
                         <p style="font-size: 0.9rem; margin-top: 8px;">Your teacher will publish assessments here.</p>
-                        <p style="font-size: 0.8rem; margin-top: 8px; color: #999;">Debug: Check console for assessment data</p>
                     </div>
                 `;
                 return;
