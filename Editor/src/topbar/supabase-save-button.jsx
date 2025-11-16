@@ -15,11 +15,8 @@ import FaCheckCircle from '@meronex/icons/fa/FaCheckCircle';
 import FaTimesCircle from '@meronex/icons/fa/FaTimesCircle';
 import { saveDesignBySubject, listDesignsBySubject } from '../supabase-api';
 import { shouldUseSupabase } from '../supabase';
-<<<<<<< HEAD
 import { deduplicateRequest } from '../utils/request-deduplication';
 import { retrySupabaseOperation } from '../utils/retry-helper';
-=======
->>>>>>> main
 
 export const SupabaseSaveButton = observer(({ store, project }) => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -131,7 +128,6 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
       return;
     }
 
-<<<<<<< HEAD
     // Prevent duplicate saves using deduplication
     const existingDesignId = project?.id || sessionStorage.getItem('supabase-design-id');
     const saveKey = `save-${existingDesignId || designName.trim()}-${selectedSubject}-${selectedQuarter}`;
@@ -184,52 +180,6 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
         return result;
       });
 
-=======
-    setIsSaving(true);
-    try {
-      // Generate thumbnail preview
-      const canvas = store.pages.length
-        ? await store._toCanvas({
-            pixelRatio: 200 / store.activePage?.computedWidth,
-            pageId: store.activePage?.id,
-            quickMode: true,
-            _skipTimeout: true,
-          })
-        : document.createElement('canvas');
-      
-      const blob = await new Promise((resolve) => {
-        canvas.toBlob(resolve, 'image/jpeg', 0.9);
-      });
-
-      // Save to Supabase (use existing ID if we're editing an existing design)
-      const existingDesignId = project?.id || sessionStorage.getItem('supabase-design-id');
-      const isEditing = !!existingDesignId;
-      
-      console.log(isEditing ? `🔄 Updating existing design: ${existingDesignId}` : '✨ Creating new design');
-      console.log(`📚 Saving with grade level: ${selectedGradeLevel}`);
-      
-      const result = await saveDesignBySubject({
-        storeJSON: store.toJSON(),
-        preview: blob,
-        name: designName.trim(),
-        subject: selectedSubject,
-        quarter: selectedQuarter,
-        gradeLevel: selectedGradeLevel, // Pass grade level explicitly
-        id: existingDesignId, // This will overwrite if provided
-      });
-
-      setAlertMessage(
-        `${isEditing ? '✅ Design updated successfully!' : '✨ New design created!'}\n\n📚 Subject: ${selectedSubject.charAt(0).toUpperCase() + selectedSubject.slice(1)}\n📅 Quarter: ${selectedQuarter}\n🏷️ Design Name: ${designName.trim()}\n🆔 Design ID: ${result.id}`
-      );
-      setAlertIntent(Intent.SUCCESS);
-      setShowAlert(true);
-      
-      // Close dialog after success
-      setTimeout(() => {
-        setIsOpen(false);
-      }, 1500);
-
->>>>>>> main
     } catch (error) {
       console.error('Save failed:', error);
       
@@ -238,10 +188,7 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
       
       // Check if it's a size limit error for design JSON
       if (error.message && (error.message.includes('too large') || error.message.includes('50MB') || error.message.includes('embedded media'))) {
-<<<<<<< HEAD
-=======
         // Format the error message with line breaks for better readability
->>>>>>> main
         errorMessage = error.message.replace(/\n/g, '\n');
       }
       

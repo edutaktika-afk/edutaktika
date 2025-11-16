@@ -575,6 +575,21 @@ label {
                                     <label for="reg_section">Section</label>
                                     <select name="reg_section" id="reg_section" required disabled>
                                         <option value="">Select Grade First</option>
+<<<<<<< HEAD
+                                    <select name="reg_section" id="reg_section" required disabled>
+                                        <option value="">Select Grade First</option>
+=======
+                                    <select name="reg_section" id="reg_section" required>
+                                        <option value="">Select Section</option>
+                                        <option value="Ubas">Ubas</option>
+                                        <option value="Durian">Durian</option>
+                                        <option value="Kasoy">Kasoy</option>
+                                        <option value="Melon">Melon</option>
+                                        <option value="Langka">Langka</option>
+                                        <option value="Fruit Salad">Fruit Salad</option>
+                                        <option value="Guyabano">Guyabano</option>
+                                        <option value="Santol">Santol</option>
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                                     </select>
                                 </div>
                             </div>
@@ -877,6 +892,7 @@ document.getElementById('loginForm').onsubmit = async function(e) {
             return;
         }
 
+<<<<<<< HEAD
         // Check if this is a bulk-created account (bypass email verification)
         const studentSnap = await db.ref('students/' + uid).once('value');
         const student = studentSnap.val();
@@ -884,6 +900,10 @@ document.getElementById('loginForm').onsubmit = async function(e) {
         
         // Teachers must be verified (unless bulk-created accounts)
         if (!user.emailVerified && !isBulkCreated) {
+=======
+        // Teachers must be verified
+        if (!user.emailVerified) {
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             showCustomModal('Please verify your email before logging in.');
             await auth.signOut();
             return;
@@ -975,6 +995,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             } catch (_) {}
 
+<<<<<<< HEAD
             // Check if this is a bulk-created account (bypass email verification)
             const studentSnap = await db.ref('students/' + uid).once('value');
             const student = studentSnap.val();
@@ -982,6 +1003,10 @@ document.addEventListener("DOMContentLoaded", function() {
             
             // Teachers must be verified (unless bulk-created accounts)
             if (!user.emailVerified && !isBulkCreated) {
+=======
+            // Teachers must be verified
+            if (!user.emailVerified) {
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                 showCustomModal('Please verify your email before logging in.');
                 await firebase.auth().signOut();
                 return;
@@ -1159,6 +1184,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+<<<<<<< HEAD
     // Grade field - update sections based on grade
     const gradeField = document.getElementById('reg_grade');
     const sectionField = document.getElementById('reg_section');
@@ -1196,6 +1222,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+=======
+    // Grade field
+    const gradeField = document.getElementById('reg_grade');
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
     gradeField.addEventListener('change', () => {
         const warning = document.getElementById('grade-warning') || (() => {
             const span = document.createElement('span');
@@ -1207,6 +1237,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return span;
         })();
         validateField(gradeField, 'grade-warning');
+<<<<<<< HEAD
         
         // Update sections based on selected grade
         updateSectionsForGrade(gradeField.value);
@@ -1216,6 +1247,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Section field (already declared above)
+=======
+    });
+    
+    // Section field
+    const sectionField = document.getElementById('reg_section');
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
     sectionField.addEventListener('change', () => {
         const warning = document.getElementById('section-warning') || (() => {
             const span = document.createElement('span');

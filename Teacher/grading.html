@@ -2651,6 +2651,7 @@
         let currentTeacherUID = null;
         let currentSection = null;
         let pendingDeleteAttribute = null;
+<<<<<<< HEAD
         
         // Dynamic quiz management
         let quizListeners = {}; // Store Firebase listeners for cleanup
@@ -2659,6 +2660,11 @@
 
         // Initialize the grading system
         async function initializeGradingSystem() {
+=======
+
+        // Initialize the grading system
+        function initializeGradingSystem() {
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             // Load from localStorage or use defaults
             const saved = localStorage.getItem('gradingAttributes');
             if (saved) {
@@ -2671,6 +2677,7 @@
                 gradingAttributes = [...defaultAttributes];
             }
             
+<<<<<<< HEAD
             // Separate quiz and non-quiz attributes
             separateQuizAndNonQuizAttributes();
             
@@ -2858,6 +2865,11 @@
             
             quizListeners['all'] = unsubscribe;
         }
+=======
+            renderAttributes();
+            updateSummary();
+        }
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
 
         // Render attributes list
         function renderAttributes() {
@@ -2878,13 +2890,18 @@
                         <div class="attribute-name" id="attr-name-${index}">
                             ${attr.name}
                         </div>
+<<<<<<< HEAD
                         ${attr.isQuiz ? '' : `<input type="text" 
+=======
+                        <input type="text" 
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                                class="attribute-name-input" 
                                id="attr-input-${index}"
                                value="${attr.name}"
                                maxlength="50"
                                onblur="saveAttributeName(${index})"
                                onkeypress="handleAttributeNameKeypress(event, ${index})"
+<<<<<<< HEAD
                                style="display: none;">`}
                         <div class="attribute-input">
                             ${attr.isQuiz ? `
@@ -2924,6 +2941,35 @@
                             <i class="fas fa-times"></i>
                         </button>`}
                         ${attr.isQuiz ? '<span style="color: #2196F3; font-size: 0.8rem; margin-left: 5px;" title="Auto-managed quiz field"><i class="fas fa-lock"></i></span>' : ''}
+=======
+                               style="display: none;">
+                        <div class="attribute-input">
+                            <input type="number" 
+                                   class="percentage-input" 
+                                   value="${attr.percentage}" 
+                                   min="0" 
+                                   max="${maxAllowed}" 
+                                   data-index="${index}"
+                                   data-max-allowed="${maxAllowed}"
+                                   onchange="updatePercentage(${index}, this.value)"
+                                   oninput="showMaxAllowed(${index}, this)"
+                                   title="Maximum allowed: ${maxAllowed}%">
+                            <span>%</span>
+                            <span class="max-indicator" id="max-${index}" style="font-size: 0.8rem; color: var(--text-light); margin-left: 5px;">
+                                ${maxAllowed < 100 ? `(max: ${maxAllowed}%)` : ''}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="attribute-actions">
+                        <button class="edit-btn" onclick="editAttributeName(${index})" title="Edit attribute name">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="remove-btn" onclick="removeAttributeByName('${attr.name}')" title="Remove attribute">
+                            <i class="fas fa-times"></i>
+                        </button>`}
+                        ${attr.isQuiz ? '<span style="color: #2196F3; font-size: 0.8rem; margin-left: 5px;" title="Auto-managed quiz field"><i class="fas fa-lock"></i></span>' : ''}
+                        </button>
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                     </div>
                 `;
                 item.setAttribute('data-index', index);
@@ -3059,6 +3105,7 @@
             }
             
             const attribute = gradingAttributes[index];
+<<<<<<< HEAD
             
             // Prevent deletion of quiz attributes (they are auto-managed)
             if (attribute.isQuiz === true) {
@@ -3066,6 +3113,8 @@
                 return;
             }
             
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             pendingDeleteAttribute = attribute;
             
             // Show custom warning modal
@@ -3144,6 +3193,7 @@
 
         // Edit attribute name
         function editAttributeName(index) {
+<<<<<<< HEAD
             const attribute = gradingAttributes[index];
             
             // Prevent editing of quiz attributes (they are auto-managed)
@@ -3152,6 +3202,8 @@
                 return;
             }
             
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             const nameElement = document.getElementById(`attr-name-${index}`);
             const inputElement = document.getElementById(`attr-input-${index}`);
             
@@ -3394,8 +3446,11 @@
                 
                 if (data && data.attributes) {
                     gradingAttributes = data.attributes;
+<<<<<<< HEAD
                     // Separate quiz and non-quiz attributes
                     separateQuizAndNonQuizAttributes();
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                     renderAttributes();
                     updateSummary();
                     
@@ -3407,11 +3462,15 @@
                     if (saved) {
                         try {
                             gradingAttributes = JSON.parse(saved);
+<<<<<<< HEAD
                             separateQuizAndNonQuizAttributes();
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                             renderAttributes();
                             updateSummary();
                         } catch (e) {
                             gradingAttributes = [...defaultAttributes];
+<<<<<<< HEAD
                             separateQuizAndNonQuizAttributes();
                             renderAttributes();
                             updateSummary();
@@ -3424,14 +3483,23 @@
                     }
                 }
                 
-                // After loading, sync with actual quizzes
-                await syncQuizzesWithGradingAttributes();
-                
                 // Always regenerate grading table after loading configuration
                 if (document.getElementById('gradingTableHead')) {
                     generateGradingTable();
                 }
+=======
+                            renderAttributes();
+                            updateSummary();
+                        }
+                    }
+                }
                 
+                // Always regenerate grading table after loading configuration
+                generateGradingTable();
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
+                
+                // After loading, sync with actual quizzes
+                await syncQuizzesWithGradingAttributes();
             } catch (error) {
                 console.error('Error loading from Firebase:', error);
                 // Fallback to localStorage or defaults
@@ -3525,12 +3593,15 @@
                         currentSection = teacher.section;
                         // Load configuration from Firebase
                         await loadFromFirebase();
+<<<<<<< HEAD
                         
                         // Set up quiz listeners for automatic updates
                         setupQuizListeners();
                         
                         // Sync quizzes with grading attributes
                         await syncQuizzesWithGradingAttributes();
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                     }
                 }
             });
@@ -3552,6 +3623,7 @@
         // Setup event listeners for grading sheet
         function setupGradingSheetEventListeners() {
             // Filter controls
+<<<<<<< HEAD
             document.getElementById('subjectFilter').addEventListener('change', async () => {
                 await syncQuizzesWithGradingAttributes();
                 filterGrades();
@@ -3560,6 +3632,10 @@
                 await syncQuizzesWithGradingAttributes();
                 filterGrades();
             });
+=======
+            document.getElementById('subjectFilter').addEventListener('change', filterGrades);
+            document.getElementById('quarterFilter').addEventListener('change', filterGrades);
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             document.getElementById('gradeLevelFilter').addEventListener('change', filterGrades);
             document.getElementById('refreshGradesBtn').addEventListener('click', refreshGradingData);
             
@@ -3582,6 +3658,7 @@
                 }
             });
 
+<<<<<<< HEAD
             // Auto-populate quiz/assessment scores when student/subject/quarter changes
             const studentSelect = document.getElementById('studentSelect');
             const subjectSelect = document.getElementById('subjectSelect');
@@ -3609,6 +3686,8 @@
                 });
             }
 
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             // Close modal when clicking outside
             document.getElementById('gradeModal').addEventListener('click', function(e) {
                 if (e.target === this) {
@@ -3617,6 +3696,7 @@
             });
         }
 
+<<<<<<< HEAD
         // Helper function to normalize grade level (handles "grade=5", "grade=6", "5", "6", etc.)
         function normalizeGrade(grade) {
             if (!grade) return null;
@@ -3647,6 +3727,8 @@
             return normalized;
         }
 
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
         // Load students data from Firebase
         async function loadStudentsData() {
             if (!currentTeacherUID || !currentSection) return;
@@ -3655,11 +3737,15 @@
                 // Get teacher information first
                 const teacherSnap = await db.ref('teachers/' + currentTeacherUID).once('value');
                 const teacher = teacherSnap.val();
+<<<<<<< HEAD
                 
                 // Get teacher's grade - prioritize "grade" field, fallback to "gradelevel"
                 let teacherGrade = teacher && teacher.grade ? teacher.grade : (teacher && teacher.gradelevel ? teacher.gradelevel : null);
                 teacherGrade = normalizeGrade(teacherGrade);
                 
+=======
+                const teacherGrade = teacher && teacher.gradelevel ? teacher.gradelevel : null;
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                 const teacherSchoolYear = teacher && teacher.school_year ? teacher.school_year : null;
                 const teacherSubjects = teacher && teacher.subjects ? teacher.subjects : null;
 
@@ -3670,12 +3756,17 @@
                     const student = child.val();
                     
                     // Filter by section, grade level, and school year
+<<<<<<< HEAD
                     // Students use "grade" field (not "gradelevel") - check both for backward compatibility
                     const sectionMatch = student.section && student.section.trim().toLowerCase() === currentSection.trim().toLowerCase();
                     
                     // Normalize both student and teacher grades for comparison
                     const studentGrade = normalizeGrade(student.grade || student.gradelevel);
                     const gradeMatch = !teacherGrade || (studentGrade && studentGrade === teacherGrade);
+=======
+                    const sectionMatch = student.section && student.section.trim().toLowerCase() === currentSection.trim().toLowerCase();
+                    const gradeMatch = !teacherGrade || student.gradelevel === teacherGrade;
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                     const schoolYearMatch = !teacherSchoolYear || student.school_year === teacherSchoolYear;
                     
                     if (sectionMatch && gradeMatch && schoolYearMatch) {
@@ -3688,7 +3779,10 @@
 
                 console.log(`Loaded ${studentsData.length} students for section: ${currentSection}, grade: ${teacherGrade}, school year: ${teacherSchoolYear}`);
                 console.log('Teacher subjects:', teacherSubjects);
+<<<<<<< HEAD
                 console.log('Teacher grade (normalized):', teacherGrade);
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
 
                 // Auto-populate filters based on teacher's assignments
                 populateTeacherFilters(teacherGrade, teacherSubjects);
@@ -3736,10 +3830,15 @@
                 const matchQuarter = !quarterFilter || grade.quarter === quarterFilter;
                 
                 // Find the student to check their grade level
+<<<<<<< HEAD
                 // Students use "grade" field (not "gradelevel") - check both for backward compatibility
                 const student = studentsData.find(s => s.uid === grade.studentUID);
                 const studentGrade = student ? (student.grade || student.gradelevel) : null;
                 const matchGradeLevel = !gradeLevelFilter || studentGrade === gradeLevelFilter;
+=======
+                const student = studentsData.find(s => s.uid === grade.studentUID);
+                const matchGradeLevel = !gradeLevelFilter || (student && student.gradelevel === gradeLevelFilter);
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                 
                 return matchSubject && matchQuarter && matchGradeLevel;
             });
@@ -3769,10 +3868,25 @@
             const tableHead = document.getElementById('gradingTableHead');
             const tableBody = document.getElementById('gradingTableBody');
             
+<<<<<<< HEAD
+=======
+            // Debug: Log current grading attributes
+            console.log('Generating table with attributes:', gradingAttributes);
+            console.log('Number of attributes:', gradingAttributes.length);
+
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             // Group attributes by category
             const writtenWorks = gradingAttributes.filter(attr => attr.category === 'Written Works' && attr.percentage > 0);
             const performanceTask = gradingAttributes.filter(attr => attr.category === 'Performance Task' && attr.percentage > 0);
             const quarterlyAssessment = gradingAttributes.filter(attr => attr.category === 'Quarterly Assessment' && attr.percentage > 0);
+<<<<<<< HEAD
+=======
+            
+            // Debug: Log filtered categories
+            console.log('Written Works:', writtenWorks);
+            console.log('Performance Task:', performanceTask);
+            console.log('Quarterly Assessment:', quarterlyAssessment);
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
 
             // Check if we have any categorized attributes
             const hasCategorizedAttributes = writtenWorks.length > 0 || performanceTask.length > 0 || quarterlyAssessment.length > 0;
@@ -4267,6 +4381,7 @@
                 if (attr.percentage > 0) {
                     const inputItem = document.createElement('div');
                     inputItem.className = 'grade-input-item';
+<<<<<<< HEAD
                     
                     // Sanitize attribute name for use in input name (handle special characters)
                     const safeName = attr.name.replace(/:/g, '_').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
@@ -4283,6 +4398,14 @@
                                class="grade-input-field ${isQuizField ? 'quiz-input' : ''}" 
                                name="grade_${safeName}" 
                                data-attribute-name="${attr.name}"
+=======
+                    inputItem.innerHTML = `
+                        <span class="grade-input-label">${attr.name}</span>
+                        <span class="grade-weight">${attr.percentage}%</span>
+                        <input type="number" 
+                               class="grade-input-field" 
+                               name="grade_${attr.name}" 
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                                min="0" 
                                max="100" 
                                step="0.1" 
@@ -4292,23 +4415,35 @@
                     container.appendChild(inputItem);
                 }
             });
+<<<<<<< HEAD
 
             // Auto-populate quiz and assessment scores after inputs are generated
             setTimeout(() => {
                 autoPopulateQuizAndAssessmentScores();
             }, 200);
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
         }
 
         // Calculate final grade in real-time
         function calculateFinalGrade() {
             let finalGrade = 0;
             
+<<<<<<< HEAD
             gradingAttributes.forEach(attr => {
                 if (attr.percentage > 0) {
                     // Try both the original name and sanitized name
                     const safeName = attr.name.replace(/:/g, '_').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
                     const input = document.querySelector(`input[name="grade_${safeName}"]`) || 
                                   document.querySelector(`input[data-attribute-name="${attr.name}"]`);
+=======
+            // Debug: Log calculation details
+            console.log('Calculating final grade with attributes:', gradingAttributes.map(a => `${a.name}: ${a.percentage}%`));
+            
+            gradingAttributes.forEach(attr => {
+                if (attr.percentage > 0) {
+                    const input = document.querySelector(`input[name="grade_${attr.name}"]`);
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                     if (input) {
                         const value = parseFloat(input.value) || 0;
                         finalGrade += (value * attr.percentage / 100);
@@ -4338,10 +4473,14 @@
             const grades = {};
             gradingAttributes.forEach(attr => {
                 if (attr.percentage > 0) {
+<<<<<<< HEAD
                     // Try both the original name and sanitized name
                     const safeName = attr.name.replace(/:/g, '_').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
                     const input = document.querySelector(`input[name="grade_${safeName}"]`) || 
                                   document.querySelector(`input[data-attribute-name="${attr.name}"]`);
+=======
+                    const input = document.querySelector(`input[name="grade_${attr.name}"]`);
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                     if (input) {
                         grades[attr.name] = parseFloat(input.value) || 0;
                     }
@@ -4428,10 +4567,14 @@
             setTimeout(() => {
                 gradingAttributes.forEach(attr => {
                     if (attr.percentage > 0) {
+<<<<<<< HEAD
                         // Try both the original name and sanitized name
                         const safeName = attr.name.replace(/:/g, '_').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
                         const input = document.querySelector(`input[name="grade_${safeName}"]`) || 
                                       document.querySelector(`input[data-attribute-name="${attr.name}"]`);
+=======
+                        const input = document.querySelector(`input[name="grade_${attr.name}"]`);
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                         if (input && grade.grades && grade.grades[attr.name] !== undefined) {
                             input.value = grade.grades[attr.name];
                         }
@@ -4441,6 +4584,7 @@
             }, 100);
         }
 
+<<<<<<< HEAD
         // Auto-fetch quiz scores from Firebase - returns individual quiz scores
         async function fetchQuizScores(studentUID, subject, quarter) {
             try {
@@ -4607,6 +4751,8 @@
             }
         }
 
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
         // Refresh grading data
         function refreshGradingData() {
             loadStudentsData();
@@ -5669,8 +5815,12 @@
                                 document.getElementById('profileLastName').textContent = data.lname || '-';
                             }
                             if (document.getElementById('profileGrade')) {
+<<<<<<< HEAD
                                 // Students use "grade" field (not "gradelevel") - check both for backward compatibility
                                 document.getElementById('profileGrade').textContent = data.grade || data.gradelevel || '-';
+=======
+                                document.getElementById('profileGrade').textContent = data.gradelevel || data.grade || '-';
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                             }
                             if (document.getElementById('profileSection')) {
                                 document.getElementById('profileSection').textContent = data.section || '-';

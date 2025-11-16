@@ -605,12 +605,15 @@ td:hover .action-btns .reject,
                         <i class="fas fa-user-graduate" style="margin-right: 10px;"></i>Student Account Management
                     </h2>
                     <div style="display: flex; gap: 10px;">
+<<<<<<<<< Temporary merge branch 1
+=========
                         <button onclick="openBulkAccountCreator()" style="background: #2196F3; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
                             <i class="fas fa-users"></i> Bulk Create Accounts
                         </button>
                         <button onclick="deleteDummyAccounts()" style="background: #f44336; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
                             <i class="fas fa-trash-alt"></i> Delete Dummy Accounts
                         </button>
+>>>>>>>>> Temporary merge branch 2
                         <button onclick="exportStudentsCSV()" style="background: #2e8b57; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
                             <i class="fas fa-download"></i> Export CSV
                         </button>
@@ -759,6 +762,12 @@ td:hover .action-btns .reject,
         <!-- Analytics Tab -->
         <div id="contentAnalytics" class="tab-content" style="display:none;">
             <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+<<<<<<<<< Temporary merge branch 1
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h2 style="color: #2e8b57; margin: 0; font-size: 1.8rem; font-weight: 700;">
+                        <i class="fas fa-chart-bar" style="margin-right: 10px;"></i>System Analytics
+                    </h2>
+=========
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
                     <h2 style="color: #2e8b57; margin: 0; font-size: 1.8rem; font-weight: 700;">
                         <i class="fas fa-chart-bar" style="margin-right: 10px;"></i>System Analytics
@@ -782,6 +791,7 @@ td:hover .action-btns .reject,
                             <i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh
                         </button>
                     </div>
+>>>>>>>>> Temporary merge branch 2
                 </div>
 
                 <!-- Analytics Stats Grid -->
@@ -847,7 +857,11 @@ td:hover .action-btns .reject,
                 </div>
 
                 <!-- Activity Overview -->
+<<<<<<<<< Temporary merge branch 1
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px;">
+=========
                 <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+>>>>>>>>> Temporary merge branch 2
                     <h3 style="color: #2e8b57; margin-bottom: 20px; font-size: 1.3rem;">
                         <i class="fas fa-chart-line" style="margin-right: 10px;"></i>Activity Overview
                     </h3>
@@ -872,6 +886,8 @@ td:hover .action-btns .reject,
                         </div>
                     </div>
                 </div>
+<<<<<<<<< Temporary merge branch 1
+=========
 
                 <!-- Performance by Grade/Section -->
                 <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
@@ -927,6 +943,7 @@ td:hover .action-btns .reject,
                         </div>
                     </div>
                 </div>
+>>>>>>>>> Temporary merge branch 2
             </div>
         </div>
         </div>
@@ -1434,7 +1451,11 @@ function loadTeachers() {
                 <div><span class="modal-label">Middle Name:</span> <span>${t.mname || ''}</span></div>
                 <div><span class="modal-label">Last Name:</span> <span>${t.lname || ''}</span></div>
                 <div><span class="modal-label">Email:</span> <span>${t.email || ''}</span></div>
+<<<<<<<<< Temporary merge branch 1
+                <div><span class="modal-label">Grade Level:</span> <span>${t.gradelevel || ''}</span></div>
+=========
                 <div><span class="modal-label">Grade Level:</span> <span>${formatGradeForDisplay(t.grade || t.gradelevel || '')}</span></div>
+>>>>>>>>> Temporary merge branch 2
                 <div><span class="modal-label">Section:</span> <span>${t.section || ''}</span></div>
                 <div><span class="modal-label">Address:</span> <span>${t.address || ''}</span></div>
                 <div><span class="modal-label">Gender:</span> <span>${t.gender || ''}</span></div>
@@ -1453,6 +1474,8 @@ function loadTeachers() {
     }
 
 
+<<<<<<<<< Temporary merge branch 1
+=========
 // Helper function to normalize grade level to Firebase format (grade=5, grade=6, etc.)
 function normalizeGradeForFirebase(grade) {
     if (!grade) return null;
@@ -1506,6 +1529,7 @@ function formatGradeForDisplay(grade) {
     return grade; // Return as-is if not in expected format
 }
 
+>>>>>>>>> Temporary merge branch 2
 function loadStudents() {
     db.ref('students').once('value').then(snapshot => {
         const students = [];
@@ -1514,6 +1538,11 @@ function loadStudents() {
 
         snapshot.forEach(child => {
             const s = child.val();
+<<<<<<<<< Temporary merge branch 1
+            students.push(s);
+            if (s.section) sectionsSet.add(s.section);
+            if (s.gradelevel) gradesSet.add(s.gradelevel); // <-- use gradelevel
+=========
             // Students use "grade" field (not "gradelevel") - check both for backward compatibility
             const studentGrade = s.grade || s.gradelevel;
             // Normalize grade level to Firebase format
@@ -1532,6 +1561,7 @@ function loadStudents() {
             }
             students.push(s);
             if (s.section) sectionsSet.add(s.section);
+>>>>>>>>> Temporary merge branch 2
         });
 
         // Populate dynamic section filter
@@ -1548,9 +1578,13 @@ function loadStudents() {
         if (gradeFilter) {
             gradeFilter.innerHTML = '<option value="">All Grades</option>';
             Array.from(gradesSet).sort().forEach(grade => {
+<<<<<<<<< Temporary merge branch 1
+                gradeFilter.innerHTML += `<option value="${grade}">${grade}</option>`;
+=========
                 // Display formatted grade in dropdown, but use original value for filtering
                 const displayGrade = formatGradeForDisplay(grade) || grade;
                 gradeFilter.innerHTML += `<option value="${grade}">${displayGrade}</option>`;
+>>>>>>>>> Temporary merge branch 2
             });
         }
 
@@ -1560,6 +1594,13 @@ function loadStudents() {
             const grade = gradeFilter?.value || '';
             const section = sectionFilter?.value || '';
 
+<<<<<<<<< Temporary merge branch 1
+            // Group students by gradelevel and section
+            const grouped = {};
+            students.forEach(s => {
+                if (
+                    (grade === '' || s.gradelevel === grade) &&
+=========
             // Group students by grade and section
             const grouped = {};
             students.forEach(s => {
@@ -1567,6 +1608,7 @@ function loadStudents() {
                 const studentGrade = s.grade || s.gradelevel || 'Not Set';
                 if (
                     (grade === '' || studentGrade === grade) &&
+>>>>>>>>> Temporary merge branch 2
                     (section === '' || s.section === section) &&
                     (
                         !search ||
@@ -1576,9 +1618,15 @@ function loadStudents() {
                         (s.id && s.id.toLowerCase().includes(search))
                     )
                 ) {
+<<<<<<<<< Temporary merge branch 1
+                    if (!grouped[s.gradelevel]) grouped[s.gradelevel] = {};
+                    if (!grouped[s.gradelevel][s.section]) grouped[s.gradelevel][s.section] = [];
+                    grouped[s.gradelevel][s.section].push(s);
+=========
                     if (!grouped[studentGrade]) grouped[studentGrade] = {};
                     if (!grouped[studentGrade][s.section]) grouped[studentGrade][s.section] = [];
                     grouped[studentGrade][s.section].push(s);
+>>>>>>>>> Temporary merge branch 2
                 }
             });
 
@@ -1590,10 +1638,15 @@ function loadStudents() {
                     // Add a group row for grade/section
                     const groupTr = document.createElement('tr');
                     groupTr.style.background = '#e0ffe6';
+<<<<<<<<< Temporary merge branch 1
+                    groupTr.innerHTML = `<td colspan="9" style="text-align:center;font-weight:bold;">
+                        Grade: ${gradeKey} &nbsp; / &nbsp; Section: ${sectionKey}
+=========
                     // Format grade for display (grade=5 -> "Grade 5")
                     const displayGrade = formatGradeForDisplay(gradeKey || 'Not Set');
                     groupTr.innerHTML = `<td colspan="9" style="text-align:center;font-weight:bold;">
                         Grade: ${displayGrade} &nbsp; / &nbsp; Section: ${sectionKey}
+>>>>>>>>> Temporary merge branch 2
                     </td>`;
                     tbody.appendChild(groupTr);
 
@@ -1606,7 +1659,11 @@ function loadStudents() {
                             <td>${s.id || ''}</td>
                             <td>${(s.fname || '') + ' ' + (s.lname || '')}</td>
                             <td>${s.email || ''}</td>
+<<<<<<<<< Temporary merge branch 1
+                            <td>${s.gradelevel || ''}</td>
+=========
                             <td>${formatGradeForDisplay(s.grade || s.gradelevel || '')}</td>
+>>>>>>>>> Temporary merge branch 2
                             <td>${s.section || ''}</td>
                             <td>${s.subject || ''}</td>
                             <td>${s.registeredAt ? new Date(s.registeredAt).toLocaleString() : ''}</td>
@@ -1651,8 +1708,11 @@ function loadAdmins() {
         }
         snapshot.forEach(child => {
             const a = child.val();
+<<<<<<<<< Temporary merge branch 1
+=========
             if (a.deleted === true) return; // Skip deleted admins in main view
             
+>>>>>>>>> Temporary merge branch 2
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${(a.fname || '') + ' ' + (a.lname || '')}</td>
@@ -1668,6 +1728,14 @@ function loadAdmins() {
     });
 }
 
+<<<<<<<<< Temporary merge branch 1
+// Delete admin function (optional, add safety check)
+function deleteAdmin(uid) {
+    if (confirm('Are you sure you want to delete this admin?')) {
+        db.ref('admins/' + uid).remove()
+            .then(() => {
+                alert('Admin deleted.');
+=========
 // Delete admin function (soft delete)
 function deleteAdmin(uid) {
     if (confirm('Are you sure you want to delete this admin? They can be restored later.')) {
@@ -1677,12 +1745,15 @@ function deleteAdmin(uid) {
         })
             .then(() => {
                 alert('Admin deleted. You can restore them from the Deleted Accounts section.');
+>>>>>>>>> Temporary merge branch 2
                 loadAdmins();
             })
             .catch(err => alert('Error deleting admin: ' + err.message));
     }
 }
 
+<<<<<<<<< Temporary merge branch 1
+=========
 // Restore admin function
 function restoreAdmin(uid) {
     if (confirm('Are you sure you want to restore this admin?')) {
@@ -1698,6 +1769,7 @@ function restoreAdmin(uid) {
     }
 }
 
+>>>>>>>>> Temporary merge branch 2
 // ...existing code...
 
 // Initial load
@@ -1779,9 +1851,13 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
             document.getElementById('editStudentFname').value = student.fname || '';
             document.getElementById('editStudentLname').value = student.lname || '';
             document.getElementById('editStudentEmail').value = student.email || '';
+<<<<<<<<< Temporary merge branch 1
+            document.getElementById('editStudentGrade').value = student.gradelevel || '';
+=========
             // Display grade level in edit form (show as-is, user can edit)
             // Students use "grade" field (not "gradelevel") - check both for backward compatibility
             document.getElementById('editStudentGrade').value = student.grade || student.gradelevel || '';
+>>>>>>>>> Temporary merge branch 2
             document.getElementById('editStudentSection').value = student.section || '';
             document.getElementById('editStudentSubject').value = student.subject || '';
             document.getElementById('editStudentModal').style.display = 'flex';
@@ -1797,16 +1873,23 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
     document.getElementById('editStudentForm')?.addEventListener('submit', function(e) {
         e.preventDefault();
         const id = document.getElementById('editStudentId').value;
+<<<<<<<<< Temporary merge branch 1
+=========
         // Normalize grade level to Firebase format before saving
         const rawGrade = document.getElementById('editStudentGrade').value.trim();
         const normalizedGrade = normalizeGradeForFirebase(rawGrade) || rawGrade; // Use normalized if valid, otherwise keep original
         
+>>>>>>>>> Temporary merge branch 2
         const updates = {
             fname: document.getElementById('editStudentFname').value,
             lname: document.getElementById('editStudentLname').value,
             email: document.getElementById('editStudentEmail').value,
+<<<<<<<<< Temporary merge branch 1
+            gradelevel: document.getElementById('editStudentGrade').value,
+=========
             grade: normalizedGrade, // Students use "grade" field
             gradelevel: normalizedGrade, // Also update gradelevel for backward compatibility
+>>>>>>>>> Temporary merge branch 2
             section: document.getElementById('editStudentSection').value,
             subject: document.getElementById('editStudentSubject').value
         };
@@ -1838,7 +1921,10 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
             document.getElementById('editTeacherFname').value = teacher.fname || '';
             document.getElementById('editTeacherLname').value = teacher.lname || '';
             document.getElementById('editTeacherEmail').value = teacher.email || '';
+<<<<<<<<< Temporary merge branch 1
+=========
             // Display grade level in edit form (show as-is, user can edit)
+>>>>>>>>> Temporary merge branch 2
             document.getElementById('editTeacherGrade').value = teacher.grade || teacher.gradelevel || '';
             document.getElementById('editTeacherSection').value = teacher.section || '';
             document.getElementById('editTeacherModal').style.display = 'flex';
@@ -1854,16 +1940,24 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
     document.getElementById('editTeacherForm')?.addEventListener('submit', function(e) {
         e.preventDefault();
         const key = document.getElementById('editTeacherKey').value;
+<<<<<<<<< Temporary merge branch 1
+=========
         // Normalize grade level to Firebase format before saving
         const rawGrade = document.getElementById('editTeacherGrade').value.trim();
         const normalizedGrade = normalizeGradeForFirebase(rawGrade) || rawGrade; // Use normalized if valid, otherwise keep original
         
+>>>>>>>>> Temporary merge branch 2
         const updates = {
             fname: document.getElementById('editTeacherFname').value,
             lname: document.getElementById('editTeacherLname').value,
             email: document.getElementById('editTeacherEmail').value,
+<<<<<<<<< Temporary merge branch 1
+            grade: document.getElementById('editTeacherGrade').value,
+            gradelevel: document.getElementById('editTeacherGrade').value, // Support both fields
+=========
             grade: normalizedGrade,
             gradelevel: normalizedGrade, // Support both fields
+>>>>>>>>> Temporary merge branch 2
             section: document.getElementById('editTeacherSection').value
         };
         
@@ -2028,6 +2122,8 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
 
 <script src="../assets/js/Admin/showTab.js"></script>
 
+<<<<<<<<< Temporary merge branch 1
+=========
 <!-- Bulk Account Creator Modal -->
 <div class="admin-modal-bg" id="bulkAccountCreatorModal" style="display:none;" aria-hidden="true" role="dialog">
   <div class="admin-modal-card" style="max-width:700px; max-height:90vh; overflow-y:auto; text-align:left;">
@@ -2175,6 +2271,7 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
   </div>
 </div>
 
+>>>>>>>>> Temporary merge branch 2
 <!-- Admin Registration Modal (converted from addAdminSection) -->
 <div class="admin-modal-bg" id="addAdminModal" style="display:none;" aria-hidden="true" role="dialog">
   <div class="admin-modal-card" style="max-width:440px;">
@@ -2238,6 +2335,8 @@ document.getElementById('openAddAdminBtn').onclick = function(e) {
   openAddAdminModal();
 };
 
+<<<<<<<<< Temporary merge branch 1
+=========
 // Bulk Account Creator Functions
 function openBulkAccountCreator() {
   document.getElementById('bulkAccountCreatorModal').style.display = 'flex';
@@ -2852,6 +2951,7 @@ document.getElementById('bulkAccountForm').onsubmit = async function(e) {
   }
 };
 
+>>>>>>>>> Temporary merge branch 2
 // Modal registration logic
 document.getElementById('adminModalRegForm').onsubmit = async function(e) {
   e.preventDefault();
@@ -2923,6 +3023,26 @@ function loadStatistics() {
         db.ref('teachers').once('value'),
         db.ref('admins').once('value')
     ]).then(([studentsSnap, teachersSnap, adminsSnap]) => {
+<<<<<<<<< Temporary merge branch 1
+        const students = [];
+        const teachers = [];
+        let pendingApprovals = 0;
+        
+        studentsSnap.forEach(child => students.push(child.val()));
+        teachersSnap.forEach(child => {
+            const t = child.val();
+            teachers.push(t);
+            if (!t.approved) pendingApprovals++;
+        });
+        
+        const admins = [];
+        adminsSnap.forEach(child => admins.push(child.val()));
+        
+        document.getElementById('statTotalStudents').textContent = students.length;
+        document.getElementById('statTotalTeachers').textContent = teachers.length;
+        document.getElementById('statPendingApprovals').textContent = pendingApprovals;
+        document.getElementById('statTotalAdmins').textContent = admins.length;
+=========
         // Count students - use reliable method
         let totalStudents = 0;
         if (studentsSnap.exists()) {
@@ -2950,6 +3070,7 @@ function loadStatistics() {
         document.getElementById('statTotalTeachers').textContent = teachers.length;
         document.getElementById('statPendingApprovals').textContent = pendingApprovals;
         document.getElementById('statTotalAdmins').textContent = totalAdmins;
+>>>>>>>>> Temporary merge branch 2
     }).catch(err => console.error('Error loading statistics:', err));
 }
 
@@ -3084,16 +3205,23 @@ function exportStudentsCSV() {
         const students = [];
         snapshot.forEach(child => {
             const s = child.val();
+<<<<<<<<< Temporary merge branch 1
+=========
             // Normalize and format grade level for CSV
             // Students use "grade" field (not "gradelevel") - check both for backward compatibility
             const rawGrade = s.grade || s.gradelevel || '';
             const formattedGrade = formatGradeForDisplay(rawGrade) || rawGrade;
             
+>>>>>>>>> Temporary merge branch 2
             students.push({
                 id: s.id || '',
                 name: (s.fname || '') + ' ' + (s.lname || ''),
                 email: s.email || '',
+<<<<<<<<< Temporary merge branch 1
+                grade: s.gradelevel || '',
+=========
                 grade: formattedGrade,
+>>>>>>>>> Temporary merge branch 2
                 section: s.section || '',
                 subject: s.subject || '',
                 registered: s.registeredAt ? new Date(s.registeredAt).toLocaleString() : ''
@@ -3124,15 +3252,22 @@ function exportTeachersCSV(type) {
             if (type === 'pending' && t.approved) return;
             if (type === 'approved' && !t.approved) return;
             
+<<<<<<<<< Temporary merge branch 1
+=========
             // Normalize and format grade level for CSV
             const rawGrade = t.grade || t.gradelevel || '';
             const formattedGrade = formatGradeForDisplay(rawGrade) || rawGrade;
             
+>>>>>>>>> Temporary merge branch 2
             teachers.push({
                 id: t.id || '',
                 name: (t.fname || '') + ' ' + (t.lname || ''),
                 email: t.email || '',
+<<<<<<<<< Temporary merge branch 1
+                grade: t.grade || '',
+=========
                 grade: formattedGrade,
+>>>>>>>>> Temporary merge branch 2
                 section: t.section || '',
                 status: t.approved ? 'Approved' : 'Pending',
                 registered: t.registeredAt ? new Date(t.registeredAt).toLocaleString() : ''
@@ -3159,6 +3294,38 @@ function exportTeachersCSV(type) {
     // Load admin analytics
     async function loadAdminAnalytics() {
         try {
+<<<<<<<<< Temporary merge branch 1
+            // Load all students
+            const studentsSnap = await db.ref('students').once('value');
+            const totalStudents = studentsSnap.exists() ? Object.keys(studentsSnap.val()).length : 0;
+            document.getElementById('analyticsTotalStudents').textContent = totalStudents;
+            document.getElementById('analyticsActiveStudents').textContent = totalStudents; // Assuming all are active
+            
+            // Load all teachers
+            const teachersSnap = await db.ref('teachers').once('value');
+            const totalTeachers = teachersSnap.exists() ? Object.keys(teachersSnap.val()).length : 0;
+            document.getElementById('analyticsTotalTeachers').textContent = totalTeachers;
+            document.getElementById('analyticsActiveTeachers').textContent = totalTeachers; // Assuming all are active
+            
+            // Load all assessments
+            const assessmentsSnap = await db.ref('assessments').once('value');
+            const totalAssessments = assessmentsSnap.exists() ? Object.keys(assessmentsSnap.val()).length : 0;
+            document.getElementById('analyticsTotalAssessments').textContent = totalAssessments;
+            
+            // Load quiz attempts
+            const quizSummariesSnap = await db.ref('quizSummaries').once('value');
+            let totalQuizAttempts = 0;
+            if (quizSummariesSnap.exists()) {
+                quizSummariesSnap.forEach(quizSnap => {
+                    if (quizSnap.exists()) {
+                        totalQuizAttempts += Object.keys(quizSnap.val()).length;
+                    }
+                });
+            }
+            document.getElementById('analyticsTotalQuizAttempts').textContent = totalQuizAttempts;
+            
+            // Load all grades from all teachers
+=========
             // Initialize all analytics elements with default values
             const setDefaultValue = (id, value) => {
                 const el = document.getElementById(id);
@@ -3232,11 +3399,89 @@ function exportTeachersCSV(type) {
             setDefaultValue('analyticsTotalQuizAttempts', totalQuizAttempts);
             
             // Load all grades from all teachers with error handling
+>>>>>>>>> Temporary merge branch 2
             let allGrades = [];
             let mathGrades = [];
             let englishGrades = [];
             let scienceGrades = [];
             
+<<<<<<<<< Temporary merge branch 1
+            if (teachersSnap.exists()) {
+                const gradePromises = [];
+                teachersSnap.forEach(teacherSnap => {
+                    const teacher = teacherSnap.val();
+                    if (teacher && teacher.section) {
+                        const section = teacher.section;
+                        gradePromises.push(
+                            db.ref(`teachers/${teacherSnap.key}/sections/${section}/grades`).once('value')
+                                .then(gradesSnap => {
+                                    if (gradesSnap.exists()) {
+                                        gradesSnap.forEach(gradeSnap => {
+                                            const grade = gradeSnap.val();
+                                            allGrades.push(grade);
+                                            
+                                            // Categorize by subject
+                                            if (grade.subject === 'subject_math' || grade.subject === 'Math') {
+                                                mathGrades.push(grade);
+                                            } else if (grade.subject === 'subject_english' || grade.subject === 'English') {
+                                                englishGrades.push(grade);
+                                            } else if (grade.subject === 'subject_science' || grade.subject === 'Science') {
+                                                scienceGrades.push(grade);
+                                            }
+                                        });
+                                    }
+                                })
+                        );
+                    }
+                });
+                
+                await Promise.all(gradePromises);
+            }
+            
+            // Calculate grade analytics
+            document.getElementById('analyticsTotalGrades').textContent = allGrades.length;
+            
+            if (allGrades.length > 0) {
+                const averageGrade = allGrades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / allGrades.length;
+                document.getElementById('analyticsAverageGrade').textContent = averageGrade.toFixed(2);
+                
+                const passingCount = allGrades.filter(grade => (grade.finalGrade || 0) >= 75).length;
+                const passingRate = (passingCount / allGrades.length) * 100;
+                document.getElementById('analyticsPassingRate').textContent = Math.round(passingRate) + '%';
+            }
+            
+            // Calculate subject averages
+            if (mathGrades.length > 0) {
+                const mathAvg = mathGrades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / mathGrades.length;
+                document.getElementById('analyticsMathAverage').textContent = mathAvg.toFixed(2);
+            }
+            
+            if (englishGrades.length > 0) {
+                const englishAvg = englishGrades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / englishGrades.length;
+                document.getElementById('analyticsEnglishAverage').textContent = englishAvg.toFixed(2);
+            }
+            
+            if (scienceGrades.length > 0) {
+                const scienceAvg = scienceGrades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / scienceGrades.length;
+                document.getElementById('analyticsScienceAverage').textContent = scienceAvg.toFixed(2);
+            }
+            
+            // Count lessons and quizzes (from Supabase or Firebase)
+            // For now, we'll count from Firebase assessments
+            document.getElementById('analyticsLessonsCreated').textContent = totalAssessments; // Using assessments as proxy
+            document.getElementById('analyticsQuizzesCreated').textContent = totalQuizAttempts > 0 ? Math.ceil(totalQuizAttempts / 10) : 0; // Estimate
+            
+            console.log('📊 Admin Analytics loaded:', {
+                students: totalStudents,
+                teachers: totalTeachers,
+                assessments: totalAssessments,
+                grades: allGrades.length,
+                quizAttempts: totalQuizAttempts
+            });
+            
+        } catch (error) {
+            console.error('Error loading admin analytics:', error);
+=========
             if (teachersSnap && teachersSnap.exists()) {
                 const gradePromises = [];
                 teachersSnap.forEach(teacherSnap => {
@@ -3365,6 +3610,7 @@ function exportTeachersCSV(type) {
                 const el = document.getElementById(id);
                 if (el) el.textContent = id.includes('Rate') || id.includes('Average') ? '0.00' : '0';
             });
+>>>>>>>>> Temporary merge branch 2
         }
     }
 
