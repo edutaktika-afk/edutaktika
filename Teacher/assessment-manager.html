@@ -1153,30 +1153,6 @@
             db = firebase.database();
             auth = firebase.auth();
         });
-=======
-    
-    <!-- Firebase Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
-            authDomain: "edutaktika.firebaseapp.com",
-            databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
-            projectId: "edutaktika",
-            storageBucket: "edutaktika.appspot.com",
-            messagingSenderId: "676848575316",
-            appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
-            measurementId: "G-X3GT5TNN87"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const auth = firebase.auth();
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
 
         // Global variables
         let assessments = [];
@@ -1328,11 +1304,8 @@
         
         // Load grades for analytics
         async function loadGrades() {
-<<<<<<< HEAD
             if (!db || !auth) return;
             
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             try {
                 const user = auth.currentUser;
                 if (!user) return;
@@ -1361,11 +1334,8 @@
 
         // Load assessments
         function loadAssessments() {
-<<<<<<< HEAD
             if (!db || !auth) return;
             
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             db.ref('assessments').orderByChild('createdBy').equalTo(auth.currentUser.uid).once('value')
                 .then(snapshot => {
                     assessments = [];
@@ -1374,7 +1344,6 @@
                     });
                     renderAssessments();
                     updateAnalytics();
-<<<<<<< HEAD
                     
                     // After assessments are loaded, check if filters need to be applied
                     // This ensures filters work even if loadTeacherData hasn't finished yet
@@ -1383,8 +1352,6 @@
                     if ((subjectFilter && subjectFilter.value) || (gradeFilter && gradeFilter.value)) {
                         filterAssessments();
                     }
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                 })
                 .catch(error => {
                     console.error('Error loading assessments:', error);
@@ -1393,11 +1360,8 @@
 
         // Load attempts
         function loadAttempts() {
-<<<<<<< HEAD
             if (!db) return;
             
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             db.ref('attempts').once('value')
                 .then(snapshot => {
                     attempts = [];

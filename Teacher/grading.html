@@ -2860,11 +2860,6 @@
             
             quizListeners['all'] = unsubscribe;
         }
-=======
-            renderAttributes();
-            updateSummary();
-        }
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
 
         // Render attributes list
         function renderAttributes() {
@@ -2885,18 +2880,13 @@
                         <div class="attribute-name" id="attr-name-${index}">
                             ${attr.name}
                         </div>
-<<<<<<< HEAD
                         ${attr.isQuiz ? '' : `<input type="text" 
-=======
-                        <input type="text" 
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                                class="attribute-name-input" 
                                id="attr-input-${index}"
                                value="${attr.name}"
                                maxlength="50"
                                onblur="saveAttributeName(${index})"
                                onkeypress="handleAttributeNameKeypress(event, ${index})"
-<<<<<<< HEAD
                                style="display: none;">`}
                         <div class="attribute-input">
                             ${attr.isQuiz ? `
@@ -2936,35 +2926,6 @@
                             <i class="fas fa-times"></i>
                         </button>`}
                         ${attr.isQuiz ? '<span style="color: #2196F3; font-size: 0.8rem; margin-left: 5px;" title="Auto-managed quiz field"><i class="fas fa-lock"></i></span>' : ''}
-=======
-                               style="display: none;">
-                        <div class="attribute-input">
-                            <input type="number" 
-                                   class="percentage-input" 
-                                   value="${attr.percentage}" 
-                                   min="0" 
-                                   max="${maxAllowed}" 
-                                   data-index="${index}"
-                                   data-max-allowed="${maxAllowed}"
-                                   onchange="updatePercentage(${index}, this.value)"
-                                   oninput="showMaxAllowed(${index}, this)"
-                                   title="Maximum allowed: ${maxAllowed}%">
-                            <span>%</span>
-                            <span class="max-indicator" id="max-${index}" style="font-size: 0.8rem; color: var(--text-light); margin-left: 5px;">
-                                ${maxAllowed < 100 ? `(max: ${maxAllowed}%)` : ''}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="attribute-actions">
-                        <button class="edit-btn" onclick="editAttributeName(${index})" title="Edit attribute name">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="remove-btn" onclick="removeAttributeByName('${attr.name}')" title="Remove attribute">
-                            <i class="fas fa-times"></i>
-                        </button>`}
-                        ${attr.isQuiz ? '<span style="color: #2196F3; font-size: 0.8rem; margin-left: 5px;" title="Auto-managed quiz field"><i class="fas fa-lock"></i></span>' : ''}
-                        </button>
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                     </div>
                 `;
                 item.setAttribute('data-index', index);
@@ -3100,7 +3061,6 @@
             }
             
             const attribute = gradingAttributes[index];
-<<<<<<< HEAD
             
             // Prevent deletion of quiz attributes (they are auto-managed)
             if (attribute.isQuiz === true) {
@@ -3108,8 +3068,6 @@
                 return;
             }
             
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             pendingDeleteAttribute = attribute;
             
             // Show custom warning modal

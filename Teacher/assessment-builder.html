@@ -832,7 +832,6 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <script>
-<<<<<<< HEAD
         // Wait for Firebase to be initialized by profile.js
         function waitForFirebase(callback) {
             if (window.firebase && firebase.database && firebase.auth && firebase.storage) {
@@ -851,24 +850,6 @@
             auth = firebase.auth();
             storage = firebase.storage();
         });
-=======
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
-            authDomain: "edutaktika.firebaseapp.com",
-            databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
-            projectId: "edutaktika",
-            storageBucket: "edutaktika.appspot.com",
-            messagingSenderId: "676848575316",
-            appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
-            measurementId: "G-X3GT5TNN87"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const auth = firebase.auth();
-        const storage = firebase.storage();
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
 
         // Global variables
         let questions = [];
@@ -1053,31 +1034,6 @@
                         });
                     }
                 });
-=======
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check authentication
-            auth.onAuthStateChanged(function(user) {
-                if (!user) {
-                    window.location.href = 'logreg.html';
-                } else {
-                    // Initialize rich text editor
-                    initQuestionEditor();
-                    
-                    // Load draft if exists
-                    loadDraft();
-                    
-                    // Start auto-save (every 30 seconds)
-                    startAutoSave();
-                    
-                    // Check if editing existing assessment
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const assessmentId = urlParams.get('id');
-                    if (assessmentId) {
-                        loadAssessmentForEdit(assessmentId);
-                    }
-                }
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             });
         });
 
@@ -1089,11 +1045,8 @@
         }
 
         function saveDraft() {
-<<<<<<< HEAD
             if (!db || !auth) return;
             
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             const title = document.getElementById('assessmentTitle').value.trim();
             if (!title && questions.length === 0) return; // Don't save empty drafts
 
@@ -1135,11 +1088,8 @@
         }
 
         function loadDraft() {
-<<<<<<< HEAD
             if (!db || !auth) return;
             
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             const user = auth.currentUser;
             if (!user) return;
 
@@ -1155,14 +1105,11 @@
 
                             if (confirm('Found a saved draft. Would you like to continue where you left off?')) {
                                 loadDraftData(draft);
-<<<<<<< HEAD
                             } else {
                                 // If user declines draft, ensure teacher's grade is still set
                                 setTimeout(() => {
                                     loadTeacherData();
                                 }, 200);
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                             }
                         }
                     }
@@ -1176,14 +1123,10 @@
             document.getElementById('assessmentTitle').value = draft.title || '';
             document.getElementById('assessmentDescription').value = draft.description || '';
             document.getElementById('subject').value = draft.subject || '';
-<<<<<<< HEAD
             // Only set gradeLevel from draft if it exists, otherwise keep teacher's grade
             if (draft.gradeLevel) {
                 document.getElementById('gradeLevel').value = draft.gradeLevel;
             }
-=======
-            document.getElementById('gradeLevel').value = draft.gradeLevel || '';
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             document.getElementById('timeLimit').value = draft.timeLimit || '';
             document.getElementById('passingScore').value = draft.passingScore || '';
             
@@ -1213,11 +1156,8 @@
 
         // Load assessment for editing
         function loadAssessmentForEdit(assessmentId) {
-<<<<<<< HEAD
             if (!db) return;
             
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             db.ref('assessments/' + assessmentId).once('value')
                 .then(snapshot => {
                     if (snapshot.exists()) {
@@ -1335,11 +1275,8 @@
 
         // Handle question image upload
         function handleQuestionImageUpload(event) {
-<<<<<<< HEAD
             if (!storage || !auth) return;
             
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             const file = event.target.files[0];
             if (!file) return;
 
@@ -1604,14 +1541,11 @@
 
         // Save assessment
         function saveAssessment() {
-<<<<<<< HEAD
             if (!db || !auth) {
                 alert('Firebase not initialized. Please refresh the page.');
                 return;
             }
             
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             const title = document.getElementById('assessmentTitle').value.trim();
             const description = document.getElementById('assessmentDescription').value.trim();
             const subject = document.getElementById('subject').value;
@@ -1672,31 +1606,16 @@
                     document.getElementById('assessmentTitle').value = '';
                     document.getElementById('assessmentDescription').value = '';
                     // Don't reset subject and gradeLevel - keep teacher's values
-<<<<<<< HEAD
-                    // Reset form but keep teacher's grade and subject
-                    document.getElementById('assessmentTitle').value = '';
-                    document.getElementById('assessmentDescription').value = '';
-                    // Don't reset subject and gradeLevel - keep teacher's values
-=======
-                    // Reset form
-                    document.getElementById('assessmentTitle').value = '';
-                    document.getElementById('assessmentDescription').value = '';
-                    document.getElementById('subject').value = '';
-                    document.getElementById('gradeLevel').value = '';
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                     document.getElementById('timeLimit').value = '';
                     document.getElementById('passingScore').value = '';
                     questions = [];
                     renderQuestions();
                     updatePreview();
-<<<<<<< HEAD
                     
                     // Re-apply teacher's grade and subject after reset
                     setTimeout(() => {
                         loadTeacherData();
                     }, 100);
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                 })
                 .catch(error => {
                     console.error('Error saving assessment:', error);
