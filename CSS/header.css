@@ -119,7 +119,7 @@
 
     nav ul li a:hover {
         background-color: #2e8b57;
-        color: var(--white);
+
     }
 
     nav ul li a:before {
@@ -138,6 +138,12 @@
     nav ul li a:hover:before {
         opacity: 1;
     }
+
+    nav ul li a.active,
+nav ul li a.active:visited {
+    background-color: var(--primary) !important; /* green */
+    color: var(--white) !important;
+}
 
     /* Profile Dropdown Styles */
     .profile-dropdown {
@@ -509,7 +515,7 @@ nav ul li.dropdown .dropbtn {
   font-weight:bold;
   padding:8px 15px;
   border-radius:20px;
-  color:var(--forest-green);
+
 }
 nav ul li.dropdown .dropbtn:focus-visible {
   outline:3px solid var(--primary);

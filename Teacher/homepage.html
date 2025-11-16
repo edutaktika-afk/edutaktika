@@ -569,6 +569,18 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 
 <script src="../assets/js/navbar.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const navLinks = document.querySelectorAll("nav ul li a");
+    const current = window.location.pathname.split('/').pop();
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
+        }
+    });
+});
+</script>
 </div>
 </body>
 
