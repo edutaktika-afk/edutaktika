@@ -19,6 +19,11 @@ package-lock.json
 .env.development
 # Never commit environment files with real credentials!
 
+# Firebase Admin SDK service account keys
+**/edutaktika-firebase-adminsdk*.json
+**/serviceAccountKey.json
+**/*-firebase-adminsdk*.json
+
 # OS / Editor junk
 .DS_Store
 Thumbs.db

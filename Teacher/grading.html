@@ -1550,6 +1550,105 @@
                 padding: 4px 2px;
             }
         }
+
+        /* Responsive for grading.html (mobile improvements) */
+@media (max-width: 600px) {
+    .main-container {
+        padding: 8px 2vw;
+        min-height: unset;
+    }
+    .page-header h1 {
+        font-size: 1.3rem;
+    }
+    .grading-container {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .grading-form, .summary-panel, .grading-sheet-section, .attendance-sheet-header {
+        padding: 10px 4vw;
+        border-radius: 10px;
+    }
+    .tab-navigation {
+        flex-direction: column;
+        gap: 0;
+        padding-bottom: 0;
+    }
+    .tab-btn {
+        width: 100%;
+        padding: 10px 0;
+        font-size: 1em;
+        border-radius: 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .grading-table-container,
+    .viewonly-table-container,
+    .attendance-grid-container {
+        overflow-x: auto;
+        border-radius: 8px;
+    }
+    .grading-table,
+    .viewonly-table,
+    .attendance-grid-table {
+        min-width: 600px;
+        font-size: 0.8em;
+    }
+    .attribute-item,
+    .attribute-preview,
+    .grade-input-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+        padding: 10px;
+    }
+    .form-section h3,
+    .summary-panel h3,
+    .section-header h2 {
+        font-size: 1.1rem;
+    }
+    .stat-card {
+        padding: 12px 6px;
+        font-size: 0.9em;
+    }
+    .modal-content,
+    .grade-modal-content,
+    .warning-modal-content {
+        width: 98vw !important;
+        max-width: 99vw !important;
+        min-width: 0 !important;
+        padding: 10px 2vw !important;
+        border-radius: 10px !important;
+    }
+    .modal-header, .modal-footer, .modal-body {
+        padding: 10px 2vw !important;
+    }
+    .form-row {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+    .bulk-student-item {
+        padding: 8px !important;
+    }
+    .summary-stats {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    .attendance-sheet-header h3 {
+        font-size: 1.1rem;
+    }
+    .attendance-grid-table th,
+    .attendance-grid-table td {
+        padding: 4px 2px;
+        font-size: 0.7em;
+    }
+    .footer-wrap {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .footer-col {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
     </style>
 </head>
 
