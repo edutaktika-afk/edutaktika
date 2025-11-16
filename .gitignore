@@ -33,3 +33,8 @@ tmp/
 
 # Exclude examples from repo if not needed in production (comment to include)
 EXAMPLES/
+
+# Firebase Admin SDK service account keys
+**/edutaktika-firebase-adminsdk*.json
+**/serviceAccountKey.json
+**/*-firebase-adminsdk*.json
