@@ -3617,6 +3617,36 @@
             });
         }
 
+        // Helper function to normalize grade level (handles "grade=5", "grade=6", "5", "6", etc.)
+        function normalizeGrade(grade) {
+            if (!grade) return null;
+            let normalized = String(grade).trim();
+            
+            // Handle Firebase format: "grade=5" or "grade=6"
+            if (normalized.includes('=')) {
+                const parts = normalized.split('=');
+                if (parts.length === 2 && parts[0].toLowerCase().trim() === 'grade') {
+                    return parts[1].trim();
+                }
+            }
+            
+            // Remove common suffixes
+            normalized = normalized.replace(/(\d+)(th|st|nd|rd)/i, '$1');
+            
+            // Remove "grade" prefix if present
+            if (/^grade/i.test(normalized)) {
+                normalized = normalized.replace(/^grade/i, '');
+            }
+            
+            // Extract just the number
+            const numberMatch = normalized.match(/(\d+)/);
+            if (numberMatch) {
+                return numberMatch[1];
+            }
+            
+            return normalized;
+        }
+
         // Load students data from Firebase
         async function loadStudentsData() {
             if (!currentTeacherUID || !currentSection) return;
@@ -3625,7 +3655,11 @@
                 // Get teacher information first
                 const teacherSnap = await db.ref('teachers/' + currentTeacherUID).once('value');
                 const teacher = teacherSnap.val();
-                const teacherGrade = teacher && teacher.gradelevel ? teacher.gradelevel : null;
+                
+                // Get teacher's grade - prioritize "grade" field, fallback to "gradelevel"
+                let teacherGrade = teacher && teacher.grade ? teacher.grade : (teacher && teacher.gradelevel ? teacher.gradelevel : null);
+                teacherGrade = normalizeGrade(teacherGrade);
+                
                 const teacherSchoolYear = teacher && teacher.school_year ? teacher.school_year : null;
                 const teacherSubjects = teacher && teacher.subjects ? teacher.subjects : null;
 
@@ -3638,8 +3672,10 @@
                     // Filter by section, grade level, and school year
                     // Students use "grade" field (not "gradelevel") - check both for backward compatibility
                     const sectionMatch = student.section && student.section.trim().toLowerCase() === currentSection.trim().toLowerCase();
-                    const studentGrade = student.grade || student.gradelevel;
-                    const gradeMatch = !teacherGrade || studentGrade === teacherGrade;
+                    
+                    // Normalize both student and teacher grades for comparison
+                    const studentGrade = normalizeGrade(student.grade || student.gradelevel);
+                    const gradeMatch = !teacherGrade || (studentGrade && studentGrade === teacherGrade);
                     const schoolYearMatch = !teacherSchoolYear || student.school_year === teacherSchoolYear;
                     
                     if (sectionMatch && gradeMatch && schoolYearMatch) {
@@ -3652,6 +3688,7 @@
 
                 console.log(`Loaded ${studentsData.length} students for section: ${currentSection}, grade: ${teacherGrade}, school year: ${teacherSchoolYear}`);
                 console.log('Teacher subjects:', teacherSubjects);
+                console.log('Teacher grade (normalized):', teacherGrade);
 
                 // Auto-populate filters based on teacher's assignments
                 populateTeacherFilters(teacherGrade, teacherSubjects);
