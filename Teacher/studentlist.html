@@ -551,16 +551,87 @@ strong, span{
         }
     }
 
+    // Helper function to get sections for a specific grade level
+    function getSectionsForGrade(gradeLevel) {
+        if (!gradeLevel) return [];
+        
+        // Normalize grade level (handle "grade=5", "5", "grade5", etc.)
+        let grade = String(gradeLevel).trim();
+        if (grade.includes('=')) {
+            const parts = grade.split('=');
+            if (parts.length === 2 && parts[0].toLowerCase().trim() === 'grade') {
+                grade = parts[1].trim();
+            }
+        }
+        grade = grade.replace(/^grade/i, '').replace(/(th|st|nd|rd)$/i, '');
+        const gradeNum = parseInt(grade, 10);
+        
+        if (gradeNum === 5) {
+            return ['Melon', 'Kasoy', 'Ubas', 'Durian'];
+        } else if (gradeNum === 6) {
+            return ['Fruit Salad', 'Langka', 'Santol', 'Guyabano'];
+        }
+        return [];
+    }
+
+    // Helper function to normalize grade level
+    function normalizeGrade(grade) {
+        if (!grade) return null;
+        let normalized = String(grade).trim();
+        
+        // Handle Firebase format: "grade=5" or "grade=6"
+        if (normalized.includes('=')) {
+            const parts = normalized.split('=');
+            if (parts.length === 2 && parts[0].toLowerCase().trim() === 'grade') {
+                return parts[1].trim();
+            }
+        }
+        
+        // Remove common suffixes
+        normalized = normalized.replace(/(\d+)(th|st|nd|rd)/i, '$1');
+        
+        // Remove "grade" prefix if present
+        if (/^grade/i.test(normalized)) {
+            normalized = normalized.replace(/^grade/i, '');
+        }
+        
+        // Extract just the number
+        const numberMatch = normalized.match(/(\d+)/);
+        if (numberMatch) {
+            return numberMatch[1];
+        }
+        
+        return normalized;
+    }
+
     // Load dropdowns and tables
     async function loadDropdowns() {
+        // Get teacher's grade level to filter sections
+        const teacherSnap = await db.ref('teachers/' + firebase.auth().currentUser.uid).once('value');
+        const teacher = teacherSnap.val();
+        let teacherGrade = teacher && teacher.grade ? teacher.grade : null;
+        teacherGrade = normalizeGrade(teacherGrade);
+        
         const snapshot = await db.ref('students').once('value');
         const years = new Set();
         const sections = new Set();
+        
         snapshot.forEach(child => {
             const s = child.val();
             if (s.school_year) years.add(s.school_year);
-            if (s.section) sections.add(s.section);
+            
+            // Only add sections that match the teacher's grade level
+            if (s.section && s.grade) {
+                const studentGrade = normalizeGrade(s.grade);
+                if (!teacherGrade || studentGrade === teacherGrade) {
+                    const validSections = getSectionsForGrade(studentGrade);
+                    if (validSections.includes(s.section)) {
+                        sections.add(s.section);
+                    }
+                }
+            }
         });
+        
         // Populate dropdowns
         const yearOptions = Array.from(years).sort((a,b)=>b.localeCompare(a)).map(y => `<option value="${y}">${y}</option>`).join('');
         const sectionOptions = Array.from(sections).sort().map(s => `<option value="${s}">${s}</option>`).join('');
@@ -584,14 +655,16 @@ const rowsPerPage = 10;
         const teacherSection = teacher && teacher.section ? teacher.section : null;
         const teacherSY = teacher && teacher.school_year ? teacher.school_year : null;
         let teacherGrade = teacher && teacher.grade ? teacher.grade : null;
+        teacherGrade = normalizeGrade(teacherGrade);
 
         // If teacher grade level is not set, try to determine it from the students
         if (!teacherGrade) {
             const gradeCounts = {};
             snapshot.forEach(child => {
                 const s = child.val();
-                if (s.section === teacherSection && s.grade) {
-                    gradeCounts[s.grade] = (gradeCounts[s.grade] || 0) + 1;
+                const studentGrade = normalizeGrade(s.grade);
+                if (s.section === teacherSection && studentGrade) {
+                    gradeCounts[studentGrade] = (gradeCounts[studentGrade] || 0) + 1;
                 }
             });
             
@@ -615,12 +688,29 @@ const rowsPerPage = 10;
             }
         }
 
+        // Get valid sections for this grade level
+        const validSections = getSectionsForGrade(teacherGrade);
+
         snapshot.forEach(child => {
             const s = child.val();
+            const studentGrade = normalizeGrade(s.grade);
+            
+            // Filter by school year
             if (sy && s.school_year !== sy) return;
-            if (teacherSection && s.section !== teacherSection) return;
+            
+            // Filter by teacher's school year
             if (teacherSY && s.school_year !== teacherSY) return;
-            if (teacherGrade && s.grade !== teacherGrade) return;
+            
+            // Filter by grade level (must match teacher's grade)
+            if (teacherGrade && studentGrade !== teacherGrade) return;
+            
+            // Filter by section (must match teacher's section AND be a valid section for the grade)
+            if (teacherSection) {
+                if (s.section !== teacherSection) return;
+                // Ensure the section is valid for this grade level
+                if (validSections.length > 0 && !validSections.includes(s.section)) return;
+            }
+            
             studentsArr.push({ key: child.key, ...s });
         });
 
@@ -783,17 +873,18 @@ async function filterAndSearchStudents() {
     const teacher = teacherSnap.val();
     const teacherSection = teacher && teacher.section ? teacher.section : null;
     const teacherSY = teacher && teacher.school_year ? teacher.school_year : null;
-    const teacherGrade = teacher && teacher.grade ? teacher.grade : null;
+    let teacherGrade = teacher && teacher.grade ? teacher.grade : null;
+    teacherGrade = normalizeGrade(teacherGrade);
 
     // If teacher grade level is not set, try to determine it from the students or set a default
-    let effectiveTeacherGrade = teacherGrade;
-    if (!effectiveTeacherGrade) {
+    if (!teacherGrade) {
         // Try to find the most common grade level among students in the teacher's section
         const gradeCounts = {};
         snapshot.forEach(child => {
             const s = child.val();
-            if (s.section === teacherSection && s.grade) {
-                gradeCounts[s.grade] = (gradeCounts[s.grade] || 0) + 1;
+            const studentGrade = normalizeGrade(s.grade);
+            if (s.section === teacherSection && studentGrade) {
+                gradeCounts[studentGrade] = (gradeCounts[studentGrade] || 0) + 1;
             }
         });
         
@@ -808,26 +899,38 @@ async function filterAndSearchStudents() {
         }
         
         if (mostCommonGrade) {
-            effectiveTeacherGrade = mostCommonGrade;
+            teacherGrade = mostCommonGrade;
             
             // Update the teacher's grade level in Firebase
             await db.ref('teachers/' + firebase.auth().currentUser.uid).update({
-                grade: effectiveTeacherGrade
+                grade: teacherGrade
             });
         } else {
             // If we can't determine from students, default to Grade 5
-            effectiveTeacherGrade = '5';
+            teacherGrade = '5';
         }
     }
+
+    // Get valid sections for this grade level
+    const validSections = getSectionsForGrade(teacherGrade);
 
     // --- Calculate stats (without search) ---
     let total = 0, male = 0, female = 0;
     snapshot.forEach(child => {
         const s = child.val();
+        const studentGrade = normalizeGrade(s.grade);
         
-        if (teacherSection && s.section !== teacherSection) return;
+        // Filter by section (must match teacher's section AND be valid for grade)
+        if (teacherSection) {
+            if (s.section !== teacherSection) return;
+            if (validSections.length > 0 && !validSections.includes(s.section)) return;
+        }
+        
+        // Filter by school year
         if (teacherSY && s.school_year !== teacherSY) return;
-        if (effectiveTeacherGrade && s.grade !== effectiveTeacherGrade) return;
+        
+        // Filter by grade level (must match teacher's grade)
+        if (teacherGrade && studentGrade !== teacherGrade) return;
         
         total++;
         if (s.gender === 'Male') male++;
@@ -840,9 +943,20 @@ async function filterAndSearchStudents() {
     // --- Build table (with search) ---
     snapshot.forEach(child => {
         const s = child.val();
-        if (teacherSection && s.section !== teacherSection) return;
+        const studentGrade = normalizeGrade(s.grade);
+        
+        // Filter by section (must match teacher's section AND be valid for grade)
+        if (teacherSection) {
+            if (s.section !== teacherSection) return;
+            if (validSections.length > 0 && !validSections.includes(s.section)) return;
+        }
+        
+        // Filter by school year
         if (teacherSY && s.school_year !== teacherSY) return;
-        if (effectiveTeacherGrade && s.grade !== effectiveTeacherGrade) return;
+        
+        // Filter by grade level (must match teacher's grade)
+        if (teacherGrade && studentGrade !== teacherGrade) return;
+        
         const fullName = `${s.fname || ''} ${s.mname || ''} ${s.lname || ''}`.toLowerCase();
         if (search && !fullName.includes(search)) return;
         html += `<tr>

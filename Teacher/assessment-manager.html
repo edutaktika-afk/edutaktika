@@ -723,6 +723,93 @@
         </div>
     </header>
 
+    
+<!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
+
+ <!-- Profile Sidebar (Dynamic with Firebase) -->
+<div id="profileSidebar" class="profile-sidebar">
+    <div class="sidebar-content">
+        <button class="close-btn" id="closeSidebar">&times;</button>
+        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+            <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+            <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+        </div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <br>
+        <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+            <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+            Teacher
+        </div>
+            <div>
+                <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                <strong>ID:</strong> <span id="profileId">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                <strong>First Name:</strong> <span id="profileFirstName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                <strong>Last Name:</strong> <span id="profileLastName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                <strong>Section:</strong> <span id="profileSection">-</span>
+            </div>
+            <div>
+    <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+    <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+    <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+    <strong>City:</strong> <span id="profileAddressCity">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+    <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+    <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+    <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+</div>
+        </div>
+        <div class="logout-switch-row">
+            <div class="logout-switch" id="logoutSwitch">
+                <div class="logout-switch-circle"></div>
+            </div>
+            <span class="logout-label" id="logoutLabel">LOGOUT</span>
+        </div>
+    </div>
+</div>
+
+        <!-- Firebase App (the core Firebase SDK) -->
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+        <script src="../assets/js/Teacher Side/profile.js"></script>
+        
+    <script src="../assets/js/Teacher Side/header.js"></script>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -1031,28 +1118,23 @@
 
     <!-- Chart.js for Advanced Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Firebase Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
-            authDomain: "edutaktika.firebaseapp.com",
-            databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
-            projectId: "edutaktika",
-            storageBucket: "edutaktika.appspot.com",
-            messagingSenderId: "676848575316",
-            appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
-            measurementId: "G-X3GT5TNN87"
-        };
+        // Wait for Firebase to be initialized by profile.js
+        function waitForFirebase(callback) {
+            if (window.firebase && firebase.database && firebase.auth) {
+                callback();
+            } else {
+                setTimeout(() => waitForFirebase(callback), 100);
+            }
+        }
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const auth = firebase.auth();
+        // Get Firebase instances after initialization
+        let db, auth;
+        waitForFirebase(function() {
+            db = firebase.database();
+            auth = firebase.auth();
+        });
 
         // Global variables
         let assessments = [];
@@ -1060,15 +1142,125 @@
         let students = [];
         let grades = []; // Added for grade analytics
 
+        // Helper function to normalize grade level
+        function normalizeGrade(grade) {
+            if (!grade) return null;
+            let normalized = String(grade).trim();
+            
+            // Handle Firebase format: "grade=5" or "grade=6"
+            if (normalized.includes('=')) {
+                const parts = normalized.split('=');
+                if (parts.length === 2 && parts[0].toLowerCase().trim() === 'grade') {
+                    return parts[1].trim();
+                }
+            }
+            
+            // Remove common suffixes
+            normalized = normalized.replace(/(\d+)(th|st|nd|rd)/i, '$1');
+            
+            // Remove "grade" prefix if present
+            if (/^grade/i.test(normalized)) {
+                normalized = normalized.replace(/^grade/i, '');
+            }
+            
+            // Extract just the number
+            const numberMatch = normalized.match(/(\d+)/);
+            if (numberMatch) {
+                return numberMatch[1];
+            }
+            
+            return normalized;
+        }
+
+        // Helper function to map subject to dropdown value
+        function mapSubjectToDropdown(subject) {
+            if (!subject) return '';
+            const subjectLower = String(subject).toLowerCase();
+            if (subjectLower.includes('math')) return 'Math';
+            if (subjectLower.includes('english')) return 'English';
+            if (subjectLower.includes('science')) return 'Science';
+            return '';
+        }
+
+        // Load teacher data and auto-populate filters
+        async function loadTeacherData() {
+            if (!db || !auth) {
+                waitForFirebase(() => loadTeacherData());
+                return;
+            }
+            
+            const user = auth.currentUser;
+            if (!user) return;
+
+            try {
+                const teacherSnap = await db.ref('teachers/' + user.uid).once('value');
+                const teacher = teacherSnap.val();
+                
+                if (teacher) {
+                    // Auto-populate subject filter
+                    if (teacher.subjects && Array.isArray(teacher.subjects) && teacher.subjects.length > 0) {
+                        const firstSubject = teacher.subjects[0];
+                        const mappedSubject = mapSubjectToDropdown(firstSubject);
+                        if (mappedSubject) {
+                            const subjectFilter = document.getElementById('subjectFilter');
+                            if (subjectFilter) {
+                                subjectFilter.value = mappedSubject;
+                            }
+                        }
+                    } else if (teacher.subject) {
+                        const mappedSubject = mapSubjectToDropdown(teacher.subject);
+                        if (mappedSubject) {
+                            const subjectFilter = document.getElementById('subjectFilter');
+                            if (subjectFilter) {
+                                subjectFilter.value = mappedSubject;
+                            }
+                        }
+                    }
+
+                    // Auto-populate grade level filter
+                    let teacherGrade = teacher.grade || teacher.gradelevel;
+                    teacherGrade = normalizeGrade(teacherGrade);
+                    
+                    if (teacherGrade) {
+                        const gradeValue = `Grade ${teacherGrade}`;
+                        const gradeFilter = document.getElementById('gradeFilter');
+                        if (gradeFilter) {
+                            const optionExists = Array.from(gradeFilter.options).some(opt => opt.value === gradeValue);
+                            if (optionExists) {
+                                gradeFilter.value = gradeValue;
+                            }
+                        }
+                    }
+                    
+                    // Trigger filter after setting values to show filtered results immediately
+                    // Wait a bit longer to ensure assessments are loaded
+                    setTimeout(() => {
+                        if (typeof filterAssessments === 'function' && assessments.length > 0) {
+                            filterAssessments();
+                        }
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Error loading teacher data:', error);
+            }
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Check authentication
-            auth.onAuthStateChanged(function(user) {
-                if (!user) {
-                    window.location.href = 'logreg.html';
-                } else {
-                    loadData();
-                }
+            // Wait for Firebase to be ready
+            waitForFirebase(function() {
+                // Check authentication
+                auth.onAuthStateChanged(function(user) {
+                    if (!user) {
+                        window.location.href = 'logreg.html';
+                    } else {
+                        // Load all data first
+                        loadData();
+                        
+                        // Then load teacher data and auto-populate filters (this will trigger filterAssessments)
+                        loadTeacherData();
+                    }
+                });
             });
         });
 
@@ -1082,6 +1274,8 @@
         
         // Load grades for analytics
         async function loadGrades() {
+            if (!db || !auth) return;
+            
             try {
                 const user = auth.currentUser;
                 if (!user) return;
@@ -1110,6 +1304,8 @@
 
         // Load assessments
         function loadAssessments() {
+            if (!db || !auth) return;
+            
             db.ref('assessments').orderByChild('createdBy').equalTo(auth.currentUser.uid).once('value')
                 .then(snapshot => {
                     assessments = [];
@@ -1118,6 +1314,14 @@
                     });
                     renderAssessments();
                     updateAnalytics();
+                    
+                    // After assessments are loaded, check if filters need to be applied
+                    // This ensures filters work even if loadTeacherData hasn't finished yet
+                    const subjectFilter = document.getElementById('subjectFilter');
+                    const gradeFilter = document.getElementById('gradeFilter');
+                    if ((subjectFilter && subjectFilter.value) || (gradeFilter && gradeFilter.value)) {
+                        filterAssessments();
+                    }
                 })
                 .catch(error => {
                     console.error('Error loading assessments:', error);
@@ -1126,6 +1330,8 @@
 
         // Load attempts
         function loadAttempts() {
+            if (!db) return;
+            
             db.ref('attempts').once('value')
                 .then(snapshot => {
                     attempts = [];
@@ -1142,6 +1348,8 @@
 
         // Load students
         function loadStudents() {
+            if (!db) return;
+            
             db.ref('students').once('value')
                 .then(snapshot => {
                     students = [];
@@ -1757,6 +1965,8 @@
 
         // Publish assessment
         function publishAssessment(assessmentId) {
+            if (!db) return;
+            
             if (confirm('Are you sure you want to publish this assessment?')) {
                 db.ref('assessments/' + assessmentId).update({ status: 'published' })
                     .then(() => {
@@ -1808,6 +2018,8 @@
                 delete duplicatedAssessment.id;
 
                 // Save to Firebase
+                if (!db) return;
+                
                 db.ref('assessments').push(duplicatedAssessment)
                     .then(() => {
                         alert('Assessment duplicated successfully!');
@@ -1822,6 +2034,8 @@
 
         // Delete assessment
         function deleteAssessment(assessmentId) {
+            if (!db) return;
+            
             if (confirm('Are you sure you want to delete this assessment? This action cannot be undone.')) {
                 db.ref('assessments/' + assessmentId).remove()
                     .then(() => {

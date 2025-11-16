@@ -759,10 +759,29 @@ td:hover .action-btns .reject,
         <!-- Analytics Tab -->
         <div id="contentAnalytics" class="tab-content" style="display:none;">
             <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
                     <h2 style="color: #2e8b57; margin: 0; font-size: 1.8rem; font-weight: 700;">
                         <i class="fas fa-chart-bar" style="margin-right: 10px;"></i>System Analytics
                     </h2>
+                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <label style="color: #6c757d; font-size: 0.85rem; font-weight: 600;">Filter by Grade</label>
+                            <select id="analyticsGradeFilter" style="padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.9rem; min-width: 150px; cursor: pointer; background: white;" onchange="loadAdminAnalytics()">
+                                <option value="">All Grades</option>
+                                <option value="5">Grade 5</option>
+                                <option value="6">Grade 6</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <label style="color: #6c757d; font-size: 0.85rem; font-weight: 600;">Filter by Section</label>
+                            <select id="analyticsSectionFilter" style="padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.9rem; min-width: 150px; cursor: pointer; background: white;" onchange="loadAdminAnalytics()">
+                                <option value="">All Sections</option>
+                            </select>
+                        </div>
+                        <button onclick="loadAdminAnalytics()" style="padding: 8px 20px; background: #2e8b57; color: white; border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer; font-weight: 600; margin-top: 20px; transition: all 0.3s;" onmouseover="this.style.background='#256f47'" onmouseout="this.style.background='#2e8b57'">
+                            <i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Analytics Stats Grid -->
@@ -828,7 +847,7 @@ td:hover .action-btns .reject,
                 </div>
 
                 <!-- Activity Overview -->
-                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px;">
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
                     <h3 style="color: #2e8b57; margin-bottom: 20px; font-size: 1.3rem;">
                         <i class="fas fa-chart-line" style="margin-right: 10px;"></i>Activity Overview
                     </h3>
@@ -849,6 +868,61 @@ td:hover .action-btns .reject,
                             <div>
                                 <div style="color: #6c757d; font-size: 0.9rem; margin-bottom: 5px;">Quizzes Created</div>
                                 <div style="font-size: 1.5rem; font-weight: 700; color: #ff69b4;" id="analyticsQuizzesCreated">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance by Grade/Section -->
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+                    <h3 style="color: #2e8b57; margin-bottom: 20px; font-size: 1.3rem;">
+                        <i class="fas fa-table" style="margin-right: 10px;"></i>Performance Breakdown
+                    </h3>
+                    <div style="background: white; padding: 20px; border-radius: 8px; overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                            <thead>
+                                <tr style="background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #2e8b57;">Grade</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #2e8b57;">Section</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #2e8b57;">Students</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #2e8b57;">Avg Grade</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #2e8b57;">Passing Rate</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #2e8b57;">Math Avg</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #2e8b57;">English Avg</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #2e8b57;">Science Avg</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analyticsPerformanceTable">
+                                <tr>
+                                    <td colspan="8" style="padding: 20px; text-align: center; color: #6c757d;">Loading performance data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Grade Distribution -->
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px;">
+                    <h3 style="color: #2e8b57; margin-bottom: 20px; font-size: 1.3rem;">
+                        <i class="fas fa-chart-pie" style="margin-right: 10px;"></i>Grade Distribution
+                    </h3>
+                    <div style="background: white; padding: 20px; border-radius: 8px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                            <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; border-radius: 8px;">
+                                <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">Excellent (90-100)</div>
+                                <div style="font-size: 2rem; font-weight: 700;" id="analyticsExcellentCount">0</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); color: white; border-radius: 8px;">
+                                <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">Good (80-89)</div>
+                                <div style="font-size: 2rem; font-weight: 700;" id="analyticsGoodCount">0</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: white; border-radius: 8px;">
+                                <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">Fair (70-79)</div>
+                                <div style="font-size: 2rem; font-weight: 700;" id="analyticsFairCount">0</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white; border-radius: 8px;">
+                                <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">Needs Improvement (&lt;70)</div>
+                                <div style="font-size: 2rem; font-weight: 700;" id="analyticsNeedsImprovementCount">0</div>
                             </div>
                         </div>
                     </div>
@@ -2849,24 +2923,33 @@ function loadStatistics() {
         db.ref('teachers').once('value'),
         db.ref('admins').once('value')
     ]).then(([studentsSnap, teachersSnap, adminsSnap]) => {
-        const students = [];
+        // Count students - use reliable method
+        let totalStudents = 0;
+        if (studentsSnap.exists()) {
+            totalStudents = Object.keys(studentsSnap.val()).length;
+        }
+        
+        // Count teachers and pending approvals
         const teachers = [];
         let pendingApprovals = 0;
+        if (teachersSnap.exists()) {
+            teachersSnap.forEach(child => {
+                const t = child.val();
+                teachers.push(t);
+                if (!t.approved) pendingApprovals++;
+            });
+        }
         
-        studentsSnap.forEach(child => students.push(child.val()));
-        teachersSnap.forEach(child => {
-            const t = child.val();
-            teachers.push(t);
-            if (!t.approved) pendingApprovals++;
-        });
+        // Count admins
+        let totalAdmins = 0;
+        if (adminsSnap.exists()) {
+            totalAdmins = Object.keys(adminsSnap.val()).length;
+        }
         
-        const admins = [];
-        adminsSnap.forEach(child => admins.push(child.val()));
-        
-        document.getElementById('statTotalStudents').textContent = students.length;
+        document.getElementById('statTotalStudents').textContent = totalStudents;
         document.getElementById('statTotalTeachers').textContent = teachers.length;
         document.getElementById('statPendingApprovals').textContent = pendingApprovals;
-        document.getElementById('statTotalAdmins').textContent = admins.length;
+        document.getElementById('statTotalAdmins').textContent = totalAdmins;
     }).catch(err => console.error('Error loading statistics:', err));
 }
 
