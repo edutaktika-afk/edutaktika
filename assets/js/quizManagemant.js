@@ -38,6 +38,9 @@ async function loadQuizManagement() {
         }
     }
 
+    // Filter out deleted quizzes
+    allQuizzes = allQuizzes.filter(q => !q.isDeleted || q.isDeleted === undefined || q.isDeleted === false || (q.isDeleted && q.isDeleted === true));
+
     if (allQuizzes.length === 0) {
         content.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No quizzes found.</div>';
         return;
@@ -49,7 +52,10 @@ async function loadQuizManagement() {
             ${allQuizzes.map(quiz => `
                 <div style="border:1px solid #ddd;border-radius:8px;padding:15px;margin-bottom:10px;background:#f9f9f9;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                        <h5 style="margin:0;color:#333;">${quiz.title}</h5>
+                        <h5 style="margin:0;color:#333;">
+                            ${quiz.title}
+                            ${quiz.isDeleted ? `<span style="background:#e74c3c;color:white;padding:2px 8px;border-radius:4px;font-size:0.8rem;margin-left:10px;">Deleted</span>` : ''}
+                        </h5>
                         <span style="background:${quiz.isLocked ? '#e74c3c' : '#27ae60'};color:white;padding:2px 8px;border-radius:4px;font-size:0.8rem;">
                             ${quiz.isLocked ? '🔒 Locked' : '🔓 Unlocked'}
                         </span>
@@ -68,7 +74,16 @@ async function loadQuizManagement() {
                                 style="background:#3498db;color:white;border:none;padding:5px 12px;border-radius:4px;margin-right:8px;cursor:pointer;">
                             New Password
                         </button>
-                        
+                        <button onclick="deleteQuiz('${quiz.quarter}', '${quiz.title}')" 
+                                style="background:#e67e22;color:white;border:none;padding:5px 12px;border-radius:4px;margin-right:8px;cursor:pointer;">
+                            Delete
+                        </button>
+                        ${quiz.isDeleted ? `
+                        <button onclick="restoreQuiz('${quiz.quarter}', '${quiz.title}')" 
+                                style="background:#16a085;color:white;border:none;padding:5px 12px;border-radius:4px;margin-right:8px;margin-top:8px;cursor:pointer;">
+                            Restore
+                        </button>
+                        ` : ''}
                     </div>
                 </div>
             `).join('')}
@@ -116,6 +131,60 @@ async function regeneratePassword(quarter, title) {
         loadQuizManagement(); // Refresh
     } catch (error) {
         alert('Error generating new password: ' + error.message);
+    }
+}
+
+async function deleteQuiz(quarter, title) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+    const teacherUID = user.uid;
+    const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+    const teacher = teacherSnap.val();
+    const section = teacher.section;
+
+    if (!confirm('Are you sure you want to delete this quiz?')) return;
+
+    try {
+        // Mark as deleted (soft delete) for teacher and public
+        await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subjectPage + '/' + quarter + '/' + title + '/isDeleted').set(true);
+        await db.ref('publicQuizzes/' + section + '/' + subjectPage + '/' + quarter + '/' + title + '/isDeleted').set(true);
+
+        // Mark as deleted for all students in the section
+        const studentsSnap = await db.ref('students').orderByChild('section').equalTo(section).once('value');
+        studentsSnap.forEach(child => {
+            db.ref('students/' + child.key + '/quizzes/' + subjectPage + '/' + quarter + '/' + title + '/isDeleted').set(true);
+        });
+
+        alert('Quiz deleted (can be restored).');
+        loadQuizManagement();
+    } catch (error) {
+        alert('Error deleting quiz: ' + error.message);
+    }
+}
+
+async function restoreQuiz(quarter, title) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+    const teacherUID = user.uid;
+    const teacherSnap = await db.ref('teachers/' + teacherUID).once('value');
+    const teacher = teacherSnap.val();
+    const section = teacher.section;
+
+    try {
+        // Remove isDeleted flag for teacher and public
+        await db.ref('teachers/' + teacherUID + '/sections/' + section + '/quizzes/' + subjectPage + '/' + quarter + '/' + title + '/isDeleted').remove();
+        await db.ref('publicQuizzes/' + section + '/' + subjectPage + '/' + quarter + '/' + title + '/isDeleted').remove();
+
+        // Remove isDeleted flag for all students in the section
+        const studentsSnap = await db.ref('students').orderByChild('section').equalTo(section).once('value');
+        studentsSnap.forEach(child => {
+            db.ref('students/' + child.key + '/quizzes/' + subjectPage + '/' + quarter + '/' + title + '/isDeleted').remove();
+        });
+
+        alert('Quiz restored!');
+        loadQuizManagement();
+    } catch (error) {
+        alert('Error restoring quiz: ' + error.message);
     }
 }
 
