@@ -2,12 +2,19 @@
  * Grade Level Normalizer Utility
  * 
  * Normalizes grade level formats to match Supabase bucket structure
+<<<<<<< HEAD
  * Handles various input formats: "5", "grade5", "Grade5", "grade=5", "5th", etc.
+=======
+ * Handles various input formats: "5", "grade5", "Grade5", "5th", etc.
+>>>>>>> main
  */
 
 /**
  * Normalize grade level to match bucket structure (Grade5, Grade6, etc.)
+<<<<<<< HEAD
  * This is used for Supabase storage paths
+=======
+>>>>>>> main
  * @param {string|number} grade - Grade level in various formats
  * @returns {string|null} Normalized grade (Grade5, Grade6, etc.) or null if invalid
  */
@@ -16,6 +23,7 @@ export function normalizeGrade(grade) {
   
   let normalized = String(grade);
   
+<<<<<<< HEAD
   // Handle Firebase format: "grade=5" or "grade=6"
   if (normalized.includes('=')) {
     const parts = normalized.split('=');
@@ -24,6 +32,8 @@ export function normalizeGrade(grade) {
     }
   }
   
+=======
+>>>>>>> main
   // Remove common suffixes like "th", "st", "nd", "rd"
   normalized = normalized.replace(/(\d+)(th|st|nd|rd)/i, '$1');
   
@@ -45,11 +55,16 @@ export function normalizeGrade(grade) {
     return null;
   }
   
+<<<<<<< HEAD
   // Format as "Grade5", "Grade6", etc. (for Supabase storage)
+=======
+  // Format as "Grade5", "Grade6", etc.
+>>>>>>> main
   return `Grade${gradeNum}`;
 }
 
 /**
+<<<<<<< HEAD
  * Normalize grade level to Firebase format (grade=5, grade=6, etc.)
  * This is the format used in Firebase database node names
  * @param {string|number} grade - Grade level in various formats
@@ -97,6 +112,8 @@ export function normalizeGradeForFirebase(grade) {
 }
 
 /**
+=======
+>>>>>>> main
  * Check if grade level is valid
  * @param {string|number} grade - Grade level to validate
  * @returns {boolean} True if valid

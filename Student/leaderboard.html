@@ -223,8 +223,7 @@
             });
 
             // Filter for current user's grade level only
-            // Students use "grade" field (not "gradelevel") - check both for backward compatibility
-            students = students.filter(s => (s.grade || s.gradelevel) == userGrade);
+            students = students.filter(s => s.gradelevel == userGrade);
 
             // Sort descending by combined, then assessment, then quiz, then name
             students.sort((a,b) => b.combinedPoints - a.combinedPoints || b.assessmentPoints - a.assessmentPoints || b.quizPoints - a.quizPoints || ((a.fname||'')+(a.lname||'')).localeCompare((b.fname||'')+(b.lname||'')) );
