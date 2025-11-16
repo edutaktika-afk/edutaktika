@@ -45,6 +45,31 @@
     <link rel="stylesheet" href="../CSS/loadQuizzes.css">
     <title>English</title>
     <style>
+        /* Make lessons-container display in grid layout like quizzes */
+        .quarter-section .lessons-container {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 18px !important;
+            justify-content: stretch;
+            align-items: stretch;
+            margin-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Responsive adjustments for lessons-container */
+        @media (max-width: 1200px) {
+            .quarter-section .lessons-container {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .quarter-section .lessons-container {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
         nav ul {
             display: flex;
             align-items: center;
@@ -624,13 +649,18 @@
                     supabaseDesigns.forEach(design => {
                         const div = document.createElement('div');
                         div.className = 'lesson-item';
-                        div.setAttribute('data-presentation', design.name);
+                        div.setAttribute('data-presentation', design.name || design.id);
+                        const safeName = design.name ? design.name.replace(/'/g, "\\'") : 'Design';
+                        const titleHTML = design.name ? `<h3>${design.name}</h3>` : '';
+                        const descriptionHTML = design.description ? `<p>${design.description}</p>` : '';
                         div.innerHTML = `
                             <div class="lesson-thumbnail" style="background-image: url('${design.thumbnail || ''}'); background-size: cover; background-position: center;"></div>
                             <div class="lesson-title">
-                                <h3>${design.name}</h3>
-                                <p>${design.description || 'Supabase Design'}</p>
-                                <span class="lesson-badge" onclick="openSupabaseDesignViewer('${design.id}', 'subject_english', '${design.name.replace(/'/g, "\\'")}', '${q}')" style="cursor:pointer;">View</span>
+                                ${titleHTML}
+                                ${descriptionHTML}
+                                <div style="margin-top: 10px;">
+                                    <span class="lesson-badge" onclick="openSupabaseDesignViewer('${design.id}', 'subject_english', '${safeName}', '${q}')" style="cursor:pointer;">View</span>
+                                </div>
                             </div>
                         `;
                         container.appendChild(div);

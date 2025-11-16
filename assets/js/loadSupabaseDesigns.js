@@ -273,6 +273,107 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
   console.log(`🔄 [Supabase] Loading: ${subjectFolder}, quarter=${quarter}, grade=${normalizedGrade} (STRICT ISOLATION)`);
 
   try {
+    /**
+     * Helper function to extract design name from JSON file
+     * Tries to fetch the JSON and extract the name property
+     */
+    async function fetchDesignNameFromJson(jsonUrl, designId) {
+      try {
+        // Fetch the full JSON file to properly extract name
+        const response = await fetch(jsonUrl);
+        
+        if (response.ok) {
+          const text = await response.text();
+          
+          try {
+            const json = JSON.parse(text);
+            
+            // PRIORITY 1: Check for top-level name or title
+            if (json.name && json.name.trim() !== '' && json.name !== designId) {
+              console.log(`✅ Found name in JSON root for ${designId}: "${json.name}"`);
+              return json.name;
+            }
+            if (json.title && json.title.trim() !== '' && json.title !== designId) {
+              console.log(`✅ Found title in JSON root for ${designId}: "${json.title}"`);
+              return json.title;
+            }
+            
+            // PRIORITY 2: Check first page's name property
+            if (json.pages && json.pages[0] && json.pages[0].name) {
+              const pageName = json.pages[0].name;
+              if (pageName.trim() !== '' && pageName !== designId) {
+                console.log(`✅ Found name in first page for ${designId}: "${pageName}"`);
+                return pageName;
+              }
+            }
+            
+            // PRIORITY 3: Extract from first large text element in first page (likely the title)
+            if (json.pages && json.pages[0] && json.pages[0].children) {
+              // Find text elements, sort by size (larger = more likely to be title)
+              const textElements = json.pages[0].children.filter(child => 
+                child.type === 'text' && child.text && child.text.trim() !== ''
+              );
+              
+              if (textElements.length > 0) {
+                // Sort by fontSize (descending) or y position (ascending - top of page)
+                textElements.sort((a, b) => {
+                  const sizeA = (a.fontSize || 0) * (a.scaleY || 1);
+                  const sizeB = (b.fontSize || 0) * (b.scaleY || 1);
+                  if (Math.abs(sizeA - sizeB) > 5) {
+                    return sizeB - sizeA; // Larger font first
+                  }
+                  return (a.y || 0) - (b.y || 0); // Higher on page first
+                });
+                
+                const titleText = textElements[0].text.trim();
+                // Only use if it's meaningful (not just "image-1" or similar)
+                if (titleText.length > 3 && titleText !== designId && !titleText.match(/^image[-_]?\d+$/i)) {
+                  console.log(`✅ Extracted title from first page text for ${designId}: "${titleText}"`);
+                  return titleText;
+                }
+              }
+            }
+            
+            console.log(`⚠️ No valid name found in JSON for ${designId}`);
+          } catch (parseError) {
+            console.warn(`Could not parse JSON for ${designId}:`, parseError.message);
+          }
+        } else {
+          console.warn(`Could not fetch JSON for ${designId}: ${response.status} ${response.statusText}`);
+        }
+      } catch (error) {
+        console.warn(`Error fetching name from JSON for ${designId}:`, error.message);
+      }
+      return null;
+    }
+    
+    /**
+     * Format design ID to be more readable
+     * Converts "lesson-1-abc123" to "Lesson 1" or similar
+     */
+    function formatDesignId(id) {
+      if (!id) return 'Untitled Lesson';
+      
+      // Remove common UUID/hash patterns
+      let formatted = id
+        .replace(/[-_]([a-f0-9]{8,})/gi, '') // Remove UUIDs
+        .replace(/[-_]/g, ' ') // Replace dashes/underscores with spaces
+        .trim();
+      
+      // Capitalize first letter of each word
+      formatted = formatted.split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+      
+      // If it's empty after formatting, use original ID with better formatting
+      if (!formatted || formatted.length < 2) {
+        formatted = id.split(/[-_]/)[0] || id;
+        formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+      }
+      
+      return formatted || 'Untitled Lesson';
+    }
+    
     // Show loading state with styled indicator
     if (container) {
       container.innerHTML = `
@@ -361,50 +462,132 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
       console.warn('⚠️ Supabase client not available for direct listing');
     }
     
-    // Merge results: Use direct listing as source of truth, but use names from design-ids.json if available
+    // Merge results: Use design-ids.json names first, then fallback to JSON file extraction
     if (directListFiles.length > 0) {
-      // Create a map of IDs to names from design-ids.json
-      const nameMap = {};
+      // Create a map of IDs to metadata from design-ids.json (PRIORITY 1)
+      const metadataMap = {};
       designIdsFromFile.forEach(design => {
-        nameMap[design.id] = design.name || design.id;
+          metadataMap[design.id] = {
+            name: design.name || design.id,
+            isVisible: design.isVisible !== false, // Default to visible
+            hasPasscode: design.hasPasscode === true,
+            passcode: design.passcode || '',
+            deleted: design.deleted === true,
+            deletedAt: design.deletedAt || null
+          };
       });
       
-      // Use direct listing files, but update names from design-ids.json if available
-      files = directListFiles.map(file => ({
-        ...file,
-        name: nameMap[file.id] || file.name || file.id
+      // Use direct listing files, prioritize names from design-ids.json, fallback to JSON extraction
+      files = await Promise.all(directListFiles.map(async (file) => {
+        const metadata = metadataMap[file.id] || {};
+        let name = null;
+        
+        console.log(`🔍 Processing design ${file.id}:`, {
+          hasMetadata: !!metadata.name,
+          metadataName: metadata.name,
+          fileId: file.id,
+          namesMatch: metadata.name === file.id
+        });
+        
+        // PRIORITY 1: Use name from design-ids.json ONLY if it's different from the ID (meaningful name)
+        if (metadata.name && metadata.name !== file.id && metadata.name.trim() !== '') {
+          name = metadata.name;
+          console.log(`✅ Using name from design-ids.json for ${file.id}: "${name}"`);
+        } else {
+          // PRIORITY 2: If design-ids.json name is missing or same as ID, try to fetch from JSON file
+          console.log(`🔎 Fetching name from JSON file for ${file.id}...`);
+          const fetchedName = await fetchDesignNameFromJson(file.url, file.id);
+          if (fetchedName && fetchedName.trim() !== '') {
+            name = fetchedName;
+            console.log(`✅ Using name from JSON file for ${file.id}: "${name}"`);
+          } else {
+            // PRIORITY 3: If still no name, set to null to hide title
+            name = null;
+            console.log(`⚠️ No valid name found for ${file.id}, title will be hidden`);
+          }
+        }
+        
+            return {
+              ...file,
+              name: name,
+              isVisible: metadata.isVisible !== false,
+              hasPasscode: metadata.hasPasscode === true,
+              passcode: metadata.passcode || '',
+              deleted: metadata.deleted === true,
+              deletedAt: metadata.deletedAt || null
+            };
       }));
       
       console.log(`✅ [Supabase] Merged results: ${files.length} designs (${directListFiles.length} from direct listing, ${designIdsFromFile.length} names from design-ids.json)`);
     } else if (designIdsFromFile.length > 0) {
-      // Fallback: If direct listing failed but design-ids.json exists, use it
-      files = designIdsFromFile.map(design => ({
-        key: `${prefix}${design.id}.json`,
-        url: getSupabaseFileUrl(`${prefix}${design.id}.json`),
-        isJson: true,
-        thumbnailKey: `${prefix}${design.id}.jpg`,
-        thumbnailUrl: getSupabaseFileUrl(`${prefix}${design.id}.jpg`),
-        name: design.name || design.id,
-        id: design.id
+      // Fallback: If direct listing failed but design-ids.json exists, use it first, then try JSON
+      files = await Promise.all(designIdsFromFile.map(async (design) => {
+        const jsonUrl = getSupabaseFileUrl(`${prefix}${design.id}.json`);
+        let name = null;
+        
+        console.log(`🔍 Processing design (fallback) ${design.id}:`, {
+          hasName: !!design.name,
+          designName: design.name,
+          designId: design.id,
+          namesMatch: design.name === design.id
+        });
+        
+        // PRIORITY 1: Use name from design-ids.json ONLY if it's different from the ID (meaningful name)
+        if (design.name && design.name !== design.id && design.name.trim() !== '') {
+          name = design.name;
+          console.log(`✅ Using name from design-ids.json (fallback) for ${design.id}: "${name}"`);
+        } else {
+          // PRIORITY 2: If design-ids.json name is missing or same as ID, try to fetch from JSON file
+          console.log(`🔎 Fetching name from JSON file (fallback) for ${design.id}...`);
+          const fetchedName = await fetchDesignNameFromJson(jsonUrl, design.id);
+          if (fetchedName && fetchedName.trim() !== '') {
+            name = fetchedName;
+            console.log(`✅ Using name from JSON file (fallback) for ${design.id}: "${name}"`);
+          } else {
+            // PRIORITY 3: If still no name, set to null to hide title
+            name = null;
+            console.log(`⚠️ No valid name found (fallback) for ${design.id}, title will be hidden`);
+          }
+        }
+        
+            return {
+              key: `${prefix}${design.id}.json`,
+              url: jsonUrl,
+              isJson: true,
+              thumbnailKey: `${prefix}${design.id}.jpg`,
+              thumbnailUrl: getSupabaseFileUrl(`${prefix}${design.id}.jpg`),
+              name: name,
+              id: design.id,
+              isVisible: design.isVisible !== false, // Default to visible
+              hasPasscode: design.hasPasscode === true,
+              passcode: design.passcode || '',
+              deleted: design.deleted === true,
+              deletedAt: design.deletedAt || null
+            };
       }));
       console.log(`✅ [Supabase] Using design-ids.json only (${files.length} designs) - direct listing unavailable`);
     }
     
     // Convert files to metadata format for compatibility
-    const metadataList = files
-      .filter(file => file.isJson)
-      .map(file => {
-        const id = file.id || file.key.split('/').pop().replace('.json', '');
-        return {
-          id: id,
-          name: file.name || id, // Use name from design-ids.json if available
-          subject: normalizedSubject,
-          quarter: quarter,
-          gradeLevel: gradeLevel,
-          jsonUrl: file.url,
-          thumbnailUrl: file.thumbnailUrl || getSupabaseFileUrl(file.key.replace('.json', '.jpg')),
-        };
-      });
+        const metadataList = files
+          .filter(file => file.isJson)
+          .map(file => {
+            const id = file.id || file.key.split('/').pop().replace('.json', '');
+            return {
+              id: id,
+              name: file.name || null, // Use name from design-ids.json or JSON file, null if not found
+              subject: normalizedSubject,
+              quarter: quarter,
+              gradeLevel: gradeLevel,
+              jsonUrl: file.url,
+              thumbnailUrl: file.thumbnailUrl || getSupabaseFileUrl(file.key.replace('.json', '.jpg')),
+              isVisible: file.isVisible !== false, // Default to visible if not specified
+              hasPasscode: file.hasPasscode === true,
+              passcode: file.passcode || '',
+              deleted: file.deleted === true,
+              deletedAt: file.deletedAt || null
+            };
+          });
     
     console.log(`📊 [Supabase] Found ${metadataList.length} designs`);
 
@@ -415,25 +598,47 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
       return [];
     }
 
-    // No filtering needed - design-ids.json is already folder-specific
-    const filteredDesigns = metadataList;
+        // Filter designs based on visibility and deleted status
+        let filteredDesigns = metadataList;
+        // Always filter out deleted lessons (for both teachers and students)
+        filteredDesigns = metadataList.filter(design => design.deleted !== true);
+        console.log(`🗑️ [Supabase] Filtered ${metadataList.length - filteredDesigns.length} deleted lessons`);
+        
+        if (!isTeacher) {
+          // For students: also filter out hidden lessons
+          const beforeVisibilityFilter = filteredDesigns.length;
+          filteredDesigns = filteredDesigns.filter(design => design.isVisible !== false);
+          console.log(`👁️ [Supabase] Filtered ${beforeVisibilityFilter - filteredDesigns.length} hidden lessons for student view`);
+        }
 
     // URLs are already constructed, just format for display
     const designsWithUrls = filteredDesigns.map(design => {
-      console.log(`🔗 [Supabase] Design "${design.name}":`, {
+      // Use name from design-ids.json (priority) or JSON file (fallback), null if neither has it
+      const displayName = design.name || null;
+      
+      console.log(`🔗 [Supabase] Design ${displayName ? `"${displayName}"` : '(no name)'}:`, {
         jsonUrl: design.jsonUrl,
-        thumbnailUrl: design.thumbnailUrl
+        thumbnailUrl: design.thumbnailUrl,
+        name: design.name,
+        id: design.id,
+        isVisible: design.isVisible,
+        hasPasscode: design.hasPasscode
       });
       
       return {
         id: design.id,
-        name: design.name || design.id,
+        name: displayName, // Name from design-ids.json (priority) or JSON file (fallback), null if neither
         jsonUrl: design.jsonUrl,
         thumbnail: design.thumbnailUrl,
         quarter: design.quarter || quarter,
-        description: `Lesson: ${design.name || design.id}`,
-        source: 'supabase'
-      };
+        description: displayName ? `Lesson: ${displayName}` : '',
+        source: 'supabase',
+            isVisible: design.isVisible,
+            hasPasscode: design.hasPasscode,
+            passcode: design.passcode,
+            deleted: design.deleted,
+            deletedAt: design.deletedAt
+          };
     });
 
     if (container) {
@@ -462,47 +667,41 @@ function renderDesigns(designs, quarter, container, subject, isTeacher) {
     return;
   }
 
-  let cardsHTML = '<div class="gallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin: 20px 0;">';
+  // Render directly as lesson-item cards (no gallery wrapper) to use parent grid
+  let cardsHTML = '';
   
   designs.forEach(design => {
+    const safeName = design.name ? design.name.replace(/'/g, "\\'") : 'Design';
+    const titleHTML = design.name ? `<h3>${design.name}</h3>` : '';
+    const descriptionHTML = design.description ? `<p>${design.description}</p>` : '';
+    
     cardsHTML += `
-      <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; cursor: pointer; position: relative;" 
-           onclick="openDesignViewer('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')"
-           onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'"
-           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
-        <img 
-          class="card-image" 
-          src="${design.thumbnail}" 
-          alt="${design.name}"
-          style="width: 100%; height: 160px; object-fit: cover;"
-          onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\'%3E%3Crect fill=\'%23e3f2fd\' width=\'300\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'20\' fill=\'%231976d2\'%3E${design.name}%3C/text%3E%3C/svg%3E'"
-        >
-        <div class="card-content" style="padding: 16px;">
-          <div class="card-title" style="font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 8px;">${design.name}</div>
-          <div class="card-description" style="font-size: 0.9rem; color: #666; margin-bottom: 12px;">${design.description}</div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button onclick="event.stopPropagation(); openDesignViewer('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')" 
-                    style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600;">
-              <i class="fas fa-eye" style="margin-right: 6px;"></i>View
+      <div class="lesson-item" data-presentation="${design.name || design.id}">
+        <div class="lesson-thumbnail" style="background-image: url('${design.thumbnail || ''}'); background-size: cover; background-position: center;"></div>
+        <div class="lesson-title">
+          ${titleHTML}
+          ${descriptionHTML}
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+            <button class="lesson-badge" onclick="openDesignViewer('${design.id}', '${subject}', '${safeName}', '${design.quarter || '1'}')" style="cursor:pointer; background: #2196F3; color: white; border: none; padding: 7px 18px; border-radius: 6px; font-size: 1rem; font-weight: 600;">
+              View
             </button>
             ${isTeacher ? `
-            <button onclick="event.stopPropagation(); openDesignEditor('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')" 
-                    style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600;">
-              <i class="fas fa-edit" style="margin-right: 6px;"></i>Edit
+            <button class="lesson-badge" onclick="openDesignEditor('${design.id}', '${subject}', '${safeName}', '${design.quarter || '1'}')" style="cursor:pointer; background: #FF9800; color: white; border: none; padding: 7px 18px; border-radius: 6px; font-size: 1rem; font-weight: 600;">
+              Edit
             </button>
-            <button onclick="event.stopPropagation(); (async function() { try { if(typeof window.renameDesign === 'function') { await window.renameDesign('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}', '${design.gradeLevel || ''}'); } else { alert('Rename function not loaded. Please refresh the page.'); console.error('window.renameDesign:', typeof window.renameDesign); } } catch(err) { console.error('Error calling renameDesign:', err); alert('Error: ' + err.message); } })();" 
-                    style="background: #9C27B0; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600;">
-              <i class="fas fa-tag" style="margin-right: 6px;"></i>Rename
+            ${design.name ? `
+            <button class="lesson-badge" onclick="event.stopPropagation(); (async function() { try { if(typeof window.renameDesign === 'function') { await window.renameDesign('${design.id}', '${subject}', '${safeName}', '${design.quarter || '1'}', '${design.gradeLevel || ''}'); } else { alert('Rename function not loaded. Please refresh the page.'); console.error('window.renameDesign:', typeof window.renameDesign); } } catch(err) { console.error('Error calling renameDesign:', err); alert('Error: ' + err.message); } })();" style="cursor:pointer; background: #9C27B0; color: white; border: none; padding: 7px 18px; border-radius: 6px; font-size: 1rem; font-weight: 600;">
+              Rename
             </button>
             ` : ''}
+            ` : ''}
           </div>
-          <div style="font-size: 0.8rem; color: #888; margin-top: 8px;">Storage: Supabase</div>
+          ${design.created && design.created !== 'Unknown' ? `<div style="font-size: 0.8rem; color: #888; margin-top: 8px;">Created: ${design.created} | SUPABASE</div>` : '<div style="font-size: 0.8rem; color: #888; margin-top: 8px;">Storage: Supabase</div>'}
         </div>
       </div>
     `;
   });
   
-  cardsHTML += '</div>';
   container.innerHTML = cardsHTML;
   
   console.log(`✅ Rendered ${designs.length} lessons from Supabase`);
@@ -537,13 +736,17 @@ async function openDesignViewer(designId, subject, designName = 'Design', quarte
     
     // Get grade level
     // CRITICAL: Get grade level from Firebase - REQUIRED for grade-level isolation
+    // Supports both teachers and students
     let gradeLevel = null;
+    let isTeacher = false;
     try {
       const user = firebase.auth().currentUser;
       if (user) {
+        // Try teacher profile first
         const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
         const teacher = teacherSnap.val();
         if (teacher) {
+          isTeacher = true;
           // Check both 'grade' and 'gradelevel' fields (Firebase stores as 'grade')
           const gradeValue = teacher.grade || teacher.gradelevel;
           if (gradeValue) {
@@ -564,12 +767,42 @@ async function openDesignViewer(designId, subject, designName = 'Design', quarte
                 gradeLevel = grade; // Keep as-is if no number found
               }
             }
-            console.log(`📚 Grade level for viewer: ${gradeValue} → normalized: ${gradeLevel}`);
+            console.log(`📚 Teacher grade level for viewer: ${gradeValue} → normalized: ${gradeLevel}`);
           } else {
             throw new Error('Grade level not found in teacher profile. Cannot open lesson.');
           }
         } else {
-          throw new Error('Teacher profile not found. Cannot open lesson.');
+          // Try student profile
+          const studentSnap = await firebase.database().ref('students/' + user.uid).once('value');
+          const student = studentSnap.val();
+          if (student) {
+            isTeacher = false;
+            const gradeValue = student.grade || student.gradelevel;
+            if (gradeValue) {
+              // Normalize to Firebase format: grade=5, grade=6, etc.
+              const grade = gradeValue.toString();
+              if (grade.includes('=')) {
+                gradeLevel = grade; // Already in correct format
+              } else {
+                const numberMatch = grade.match(/(\d+)/);
+                if (numberMatch) {
+                  const gradeNum = parseInt(numberMatch[1], 10);
+                  if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
+                    gradeLevel = `grade=${gradeNum}`;
+                  } else {
+                    gradeLevel = grade; // Keep as-is if invalid
+                  }
+                } else {
+                  gradeLevel = grade; // Keep as-is if no number found
+                }
+              }
+              console.log(`📚 Student grade level for viewer: ${gradeValue} → normalized: ${gradeLevel}`);
+            } else {
+              throw new Error('Grade level not found in student profile. Cannot open lesson.');
+            }
+          } else {
+            throw new Error('User profile not found. Cannot open lesson.');
+          }
         }
       } else {
         throw new Error('User not authenticated. Cannot open lesson.');
@@ -593,6 +826,46 @@ async function openDesignViewer(designId, subject, designName = 'Design', quarte
     const quarterFolder = `Quarter${quarter}`;
     const jsonPath = `${normalizedGrade}/${subjectFolder}/${quarterFolder}/${designId}.json`;
     console.log(`🔒 Opening lesson STRICTLY for grade: ${normalizedGrade} (prevents cross-grade access)`);
+    
+    // Check for passcode (for students only)
+    const designIdsPath = `${normalizedGrade}/${subjectFolder}/${quarterFolder}/design-ids.json`;
+    const designIdsUrl = getSupabaseFileUrl(designIdsPath);
+    
+    try {
+      const idsResponse = await fetch(designIdsUrl);
+      if (idsResponse.ok) {
+        const designIds = await idsResponse.json();
+        const designMetadata = designIds.find(d => d.id === designId);
+        if (designMetadata && designMetadata.hasPasscode === true && designMetadata.passcode) {
+          // Only prompt students for passcode (teachers can bypass)
+          if (!isTeacher) {
+            // Prompt for passcode
+            const enteredPasscode = prompt(`This lesson is protected by a passcode.\n\nPlease enter the passcode to view "${designName}":`);
+            if (enteredPasscode === null) {
+              // User cancelled
+              if (loadingOverlay && loadingOverlay.parentNode) {
+                loadingOverlay.parentNode.removeChild(loadingOverlay);
+              }
+              return;
+            }
+            if (enteredPasscode.trim() !== designMetadata.passcode) {
+              alert('❌ Incorrect passcode. Access denied.');
+              if (loadingOverlay && loadingOverlay.parentNode) {
+                loadingOverlay.parentNode.removeChild(loadingOverlay);
+              }
+              return;
+            }
+            // Passcode correct, continue
+            console.log('✅ Passcode verified');
+          } else {
+            console.log('✅ Teacher access - passcode bypassed');
+          }
+        }
+      }
+    } catch (passcodeError) {
+      console.warn('⚠️ Could not check passcode (continuing anyway):', passcodeError);
+      // Continue even if passcode check fails (might be a teacher or design-ids.json doesn't exist)
+    }
     
     const jsonUrl = getSupabaseFileUrl(jsonPath);
     console.log(`📥 [Supabase] Loading JSON from: ${jsonUrl}`);

@@ -2552,9 +2552,14 @@
         let currentTeacherUID = null;
         let currentSection = null;
         let pendingDeleteAttribute = null;
+        
+        // Dynamic quiz management
+        let quizListeners = {}; // Store Firebase listeners for cleanup
+        let currentQuizzes = {}; // Cache of current quizzes by subject/quarter: {subject: {quarter: [quiz1, quiz2, ...]}}
+        let nonQuizAttributes = []; // Store non-quiz attributes separately
 
         // Initialize the grading system
-        function initializeGradingSystem() {
+        async function initializeGradingSystem() {
             // Load from localStorage or use defaults
             const saved = localStorage.getItem('gradingAttributes');
             if (saved) {
@@ -2567,8 +2572,192 @@
                 gradingAttributes = [...defaultAttributes];
             }
             
+            // Separate quiz and non-quiz attributes
+            separateQuizAndNonQuizAttributes();
+            
+            // If teacher is loaded, sync with actual quizzes
+            if (currentTeacherUID && currentSection) {
+                await syncQuizzesWithGradingAttributes();
+            }
+            
             renderAttributes();
             updateSummary();
+        }
+        
+        // Separate quiz attributes from non-quiz attributes
+        function separateQuizAndNonQuizAttributes() {
+            nonQuizAttributes = gradingAttributes.filter(attr => {
+                // Keep non-quiz attributes (those that don't start with "Quiz:" prefix)
+                return !attr.name.startsWith('Quiz: ') && attr.name !== 'Quizzes';
+            });
+        }
+        
+        // Fetch all quizzes for teacher's section, filtered by subject and quarter
+        async function fetchQuizzesForSection(subject = null, quarter = null) {
+            if (!currentTeacherUID || !currentSection) {
+                return {};
+            }
+            
+            try {
+                const quizzesRef = db.ref(`teachers/${currentTeacherUID}/sections/${currentSection}/quizzes`);
+                const snapshot = await quizzesRef.once('value');
+                
+                if (!snapshot.exists()) {
+                    return {};
+                }
+                
+                const quizzesBySubject = {};
+                
+                snapshot.forEach(subjectChild => {
+                    const subjectKey = subjectChild.key;
+                    
+                    // Filter by subject if provided
+                    if (subject && subjectKey !== subject) {
+                        return;
+                    }
+                    
+                    if (!quizzesBySubject[subjectKey]) {
+                        quizzesBySubject[subjectKey] = {};
+                    }
+                    
+                    subjectChild.forEach(quarterChild => {
+                        const quarterKey = quarterChild.key;
+                        
+                        // Filter by quarter if provided
+                        if (quarter && quarterKey !== quarter) {
+                            return;
+                        }
+                        
+                        if (!quizzesBySubject[subjectKey][quarterKey]) {
+                            quizzesBySubject[subjectKey][quarterKey] = [];
+                        }
+                        
+                        quarterChild.forEach(quizChild => {
+                            const quizData = quizChild.val();
+                            quizzesBySubject[subjectKey][quarterKey].push({
+                                id: quizChild.key,
+                                title: quizData.title || quizChild.key,
+                                subject: subjectKey,
+                                quarter: quarterKey,
+                                createdAt: quizData.createdAt || null,
+                                savedAt: quizData.savedAt || null
+                            });
+                        });
+                    });
+                });
+                
+                return quizzesBySubject;
+            } catch (error) {
+                console.error('Error fetching quizzes:', error);
+                return {};
+            }
+        }
+        
+        // Sync grading attributes with actual quizzes from Firebase
+        async function syncQuizzesWithGradingAttributes() {
+            if (!currentTeacherUID || !currentSection) {
+                return;
+            }
+            
+            try {
+                // Fetch all quizzes
+                const allQuizzes = await fetchQuizzesForSection();
+                currentQuizzes = allQuizzes;
+                
+                // Get current subject and quarter from filters (if available)
+                const subjectFilter = document.getElementById('subjectFilter')?.value;
+                const quarterFilter = document.getElementById('quarterFilter')?.value;
+                
+                // Build new attributes list starting with non-quiz attributes
+                const newAttributes = [...nonQuizAttributes];
+                
+                // Add quiz attributes for current subject/quarter if filters are set
+                if (subjectFilter && quarterFilter && allQuizzes[subjectFilter] && allQuizzes[subjectFilter][quarterFilter]) {
+                    const quizzes = allQuizzes[subjectFilter][quarterFilter];
+                    
+                    // Sort quizzes by creation date (oldest first)
+                    quizzes.sort((a, b) => {
+                        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                        return dateA - dateB;
+                    });
+                    
+                    // Calculate percentage per quiz (distribute the "Quizzes" percentage evenly)
+                    const originalQuizzesAttr = gradingAttributes.find(attr => attr.name === 'Quizzes');
+                    const quizzesPercentage = originalQuizzesAttr ? originalQuizzesAttr.percentage : 20;
+                    const percentagePerQuiz = quizzes.length > 0 ? quizzesPercentage / quizzes.length : 0;
+                    
+                    // Add each quiz as a separate attribute
+                    quizzes.forEach((quiz, index) => {
+                        newAttributes.push({
+                            name: `Quiz: ${quiz.title}`,
+                            percentage: percentagePerQuiz,
+                            required: false,
+                            category: 'Written Works',
+                            isQuiz: true,
+                            quizId: quiz.id,
+                            quizSubject: quiz.subject,
+                            quizQuarter: quiz.quarter
+                        });
+                    });
+                    
+                    // If no quizzes but "Quizzes" attribute exists, keep it
+                    if (quizzes.length === 0 && originalQuizzesAttr) {
+                        newAttributes.push(originalQuizzesAttr);
+                    }
+                } else {
+                    // If no filters set, keep the generic "Quizzes" attribute
+                    const originalQuizzesAttr = gradingAttributes.find(attr => attr.name === 'Quizzes');
+                    if (originalQuizzesAttr) {
+                        newAttributes.push(originalQuizzesAttr);
+                    }
+                }
+                
+                // Update grading attributes
+                gradingAttributes = newAttributes;
+                
+                // Save to localStorage for persistence
+                saveToLocalStorage();
+                
+                // Regenerate UI
+                renderAttributes();
+                updateSummary();
+                
+                // Regenerate grading table if it exists
+                if (document.getElementById('gradingTableHead')) {
+                    generateGradingTable();
+                }
+                
+            } catch (error) {
+                console.error('Error syncing quizzes:', error);
+            }
+        }
+        
+        // Set up Firebase listeners for quiz changes
+        function setupQuizListeners() {
+            if (!currentTeacherUID || !currentSection) {
+                return;
+            }
+            
+            // Clean up existing listeners
+            Object.values(quizListeners).forEach(unsubscribe => {
+                if (unsubscribe && typeof unsubscribe === 'function') {
+                    unsubscribe();
+                }
+            });
+            quizListeners = {};
+            
+            // Listen to all quizzes for this teacher's section
+            const quizzesRef = db.ref(`teachers/${currentTeacherUID}/sections/${currentSection}/quizzes`);
+            
+            const unsubscribe = quizzesRef.on('value', async (snapshot) => {
+                console.log('Quizzes changed, syncing grading attributes...');
+                await syncQuizzesWithGradingAttributes();
+            }, (error) => {
+                console.error('Error in quiz listener:', error);
+            });
+            
+            quizListeners['all'] = unsubscribe;
         }
 
         // Render attributes list
@@ -2590,38 +2779,52 @@
                         <div class="attribute-name" id="attr-name-${index}">
                             ${attr.name}
                         </div>
-                        <input type="text" 
+                        ${attr.isQuiz ? '' : `<input type="text" 
                                class="attribute-name-input" 
                                id="attr-input-${index}"
                                value="${attr.name}"
                                maxlength="50"
                                onblur="saveAttributeName(${index})"
                                onkeypress="handleAttributeNameKeypress(event, ${index})"
-                               style="display: none;">
+                               style="display: none;">`}
                         <div class="attribute-input">
-                            <input type="number" 
-                                   class="percentage-input" 
-                                   value="${attr.percentage}" 
-                                   min="0" 
-                                   max="${maxAllowed}" 
-                                   data-index="${index}"
-                                   data-max-allowed="${maxAllowed}"
-                                   onchange="updatePercentage(${index}, this.value)"
-                                   oninput="showMaxAllowed(${index}, this)"
-                                   title="Maximum allowed: ${maxAllowed}%">
-                            <span>%</span>
-                            <span class="max-indicator" id="max-${index}" style="font-size: 0.8rem; color: var(--text-light); margin-left: 5px;">
-                                ${maxAllowed < 100 ? `(max: ${maxAllowed}%)` : ''}
-                            </span>
+                            ${attr.isQuiz ? `
+                                <input type="number" 
+                                       class="percentage-input" 
+                                       value="${attr.percentage.toFixed(2)}" 
+                                       disabled
+                                       style="background: #f5f5f5; cursor: not-allowed;"
+                                       title="Auto-calculated based on number of quizzes">
+                                <span>%</span>
+                                <span class="max-indicator" style="font-size: 0.8rem; color: #2196F3; margin-left: 5px;" title="Auto-managed">
+                                    <i class="fas fa-sync-alt"></i> Auto
+                                </span>
+                            ` : `
+                                <input type="number" 
+                                       class="percentage-input" 
+                                       value="${attr.percentage}" 
+                                       min="0" 
+                                       max="${maxAllowed}" 
+                                       data-index="${index}"
+                                       data-max-allowed="${maxAllowed}"
+                                       onchange="updatePercentage(${index}, this.value)"
+                                       oninput="showMaxAllowed(${index}, this)"
+                                       title="Maximum allowed: ${maxAllowed}%">
+                                <span>%</span>
+                                <span class="max-indicator" id="max-${index}" style="font-size: 0.8rem; color: var(--text-light); margin-left: 5px;">
+                                    ${maxAllowed < 100 ? `(max: ${maxAllowed}%)` : ''}
+                                </span>
+                            `}
                         </div>
                     </div>
                     <div class="attribute-actions">
-                        <button class="edit-btn" onclick="editAttributeName(${index})" title="Edit attribute name">
+                        ${attr.isQuiz ? '' : `<button class="edit-btn" onclick="editAttributeName(${index})" title="Edit attribute name">
                             <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="remove-btn" onclick="removeAttributeByName('${attr.name}')" title="Remove attribute">
+                        </button>`}
+                        ${attr.isQuiz ? '' : `<button class="remove-btn" onclick="removeAttributeByName('${attr.name}')" title="Remove attribute">
                             <i class="fas fa-times"></i>
-                        </button>
+                        </button>`}
+                        ${attr.isQuiz ? '<span style="color: #2196F3; font-size: 0.8rem; margin-left: 5px;" title="Auto-managed quiz field"><i class="fas fa-lock"></i></span>' : ''}
                     </div>
                 `;
                 item.setAttribute('data-index', index);
@@ -2757,6 +2960,13 @@
             }
             
             const attribute = gradingAttributes[index];
+            
+            // Prevent deletion of quiz attributes (they are auto-managed)
+            if (attribute.isQuiz === true) {
+                showTemporaryMessage('Quiz attributes are automatically managed and cannot be deleted manually.', 'warning');
+                return;
+            }
+            
             pendingDeleteAttribute = attribute;
             
             // Show custom warning modal
@@ -2835,6 +3045,14 @@
 
         // Edit attribute name
         function editAttributeName(index) {
+            const attribute = gradingAttributes[index];
+            
+            // Prevent editing of quiz attributes (they are auto-managed)
+            if (attribute.isQuiz === true) {
+                showTemporaryMessage('Quiz attributes are automatically managed and cannot be edited manually.', 'warning');
+                return;
+            }
+            
             const nameElement = document.getElementById(`attr-name-${index}`);
             const inputElement = document.getElementById(`attr-input-${index}`);
             
@@ -3077,6 +3295,8 @@
                 
                 if (data && data.attributes) {
                     gradingAttributes = data.attributes;
+                    // Separate quiz and non-quiz attributes
+                    separateQuizAndNonQuizAttributes();
                     renderAttributes();
                     updateSummary();
                     
@@ -3088,18 +3308,30 @@
                     if (saved) {
                         try {
                             gradingAttributes = JSON.parse(saved);
+                            separateQuizAndNonQuizAttributes();
                             renderAttributes();
                             updateSummary();
                         } catch (e) {
                             gradingAttributes = [...defaultAttributes];
+                            separateQuizAndNonQuizAttributes();
                             renderAttributes();
                             updateSummary();
                         }
+                    } else {
+                        gradingAttributes = [...defaultAttributes];
+                        separateQuizAndNonQuizAttributes();
+                        renderAttributes();
+                        updateSummary();
                     }
                 }
                 
+                // After loading, sync with actual quizzes
+                await syncQuizzesWithGradingAttributes();
+                
                 // Always regenerate grading table after loading configuration
-                generateGradingTable();
+                if (document.getElementById('gradingTableHead')) {
+                    generateGradingTable();
+                }
                 
             } catch (error) {
                 console.error('Error loading from Firebase:', error);
@@ -3194,6 +3426,12 @@
                         currentSection = teacher.section;
                         // Load configuration from Firebase
                         await loadFromFirebase();
+                        
+                        // Set up quiz listeners for automatic updates
+                        setupQuizListeners();
+                        
+                        // Sync quizzes with grading attributes
+                        await syncQuizzesWithGradingAttributes();
                     }
                 }
             });
@@ -3215,8 +3453,14 @@
         // Setup event listeners for grading sheet
         function setupGradingSheetEventListeners() {
             // Filter controls
-            document.getElementById('subjectFilter').addEventListener('change', filterGrades);
-            document.getElementById('quarterFilter').addEventListener('change', filterGrades);
+            document.getElementById('subjectFilter').addEventListener('change', async () => {
+                await syncQuizzesWithGradingAttributes();
+                filterGrades();
+            });
+            document.getElementById('quarterFilter').addEventListener('change', async () => {
+                await syncQuizzesWithGradingAttributes();
+                filterGrades();
+            });
             document.getElementById('gradeLevelFilter').addEventListener('change', filterGrades);
             document.getElementById('refreshGradesBtn').addEventListener('click', refreshGradingData);
             
@@ -3238,6 +3482,33 @@
                     calculateFinalGrade();
                 }
             });
+
+            // Auto-populate quiz/assessment scores when student/subject/quarter changes
+            const studentSelect = document.getElementById('studentSelect');
+            const subjectSelect = document.getElementById('subjectSelect');
+            const quarterSelect = document.getElementById('quarterSelect');
+            
+            if (studentSelect) {
+                studentSelect.addEventListener('change', () => {
+                    if (document.getElementById('gradeModal').classList.contains('show')) {
+                        autoPopulateQuizAndAssessmentScores();
+                    }
+                });
+            }
+            if (subjectSelect) {
+                subjectSelect.addEventListener('change', () => {
+                    if (document.getElementById('gradeModal').classList.contains('show')) {
+                        autoPopulateQuizAndAssessmentScores();
+                    }
+                });
+            }
+            if (quarterSelect) {
+                quarterSelect.addEventListener('change', () => {
+                    if (document.getElementById('gradeModal').classList.contains('show')) {
+                        autoPopulateQuizAndAssessmentScores();
+                    }
+                });
+            }
 
             // Close modal when clicking outside
             document.getElementById('gradeModal').addEventListener('click', function(e) {
@@ -3860,12 +4131,22 @@
                 if (attr.percentage > 0) {
                     const inputItem = document.createElement('div');
                     inputItem.className = 'grade-input-item';
+                    
+                    // Sanitize attribute name for use in input name (handle special characters)
+                    const safeName = attr.name.replace(/:/g, '_').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                    
+                    // Add visual indicator for quiz fields
+                    const isQuizField = attr.isQuiz === true;
+                    const labelClass = isQuizField ? 'grade-input-label quiz-field' : 'grade-input-label';
+                    const labelIcon = isQuizField ? '<i class="fas fa-question-circle" style="margin-right: 5px; color: #2196F3;" title="Auto-populated from quiz"></i>' : '';
+                    
                     inputItem.innerHTML = `
-                        <span class="grade-input-label">${attr.name}</span>
-                        <span class="grade-weight">${attr.percentage}%</span>
+                        <span class="${labelClass}">${labelIcon}${attr.name}</span>
+                        <span class="grade-weight">${attr.percentage.toFixed(2)}%</span>
                         <input type="number" 
-                               class="grade-input-field" 
-                               name="grade_${attr.name}" 
+                               class="grade-input-field ${isQuizField ? 'quiz-input' : ''}" 
+                               name="grade_${safeName}" 
+                               data-attribute-name="${attr.name}"
                                min="0" 
                                max="100" 
                                step="0.1" 
@@ -3875,6 +4156,11 @@
                     container.appendChild(inputItem);
                 }
             });
+
+            // Auto-populate quiz and assessment scores after inputs are generated
+            setTimeout(() => {
+                autoPopulateQuizAndAssessmentScores();
+            }, 200);
         }
 
         // Calculate final grade in real-time
@@ -3883,7 +4169,10 @@
             
             gradingAttributes.forEach(attr => {
                 if (attr.percentage > 0) {
-                    const input = document.querySelector(`input[name="grade_${attr.name}"]`);
+                    // Try both the original name and sanitized name
+                    const safeName = attr.name.replace(/:/g, '_').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                    const input = document.querySelector(`input[name="grade_${safeName}"]`) || 
+                                  document.querySelector(`input[data-attribute-name="${attr.name}"]`);
                     if (input) {
                         const value = parseFloat(input.value) || 0;
                         finalGrade += (value * attr.percentage / 100);
@@ -3913,7 +4202,10 @@
             const grades = {};
             gradingAttributes.forEach(attr => {
                 if (attr.percentage > 0) {
-                    const input = document.querySelector(`input[name="grade_${attr.name}"]`);
+                    // Try both the original name and sanitized name
+                    const safeName = attr.name.replace(/:/g, '_').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                    const input = document.querySelector(`input[name="grade_${safeName}"]`) || 
+                                  document.querySelector(`input[data-attribute-name="${attr.name}"]`);
                     if (input) {
                         grades[attr.name] = parseFloat(input.value) || 0;
                     }
@@ -4000,7 +4292,10 @@
             setTimeout(() => {
                 gradingAttributes.forEach(attr => {
                     if (attr.percentage > 0) {
-                        const input = document.querySelector(`input[name="grade_${attr.name}"]`);
+                        // Try both the original name and sanitized name
+                        const safeName = attr.name.replace(/:/g, '_').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                        const input = document.querySelector(`input[name="grade_${safeName}"]`) || 
+                                      document.querySelector(`input[data-attribute-name="${attr.name}"]`);
                         if (input && grade.grades && grade.grades[attr.name] !== undefined) {
                             input.value = grade.grades[attr.name];
                         }
@@ -4008,6 +4303,172 @@
                 });
                 calculateFinalGrade();
             }, 100);
+        }
+
+        // Auto-fetch quiz scores from Firebase - returns individual quiz scores
+        async function fetchQuizScores(studentUID, subject, quarter) {
+            try {
+                const quizRef = db.ref(`students/${studentUID}/quizzes/${subject}/${quarter}`);
+                const snapshot = await quizRef.once('value');
+                
+                if (!snapshot.exists()) {
+                    return {};
+                }
+
+                const quizScores = {};
+                snapshot.forEach(quizChild => {
+                    const quizId = quizChild.key;
+                    const quizData = quizChild.val();
+                    
+                    if (quizData && quizData.summary) {
+                        const summary = quizData.summary;
+                        if (summary.totalScore !== undefined && summary.totalMax !== undefined && summary.totalMax > 0) {
+                            const percentage = (summary.totalScore / summary.totalMax) * 100;
+                            quizScores[quizId] = {
+                                quizId: quizId,
+                                quizTitle: quizData.title || quizId,
+                                score: summary.totalScore,
+                                maxScore: summary.totalMax,
+                                percentage: percentage,
+                                completedAt: summary.completedAt || null
+                            };
+                        }
+                    }
+                });
+
+                return quizScores;
+            } catch (error) {
+                console.error('Error fetching quiz scores:', error);
+                return {};
+            }
+        }
+
+        // Auto-fetch assessment scores from Firebase
+        async function fetchAssessmentScores(studentUID, subject, quarter) {
+            try {
+                // Assessments are stored differently - check assessment attempts
+                const attemptsRef = db.ref('assessmentAttempts');
+                const snapshot = await attemptsRef.orderByChild('studentUID').equalTo(studentUID).once('value');
+                
+                if (!snapshot.exists()) {
+                    return null;
+                }
+
+                const assessmentScores = [];
+                snapshot.forEach(attemptChild => {
+                    const attempt = attemptChild.val();
+                    // Check if this assessment matches the subject and quarter
+                    if (attempt.assessmentId && attempt.subject === subject && attempt.quarter === quarter) {
+                        if (attempt.score !== undefined && attempt.maxScore !== undefined && attempt.maxScore > 0) {
+                            const percentage = (attempt.score / attempt.maxScore) * 100;
+                            assessmentScores.push({
+                                assessmentId: attempt.assessmentId,
+                                score: attempt.score,
+                                maxScore: attempt.maxScore,
+                                percentage: percentage,
+                                completedAt: attempt.completedAt || attempt.timestamp || null
+                            });
+                        }
+                    }
+                });
+
+                if (assessmentScores.length === 0) {
+                    return null;
+                }
+
+                // Calculate average of all assessment scores
+                const totalPercentage = assessmentScores.reduce((sum, a) => sum + a.percentage, 0);
+                const averagePercentage = totalPercentage / assessmentScores.length;
+                
+                return {
+                    average: averagePercentage,
+                    count: assessmentScores.length,
+                    scores: assessmentScores
+                };
+            } catch (error) {
+                console.error('Error fetching assessment scores:', error);
+                return null;
+            }
+        }
+
+        // Auto-populate quiz and assessment scores when student/subject/quarter changes
+        async function autoPopulateQuizAndAssessmentScores() {
+            const studentUID = document.getElementById('studentSelect').value;
+            const subject = document.getElementById('subjectSelect').value;
+            const quarter = document.getElementById('quarterSelect').value;
+
+            if (!studentUID || !subject || !quarter) {
+                return;
+            }
+
+            // First, sync quizzes to ensure we have the latest quiz attributes
+            await syncQuizzesWithGradingAttributes();
+            
+            // Regenerate inputs to include new quiz fields
+            generateGradeInputs();
+
+            // Fetch quiz scores (returns object with quizId as key)
+            const quizScores = await fetchQuizScores(studentUID, subject, quarter);
+            
+            // Populate individual quiz fields
+            Object.keys(quizScores).forEach(quizId => {
+                const quizScore = quizScores[quizId];
+                // Find the corresponding quiz attribute
+                const quizAttr = gradingAttributes.find(attr => 
+                    attr.isQuiz && 
+                    attr.quizId === quizId && 
+                    attr.quizSubject === subject && 
+                    attr.quizQuarter === quarter
+                );
+                
+                if (quizAttr) {
+                    // Use the same sanitization as in generateGradeInputs
+                    const safeName = quizAttr.name.replace(/:/g, '_').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                    const quizInput = document.querySelector(`input[name="grade_${safeName}"]`) || 
+                                      document.querySelector(`input[data-attribute-name="${quizAttr.name}"]`);
+                    if (quizInput && (!quizInput.value || quizInput.value === '0')) {
+                        quizInput.value = quizScore.percentage.toFixed(2);
+                        quizInput.style.background = '#e8f5e9'; // Light green to indicate auto-filled
+                        setTimeout(() => {
+                            quizInput.style.background = '';
+                        }, 2000);
+                    }
+                }
+            });
+            
+            // Also handle legacy "Quizzes" field if it exists (for backward compatibility)
+            const legacyQuizzesAttr = gradingAttributes.find(attr => attr.name === 'Quizzes' && !attr.isQuiz);
+            if (legacyQuizzesAttr && Object.keys(quizScores).length > 0) {
+                const quizInput = document.querySelector(`input[name="grade_Quizzes"]`);
+                if (quizInput && (!quizInput.value || quizInput.value === '0')) {
+                    // Calculate average of all quiz scores
+                    const totalPercentage = Object.values(quizScores).reduce((sum, q) => sum + q.percentage, 0);
+                    const averagePercentage = totalPercentage / Object.keys(quizScores).length;
+                    quizInput.value = averagePercentage.toFixed(2);
+                    quizInput.style.background = '#e8f5e9';
+                    setTimeout(() => {
+                        quizInput.style.background = '';
+                    }, 2000);
+                }
+            }
+            
+            calculateFinalGrade();
+
+            // Fetch assessment scores (for Periodical Test or similar)
+            const assessmentData = await fetchAssessmentScores(studentUID, subject, quarter);
+            if (assessmentData) {
+                // Try to find "Periodical Test" or "Assessment" attribute
+                const assessmentInput = document.querySelector(`input[name="grade_Periodical Test"]`) || 
+                                       document.querySelector(`input[name="grade_Assessment"]`);
+                if (assessmentInput && (!assessmentInput.value || assessmentInput.value === '0')) {
+                    assessmentInput.value = assessmentData.average.toFixed(2);
+                    assessmentInput.style.background = '#e8f5e9';
+                    setTimeout(() => {
+                        assessmentInput.style.background = '';
+                    }, 2000);
+                    calculateFinalGrade();
+                }
+            }
         }
 
         // Refresh grading data

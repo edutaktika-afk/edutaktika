@@ -44,6 +44,30 @@
     <link rel="stylesheet" href="../CSS/burger.css">
     <title>Math</title>
     <style>
+        /* Make lessons-container display in grid layout like quizzes */
+        .quarter-section .lessons-container {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 18px !important;
+            justify-content: stretch;
+            align-items: stretch;
+            margin-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Responsive adjustments for lessons-container */
+        @media (max-width: 1200px) {
+            .quarter-section .lessons-container {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .quarter-section .lessons-container {
+                grid-template-columns: 1fr !important;
+            }
+        }
         nav ul {
             display: flex;
             align-items: center;
@@ -798,14 +822,17 @@ async function loadStudentLessons() {
             container.innerHTML = lessons.map(lesson => {
                 // Handle Supabase designs
                 if (lesson.source === 'supabase' && lesson.id) {
+                    const safeName = lesson.title ? lesson.title.replace(/'/g, "\\'") : 'Design';
+                    const titleHTML = lesson.title ? `<h3>${lesson.title}</h3>` : '';
+                    const descriptionHTML = lesson.description ? `<p>${lesson.description}</p>` : '';
                     return `
-                        <div class="lesson-item" data-presentation="${lesson.title}">
+                        <div class="lesson-item" data-presentation="${lesson.title || lesson.id}">
                             <div class="lesson-thumbnail" style="background-image: url('${lesson.thumbnail || ''}'); background-size: cover; background-position: center;"></div>
                             <div class="lesson-title">
-                                <h3>${lesson.title}</h3>
-                                <p>${lesson.description}</p>
+                                ${titleHTML}
+                                ${descriptionHTML}
                                 <div style="margin-top: 8px;">
-                                    <span class="lesson-badge" onclick="openSupabaseDesignViewer('${lesson.id}', 'subject_math', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.quarter}')" style="cursor:pointer; background: #4CAF50; color: white; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">View Lesson</span>
+                                    <span class="lesson-badge" onclick="openSupabaseDesignViewer('${lesson.id}', 'subject_math', '${safeName}', '${lesson.quarter}')" style="cursor:pointer; background: #4CAF50; color: white; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">View Lesson</span>
                                 </div>
                                 <div style="font-size: 0.8rem; color: #888; margin-top: 4px;">
                                     Supabase Design

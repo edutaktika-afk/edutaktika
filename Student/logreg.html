@@ -570,16 +570,8 @@ label {
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-users"></i></span>
                                     <label for="reg_section">Section</label>
-                                    <select name="reg_section" id="reg_section" required>
-                                        <option value="">Select</option>
-                                        <option value="Ubas">Ubas</option>
-                                        <option value="Durian">Durian</option>
-                                        <option value="Kasoy">Kasoy</option>
-                                        <option value="Melon">Melon</option>
-                                        <option value="Langka">Langka</option>
-                                        <option value="Fruit Salad">Fruit Salad</option>
-                                        <option value="Guyabano">Guyabano</option>
-                                        <option value="Santol">Santol</option>
+                                    <select name="reg_section" id="reg_section" required disabled>
+                                        <option value="">Select Grade First</option>
                                     </select>
                                 </div>
                             </div>
@@ -817,15 +809,19 @@ document.getElementById('loginForm').onsubmit = async function(e) {
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         const user = userCredential.user;
-        if (!user.emailVerified) {
-            
-            await auth.signOut();
-            return;
-        }
         const uid = user.uid;
         // Check if user is a student in Realtime Database
         const snapshot = await db.ref('students/' + uid).once('value');
         const student = snapshot.val();
+        
+        // Check if this is a bulk-created account (bypass email verification)
+        const isBulkCreated = student && student.bulkCreated === true;
+        
+        if (!user.emailVerified && !isBulkCreated) {
+            showCustomModal('Please verify your email before logging in.');
+            await auth.signOut();
+            return;
+        }
         if (student) {
             
             window.location.href = "homepage.html";
@@ -852,10 +848,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 const uid = user.uid;
                 const snapshot = await db.ref('students/' + uid).once('value');
                 const student = snapshot.val();
-                if (student && user.emailVerified) {
-                    // Already logged in as student and email is verified, redirect to homepage
+                const isBulkCreated = student && student.bulkCreated === true;
+                
+                if (student && (user.emailVerified || isBulkCreated)) {
+                    // Already logged in as student and email is verified (or bulk-created), redirect to homepage
                     window.location.href = "homepage.html";
-                } else if (student && !user.emailVerified) {
+                } else if (student && !user.emailVerified && !isBulkCreated) {
                     // Only show alert if login tab is active (user is trying to log in)
                     if (document.getElementById('loginSection').style.display !== "none") {
                         alert('Please verify your email before logging in.');
@@ -961,8 +959,43 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Grade field
+    // Grade field - update sections based on grade
     const gradeField = document.getElementById('reg_grade');
+    const sectionField = document.getElementById('reg_section');
+    
+    function updateSectionsForGrade(grade) {
+        // Clear existing options
+        sectionField.innerHTML = '<option value="">Select Section</option>';
+        
+        if (grade === '5') {
+            // Grade 5 sections
+            const grade5Sections = ['Melon', 'Kasoy', 'Ubas', 'Durian'];
+            grade5Sections.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section;
+                option.textContent = section;
+                sectionField.appendChild(option);
+            });
+            // Enable the section field
+            sectionField.disabled = false;
+        } else if (grade === '6') {
+            // Grade 6 sections
+            const grade6Sections = ['Fruit Salad', 'Langka', 'Santol', 'Guyabano'];
+            grade6Sections.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section;
+                option.textContent = section;
+                sectionField.appendChild(option);
+            });
+            // Enable the section field
+            sectionField.disabled = false;
+        } else {
+            // No grade selected
+            sectionField.innerHTML = '<option value="">Select Grade First</option>';
+            sectionField.disabled = true;
+        }
+    }
+    
     gradeField.addEventListener('change', () => {
         const warning = document.getElementById('grade-warning') || (() => {
             const span = document.createElement('span');
@@ -974,6 +1007,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return span;
         })();
         validateField(gradeField, 'grade-warning');
+        
+        // Update sections based on selected grade
+        updateSectionsForGrade(gradeField.value);
+        
+        // Reset section selection
+        sectionField.value = '';
     });
     
     // Subject field
@@ -991,8 +1030,7 @@ document.addEventListener('DOMContentLoaded', function() {
         validateField(subjectField, 'subject-warning');
     });
     
-    // Section field
-    const sectionField = document.getElementById('reg_section');
+    // Section field (already declared above)
     sectionField.addEventListener('change', () => {
         const warning = document.getElementById('section-warning') || (() => {
             const span = document.createElement('span');
