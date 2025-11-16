@@ -655,10 +655,7 @@ const rowsPerPage = 10;
         const teacherSection = teacher && teacher.section ? teacher.section : null;
         const teacherSY = teacher && teacher.school_year ? teacher.school_year : null;
         let teacherGrade = teacher && teacher.grade ? teacher.grade : null;
-<<<<<<< HEAD
         teacherGrade = normalizeGrade(teacherGrade);
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
 
         // If teacher grade level is not set, try to determine it from the students
         if (!teacherGrade) {
