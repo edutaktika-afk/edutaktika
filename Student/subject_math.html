@@ -44,30 +44,6 @@
     <link rel="stylesheet" href="../CSS/burger.css">
     <title>Math</title>
     <style>
-        /* Make lessons-container display in grid layout like quizzes */
-        .quarter-section .lessons-container {
-            display: grid !important;
-            grid-template-columns: repeat(3, 1fr) !important;
-            gap: 18px !important;
-            justify-content: stretch;
-            align-items: stretch;
-            margin-top: 10px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        /* Responsive adjustments for lessons-container */
-        @media (max-width: 1200px) {
-            .quarter-section .lessons-container {
-                grid-template-columns: repeat(2, 1fr) !important;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .quarter-section .lessons-container {
-                grid-template-columns: 1fr !important;
-            }
-        }
         nav ul {
             display: flex;
             align-items: center;
@@ -733,28 +709,7 @@ async function loadStudentLessons() {
         if (typeof loadSupabaseDesignsForQuarter === 'function') {
             try {
                 // Get student's grade level for proper folder structure
-                // Normalize to Firebase format: grade=5, grade=6, etc.
-                // Students use "grade" field (not "gradelevel") - check both for backward compatibility
-                let studentGrade = null;
-                const rawGrade = student.grade || student.gradelevel;
-                if (rawGrade) {
-                    const grade = rawGrade.toString();
-                    if (grade.includes('=')) {
-                        studentGrade = grade; // Already in correct format
-                    } else {
-                        const numberMatch = grade.match(/(\d+)/);
-                        if (numberMatch) {
-                            const gradeNum = parseInt(numberMatch[1], 10);
-                            if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
-                                studentGrade = `grade=${gradeNum}`;
-                            } else {
-                                studentGrade = grade; // Keep as-is if invalid
-                            }
-                        } else {
-                            studentGrade = grade; // Keep as-is if no number found
-                        }
-                    }
-                }
+                const studentGrade = student.gradelevel ? (student.gradelevel.toString().startsWith('grade') ? student.gradelevel.toString() : `grade${student.gradelevel}`) : null;
                 supabaseDesigns = await loadSupabaseDesignsForQuarter('subject_math', q.toString(), null, false, studentGrade);
                 if (supabaseDesigns && supabaseDesigns.length > 0) {
                     supabaseDesigns.forEach(design => {
@@ -822,17 +777,14 @@ async function loadStudentLessons() {
             container.innerHTML = lessons.map(lesson => {
                 // Handle Supabase designs
                 if (lesson.source === 'supabase' && lesson.id) {
-                    const safeName = lesson.title ? lesson.title.replace(/'/g, "\\'") : 'Design';
-                    const titleHTML = lesson.title ? `<h3>${lesson.title}</h3>` : '';
-                    const descriptionHTML = lesson.description ? `<p>${lesson.description}</p>` : '';
                     return `
-                        <div class="lesson-item" data-presentation="${lesson.title || lesson.id}">
+                        <div class="lesson-item" data-presentation="${lesson.title}">
                             <div class="lesson-thumbnail" style="background-image: url('${lesson.thumbnail || ''}'); background-size: cover; background-position: center;"></div>
                             <div class="lesson-title">
-                                ${titleHTML}
-                                ${descriptionHTML}
+                                <h3>${lesson.title}</h3>
+                                <p>${lesson.description}</p>
                                 <div style="margin-top: 8px;">
-                                    <span class="lesson-badge" onclick="openSupabaseDesignViewer('${lesson.id}', 'subject_math', '${safeName}', '${lesson.quarter}')" style="cursor:pointer; background: #4CAF50; color: white; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">View Lesson</span>
+                                    <span class="lesson-badge" onclick="openSupabaseDesignViewer('${lesson.id}', 'subject_math', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.quarter}')" style="cursor:pointer; background: #4CAF50; color: white; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">View Lesson</span>
                                 </div>
                                 <div style="font-size: 0.8rem; color: #888; margin-top: 4px;">
                                     Supabase Design
@@ -1061,6 +1013,7 @@ function openLesson(lessonTitle, quarter, source, teacherUID) {
                         <i class="fas fa-clipboard-list" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
                         <p>No assessments available yet.</p>
                         <p style="font-size: 0.9rem; margin-top: 8px;">Your teacher will publish assessments here.</p>
+                        <p style="font-size: 0.8rem; margin-top: 8px; color: #999;">Debug: Check console for assessment data</p>
                     </div>
                 `;
                 return;

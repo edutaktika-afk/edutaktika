@@ -61,8 +61,13 @@
   </header>
   <main>
   <div class="quiz-container">
+<<<<<<<< HEAD:Games/Assessment/Assexam_english.html
     <a class="back-link" id="backLink" href="../../Student/subject_english.html"><i class="fa fa-arrow-left"></i> Back to English</a>
     <h2 style="margin-top:0;text-align:center;">Assessment 1: English Language Skills</h2>
+========
+    <a class="back-link" id="backLink" href="../../Student/subject_math.html"><i class="fa fa-arrow-left"></i> Back to Math</a>
+    <h2 style="margin-top:0;text-align:center;">Assessment 1: Math in Everyday Life</h2>
+>>>>>>>> main:Games/Assessment/Assexam.html
     <div id="quiz">
       <div class="question" id="questionText"></div>
       <div class="options" id="options"></div>
@@ -241,6 +246,116 @@
         }
     }
 
+    // Detect if user is teacher and adjust back link and view
+    let isTeacher = false;
+    auth.onAuthStateChanged(async function(user) {
+        if (user) {
+            const uid = user.uid;
+            // Check if user is a teacher
+            const teacherSnap = await db.ref('teachers/' + uid).once('value');
+            const teacher = teacherSnap.val();
+            
+            if (teacher && teacher.role === "teacher") {
+                isTeacher = true;
+                // User is a teacher, update back link to teacher page
+                const backLink = document.getElementById('backLink');
+                if (backLink) {
+                    backLink.href = '../../Teacher/subject_math.html';
+                    backLink.innerHTML = '<i class="fa fa-arrow-left"></i> Back to Math (Teacher)';
+                }
+                
+                // Update navigation links for teachers
+                updateNavigationForTeachers();
+                
+                // Show teacher view with answers
+                showTeacherView();
+            } else {
+                // Enable navigation for students
+                enableNavigationForStudents();
+            }
+        }
+    });
+
+    // Function to update navigation links for teachers
+    function updateNavigationForTeachers() {
+        const navHome = document.getElementById('navHome');
+        const navMath = document.getElementById('navMath');
+        const navEnglish = document.getElementById('navEnglish');
+        const navScience = document.getElementById('navScience');
+        const navLeaderboard = document.getElementById('navLeaderboard');
+        
+        if (navHome) {
+            navHome.href = '../../Teacher/homepage.html';
+            navHome.onclick = null;
+            navHome.style.pointerEvents = 'auto';
+            navHome.style.opacity = '1';
+        }
+        if (navMath) {
+            navMath.href = '../../Teacher/subject_math.html';
+            navMath.onclick = null;
+            navMath.style.pointerEvents = 'auto';
+            navMath.style.opacity = '1';
+        }
+        if (navEnglish) {
+            navEnglish.href = '../../Teacher/subject_english.html';
+            navEnglish.onclick = null;
+            navEnglish.style.pointerEvents = 'auto';
+            navEnglish.style.opacity = '1';
+        }
+        if (navScience) {
+            navScience.href = '../../Teacher/subject_science.html';
+            navScience.onclick = null;
+            navScience.style.pointerEvents = 'auto';
+            navScience.style.opacity = '1';
+        }
+        if (navLeaderboard) {
+            navLeaderboard.href = '../../Teacher/leaderboard.html';
+            navLeaderboard.onclick = null;
+            navLeaderboard.style.pointerEvents = 'auto';
+            navLeaderboard.style.opacity = '1';
+        }
+    }
+
+    // Function to enable navigation for students
+    function enableNavigationForStudents() {
+        const navHome = document.getElementById('navHome');
+        const navMath = document.getElementById('navMath');
+        const navEnglish = document.getElementById('navEnglish');
+        const navScience = document.getElementById('navScience');
+        const navLeaderboard = document.getElementById('navLeaderboard');
+        
+        if (navHome) {
+            navHome.href = '../../Student/homepage.html';
+            navHome.onclick = null;
+            navHome.style.pointerEvents = 'auto';
+            navHome.style.opacity = '1';
+        }
+        if (navMath) {
+            navMath.href = '../../Student/subject_math.html';
+            navMath.onclick = null;
+            navMath.style.pointerEvents = 'auto';
+            navMath.style.opacity = '1';
+        }
+        if (navEnglish) {
+            navEnglish.href = '../../Student/subject_english.html';
+            navEnglish.onclick = null;
+            navEnglish.style.pointerEvents = 'auto';
+            navEnglish.style.opacity = '1';
+        }
+        if (navScience) {
+            navScience.href = '../../Student/subject_science.html';
+            navScience.onclick = null;
+            navScience.style.pointerEvents = 'auto';
+            navScience.style.opacity = '1';
+        }
+        if (navLeaderboard) {
+            navLeaderboard.href = '../../Student/leaderboard.html';
+            navLeaderboard.onclick = null;
+            navLeaderboard.style.pointerEvents = 'auto';
+            navLeaderboard.style.opacity = '1';
+        }
+    }
+
     const quizData = [
       { question: "Which word is a noun?", options: ["run","beautiful","book","quickly"], correct:2 },
       { question: "What is the plural of 'child'?", options: ["childs","children","childes","child"], correct:1 },
@@ -261,7 +376,11 @@
     function showTeacherView() {
         const quizContainer = document.querySelector('.quiz-container');
         const title = quizContainer.querySelector('h2');
+<<<<<<<< HEAD:Games/Assessment/Assexam_english.html
         title.textContent = 'Assessment 1: English Language Skills (Teacher View)';
+========
+        title.textContent = 'Assessment 1: Math in Everyday Life (Teacher View)';
+>>>>>>>> main:Games/Assessment/Assexam.html
         
         // Hide the quiz interface and show answer sheet
         const quiz = document.getElementById('quiz');
@@ -272,7 +391,11 @@
             </div>
             <div id="answerSheet"></div>
             <div style="text-align: center; margin-top: 20px;">
+<<<<<<<< HEAD:Games/Assessment/Assexam_english.html
                 <button onclick="window.location.href='../../Teacher/subject_english.html'" style="background: #6d28d9; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+========
+                <button onclick="window.location.href='../../Teacher/subject_math.html'" style="background: #6d28d9; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+>>>>>>>> main:Games/Assessment/Assexam.html
                     Back to Teacher Dashboard
                 </button>
             </div>
