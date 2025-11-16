@@ -77,6 +77,7 @@ export async function getUserGradeLevel() {
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     // Normalize grade level format to Firebase format (e.g., "5" -> "grade=5", "grade5" -> "grade=5", "grade=5" -> "grade=5")
     const grade = teacher.gradelevel.toString();
     let normalizedGrade;
@@ -113,6 +114,11 @@ export async function getUserGradeLevel() {
     const grade = teacher.gradelevel.toString();
     const normalizedGrade = grade.startsWith('grade') ? grade : `grade${grade}`;
 >>>>>>> main
+=======
+    // Normalize grade level format (e.g., "5" -> "grade5", "grade5" -> "grade5")
+    const grade = teacher.gradelevel.toString();
+    const normalizedGrade = grade.startsWith('grade') ? grade : `grade${grade}`;
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
 
     console.log(`✅ [getUserGradeLevel] Found teacher grade level: ${teacher.gradelevel} → normalized: ${normalizedGrade}`);
     return normalizedGrade;
@@ -168,6 +174,7 @@ export async function getUserGradeLevelWithFallback() {
     const urlGrade = urlParams.get('grade');
     if (urlGrade) {
 <<<<<<< HEAD
+<<<<<<< HEAD
       // Normalize to Firebase format (grade=5)
       let normalizedGrade;
       if (urlGrade.includes('=')) {
@@ -188,6 +195,9 @@ export async function getUserGradeLevelWithFallback() {
 =======
       const normalizedGrade = urlGrade.startsWith('grade') ? urlGrade : `grade${urlGrade}`;
 >>>>>>> main
+=======
+      const normalizedGrade = urlGrade.startsWith('grade') ? urlGrade : `grade${urlGrade}`;
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
       console.log(`✅ [getUserGradeLevelWithFallback] Found grade level from URL params: ${normalizedGrade}`);
       return normalizedGrade;
     } else {

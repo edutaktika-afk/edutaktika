@@ -61,6 +61,7 @@
   </header>
   <main>
   <div class="quiz-container">
+<<<<<<< HEAD
 <<<<<<<< HEAD:deploy/Games/Assessment/Assexam_english.html
     <a class="back-link" id="backLink" href="../../Student/subject_english.html"><i class="fa fa-arrow-left"></i> Back to English</a>
     <h2 style="margin-top:0;text-align:center;">Assessment 1: English Language Skills</h2>
@@ -68,6 +69,10 @@
     <a class="back-link" id="backLink" href="../../Student/subject_math.html"><i class="fa fa-arrow-left"></i> Back to Math</a>
     <h2 style="margin-top:0;text-align:center;">Assessment 1: Math in Everyday Life</h2>
 >>>>>>>> main:deploy/Games/Assessment/Assexam.html
+=======
+    <a class="back-link" id="backLink" href="../../Student/subject_english.html"><i class="fa fa-arrow-left"></i> Back to English</a>
+    <h2 style="margin-top:0;text-align:center;">Assessment 1: English Language Skills</h2>
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
     <div id="quiz">
       <div class="question" id="questionText"></div>
       <div class="options" id="options"></div>
@@ -246,6 +251,7 @@
         }
     }
 
+<<<<<<< HEAD
     // Detect if user is teacher and adjust back link and view
     let isTeacher = false;
     auth.onAuthStateChanged(async function(user) {
@@ -356,6 +362,8 @@
         }
     }
 
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
     const quizData = [
       { question: "Which word is a noun?", options: ["run","beautiful","book","quickly"], correct:2 },
       { question: "What is the plural of 'child'?", options: ["childs","children","childes","child"], correct:1 },
@@ -376,11 +384,15 @@
     function showTeacherView() {
         const quizContainer = document.querySelector('.quiz-container');
         const title = quizContainer.querySelector('h2');
+<<<<<<< HEAD
 <<<<<<<< HEAD:deploy/Games/Assessment/Assexam_english.html
         title.textContent = 'Assessment 1: English Language Skills (Teacher View)';
 ========
         title.textContent = 'Assessment 1: Math in Everyday Life (Teacher View)';
 >>>>>>>> main:deploy/Games/Assessment/Assexam.html
+=======
+        title.textContent = 'Assessment 1: English Language Skills (Teacher View)';
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
         
         // Hide the quiz interface and show answer sheet
         const quiz = document.getElementById('quiz');
@@ -391,11 +403,15 @@
             </div>
             <div id="answerSheet"></div>
             <div style="text-align: center; margin-top: 20px;">
+<<<<<<< HEAD
 <<<<<<<< HEAD:deploy/Games/Assessment/Assexam_english.html
                 <button onclick="window.location.href='../../Teacher/subject_english.html'" style="background: #6d28d9; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
 ========
                 <button onclick="window.location.href='../../Teacher/subject_math.html'" style="background: #6d28d9; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
 >>>>>>>> main:deploy/Games/Assessment/Assexam.html
+=======
+                <button onclick="window.location.href='../../Teacher/subject_english.html'" style="background: #6d28d9; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                     Back to Teacher Dashboard
                 </button>
             </div>

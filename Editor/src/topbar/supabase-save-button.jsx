@@ -16,10 +16,13 @@ import FaTimesCircle from '@meronex/icons/fa/FaTimesCircle';
 import { saveDesignBySubject, listDesignsBySubject } from '../supabase-api';
 import { shouldUseSupabase } from '../supabase';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { deduplicateRequest } from '../utils/request-deduplication';
 import { retrySupabaseOperation } from '../utils/retry-helper';
 =======
 >>>>>>> main
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
 
 export const SupabaseSaveButton = observer(({ store, project }) => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -132,6 +135,7 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     // Prevent duplicate saves using deduplication
     const existingDesignId = project?.id || sessionStorage.getItem('supabase-design-id');
     const saveKey = `save-${existingDesignId || designName.trim()}-${selectedSubject}-${selectedQuarter}`;
@@ -185,6 +189,8 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
       });
 
 =======
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
     setIsSaving(true);
     try {
       // Generate thumbnail preview
@@ -229,7 +235,10 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
         setIsOpen(false);
       }, 1500);
 
+<<<<<<< HEAD
 >>>>>>> main
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
     } catch (error) {
       console.error('Save failed:', error);
       
@@ -239,9 +248,13 @@ export const SupabaseSaveButton = observer(({ store, project }) => {
       // Check if it's a size limit error for design JSON
       if (error.message && (error.message.includes('too large') || error.message.includes('50MB') || error.message.includes('embedded media'))) {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
         // Format the error message with line breaks for better readability
 >>>>>>> main
+=======
+        // Format the error message with line breaks for better readability
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
         errorMessage = error.message.replace(/\n/g, '\n');
       }
       

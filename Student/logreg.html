@@ -570,8 +570,21 @@ label {
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-users"></i></span>
                                     <label for="reg_section">Section</label>
+<<<<<<< HEAD
                                     <select name="reg_section" id="reg_section" required disabled>
                                         <option value="">Select Grade First</option>
+=======
+                                    <select name="reg_section" id="reg_section" required>
+                                        <option value="">Select</option>
+                                        <option value="Ubas">Ubas</option>
+                                        <option value="Durian">Durian</option>
+                                        <option value="Kasoy">Kasoy</option>
+                                        <option value="Melon">Melon</option>
+                                        <option value="Langka">Langka</option>
+                                        <option value="Fruit Salad">Fruit Salad</option>
+                                        <option value="Guyabano">Guyabano</option>
+                                        <option value="Santol">Santol</option>
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                                     </select>
                                 </div>
                             </div>
@@ -959,6 +972,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+<<<<<<< HEAD
     // Grade field - update sections based on grade
     const gradeField = document.getElementById('reg_grade');
     const sectionField = document.getElementById('reg_section');
@@ -996,6 +1010,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+=======
+    // Grade field
+    const gradeField = document.getElementById('reg_grade');
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
     gradeField.addEventListener('change', () => {
         const warning = document.getElementById('grade-warning') || (() => {
             const span = document.createElement('span');
@@ -1007,12 +1025,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return span;
         })();
         validateField(gradeField, 'grade-warning');
+<<<<<<< HEAD
         
         // Update sections based on selected grade
         updateSectionsForGrade(gradeField.value);
         
         // Reset section selection
         sectionField.value = '';
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
     });
     
     // Subject field
@@ -1030,7 +1051,12 @@ document.addEventListener('DOMContentLoaded', function() {
         validateField(subjectField, 'subject-warning');
     });
     
+<<<<<<< HEAD
     // Section field (already declared above)
+=======
+    // Section field
+    const sectionField = document.getElementById('reg_section');
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
     sectionField.addEventListener('change', () => {
         const warning = document.getElementById('section-warning') || (() => {
             const span = document.createElement('span');

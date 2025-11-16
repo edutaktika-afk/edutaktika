@@ -3,18 +3,25 @@
  * 
  * Normalizes grade level formats to match Supabase bucket structure
 <<<<<<< HEAD
+<<<<<<< HEAD
  * Handles various input formats: "5", "grade5", "Grade5", "grade=5", "5th", etc.
 =======
  * Handles various input formats: "5", "grade5", "Grade5", "5th", etc.
 >>>>>>> main
+=======
+ * Handles various input formats: "5", "grade5", "Grade5", "5th", etc.
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
  */
 
 /**
  * Normalize grade level to match bucket structure (Grade5, Grade6, etc.)
 <<<<<<< HEAD
+<<<<<<< HEAD
  * This is used for Supabase storage paths
 =======
 >>>>>>> main
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
  * @param {string|number} grade - Grade level in various formats
  * @returns {string|null} Normalized grade (Grade5, Grade6, etc.) or null if invalid
  */
@@ -23,6 +30,7 @@ export function normalizeGrade(grade) {
   
   let normalized = String(grade);
   
+<<<<<<< HEAD
 <<<<<<< HEAD
   // Handle Firebase format: "grade=5" or "grade=6"
   if (normalized.includes('=')) {
@@ -34,6 +42,8 @@ export function normalizeGrade(grade) {
   
 =======
 >>>>>>> main
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
   // Remove common suffixes like "th", "st", "nd", "rd"
   normalized = normalized.replace(/(\d+)(th|st|nd|rd)/i, '$1');
   
@@ -56,14 +66,19 @@ export function normalizeGrade(grade) {
   }
   
 <<<<<<< HEAD
+<<<<<<< HEAD
   // Format as "Grade5", "Grade6", etc. (for Supabase storage)
 =======
   // Format as "Grade5", "Grade6", etc.
 >>>>>>> main
+=======
+  // Format as "Grade5", "Grade6", etc.
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
   return `Grade${gradeNum}`;
 }
 
 /**
+<<<<<<< HEAD
 <<<<<<< HEAD
  * Normalize grade level to Firebase format (grade=5, grade=6, etc.)
  * This is the format used in Firebase database node names
@@ -114,6 +129,8 @@ export function normalizeGradeForFirebase(grade) {
 /**
 =======
 >>>>>>> main
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
  * Check if grade level is valid
  * @param {string|number} grade - Grade level to validate
  * @returns {boolean} True if valid
