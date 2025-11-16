@@ -123,27 +123,21 @@
     #feedback:empty { display: none; } /* Hide only when empty */
 
     /* Edit button prominent style (visible only in editor mode) */
-    .edit-open-btn {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: var(--peach); /* Solid color for consistency */
-        color: var(--white);
-        border: none;
-        padding: 10px 16px;
+    /* Edit Button Style */
+    #editBtn, #edit-open-btn {
+        background: #ffc107; /* Amber for edit */
+        color: var(--dark-text);
+        border: 2px solid #ff9800;
+        padding: 8px 15px;
         border-radius: 10px;
-        font-weight: 800;
-        box-shadow: 0 4px 0 #cc5490;
-        display: inline-flex;
-        gap:8px;
-        align-items:center;
+        font-weight: 700;
+        box-shadow: 0 2px 0 #ff9800;
+        transition: all .2s;
         cursor: pointer;
-        transition: all .15s ease;
-        z-index: 5000;
     }
-    .edit-open-btn:active {
-        box-shadow: 0 1px 0 #cc5490;
-        transform: translateY(3px);
+    #editBtn:active, #edit-open-btn:active {
+        transform: translateY(1px);
+        box-shadow: 0 1px 0 #ff9800;
     }
     .edit-open-btn .dot {
         width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,0.06);

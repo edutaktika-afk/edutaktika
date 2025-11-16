@@ -49,6 +49,7 @@
     overflow-y: auto;
     scrollbar-width: none;         /* Firefox */
     -ms-overflow-style: none;      /* IE and Edge */
+    color: #000000;
 }
 .profile-sidebar::-webkit-scrollbar {
     display: none;                 /* Chrome, Safari, Opera */
@@ -202,7 +203,7 @@ table::-webkit-scrollbar {
     font-size:.9rem;
     width:100%;
     min-width:0;
-    color:#2e8b57;
+
 }
 
 /* Pagination */
@@ -274,6 +275,9 @@ table::-webkit-scrollbar {
   width:100%;
 }
 
+strong, span{
+    color: #000000;
+}
 
 
 </style>
@@ -347,13 +351,13 @@ table::-webkit-scrollbar {
 
  <!-- Profile Sidebar (Dynamic with Firebase) -->
 <div id="profileSidebar" class="profile-sidebar">
-    <div class="sidebar-content">
+    <div class="sidebar-content" style="color: #000000;">
         <button class="close-btn" id="closeSidebar">&times;</button>
         <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
             <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
             <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
         </div>
-        <div class="profile-name" id="profileName">Loading...</div>
+        <div class="profile-name" id="profileName" style="color: #000000;">Loading...</div>
         <br>
         <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
             <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
@@ -989,7 +993,7 @@ async function showStudentDetails(studentId) {
         <div class="profile-info" style="width:100%;max-width:260px;margin:0 auto 18px auto;">
             <div><i class="fa-solid fa-id-badge" style="color:violet;"></i><strong>ID:</strong> <span id="studentDetailsId">-</span></div>
 
-            <div><i class="fa-solid fa-user" style="color:#ffd700;"></i><strong>Age:</strong> <span id="studentDetailsAge">-</span></div>
+            <div><i class="fa-solid fa-user" style="color:#ffd700;"></i><strong  >Age:</strong> <span id="studentDetailsAge">-</span></div>
             <div><i class="fa-solid fa-venus-mars" style="color:#2e8b57;"></i><strong>Gender:</strong> <span id="studentDetailsGender">-</span></div>
             <div><i class="fa-solid fa-graduation-cap" style="color:#2e8b57;"></i><strong>Grade:</strong> <span id="studentDetailsGrade">-</span></div>
             <div><i class="fa-solid fa-apple-whole" style="color:#4faaff;"></i><strong>Section:</strong> <span id="studentDetailsSection">-</span></div>
