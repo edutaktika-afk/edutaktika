@@ -1135,32 +1135,12 @@
             db = firebase.database();
             auth = firebase.auth();
         });
-<<<<<<< HEAD
-
-    <script>
-        // Wait for Firebase to be initialized by profile.js
-        function waitForFirebase(callback) {
-            if (window.firebase && firebase.database && firebase.auth) {
-                callback();
-            } else {
-                setTimeout(() => waitForFirebase(callback), 100);
-            }
-        }
-
-        // Get Firebase instances after initialization
-        let db, auth;
-        waitForFirebase(function() {
-            db = firebase.database();
-            auth = firebase.auth();
-        });
 
         // Global variables
         let assessments = [];
         let attempts = [];
         let students = [];
         let grades = []; // Added for grade analytics
-
-<<<<<<< HEAD
         // Helper function to normalize grade level
         function normalizeGrade(grade) {
             if (!grade) return null;
@@ -1280,17 +1260,6 @@
                         loadTeacherData();
                     }
                 });
-=======
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check authentication
-            auth.onAuthStateChanged(function(user) {
-                if (!user) {
-                    window.location.href = 'logreg.html';
-                } else {
-                    loadData();
-                }
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             });
         });
 
@@ -1378,11 +1347,8 @@
 
         // Load students
         function loadStudents() {
-<<<<<<< HEAD
             if (!db) return;
             
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             db.ref('students').once('value')
                 .then(snapshot => {
                     students = [];
@@ -1998,11 +1964,8 @@
 
         // Publish assessment
         function publishAssessment(assessmentId) {
-<<<<<<< HEAD
             if (!db) return;
             
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             if (confirm('Are you sure you want to publish this assessment?')) {
                 db.ref('assessments/' + assessmentId).update({ status: 'published' })
                     .then(() => {
@@ -2054,11 +2017,8 @@
                 delete duplicatedAssessment.id;
 
                 // Save to Firebase
-<<<<<<< HEAD
                 if (!db) return;
                 
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                 db.ref('assessments').push(duplicatedAssessment)
                     .then(() => {
                         alert('Assessment duplicated successfully!');
@@ -2073,11 +2033,8 @@
 
         // Delete assessment
         function deleteAssessment(assessmentId) {
-<<<<<<< HEAD
             if (!db) return;
             
-=======
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             if (confirm('Are you sure you want to delete this assessment? This action cannot be undone.')) {
                 db.ref('assessments/' + assessmentId).remove()
                     .then(() => {
