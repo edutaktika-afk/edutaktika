@@ -3509,20 +3509,6 @@ function exportTeachersCSV(type) {
                 const el = document.getElementById(id);
                 if (el) el.textContent = id.includes('Rate') || id.includes('Average') ? '0.00' : '0';
             });
-        } catch (error) {
-            console.error('Error loading admin analytics:', error);
-            // Ensure all elements have default values even on error
-            const elements = [
-                'analyticsTotalStudents', 'analyticsActiveStudents', 'analyticsTotalTeachers',
-                'analyticsActiveTeachers', 'analyticsTotalAssessments', 'analyticsTotalQuizAttempts',
-                'analyticsTotalGrades', 'analyticsAverageGrade', 'analyticsPassingRate',
-                'analyticsMathAverage', 'analyticsEnglishAverage', 'analyticsScienceAverage',
-                'analyticsLessonsCreated', 'analyticsQuizzesCreated'
-            ];
-            elements.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = id.includes('Rate') || id.includes('Average') ? '0.00' : '0';
-            });
         }
     }
 

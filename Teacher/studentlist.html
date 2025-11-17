@@ -737,7 +737,7 @@ const rowsPerPage = 10;
                 </td>
                 <td>${s.email || ''}</td>
                 <td>${s.age || ''}</td>
-                <td>${s.grade || ''}</td>
+                <td>${normalizeGrade(s.grade) || s.grade || ''}</td>
                 <td>
                     <button type="button" class="mini-btn remove"
                         onclick="showRemoveModal('${s.key}', '${(s.fname || '') + ' ' + (s.lname || '')}')">
@@ -969,7 +969,7 @@ async function filterAndSearchStudents() {
             </td>
             <td>${s.email || ''}</td>
             <td>${s.age || ''}</td>
-            <td>${s.grade || ''}</td>
+            <td>${normalizeGrade(s.grade) || s.grade || ''}</td>
             <td>
                 <button type="button" class="mini-btn remove"
                     onclick="showRemoveModal('${child.key}', '${(s.fname || '') + ' ' + (s.lname || '')}')">
@@ -1003,7 +1003,7 @@ async function showStudentDetails(studentId) {
     document.getElementById('studentDetailsEmail').textContent = s.email || '-';
     document.getElementById('studentDetailsAge').textContent = s.age || '-';
     document.getElementById('studentDetailsGender').textContent = s.gender || '-';
-    document.getElementById('studentDetailsGrade').textContent = s.grade || '-';
+    document.getElementById('studentDetailsGrade').textContent = normalizeGrade(s.grade) || s.grade || '-';
     document.getElementById('studentDetailsSection').textContent = s.section || '-';
     document.getElementById('studentDetailsSY').textContent = s.school_year || '-';
     document.getElementById('studentPoints').textContent = s.points !== undefined ? s.points : 0;
