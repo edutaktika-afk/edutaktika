@@ -1003,36 +1003,48 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Wait for Firebase to be ready
             waitForFirebase(function() {
+                // Ensure auth and db are set
+                if (!auth) auth = firebase.auth();
+                if (!db) db = firebase.database();
+                if (!storage) storage = firebase.storage();
+                
                 // Check authentication
-                auth.onAuthStateChanged(function(user) {
-                    if (!user) {
-                        window.location.href = 'logreg.html';
-                    } else {
-                        // Load teacher data and auto-populate dropdowns FIRST
-                        // This ensures grade and subject are set before other operations
-                        loadTeacherData().then(() => {
-                            // Initialize rich text editor
-                            initQuestionEditor();
-                            
-                            // Load draft if exists (after teacher data is loaded)
-                            loadDraft();
-                            
-                            // Start auto-save (every 30 seconds)
-                            startAutoSave();
-                            
-                            // Check if editing existing assessment
-                            const urlParams = new URLSearchParams(window.location.search);
-                            const assessmentId = urlParams.get('id');
-                            if (assessmentId) {
-                                loadAssessmentForEdit(assessmentId);
-                            }
-                        }).catch(error => {
-                            console.error('Error in initialization:', error);
-                            // Still initialize editor even if teacher data fails
-                            initQuestionEditor();
-                        });
-                    }
-                });
+                if (auth) {
+                    auth.onAuthStateChanged(function(user) {
+                        if (!user) {
+                            window.location.href = 'logreg.html';
+                        } else {
+                            // Load teacher data and auto-populate dropdowns FIRST
+                            // This ensures grade and subject are set before other operations
+                            loadTeacherData().then(() => {
+                                // Initialize rich text editor
+                                initQuestionEditor();
+                                
+                                // Load draft if exists (after teacher data is loaded)
+                                loadDraft();
+                                
+                                // Start auto-save (every 30 seconds)
+                                startAutoSave();
+                                
+                                // Check if editing existing assessment
+                                const urlParams = new URLSearchParams(window.location.search);
+                                const assessmentId = urlParams.get('id');
+                                if (assessmentId) {
+                                    loadAssessmentForEdit(assessmentId);
+                                }
+                            }).catch(error => {
+                                console.error('Error in initialization:', error);
+                                // Still initialize editor even if teacher data fails
+                                initQuestionEditor();
+                            });
+                        }
+                    });
+                } else {
+                    console.error('Firebase auth not initialized');
+                    setTimeout(() => {
+                        document.location.reload();
+                    }, 1000);
+                }
             });
         });
 

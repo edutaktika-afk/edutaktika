@@ -1248,18 +1248,29 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Wait for Firebase to be ready
             waitForFirebase(function() {
+                // Ensure auth and db are set
+                if (!auth) auth = firebase.auth();
+                if (!db) db = firebase.database();
+                
                 // Check authentication
-                auth.onAuthStateChanged(function(user) {
-                    if (!user) {
-                        window.location.href = 'logreg.html';
-                    } else {
-                        // Load all data first
-                        loadData();
-                        
-                        // Then load teacher data and auto-populate filters (this will trigger filterAssessments)
-                        loadTeacherData();
-                    }
-                });
+                if (auth) {
+                    auth.onAuthStateChanged(function(user) {
+                        if (!user) {
+                            window.location.href = 'logreg.html';
+                        } else {
+                            // Load all data first
+                            loadData();
+                            
+                            // Then load teacher data and auto-populate filters (this will trigger filterAssessments)
+                            loadTeacherData();
+                        }
+                    });
+                } else {
+                    console.error('Firebase auth not initialized');
+                    setTimeout(() => {
+                        document.location.reload();
+                    }, 1000);
+                }
             });
         });
 
