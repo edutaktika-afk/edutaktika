@@ -165,6 +165,9 @@ window.parent.postMessage({
 }, '*');
 
 
+<button id="howToUseBtn" style="position:fixed;bottom:32px;right:32px;z-index:9999;background:#2e8b57;color:#fff;padding:14px 22px;border:none;border-radius:8px;font-size:1.1rem;box-shadow:0 2px 12px #0002;cursor:pointer;">
+    How to Use
+</button>
 
 
     <!-- Instructions Modal -->
@@ -181,7 +184,6 @@ window.parent.postMessage({
         </div>
     </div>
 
-    const infoBtn = document.getElementById('infoBtn');
     const infoModal = document.getElementById('infoModal');
     const closeInfoBtn = document.getElementById('closeInfoBtn');
 
@@ -196,3 +198,25 @@ window.parent.postMessage({
     // Show instructions modal at start
     infoModal.style.display = 'flex';
     });
+
+
+    <div id="howToUseModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:10000;align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:32px 28px;border-radius:14px;max-width:420px;width:90%;box-shadow:0 4px 24px #0002;text-align:left;position:relative;">
+        <button onclick="document.getElementById('howToUseModal').style.display='none'" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+        <h2 style="margin-top:0;color:#2e8b57;">How to Navigate EduTaktika</h2>
+        <ol style="padding-left:18px;">
+            <li><b>Home:</b> See an overview and your progress summary.</li>
+            <li><b>Subject:</b> Choose Math, English, or Science to access lessons and quizzes for each subject.</li>
+            <li><b>Leaderboard:</b> View your ranking and scores compared to classmates for each subject.</li>
+            <li><b>Profile:</b> View and edit your personal information and account details.</li>
+            <li><b>Take Quizzes:</b> Go to a subject, select a quiz, and answer the questions. Your scores will be saved automatically.</li>
+            <li><b>Logout:</b> Use the profile sidebar to securely log out of your account.</li>
+        </ol>
+        <p style="margin-top:16px;">You can open these instructions anytime by clicking the <b>How to Use</b> button at the bottom right.</p>
+    </div>
+</div>
+<script>
+document.getElementById('howToUseBtn').addEventListener('click', function() {
+    document.getElementById('howToUseModal').style.display = 'flex';
+});
+</script>

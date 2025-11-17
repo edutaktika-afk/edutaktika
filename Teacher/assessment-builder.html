@@ -17,7 +17,7 @@
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
+
             background: #f8f9fa;
             color: #1a1a1a;
             line-height: 1.8;
@@ -419,7 +419,7 @@
     </style>
 </head>
 <body>
-    <!-- Site Header -->
+
     <header>
         <div class="floating-elements">
             <div class="floating-element"></div>
@@ -472,6 +472,102 @@
             </nav>
         </div>
     </header>
+
+    
+<!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
+
+ <!-- Profile Sidebar (Dynamic with Firebase) -->
+<div id="profileSidebar" class="profile-sidebar">
+    <div class="sidebar-content">
+        <button class="close-btn" id="closeSidebar">&times;</button>
+        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+            <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+            <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+        </div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <br>
+        <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+            <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+            Teacher
+        </div>
+            <div>
+                <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                <strong>ID:</strong> <span id="profileId">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                <strong>First Name:</strong> <span id="profileFirstName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                <strong>Last Name:</strong> <span id="profileLastName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                <strong>Section:</strong> <span id="profileSection">-</span>
+            </div>
+            <div>
+    <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+    <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+    <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+    <strong>City:</strong> <span id="profileAddressCity">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+    <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+    <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+    <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+</div>
+        </div>
+        <div class="logout-switch-row">
+            <div class="logout-switch" id="logoutSwitch">
+                <div class="logout-switch-circle"></div>
+            </div>
+            <span class="logout-label" id="logoutLabel">LOGOUT</span>
+        </div>
+    </div>
+</div>
+
+        <!-- Firebase App (the core Firebase SDK) -->
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<<<<<<< HEAD
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+        <script src="../assets/js/Teacher Side/profile.js"></script>
+        
+=======
+
+
+        <script src="../assets/js/Teacher Side/profile.js"></script>
+        
+
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
+    <script src="../assets/js/Teacher Side/header.js"></script>
 
     <div class="container">
         <!-- Header -->
@@ -735,15 +831,38 @@
         </div>
     </div>
 
+<<<<<<< HEAD
+=======
     <!-- Firebase Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
     <!-- Rich Text Editor -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <script>
+<<<<<<< HEAD
+        // Wait for Firebase to be initialized by profile.js
+        function waitForFirebase(callback) {
+            if (window.firebase && firebase.database && firebase.auth && firebase.storage) {
+                callback();
+            } else {
+                setTimeout(() => waitForFirebase(callback), 100);
+            }
+        }
+
+        // Get Firebase instances after initialization
+        // Note: profile.js already initializes Firebase, so we use the global firebase instance
+        let db, auth, storage;
+        waitForFirebase(function() {
+            // Use firebase directly instead of redeclaring const
+            db = firebase.database();
+            auth = firebase.auth();
+            storage = firebase.storage();
+        });
+=======
         // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
@@ -760,6 +879,7 @@
         const db = firebase.database();
         const auth = firebase.auth();
         const storage = firebase.storage();
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
 
         // Global variables
         let questions = [];
@@ -786,6 +906,165 @@
             });
         }
 
+<<<<<<< HEAD
+        // Helper function to normalize grade level
+        function normalizeGrade(grade) {
+            if (!grade) return null;
+            let normalized = String(grade).trim();
+            
+            // Handle Firebase format: "grade=5" or "grade=6"
+            if (normalized.includes('=')) {
+                const parts = normalized.split('=');
+                if (parts.length === 2 && parts[0].toLowerCase().trim() === 'grade') {
+                    return parts[1].trim();
+                }
+            }
+            
+            // Remove common suffixes
+            normalized = normalized.replace(/(\d+)(th|st|nd|rd)/i, '$1');
+            
+            // Remove "grade" prefix if present
+            if (/^grade/i.test(normalized)) {
+                normalized = normalized.replace(/^grade/i, '');
+            }
+            
+            // Extract just the number
+            const numberMatch = normalized.match(/(\d+)/);
+            if (numberMatch) {
+                return numberMatch[1];
+            }
+            
+            return normalized;
+        }
+
+        // Helper function to map subject to dropdown value
+        function mapSubjectToDropdown(subject) {
+            if (!subject) return '';
+            const subjectLower = String(subject).toLowerCase();
+            if (subjectLower.includes('math')) return 'Math';
+            if (subjectLower.includes('english')) return 'English';
+            if (subjectLower.includes('science')) return 'Science';
+            return '';
+        }
+
+        // Load teacher data and auto-populate dropdowns
+        async function loadTeacherData() {
+            if (!db || !auth) {
+                await new Promise(resolve => waitForFirebase(() => {
+                    loadTeacherData().then(resolve).catch(resolve);
+                }));
+                return;
+            }
+            
+            const user = auth.currentUser;
+            if (!user) return Promise.resolve();
+
+            try {
+                const teacherSnap = await db.ref('teachers/' + user.uid).once('value');
+                const teacher = teacherSnap.val();
+                
+                if (teacher) {
+                    // Auto-populate subject dropdown
+                    if (teacher.subjects && Array.isArray(teacher.subjects) && teacher.subjects.length > 0) {
+                        // Get first subject or check for specific subjects
+                        const firstSubject = teacher.subjects[0];
+                        const mappedSubject = mapSubjectToDropdown(firstSubject);
+                        if (mappedSubject) {
+                            const subjectSelect = document.getElementById('subject');
+                            if (subjectSelect) {
+                                subjectSelect.value = mappedSubject;
+                                console.log('Subject auto-filled:', mappedSubject);
+                            }
+                        }
+                    } else if (teacher.subject) {
+                        // Handle single subject string
+                        const mappedSubject = mapSubjectToDropdown(teacher.subject);
+                        if (mappedSubject) {
+                            const subjectSelect = document.getElementById('subject');
+                            if (subjectSelect) {
+                                subjectSelect.value = mappedSubject;
+                                console.log('Subject auto-filled:', mappedSubject);
+                            }
+                        }
+                    }
+
+                    // Auto-populate grade level dropdown
+                    // Prioritize "grade" field as specified by user
+                    let teacherGrade = teacher.grade || teacher.gradelevel;
+                    
+                    if (teacherGrade) {
+                        // Normalize the grade value
+                        teacherGrade = normalizeGrade(teacherGrade);
+                        
+                        // Map to dropdown format: "Grade 5" or "Grade 6"
+                        const gradeValue = `Grade ${teacherGrade}`;
+                        const gradeSelect = document.getElementById('gradeLevel');
+                        
+                        if (gradeSelect) {
+                            // Wait a moment to ensure DOM is ready
+                            await new Promise(resolve => setTimeout(resolve, 200));
+                            
+                            // Check if the option exists
+                            const optionExists = Array.from(gradeSelect.options).some(opt => opt.value === gradeValue);
+                            if (optionExists) {
+                                gradeSelect.value = gradeValue;
+                                console.log('Grade level auto-filled:', gradeValue, 'from teacher.grade:', teacher.grade);
+                                
+                                // Trigger change event to ensure UI updates
+                                gradeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                            } else {
+                                console.warn('Grade level option not found:', gradeValue, 'Available options:', Array.from(gradeSelect.options).map(opt => opt.value));
+                            }
+                        } else {
+                            console.warn('Grade level dropdown not found');
+                        }
+                    } else {
+                        console.warn('Teacher grade not found in Firebase. Teacher data:', teacher);
+                    }
+                }
+                
+                return Promise.resolve();
+            } catch (error) {
+                console.error('Error loading teacher data:', error);
+                return Promise.reject(error);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for Firebase to be ready
+            waitForFirebase(function() {
+                // Check authentication
+                auth.onAuthStateChanged(function(user) {
+                    if (!user) {
+                        window.location.href = 'logreg.html';
+                    } else {
+                        // Load teacher data and auto-populate dropdowns FIRST
+                        // This ensures grade and subject are set before other operations
+                        loadTeacherData().then(() => {
+                            // Initialize rich text editor
+                            initQuestionEditor();
+                            
+                            // Load draft if exists (after teacher data is loaded)
+                            loadDraft();
+                            
+                            // Start auto-save (every 30 seconds)
+                            startAutoSave();
+                            
+                            // Check if editing existing assessment
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const assessmentId = urlParams.get('id');
+                            if (assessmentId) {
+                                loadAssessmentForEdit(assessmentId);
+                            }
+                        }).catch(error => {
+                            console.error('Error in initialization:', error);
+                            // Still initialize editor even if teacher data fails
+                            initQuestionEditor();
+                        });
+                    }
+                });
+=======
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             // Check authentication
@@ -809,6 +1088,7 @@
                         loadAssessmentForEdit(assessmentId);
                     }
                 }
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             });
         });
 
@@ -820,6 +1100,11 @@
         }
 
         function saveDraft() {
+<<<<<<< HEAD
+            if (!db || !auth) return;
+            
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             const title = document.getElementById('assessmentTitle').value.trim();
             if (!title && questions.length === 0) return; // Don't save empty drafts
 
@@ -861,6 +1146,11 @@
         }
 
         function loadDraft() {
+<<<<<<< HEAD
+            if (!db || !auth) return;
+            
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             const user = auth.currentUser;
             if (!user) return;
 
@@ -876,6 +1166,14 @@
 
                             if (confirm('Found a saved draft. Would you like to continue where you left off?')) {
                                 loadDraftData(draft);
+<<<<<<< HEAD
+                            } else {
+                                // If user declines draft, ensure teacher's grade is still set
+                                setTimeout(() => {
+                                    loadTeacherData();
+                                }, 200);
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                             }
                         }
                     }
@@ -889,7 +1187,14 @@
             document.getElementById('assessmentTitle').value = draft.title || '';
             document.getElementById('assessmentDescription').value = draft.description || '';
             document.getElementById('subject').value = draft.subject || '';
+<<<<<<< HEAD
+            // Only set gradeLevel from draft if it exists, otherwise keep teacher's grade
+            if (draft.gradeLevel) {
+                document.getElementById('gradeLevel').value = draft.gradeLevel;
+            }
+=======
             document.getElementById('gradeLevel').value = draft.gradeLevel || '';
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             document.getElementById('timeLimit').value = draft.timeLimit || '';
             document.getElementById('passingScore').value = draft.passingScore || '';
             
@@ -919,6 +1224,11 @@
 
         // Load assessment for editing
         function loadAssessmentForEdit(assessmentId) {
+<<<<<<< HEAD
+            if (!db) return;
+            
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             db.ref('assessments/' + assessmentId).once('value')
                 .then(snapshot => {
                     if (snapshot.exists()) {
@@ -1036,6 +1346,11 @@
 
         // Handle question image upload
         function handleQuestionImageUpload(event) {
+<<<<<<< HEAD
+            if (!storage || !auth) return;
+            
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             const file = event.target.files[0];
             if (!file) return;
 
@@ -1300,6 +1615,14 @@
 
         // Save assessment
         function saveAssessment() {
+<<<<<<< HEAD
+            if (!db || !auth) {
+                alert('Firebase not initialized. Please refresh the page.');
+                return;
+            }
+            
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             const title = document.getElementById('assessmentTitle').value.trim();
             const description = document.getElementById('assessmentDescription').value.trim();
             const subject = document.getElementById('subject').value;
@@ -1356,16 +1679,31 @@
                     }
 
                     alert('Assessment saved successfully!');
+<<<<<<< HEAD
+                    // Reset form but keep teacher's grade and subject
+                    document.getElementById('assessmentTitle').value = '';
+                    document.getElementById('assessmentDescription').value = '';
+                    // Don't reset subject and gradeLevel - keep teacher's values
+=======
                     // Reset form
                     document.getElementById('assessmentTitle').value = '';
                     document.getElementById('assessmentDescription').value = '';
                     document.getElementById('subject').value = '';
                     document.getElementById('gradeLevel').value = '';
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                     document.getElementById('timeLimit').value = '';
                     document.getElementById('passingScore').value = '';
                     questions = [];
                     renderQuestions();
                     updatePreview();
+<<<<<<< HEAD
+                    
+                    // Re-apply teacher's grade and subject after reset
+                    setTimeout(() => {
+                        loadTeacherData();
+                    }, 100);
+=======
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                 })
                 .catch(error => {
                     console.error('Error saving assessment:', error);
@@ -1602,5 +1940,7 @@
             <p>&copy; 2025 Eduktaktika. All rights reserved.</p>
         </div>
     </footer>
+
+    <script src="../assets/js/navbar.js"></script>
 </body>
 </html>

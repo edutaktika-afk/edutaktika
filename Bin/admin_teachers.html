@@ -43,6 +43,18 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Helper function to format grade level for display (grade=5 -> "Grade 5")
+    function formatGradeForDisplay(grade) {
+        if (!grade) return '';
+        if (grade.includes('=')) {
+            const parts = grade.split('=');
+            if (parts.length === 2 && parts[0].toLowerCase().trim() === 'grade') {
+                return `Grade ${parts[1].trim()}`;
+            }
+        }
+        return grade; // Return as-is if not in expected format
+    }
+
     // Load teachers from Firebase
     function loadTeachers() {
         db.ref('teachers').once('value').then(snapshot => {
@@ -55,7 +67,7 @@
                     <td>${t.id || ''}</td>
                     <td>${(t.fname || '') + ' ' + (t.lname || '')}</td>
                     <td>${t.email || ''}</td>
-                    <td>${t.gradelevel || ''}</td>
+                    <td>${formatGradeForDisplay(t.grade || t.gradelevel || '')}</td>
                     <td>${t.section || ''}</td>
                     <td>
                         ${t.approved ? '<span class="approved">Approved</span>' : '<span class="pending">Pending</span>'}

@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function() {
         </div>
             <div>
                 <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
-                <strong>ID:</strong> <span id="profileId">-</span>
+                <strong>LRN:</strong> <span id="profileId">-</span>
             </div>
             <div>
                 <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
@@ -615,6 +615,17 @@ document.addEventListener("DOMContentLoaded", function() {
             <script src="../assets/js/Student Side/profile.js"></script>
             <script src="../assets/js/navbar.js"></script>
             
+            <script>
+document.addEventListener("DOMContentLoaded", function() {
+    const navLinks = document.querySelectorAll("nav ul li a");
+    const current = window.location.pathname.split('/').pop();
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
+        }
+    });
+});
+</script>
 </body>
 
 </html>

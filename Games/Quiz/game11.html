@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Open-Ended Question Quiz</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    html, body { height: 100%; margin: 0; padding: 0; box-sizing: border-box; width: 100vw; min-height: 100vh; overflow: hidden; font-family: 'Poppins', 'Segoe UI', Arial, sans-serif; }
+    body { background: linear-gradient(135deg, #f8fafc 0%, #b2d8d8 100%); color: #22313f; position: relative; transition: background 0.5s ease; }
+    *, *:before, *:after { box-sizing: inherit; }
+    .header-info { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; z-index: 50; }
+    .score-tracker, .question-num { background: #fff; color: #22313f; border-radius: 12px; padding: 0.5em 1.2em; font-weight: 700; font-size: 1.1em; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 150px; text-align: center; }
+    .edit-btn { position: absolute; top: 18px; right: 24px; z-index: 100; background: #fff; color: #22313f; border: 2px solid #22313f; border-radius: 8px; padding: 0.4em 1.2em; font-weight: 600; font-size: 1em; cursor: pointer; box-shadow: 0 2px 8px #0001; transition: all .2s; }
+    .edit-btn:hover { background: #22313f; color: #fff; border-color: #fff; }
+    #infoBtn { right: auto; left: 24px; background: #22313f; color: #fff; border-color: #fff; }
+    #infoBtn:hover { background: #14505c; }
+    .main-area { width: 100vw; height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; position: relative; }
+    .card-content { background: #fff; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.25); padding: 3em 2em; min-width: 0; width: 100%; max-width: 620px; min-height: 440px; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; animation: fadeIn 0.8s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .question-text { font-size: 1.5em; font-weight: 700; color: #14505c; margin-top: 1em; text-align: center; min-height: 3em; width: 100%; word-break: break-word; transition: opacity 0.3s ease-in-out; }
+    .answer-input { font-size: 1.1em; padding: 0.6em 1em; border-radius: 12px; border: 3px solid #45a29e; outline: none; width: 100%; max-width: 480px; margin-bottom: 1.5em; transition: border .2s, box-shadow .2s, background .3s; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: #f8fafc; text-align: left; min-height: 3em; }
+    .answer-input:focus { border-color: #14505c; box-shadow: 0 4px 20px #14505c44; }
+    .controls { display: flex; gap: 16px; margin-top: 1.5em; justify-content: center; width: 100%; flex-wrap: wrap; }
+    .btn { background: #45a29e; color: #fff; border: none; border-radius: 12px; padding: 0.8em 2.5em; font-size: 1.1em; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.15); cursor: pointer; transition: all .2s; min-width: 120px; }
+    #prevBtn { background: #ffd166; color: #22313f; }
+    #nextBtn, #doneBtn { background: #14505c; }
+    .btn:disabled { background: #b2d8d8; color: #22313f; box-shadow: none; cursor: not-allowed; }
+    .btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.2); }
+    .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; right: 0; bottom: 0; background: rgba(20, 80, 92, 0.75); align-items: center; justify-content: center; }
+    .modal-content { background: #fff; border-radius: 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); padding: 2.5em 1.5em 2em 1.5em; animation: popInModal .4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .close-btn { color: #45a29e; }
+    #completionMessage { color: #14505c; font-weight: 800; }
+    @media (max-width:600px) {
+      .card-content { min-height: 0; padding: 2em 1em; border-radius: 16px;}
+      .question-text { font-size: 1.15em; margin-bottom: 1em;}
+      .btn { font-size: 1em; padding: 0.6em 1.5em;}
+      .header-info { top: 10px; gap: 10px;}
+      .score-tracker, .question-num { font-size: 0.9em; padding: 0.4em 0.8em;}
+      .edit-btn { padding: 0.3em 0.8em; font-size: 0.9em;}
+    }
+  </style>
+</head>
+<body>
+  <button id="editBtn" class="edit-btn">Edit</button>
+  <div class="main-area">
+    <div class="card-content" style="position:relative;">
+      <button id="infoBtn" class="edit-btn" style="left:24px;top:18px;position:absolute;background:#14505c;color:#fff;border-color:#fff;">❓ Instructions</button>
+      <div id="quizInstruction" style="font-size:1.15em;color:#45a29e;margin-bottom:10px;font-weight:500;text-align:center;"></div>
+      <div class="question-num" id="questionNum" style="padding-top: 15px;"></div>
+      <div class="question-text" id="questionText"></div>
+      <textarea id="answerInput" class="answer-input" autocomplete="off" placeholder="Type your open-ended answer here..."></textarea>
+      <div class="controls">
+        <button id="prevBtn" class="btn" style="background:#ffd166;color:#333;">Prev</button>
+        <button id="nextBtn" class="btn" disabled>Next</button>
+        <button id="doneBtn" class="btn" style="display:none;">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completion Modal -->
+  <div class="modal" id="completionModal">
+    <div class="modal-content" style="text-align:center;">
+      <div style="font-size:2.5em;margin-bottom:0.3em;">✅</div>
+      <div id="completionMessage"></div>
+    </div>
+  </div>
+
+  <!-- Editor Modal -->
+  <div class="modal" id="editorModal">
+    <div class="modal-content" style="max-width:520px;">
+      <button class="close-btn" id="closeEditorBtn" style="position:absolute;top:12px;right:16px;font-size:1.7em;cursor:pointer;background:none;border:none;">&times;</button>
+      <div class="modal-header" style="font-size:1.25em;font-weight:700;margin-bottom:0.7em;text-align:center;">
+        Edit Open-Ended Questions
+      </div>
+      <form id="quizEditForm" style="width:100%;display:flex;flex-direction:column;height:65vh;max-height:65vh;overflow:hidden;gap:0.5em;">
+        <div id="questionsList" style="flex:1 1 auto;overflow-y:auto;min-height:0;margin-bottom:0;padding-right:4px;"></div>
+        <div class="editor-row" style="margin-bottom:1em;">
+          <label for="editInstruction" style="font-weight:600;">Instruction</label>
+          <textarea id="editInstruction" rows="2" style="width:100%;resize:vertical;">Write a thoughtful answer for each open-ended question below.</textarea>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:0.7em;">
+          <button type="button" id="addQuestionBtn" style="background:#0d6efd;color:#fff;border:none;border-radius:7px;padding:0.5em 1.5em;font-size:1em;font-weight:600;cursor:pointer;">+ Add Question</button>
+          <button class="btn" id="saveQuizBtn" type="submit" style="min-width:120px;">💾 Save</button>
+          <span id="saveStatus" style="margin-left:1em;color:#198754;display:none;font-weight:500;">Saved!</span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Instructions Modal -->
+  <div class="modal" id="infoModal">
+    <div class="modal-content" style="max-width:420px;text-align:left;">
+      <button class="close-btn" id="closeInfoBtn" style="position:absolute;top:12px;right:16px;font-size:1.7em;cursor:pointer;background:none;border:none;">&times;</button>
+      <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">
+        How to Play
+      </div>
+      <ul style="font-size:1.1em;line-height:1.7;">
+        <li>Read each open-ended question carefully and type your answer in the box provided.</li>
+        <li>Click <b>Next</b> to proceed to the next question. When finished, click <b>Done</b> to submit your answers.</li>
+        <img src="../../images/GIF/game7.gif" alt="Example open-ended question" style="width:85%;max-width:320px;border-radius:12px;box-shadow:0 2px 8px #0002;margin-top:0.5em;">
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Default quiz
+    const defaultQuiz = [
+      { question: "Describe a time when you overcame a challenge. What did you learn from the experience?" },
+      { question: "If you could invent something to help people, what would it be and why?" },
+      { question: "Explain how teamwork can help solve difficult problems." },
+      { question: "What is one goal you want to achieve this year, and how will you work toward it?" }
+    ];
+
+    let quiz = [];
+    let current = 0;
+    let userAnswers = [];
+    let isQuizEditor = false;
+    let parentTestIndex = 0;
+    let quizInstruction = "Write a thoughtful answer for each open-ended question below.";
+
+    // --- UI Elements ---
+    const editBtn = document.getElementById('editBtn');
+    const questionNum = document.getElementById('questionNum');
+    const questionText = document.getElementById('questionText');
+    const answerInput = document.getElementById('answerInput');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const doneBtn = document.getElementById('doneBtn');
+    const completionModal = document.getElementById('completionModal');
+    const completionMessage = document.getElementById('completionMessage');
+    const closeEditorBtn = document.getElementById('closeEditorBtn');
+    const quizEditForm = document.getElementById('quizEditForm');
+    const questionsList = document.getElementById('questionsList');
+    const addQuestionBtn = document.getElementById('addQuestionBtn');
+    const saveQuizBtn = document.getElementById('saveQuizBtn');
+    const saveStatus = document.getElementById('saveStatus');
+    const infoBtn = document.getElementById('infoBtn');
+    const infoModal = document.getElementById('infoModal');
+    const closeInfoBtn = document.getElementById('closeInfoBtn');
+
+    // --- Parent slide index support ---
+    window.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'setTestIndex') {
+        parentTestIndex = event.data.index;
+      }
+      if (event.data && event.data.type === 'showEditor') {
+        showEditor();
+      }
+      if (event.data && event.data.type === 'loadQuizGameData' && event.data.gameData) {
+        quiz = event.data.gameData.questions;
+        quizInstruction = event.data.gameData.instruction || quizInstruction;
+        renderQuestion();
+      }
+    });
+
+    // --- Always show Edit button at top right ---
+    editBtn.style.display = 'block';
+
+    // --- Load quiz from Firebase/localStorage or use default ---
+    async function loadQuiz() {
+      // If parent provides questions, use them (quizEditor will send them via postMessage)
+      if (window.quizGameData && window.quizGameData.questions) {
+        quiz = window.quizGameData.questions;
+      } else {
+        let saved = localStorage.getItem('quiz-open-ended');
+        if (saved) quiz = JSON.parse(saved);
+        else quiz = JSON.parse(JSON.stringify(defaultQuiz));
+      }
+    }
+
+    // --- Save quiz to Firebase/localStorage ---
+    async function saveQuiz() {
+      // Send to parent (quizEditor/quizView) for saving to Firebase
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'saveQuizGameData',
+          gameData: {
+            questions: quiz,
+            instruction: quizInstruction,
+            lastModified: new Date().toISOString(),
+            gameType: 'open-ended-quiz',
+            gameUrl: window.location.href.split('?')[0],
+            isCustomized: true,
+            totalQuestions: quiz.length
+          },
+          quizId: window.location.pathname.split('/').pop(),
+          source: 'game-editor'
+        }, '*');
+        saveStatus.textContent = "Saved!";
+        saveStatus.style.display = '';
+      } else {
+        // Fallback for standalone use
+        localStorage.setItem('quiz-open-ended', JSON.stringify(quiz));
+        saveStatus.textContent = "Saved!";
+        saveStatus.style.display = '';
+      }
+    }
+
+    // --- Render question ---
+    function renderQuestion() {
+      questionNum.textContent = `Question ${current + 1} of ${quiz.length}`;
+      questionText.textContent = quiz[current].question;
+      answerInput.value = userAnswers[current] || '';
+      answerInput.disabled = false;
+      answerInput.style.background = "#f8fafc";
+      answerInput.focus();
+      prevBtn.disabled = current === 0;
+      nextBtn.style.display = (current < quiz.length - 1) ? '' : 'none';
+      doneBtn.style.display = (current === quiz.length - 1) ? '' : 'none';
+      checkCompletion();
+      document.getElementById('quizInstruction').textContent = quizInstruction || "";
+    }
+
+    // --- Check if answer is filled to enable Next/Done ---
+    function checkCompletion() {
+      const val = answerInput.value.trim();
+      if (val) {
+        if (current < quiz.length - 1) nextBtn.disabled = false;
+        if (current === quiz.length - 1) doneBtn.disabled = false;
+      } else {
+        if (current < quiz.length - 1) nextBtn.disabled = true;
+        if (current === quiz.length - 1) doneBtn.disabled = true;
+      }
+    }
+
+    // --- Navigation ---
+    prevBtn.addEventListener('click', () => {
+      saveCurrentAnswer();
+      if (current > 0) current--;
+      renderQuestion();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      saveCurrentAnswer();
+      if (current < quiz.length - 1) current++;
+      renderQuestion();
+    });
+
+    answerInput.addEventListener('input', checkCompletion);
+
+    function saveCurrentAnswer() {
+      userAnswers[current] = answerInput.value.trim();
+    }
+
+    // --- Done button ---
+    doneBtn.addEventListener('click', () => {
+      saveCurrentAnswer();
+      showResult();
+      doneBtn.style.display = 'none';
+    });
+
+    // --- Show result and send answers to parent ---
+    function showResult() {
+      completionMessage.textContent = `✅ Quiz Submitted!`;
+      completionModal.style.display = 'flex';
+
+      // Send answers to parent (for quizView/Firebase)
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'quizResult',
+          payload: {
+            answers: userAnswers,
+            quizId: window.location.pathname.split('/').pop(),
+            slideIndex: parentTestIndex
+          }
+        }, '*');
+      }
+    }
+
+    // --- Editor Modal Logic ---
+    editBtn.onclick = showEditor;
+    function showEditor() {
+      renderQuestionsEditor();
+      editorModal.style.display = 'flex';
+      saveStatus.style.display = 'none';
+      document.getElementById('editInstruction').value = quizInstruction || "";
+    }
+    closeEditorBtn.onclick = () => {
+      editorModal.style.display = 'none';
+    };
+    addQuestionBtn.onclick = () => {
+      saveEditorFieldsToQuiz();
+      quiz.push({ question: "" });
+      renderQuestionsEditor();
+    };
+    function saveEditorFieldsToQuiz() {
+      const questions = Array.from(document.querySelectorAll('.edit-question')).map(i => i.value.trim());
+      for (let i = 0; i < quiz.length; i++) {
+        quiz[i].question = questions[i] || "";
+      }
+    }
+    function renderQuestionsEditor() {
+      questionsList.innerHTML = '';
+      quiz.forEach((q, idx) => {
+        const qDiv = document.createElement('div');
+        qDiv.style = "border:1px solid #e0e0e0;border-radius:8px;padding:1em;margin-bottom:1em;background:#f8fafc;position:relative;";
+        qDiv.innerHTML = `
+          <label style="font-weight:600;">Question:<br>
+            <input type="text" class="edit-question" value="${q.question.replace(/"/g, '&quot;')}" style="width:100%;margin-bottom:0.5em;padding:0.5em;border-radius:6px;border:1.2px solid #bcd;" required>
+          </label>
+          <button type="button" class="remove-question-btn" data-idx="${idx}" style="position:absolute;top:0.7em;right:0.7em;background:#f44336;color:#fff;border:none;border-radius:50%;width:2em;height:2em;font-size:1.2em;cursor:pointer;">&times;</button>
+        `;
+        questionsList.appendChild(qDiv);
+      });
+      questionsList.querySelectorAll('.remove-question-btn').forEach(btn => {
+        btn.onclick = function() {
+          saveEditorFieldsToQuiz();
+          const idx = parseInt(btn.getAttribute('data-idx'));
+          quiz.splice(idx, 1);
+          renderQuestionsEditor();
+        };
+      });
+    }
+    quizEditForm.onsubmit = function(e) {
+      e.preventDefault();
+      quizInstruction = document.getElementById('editInstruction').value.trim();
+      const questions = Array.from(document.querySelectorAll('.edit-question')).map(i => i.value.trim());
+      const newQuiz = [];
+      for (let i = 0; i < questions.length; i++) {
+        if (!questions[i]) continue;
+        newQuiz.push({ question: questions[i] });
+      }
+      if (newQuiz.length < 1) {
+        alert("Please enter at least one valid question.");
+        return;
+      }
+      quiz = newQuiz;
+      saveQuiz();
+      editorModal.style.display = 'none';
+      current = 0;
+      userAnswers = [];
+      renderQuestion();
+    };
+
+    // --- Instruction modal logic ---
+    infoBtn.onclick = () => { infoModal.style.display = 'flex'; };
+    closeInfoBtn.onclick = () => { infoModal.style.display = 'none'; };
+    infoModal.onclick = e => { if (e.target === infoModal) infoModal.style.display = 'none'; };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      infoModal.style.display = 'flex';
+    });
+
+    // --- Initial load ---
+    (async function() {
+      await loadQuiz();
+      renderQuestion();
+    })();
+
+    window.addEventListener('popstate', () => { editBtn.style.display = 'block'; });
+    window.addEventListener('hashchange', () => { editBtn.style.display = 'block'; });
+  </script>
+</body>
+</html>

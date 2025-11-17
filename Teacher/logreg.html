@@ -573,6 +573,10 @@ label {
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-users"></i></span>
                                     <label for="reg_section">Section</label>
+<<<<<<< HEAD
+                                    <select name="reg_section" id="reg_section" required disabled>
+                                        <option value="">Select Grade First</option>
+=======
                                     <select name="reg_section" id="reg_section" required>
                                         <option value="">Select Section</option>
                                         <option value="Ubas">Ubas</option>
@@ -583,6 +587,7 @@ label {
                                         <option value="Fruit Salad">Fruit Salad</option>
                                         <option value="Guyabano">Guyabano</option>
                                         <option value="Santol">Santol</option>
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                                     </select>
                                 </div>
                             </div>
@@ -885,8 +890,18 @@ document.getElementById('loginForm').onsubmit = async function(e) {
             return;
         }
 
+<<<<<<< HEAD
+        // Check if this is a bulk-created account (bypass email verification)
+        const studentSnap = await db.ref('students/' + uid).once('value');
+        const student = studentSnap.val();
+        const isBulkCreated = student && student.bulkCreated === true;
+        
+        // Teachers must be verified (unless bulk-created accounts)
+        if (!user.emailVerified && !isBulkCreated) {
+=======
         // Teachers must be verified
         if (!user.emailVerified) {
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             showCustomModal('Please verify your email before logging in.');
             await auth.signOut();
             return;
@@ -978,8 +993,18 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             } catch (_) {}
 
+<<<<<<< HEAD
+            // Check if this is a bulk-created account (bypass email verification)
+            const studentSnap = await db.ref('students/' + uid).once('value');
+            const student = studentSnap.val();
+            const isBulkCreated = student && student.bulkCreated === true;
+            
+            // Teachers must be verified (unless bulk-created accounts)
+            if (!user.emailVerified && !isBulkCreated) {
+=======
             // Teachers must be verified
             if (!user.emailVerified) {
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                 showCustomModal('Please verify your email before logging in.');
                 await firebase.auth().signOut();
                 return;
@@ -1157,8 +1182,48 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+<<<<<<< HEAD
+    // Grade field - update sections based on grade
+    const gradeField = document.getElementById('reg_grade');
+    const sectionField = document.getElementById('reg_section');
+    
+    function updateSectionsForGrade(grade) {
+        // Clear existing options
+        sectionField.innerHTML = '<option value="">Select Section</option>';
+        
+        if (grade === '5') {
+            // Grade 5 sections
+            const grade5Sections = ['Melon', 'Kasoy', 'Ubas', 'Durian'];
+            grade5Sections.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section;
+                option.textContent = section;
+                sectionField.appendChild(option);
+            });
+            // Enable the section field
+            sectionField.disabled = false;
+        } else if (grade === '6') {
+            // Grade 6 sections
+            const grade6Sections = ['Fruit Salad', 'Langka', 'Santol', 'Guyabano'];
+            grade6Sections.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section;
+                option.textContent = section;
+                sectionField.appendChild(option);
+            });
+            // Enable the section field
+            sectionField.disabled = false;
+        } else {
+            // No grade selected
+            sectionField.innerHTML = '<option value="">Select Grade First</option>';
+            sectionField.disabled = true;
+        }
+    }
+    
+=======
     // Grade field
     const gradeField = document.getElementById('reg_grade');
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
     gradeField.addEventListener('change', () => {
         const warning = document.getElementById('grade-warning') || (() => {
             const span = document.createElement('span');
@@ -1170,10 +1235,22 @@ document.addEventListener('DOMContentLoaded', function() {
             return span;
         })();
         validateField(gradeField, 'grade-warning');
+<<<<<<< HEAD
+        
+        // Update sections based on selected grade
+        updateSectionsForGrade(gradeField.value);
+        
+        // Reset section selection
+        sectionField.value = '';
+    });
+    
+    // Section field (already declared above)
+=======
     });
     
     // Section field
     const sectionField = document.getElementById('reg_section');
+>>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
     sectionField.addEventListener('change', () => {
         const warning = document.getElementById('section-warning') || (() => {
             const span = document.createElement('span');

@@ -123,27 +123,21 @@
     #feedback:empty { display: none; } /* Hide only when empty */
 
     /* Edit button prominent style (visible only in editor mode) */
-    .edit-open-btn {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        background: var(--peach); /* Solid color for consistency */
-        color: var(--white);
-        border: none;
-        padding: 10px 16px;
+    /* Edit Button Style */
+    #editBtn, #edit-open-btn {
+        background: #ffc107; /* Amber for edit */
+        color: var(--dark-text);
+        border: 2px solid #ff9800;
+        padding: 8px 15px;
         border-radius: 10px;
-        font-weight: 800;
-        box-shadow: 0 4px 0 #cc5490;
-        display: inline-flex;
-        gap:8px;
-        align-items:center;
+        font-weight: 700;
+        box-shadow: 0 2px 0 #ff9800;
+        transition: all .2s;
         cursor: pointer;
-        transition: all .15s ease;
-        z-index: 5000;
     }
-    .edit-open-btn:active {
-        box-shadow: 0 1px 0 #cc5490;
-        transform: translateY(3px);
+    #editBtn:active, #edit-open-btn:active {
+        transform: translateY(1px);
+        box-shadow: 0 1px 0 #ff9800;
     }
     .edit-open-btn .dot {
         width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,0.06);
@@ -617,5 +611,49 @@ doneBtn.onclick = () => {
   }
 };
 </script>
+
+<style>
+        #infoModal .modal-content ul {
+            padding-left: 1.2em;
+        }
+        .modal-content {
+            background-color:rgb(237, 201, 153);
+              max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+        }
+    </style>
+
+<!-- Instructions Modal -->
+<div class="modal" id="infoModal" style="display:none;position:fixed;z-index:10000;left:0;top:0;width:100vw;height:100vh;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);">
+    <div class="modal-content" style="max-width:620px;width:80vw;text-align:left;background:rgb(241, 241, 241);padding:32px 24px;border-radius:14px;box-shadow:0 4px 24px #0002;position:relative;">
+        <button class="close-btn" id="closeInfoBtn" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+        <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">
+            How to Play
+        </div>
+        <ul style="font-size:1.1em;line-height:1.7;padding-left:1.2em;">
+            <li>Read each statement carefully. Click "True" or "False" for each question.</li>
+            <img src="../../images/GIF/tof.gif" alt="Example game with letters and image" style="width:90%;max-width:520px;height:60vh;border-radius:12px;box-shadow:0 2px 8px #0002;margin-top:0.5em;">
+        </ul>
+    </div>
+</div>
+    
+<script>
+// Place this at the end of your script section
+
+const infoModal = document.getElementById('infoModal');
+const closeInfoBtn = document.getElementById('closeInfoBtn');
+
+// Show modal at start
+window.addEventListener('DOMContentLoaded', () => {
+    infoModal.style.display = 'flex';
+});
+
+// Optional: close modal when clicking close or outside content
+closeInfoBtn.onclick = () => { infoModal.style.display = 'none'; };
+infoModal.onclick = e => { if (e.target === infoModal) infoModal.style.display = 'none'; };
+
+</script>
+
 </body>
 </html>
