@@ -205,6 +205,108 @@ const EDUCATIONAL_TEMPLATES = [
     fileName: 'blank-presentation',
     description: 'Clean starter template for any subject'
   },
+  // Science Templates (1-5)
+  {
+    id: 'science-template-1',
+    name: 'Science Template 1',
+    preview: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=200&h=150&fit=crop',
+    category: 'science',
+    icon: FaFlask,
+    isMultiPage: true,
+    fileName: 'science-template-1',
+    description: 'Science lesson template with comprehensive content'
+  },
+  {
+    id: 'science-template-2',
+    name: 'Science Template 2',
+    preview: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=200&h=150&fit=crop',
+    category: 'science',
+    icon: FaMicroscope,
+    isMultiPage: true,
+    fileName: 'science-template-2',
+    description: 'Science lesson template with detailed sections'
+  },
+  {
+    id: 'science-template-3',
+    name: 'Science Template 3',
+    preview: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=150&fit=crop',
+    category: 'science',
+    icon: FaRocket,
+    isMultiPage: true,
+    fileName: 'science-template-3',
+    description: 'Science lesson template with interactive elements'
+  },
+  {
+    id: 'science-template-4',
+    name: 'Science Template 4',
+    preview: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=200&h=150&fit=crop',
+    category: 'science',
+    icon: FaAtom,
+    isMultiPage: true,
+    fileName: 'science-template-4',
+    description: 'Science lesson template with visual aids'
+  },
+  {
+    id: 'science-template-5',
+    name: 'Science Template 5',
+    preview: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=200&h=150&fit=crop',
+    category: 'science',
+    icon: FaDna,
+    isMultiPage: true,
+    fileName: 'science-template-5',
+    description: 'Science lesson template with comprehensive layout'
+  },
+  // English Templates (1-5)
+  {
+    id: 'english-template-1',
+    name: 'English Template 1',
+    preview: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=150&fit=crop',
+    category: 'english',
+    icon: FaBook,
+    isMultiPage: true,
+    fileName: 'english-template-1',
+    description: 'English lesson template with comprehensive content'
+  },
+  {
+    id: 'english-template-2',
+    name: 'English Template 2',
+    preview: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=200&h=150&fit=crop',
+    category: 'english',
+    icon: FaLanguage,
+    isMultiPage: true,
+    fileName: 'english-template-2',
+    description: 'English lesson template with detailed sections'
+  },
+  {
+    id: 'english-template-3',
+    name: 'English Template 3',
+    preview: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=150&fit=crop',
+    category: 'english',
+    icon: FaBook,
+    isMultiPage: true,
+    fileName: 'english-template-3',
+    description: 'English lesson template with interactive elements'
+  },
+  {
+    id: 'english-template-4',
+    name: 'English Template 4',
+    preview: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=200&h=150&fit=crop',
+    category: 'english',
+    icon: FaLanguage,
+    isMultiPage: true,
+    fileName: 'english-template-4',
+    description: 'English lesson template with visual aids'
+  },
+  {
+    id: 'english-template-5',
+    name: 'English Template 5',
+    preview: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=150&fit=crop',
+    category: 'english',
+    icon: FaBook,
+    isMultiPage: true,
+    fileName: 'english-template-5',
+    description: 'English lesson template with comprehensive layout'
+  },
   // Quick single-page templates - following multi-page design principles
   {
     id: 'math-problem-template',
@@ -904,14 +1006,28 @@ export const ScienceTemplatesPanel = observer(({ store }) => {
     try {
       console.log('Loading multi-page template:', templateName);
       
-      // Get template data from embedded data
-      const templateData = TEMPLATE_DATA[templateName];
+      // First, try to get template data from embedded data
+      let templateData = TEMPLATE_DATA[templateName];
       
+      // If not found in embedded data, try to fetch from /templates/ directory
       if (!templateData) {
-        console.error(`Template "${templateName}" not found in TEMPLATE_DATA`);
-        console.log('Available templates:', Object.keys(TEMPLATE_DATA));
-        alert(`Error: Template "${templateName}" not found. Please contact support.`);
-        return;
+        console.log(`Template "${templateName}" not found in TEMPLATE_DATA, trying to fetch from /templates/`);
+        try {
+          const response = await fetch(`/templates/${templateName}.json`);
+          if (response.ok) {
+            templateData = await response.json();
+            console.log(`Successfully loaded template from /templates/${templateName}.json`);
+          } else {
+            console.error(`Failed to fetch template: ${response.status} ${response.statusText}`);
+            throw new Error(`Template file not found: ${templateName}.json`);
+          }
+        } catch (fetchError) {
+          console.error(`Error fetching template from /templates/:`, fetchError);
+          console.error(`Template "${templateName}" not found in TEMPLATE_DATA or /templates/`);
+          console.log('Available templates in TEMPLATE_DATA:', Object.keys(TEMPLATE_DATA));
+          alert(`Error: Template "${templateName}" not found. Please contact support.`);
+          return;
+        }
       }
       
       // Clear all existing pages safely

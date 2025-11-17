@@ -177,6 +177,18 @@ dialog {
    ADDITIONAL ANIMATION ENHANCEMENTS
    ======================================== */
 
+/* Floating Animation Panel Animation */
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
 /* Smooth entrance animations */
 .polotno-app-container {
   animation: fadeIn 0.4s ease-out;

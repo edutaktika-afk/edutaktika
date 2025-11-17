@@ -21,7 +21,7 @@ import { BackgroundsSection } from './sections/backgrounds-section';
 import { EducationalTemplatesSection } from './sections/science-templates/science-templates-section';
 import { TextSection } from './sections/text-section';
 import { MaterialIconsSection } from './sections/material-icons-section';
-import { AnimationSection } from './sections/animation-section';
+import { AnimationSection, FloatingAnimationPanel } from './sections/animation-section';
 
 import { useProject } from './project';
 
@@ -91,13 +91,6 @@ const isElementsSection = (sec) => {
   return name === 'elements';
 };
 
-// Helper to detect Polotno's default animation section (we'll replace it with our custom one)
-const isDefaultAnimationSection = (sec) => {
-  const s = sec || {};
-  const name = String(s.name || '').toLowerCase();
-  return name === 'animate' || name === 'animations';
-};
-
 // Helper to detect templates section (we want to preserve the default polotno templates)
 const isTemplatesSection = (sec) => {
   const s = sec || {};
@@ -115,7 +108,7 @@ for (let i = DEFAULT_SECTIONS.length - 1; i >= 0; i--) {
     DEFAULT_SECTIONS.splice(i, 1);
     continue;
   }
-  if (isVideoSection(sec) || isBackgroundSection(sec) || isPhotosSection(sec) || isIconsSection(sec) || isDefaultTextSection(sec) || isElementsSection(sec) || isDefaultAnimationSection(sec)) {
+  if (isVideoSection(sec) || isBackgroundSection(sec) || isPhotosSection(sec) || isIconsSection(sec) || isDefaultTextSection(sec) || isElementsSection(sec)) {
     DEFAULT_SECTIONS.splice(i, 1);
   }
 }
@@ -123,24 +116,24 @@ for (let i = DEFAULT_SECTIONS.length - 1; i >= 0; i--) {
 // Guard against future insertions of video, background, photos, icons, default text, and elements sections
 // But allow our custom TextSection (it has a Tab property)
 const _push = DEFAULT_SECTIONS.push.bind(DEFAULT_SECTIONS);
-DEFAULT_SECTIONS.push = (...items) => _push(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s) && !isDefaultAnimationSection(s)));
+DEFAULT_SECTIONS.push = (...items) => _push(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s)));
 const _unshift = DEFAULT_SECTIONS.unshift.bind(DEFAULT_SECTIONS);
-DEFAULT_SECTIONS.unshift = (...items) => _unshift(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s) && !isDefaultAnimationSection(s)));
+DEFAULT_SECTIONS.unshift = (...items) => _unshift(...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s)));
 const _splice = DEFAULT_SECTIONS.splice.bind(DEFAULT_SECTIONS);
 DEFAULT_SECTIONS.splice = (start, deleteCount, ...items) =>
-  _splice(start, deleteCount, ...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s) && !isDefaultAnimationSection(s)));
+  _splice(start, deleteCount, ...items.filter((s) => !isVideoSection(s) && !isBackgroundSection(s) && !isPhotosSection(s) && !isIconsSection(s) && !(isDefaultTextSection(s) && !s.Tab) && !isElementsSection(s)));
 
-// add backgrounds section (Photos and Icons removed)
-DEFAULT_SECTIONS.splice(3, 0, BackgroundsSection);
+// add two more sections
+// DEFAULT_SECTIONS.push(QuotesSection, QrSection); // REMOVED - Quotes and QR code sections
+// DEFAULT_SECTIONS.unshift(UploadSection);
+DEFAULT_SECTIONS.unshift(MyDesignsSection);
 
-// Add shapes section back (was removed when we removed elements)
-DEFAULT_SECTIONS.splice(4, 0, ShapesSection);
-
-// Add Material Icons section
-DEFAULT_SECTIONS.splice(5, 0, MaterialIconsSection);
+// Add our Educational Templates section right after My Designs (position 1)
+DEFAULT_SECTIONS.splice(1, 0, EducationalTemplatesSection);
 
 // Add the default polotno templates section (if it exists) - this is the original Polotno templates
 // Rename it to "Online designs" to distinguish from our educational templates
+// Place it right after Templates (position 2)
 if (defaultTemplatesSection) {
   // Create a modified version with custom name
   const onlineDesignsSection = {
@@ -175,24 +168,26 @@ if (defaultTemplatesSection) {
       );
     })
   };
-  DEFAULT_SECTIONS.splice(6, 0, onlineDesignsSection);
+  DEFAULT_SECTIONS.splice(2, 0, onlineDesignsSection);
 }
 
-// Add our Educational Templates section - keep as "Templates"
-DEFAULT_SECTIONS.splice(7, 0, EducationalTemplatesSection);
-
-// add two more sections
-// DEFAULT_SECTIONS.push(QuotesSection, QrSection); // REMOVED - Quotes and QR code sections
-// DEFAULT_SECTIONS.unshift(UploadSection);
-DEFAULT_SECTIONS.unshift(MyDesignsSection);
-
-// Add TextSection between Upload and Layers (position 2: after MyDesignsSection and Upload)
+// Add TextSection after Online designs (position 3)
 // First check if a text section already exists (shouldn't, but be safe)
 const existingTextIndex = DEFAULT_SECTIONS.findIndex(section => section.name === 'text');
 if (existingTextIndex === -1) {
-  // Insert TextSection at position 2 (after MyDesignsSection[0] and Upload[1], before Layers[2])
-  DEFAULT_SECTIONS.splice(2, 0, TextSection);
+  // Insert TextSection at position 3 (after MyDesignsSection[0], Templates[1], Online designs[2])
+  DEFAULT_SECTIONS.splice(3, 0, TextSection);
 }
+
+// add backgrounds section (Photos and Icons removed)
+// Position adjusted to account for new order
+DEFAULT_SECTIONS.splice(4, 0, BackgroundsSection);
+
+// Add shapes section back (was removed when we removed elements)
+DEFAULT_SECTIONS.splice(5, 0, ShapesSection);
+
+// Add Material Icons section
+DEFAULT_SECTIONS.splice(6, 0, MaterialIconsSection);
 
 DEFAULT_SECTIONS.push(StableDiffusionSection);
 DEFAULT_SECTIONS.push(AnimationSection); // Custom animation section with all animations
@@ -686,11 +681,11 @@ const App = observer(({ store }) => {
                   // Filter out unwanted sections and deduplicate by name
                   const filtered = DEFAULT_SECTIONS.filter((s) => {
                     const name = String(s?.name || '').toLowerCase();
-                    // Remove Polotno's built-in animation section (it's hardcoded)
-                    if (name === 'animate' || name === 'animations' || name === 'animation') {
-                      console.log('🚫 Removing Polotno built-in animation section:', s.name);
-                      return false;
-                    }
+                    // Temporarily keep Polotno's built-in animation section to inspect it
+                    // if (name === 'animate' || name === 'animations' || name === 'animation') {
+                    //   console.log('🚫 Removing Polotno built-in animation section:', s.name);
+                    //   return false;
+                    // }
                     return !isVideoSection(s) && !isPhotosSection(s) && !isIconsSection(s);
                   });
                   // Deduplicate sections by name to prevent React key warnings
@@ -716,9 +711,12 @@ const App = observer(({ store }) => {
         </PolotnoContainer>
       </div>
       {!isViewOnly && (
-        <Suspense fallback={null}>
-          <Tutorial store={store} />
-        </Suspense>
+        <>
+          <Suspense fallback={null}>
+            <Tutorial store={store} />
+          </Suspense>
+          <FloatingAnimationPanel store={store} />
+        </>
       )}
       {project.status === 'loading' && (
         <div

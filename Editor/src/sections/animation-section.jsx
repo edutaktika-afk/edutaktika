@@ -3,55 +3,33 @@
  * Provides a comprehensive animation panel with all available animations
  */
 
-import React, { useState } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { SectionTab } from 'polotno/side-panel';
-import { Button, Card, Divider } from '@blueprintjs/core';
-
-// Animation icon component
-const AnimationIcon = ({ children }) => (
-  <div style={{ 
-    width: '40px', 
-    height: '40px', 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center',
-    fontSize: '20px',
-    marginBottom: '8px'
-  }}>
-    {children}
-  </div>
-);
+import { Button } from '@blueprintjs/core';
 
 export const AnimationPanel = observer(({ store }) => {
-  const [selectedCategory, setSelectedCategory] = useState('animations');
-
   // Get currently selected element
   const selectedElement = store.selectedElements?.[0];
 
-  // Animation categories
-  const animations = [
-    { name: 'pan', label: 'Move', icon: '↔️', category: 'animations' },
-    { name: 'fade', label: 'Fade', icon: '💫', category: 'animations' },
-    { name: 'zoom', label: 'Zoom', icon: '🔍', category: 'animations' },
-    { name: 'rise', label: 'Rise', icon: '⬆️', category: 'animations' },
-    { name: 'wiggle', label: 'Wiggle', icon: '🐛', category: 'animations' },
-    { name: 'blur', label: 'Blur', icon: '🌫️', category: 'animations' },
+  // All animations in a single list (matching the image layout)
+  const allAnimations = [
+    { name: 'wiggle', label: 'Wiggle', icon: '🐛' },
+    { name: 'blur', label: 'Blur', icon: '🌫️' },
+    { name: 'pan', label: 'Pan', icon: '➡️' },
+    { name: 'rise', label: 'Rise', icon: '⬆️' },
+    { name: 'spin', label: 'Spin', icon: '🌀' },
+    { name: 'flip', label: 'Flip', icon: '🔄' },
+    { name: 'elastic', label: 'Elastic', icon: '🔗' },
+    { name: 'swing', label: 'Swing', icon: '🎯' },
+    { name: 'tada', label: 'Tada', icon: '🎉' },
+    { name: 'flash', label: 'Flash', icon: '⚡' },
+    { name: 'rubberBand', label: 'Rubber Band', icon: '🎈' },
+    { name: 'jackInTheBox', label: 'Jack in the Box', icon: '📦' },
+    { name: 'heartbeat', label: 'Heartbeat', icon: '💓' },
+    { name: 'jello', label: 'Jello', icon: '🍮' },
   ];
 
-  const effects = [
-    { name: 'spin', label: 'Rotate', icon: '🔄', category: 'effects' },
-    { name: 'flash', label: 'Blink', icon: '⚡', category: 'effects' },
-    { name: 'rise', label: 'Bounce', icon: '🎾', category: 'effects' },
-    { name: 'flip', label: 'Flip', icon: '🔄', category: 'effects' },
-    { name: 'elastic', label: 'Elastic', icon: '🔗', category: 'effects' },
-    { name: 'swing', label: 'Swing', icon: '🎪', category: 'effects' },
-    { name: 'tada', label: 'Tada', icon: '🎉', category: 'effects' },
-    { name: 'rubberBand', label: 'Rubber Band', icon: '🔗', category: 'effects' },
-    { name: 'jackInTheBox', label: 'Jack in Box', icon: '📦', category: 'effects' },
-    { name: 'heartbeat', label: 'Heartbeat', icon: '💓', category: 'effects' },
-    { name: 'jello', label: 'Jello', icon: '🍮', category: 'effects' },
-  ];
 
   const handleAnimationClick = (animationName) => {
     if (!selectedElement) {
@@ -60,77 +38,106 @@ export const AnimationPanel = observer(({ store }) => {
     }
 
     try {
+      // Determine animation type based on name
+      // Loop animations: spin, flash (blink)
+      const isLoopAnimation = ['spin', 'flash'].includes(animationName);
+      const animationType = isLoopAnimation ? 'loop' : 'enter';
+
       // Apply animation using Polotno's animation system
-      // IMPORTANT: Set loop to false to prevent infinite loops
-      const animation = {
-        type: 'enter',
-        name: animationName,
-        duration: 1000,
-        delay: 0,
-        enabled: true,
-        loop: false, // CRITICAL: Prevent infinite loops
-        data: {}
-      };
+      store.history.transaction(() => {
+        if (isLoopAnimation) {
+          selectedElement.setAnimation('loop', {
+            name: animationName,
+            enabled: true,
+            duration: 1000,
+            data: {}
+          });
+        } else {
+          selectedElement.setAnimation('enter', {
+            name: animationName,
+            enabled: true,
+            duration: 1000,
+            delay: 0,
+            data: {}
+          });
+        }
+      });
 
-      // Get current animations or create new array
-      const currentAnims = selectedElement.animations ? [...selectedElement.animations] : [];
-      
-      // Remove any existing enter animation
-      const filteredAnims = currentAnims.filter(anim => anim.type !== 'enter');
-      
-      // Add new animation
-      const updatedAnims = [...filteredAnims, animation];
-      
-      // Update element animations using Polotno's API
-      if (selectedElement.set) {
-        selectedElement.set('animations', updatedAnims);
-      } else if (selectedElement.animations) {
-        // Fallback: directly set animations array
-        selectedElement.animations = updatedAnims;
-      }
+      // Preview the animation
+      const activePage = store.activePage;
+      store.play({
+        animatedElementsIds: [selectedElement.id],
+        currentTime: selectedElement.page.startTime
+      });
+      setTimeout(() => {
+        store.stop();
+        if (activePage) store.selectPage(activePage.id);
+      }, 1500);
 
-      console.log('✅ Animation applied:', animationName, animation);
+      console.log('✅ Animation applied:', animationName);
     } catch (error) {
       console.error('❌ Error applying animation:', error);
       alert('Error applying animation: ' + error.message);
     }
   };
 
-  const renderAnimationCard = (anim) => (
-    <Card
-      key={anim.name}
-      interactive
-      elevation={1}
-      onClick={() => handleAnimationClick(anim.name)}
-      style={{
-        padding: '12px',
-        textAlign: 'center',
-        cursor: 'pointer',
-        marginBottom: '8px',
-        transition: 'all 0.2s',
-        border: '1px solid #e0e0e0'
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = 'none';
-      }}
-    >
-      <AnimationIcon>{anim.icon}</AnimationIcon>
-      <div style={{ fontSize: '12px', fontWeight: '500', color: '#333' }}>
-        {anim.label}
-      </div>
-    </Card>
-  );
+  const removeAllAnimations = () => {
+    if (!selectedElement) {
+      alert('Please select an element first');
+      return;
+    }
+
+    store.history.transaction(() => {
+      selectedElement.set({ animations: [] });
+    });
+  };
+
+  // Check if element has any animations
+  const hasAnimations = selectedElement && selectedElement.animations && selectedElement.animations.length > 0;
+
+  const renderAnimationButton = (anim) => {
+    // Check if this animation is currently active
+    const isActive = selectedElement && selectedElement.animations?.some(a => 
+      a.name === anim.name && a.enabled
+    );
+
+    return (
+      <button
+        key={anim.name}
+        type="button"
+        onClick={() => handleAnimationClick(anim.name)}
+        className="bp5-button bp5-fill bp5-large bp5-minimal bp5-outlined"
+        style={{
+          padding: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '8px',
+          position: 'relative',
+          border: isActive ? '2px solid #2e8b57' : undefined,
+          backgroundColor: isActive ? 'rgba(46, 139, 87, 0.1)' : undefined
+        }}
+      >
+        <div style={{ fontSize: '24px', marginBottom: '4px' }}>
+          {anim.icon}
+        </div>
+        <span className="bp5-button-text" style={{ fontSize: '12px', fontWeight: '500' }}>
+          {anim.label}
+        </span>
+      </button>
+    );
+  };
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'auto', padding: '10px' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'auto', padding: '0 10px' }}>
       {/* Header */}
-      <div style={{ padding: '10px', fontSize: '14px', color: '#333', textAlign: 'center', fontWeight: '600', marginBottom: '10px' }}>
-        Animate
+      <div style={{ padding: '15px 10px', textAlign: 'center' }}>
+        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#333', marginBottom: '4px' }}>
+          Custom Animations
+        </h3>
+        <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>
+          Click to apply custom animations
+        </p>
       </div>
 
       {!selectedElement && (
@@ -147,63 +154,115 @@ export const AnimationPanel = observer(({ store }) => {
         </div>
       )}
 
-      {/* Category Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
-        <Button
-          active={selectedCategory === 'animations'}
-          onClick={() => setSelectedCategory('animations')}
-          style={{ flex: 1, fontSize: '12px' }}
-        >
-          Animations
-        </Button>
-        <Button
-          active={selectedCategory === 'effects'}
-          onClick={() => setSelectedCategory('effects')}
-          style={{ flex: 1, fontSize: '12px' }}
-        >
-          Effects
-        </Button>
-      </div>
-
-      <Divider style={{ margin: '10px 0' }} />
-
       {/* Animations Grid */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(3, 1fr)', 
+        gridTemplateColumns: 'repeat(4, 1fr)', 
         gap: '8px',
         overflowY: 'auto',
-        flex: 1
+        flex: 1,
+        paddingBottom: '15px'
       }}>
-        {selectedCategory === 'animations' && animations.map(renderAnimationCard)}
-        {selectedCategory === 'effects' && effects.map(renderAnimationCard)}
+        {allAnimations.map(renderAnimationButton)}
       </div>
 
-      {/* Info */}
-      <div style={{ 
-        marginTop: '15px', 
-        padding: '10px', 
-        fontSize: '10px', 
-        color: '#999', 
-        textAlign: 'center',
-        backgroundColor: '#f9f9f9',
-        borderRadius: '4px'
-      }}>
-        Click an animation to apply it to the selected element
+      {/* Remove All Animations Button */}
+      {selectedElement && (
+        <div style={{ padding: '15px 0', borderTop: '1px solid #e0e0e0', marginTop: 'auto' }}>
+          <Button
+            intent="danger"
+            fill
+            onClick={removeAllAnimations}
+            disabled={!hasAnimations}
+            style={{
+              backgroundColor: hasAnimations ? '#dc3545' : '#ccc',
+              color: 'white',
+              fontWeight: '600'
+            }}
+          >
+            Remove All Animations
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+});
+
+// Floating Animation Panel Component
+export const FloatingAnimationPanel = observer(({ store }) => {
+  const selectedElement = store.selectedElements?.[0];
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  // Open panel when element is selected
+  React.useEffect(() => {
+    if (selectedElement) {
+      setIsOpen(true);
+    } else {
+      // Keep it open for a moment when deselecting to allow smooth transition
+      const timer = setTimeout(() => setIsOpen(false), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedElement?.id]);
+
+  // Close button handler
+  const handleClose = () => {
+    setIsOpen(false);
+  };
+
+  if (!selectedElement || !isOpen) {
+    return null;
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        right: '20px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        width: '340px',
+        maxHeight: '85vh',
+        backgroundColor: '#fff',
+        borderRadius: '8px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+        zIndex: 1000,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        border: '1px solid #e0e0e0',
+        animation: 'fadeInSlide 0.3s ease-out'
+      }}
+    >
+      {/* Close button */}
+      <div style={{
+        position: 'absolute',
+        top: '8px',
+        right: '8px',
+        zIndex: 10,
+        cursor: 'pointer',
+        width: '24px',
+        height: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '4px',
+        backgroundColor: 'rgba(0, 0, 0, 0.05)',
+        transition: 'background-color 0.2s'
+      }}
+      onClick={handleClose}
+      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.1)'}
+      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'}
+      >
+        <span style={{ fontSize: '16px', color: '#666' }}>×</span>
       </div>
+      <AnimationPanel store={store} />
     </div>
   );
 });
 
 export const AnimationSection = {
-  name: 'custom-animate', // Changed from 'animate' to avoid conflict with Polotno's built-in section
-  Tab: observer((props) => (
-    <SectionTab name="Animate" {...props}>
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M8 0L6 6H0L5 10L3 16L8 12L13 16L11 10L16 6H10L8 0Z"/>
-      </svg>
-    </SectionTab>
-  )),
-  Panel: AnimationPanel, // AnimationPanel is already wrapped with observer
+  name: 'animation', // Use 'animation' to hook into Polotno's Animate button
+  Tab: () => null, // No tab - opens via toolbar button or floating panel
+  Panel: AnimationPanel,
 };
 

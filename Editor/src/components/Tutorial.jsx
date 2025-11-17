@@ -24,9 +24,9 @@ const TUTORIAL_STEPS = [
   {
     id: 'templates',
     title: 'Educational Templates 🎨',
-    content: 'Click on "Templates" to access pre-made educational designs. Choose from Science Lessons, Math Lessons, English Essays, Book Reports, and Assessment templates - all multi-page!',
+    content: 'Click on "Templates" (the book icon) in the sidebar to access pre-made educational designs. Choose from Science Lessons, Math Lessons, English Essays, Book Reports, and Assessment templates - all multi-page!',
     position: 'left',
-    target: '.polotno-side-panel-tab[data-tab="templates"]',
+    target: '.polotno-side-panel-tab[data-tab="templates"], [data-section="templates"]',
     showNext: true,
     showSkip: true
   },
@@ -42,9 +42,9 @@ const TUTORIAL_STEPS = [
   {
     id: 'text-tool',
     title: 'Adding Text 📝',
-    content: 'Click on "Text" in the sidebar to add text elements. You can customize fonts, colors, sizes, and use Google Fonts for beautiful typography in your educational materials.',
+    content: 'Click on "Text" (the text alignment icon) in the sidebar to add text elements. You can customize fonts, colors, sizes, and use Google Fonts for beautiful typography in your educational materials.',
     position: 'left',
-    target: '.polotno-side-panel-tab[data-tab="text"]',
+    target: '.polotno-side-panel-tab[data-tab="text"], [data-section="text"]',
     showNext: true,
     showSkip: true
   },
@@ -96,18 +96,18 @@ const TUTORIAL_STEPS = [
   {
     id: 'animations',
     title: 'Animations & Effects 🎪',
-    content: 'Select any element and use the "Animate" panel to add engaging animations like slide, fade, bounce, and many more effects to make your content dynamic!',
+    content: 'Select any element on the canvas, then click the "Animate" button in the top toolbar to add engaging animations like slide, fade, bounce, and many more effects to make your content dynamic!',
     position: 'right',
-    target: '.polotno-toolbar',
+    target: '.polotno-toolbar, .bp5-navbar',
     showNext: true,
     showSkip: true
   },
   {
     id: 'save-download',
     title: 'Save and Present 💾',
-    content: 'Use the top menu to save your work, download as PDF or image, and present your designs. The "Present" button opens a full-screen slideshow mode.',
+    content: 'Use the top menu bar to save your work, download as PDF or image, and present your designs. Look for the "Download" and "Present" buttons in the top toolbar. The "Present" button opens a full-screen slideshow mode.',
     position: 'top',
-    target: '.topbar',
+    target: '.topbar, .bp5-navbar',
     showNext: true,
     showSkip: true
   },
@@ -124,29 +124,63 @@ const TUTORIAL_STEPS = [
 
 const TutorialOverlay = observer(({ isOpen, onClose, currentStep, onNext, onSkip, onFinish }) => {
   const step = TUTORIAL_STEPS[currentStep];
+  const [targetElement, setTargetElement] = useState(null);
+  const [targetRect, setTargetRect] = useState(null);
   
   useEffect(() => {
     if (isOpen && step?.target) {
-      // Highlight the target element
-      const targetElement = document.querySelector(step.target);
-      if (targetElement) {
-        targetElement.style.position = 'relative';
-        targetElement.style.zIndex = '1000';
-        targetElement.style.boxShadow = '0 0 0 4px #137cbd, 0 0 20px rgba(19, 124, 189, 0.3)';
-        targetElement.style.borderRadius = '4px';
-      }
+      // Find the target element with retry logic
+      const findElement = () => {
+        const element = document.querySelector(step.target);
+        if (element) {
+          setTargetElement(element);
+          
+          // Scroll element into view
+          element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+          
+          // Get element position after a short delay to account for scrolling
+          setTimeout(() => {
+            const rect = element.getBoundingClientRect();
+            setTargetRect(rect);
+            
+            // Add pulsing highlight effect
+            element.style.transition = 'all 0.3s ease';
+            element.style.position = 'relative';
+            element.style.zIndex = '10000';
+            element.style.boxShadow = '0 0 0 4px #137cbd, 0 0 30px rgba(19, 124, 189, 0.6), 0 0 60px rgba(19, 124, 189, 0.3)';
+            element.style.borderRadius = '8px';
+            element.style.animation = 'tutorialPulse 2s ease-in-out infinite';
+            
+            // Add a class for additional styling
+            element.classList.add('tutorial-highlighted');
+          }, 300);
+        } else {
+          // Retry after a short delay if element not found
+          setTimeout(findElement, 100);
+        }
+      };
+      
+      findElement();
       
       return () => {
         // Clean up highlighting
         if (targetElement) {
+          targetElement.style.transition = '';
           targetElement.style.position = '';
           targetElement.style.zIndex = '';
           targetElement.style.boxShadow = '';
           targetElement.style.borderRadius = '';
+          targetElement.style.animation = '';
+          targetElement.classList.remove('tutorial-highlighted');
         }
+        setTargetElement(null);
+        setTargetRect(null);
       };
+    } else {
+      setTargetElement(null);
+      setTargetRect(null);
     }
-  }, [isOpen, step?.target]);
+  }, [isOpen, step?.target, currentStep]);
 
   if (!isOpen || !step) return null;
 
@@ -200,86 +234,214 @@ const TutorialOverlay = observer(({ isOpen, onClose, currentStep, onNext, onSkip
     }
   };
 
-  return (
-    <div style={{
+  // Calculate arrow position based on target element
+  const getArrowStyle = () => {
+    if (!targetRect) return null;
+    
+    const cardStyle = getPositionStyle();
+    const cardRect = {
+      left: cardStyle.left === '50%' ? window.innerWidth / 2 : parseFloat(cardStyle.left) || 0,
+      top: cardStyle.top === '50%' ? window.innerHeight / 2 : parseFloat(cardStyle.top) || 0,
+      width: 400,
+      height: 200
+    };
+    
+    // Determine arrow direction based on position
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const targetCenterY = targetRect.top + targetRect.height / 2;
+    const cardCenterX = typeof cardStyle.left === 'string' && cardStyle.left.includes('%') 
+      ? window.innerWidth / 2 
+      : parseFloat(cardStyle.left) || 0;
+    const cardCenterY = typeof cardStyle.top === 'string' && cardStyle.top.includes('%')
+      ? window.innerHeight / 2
+      : parseFloat(cardStyle.top) || 0;
+    
+    // Calculate arrow position
+    let arrowStyle = {
       position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      zIndex: 1000,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      <Card style={getPositionStyle()} elevation={3}>
-        <div style={{ padding: '20px' }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
+      zIndex: 1002,
+      pointerEvents: 'none'
+    };
+    
+    // Determine which side to place arrow
+    if (step.position === 'left' || step.position === 'right') {
+      // Arrow pointing horizontally
+      arrowStyle.left = `${targetRect.left - 20}px`;
+      arrowStyle.top = `${targetCenterY - 10}px`;
+      arrowStyle.width = '20px';
+      arrowStyle.height = '20px';
+      arrowStyle.borderLeft = step.position === 'left' ? '4px solid #137cbd' : 'none';
+      arrowStyle.borderRight = step.position === 'right' ? '4px solid #137cbd' : 'none';
+      arrowStyle.borderTop = '10px solid transparent';
+      arrowStyle.borderBottom = '10px solid transparent';
+    } else if (step.position === 'top') {
+      // Arrow pointing down
+      arrowStyle.left = `${targetCenterX - 10}px`;
+      arrowStyle.top = `${targetRect.bottom + 10}px`;
+      arrowStyle.width = '20px';
+      arrowStyle.height = '20px';
+      arrowStyle.borderTop = '4px solid #137cbd';
+      arrowStyle.borderLeft = '10px solid transparent';
+      arrowStyle.borderRight = '10px solid transparent';
+    } else if (step.position === 'bottom') {
+      // Arrow pointing up
+      arrowStyle.left = `${targetCenterX - 10}px`;
+      arrowStyle.top = `${targetRect.top - 30}px`;
+      arrowStyle.width = '20px';
+      arrowStyle.height = '20px';
+      arrowStyle.borderBottom = '4px solid #137cbd';
+      arrowStyle.borderLeft = '10px solid transparent';
+      arrowStyle.borderRight = '10px solid transparent';
+    } else {
+      // Center - no arrow needed or point to center
+      return null;
+    }
+    
+    return arrowStyle;
+  };
+
+  const arrowStyle = getArrowStyle();
+
+  return (
+    <>
+      {/* Add CSS animation for pulsing effect */}
+      <style>{`
+        @keyframes tutorialPulse {
+          0%, 100% {
+            box-shadow: 0 0 0 4px #137cbd, 0 0 30px rgba(19, 124, 189, 0.6), 0 0 60px rgba(19, 124, 189, 0.3);
+            transform: scale(1);
+          }
+          50% {
+            box-shadow: 0 0 0 6px #137cbd, 0 0 40px rgba(19, 124, 189, 0.8), 0 0 80px rgba(19, 124, 189, 0.5);
+            transform: scale(1.02);
+          }
+        }
+        .tutorial-highlighted {
+          animation: tutorialPulse 2s ease-in-out infinite !important;
+        }
+      `}</style>
+      
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        {/* Spotlight effect - darken everything except target */}
+        {targetRect && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 999,
+            pointerEvents: 'none',
+            background: `
+              radial-gradient(
+                ellipse ${targetRect.width + 40}px ${targetRect.height + 40}px at ${targetRect.left + targetRect.width / 2}px ${targetRect.top + targetRect.height / 2}px,
+                transparent 0%,
+                transparent 40%,
+                rgba(0, 0, 0, 0.5) 100%
+              )
+            `
+          }} />
+        )}
+        
+        {/* Arrow pointing to target */}
+        {arrowStyle && (
+          <div style={{
+            ...arrowStyle,
+            display: 'flex',
             alignItems: 'center',
-            marginBottom: '15px'
+            justifyContent: 'center'
           }}>
-            <h3 style={{ margin: 0, color: '#137cbd' }}>
-              {step.title}
-            </h3>
-            <Button
-              minimal
-              icon={IconNames.CROSS}
-              onClick={onClose}
-              style={{ marginLeft: '10px' }}
-            />
+            <div style={{
+              width: '0',
+              height: '0',
+              borderLeft: arrowStyle.borderLeft || 'none',
+              borderRight: arrowStyle.borderRight || 'none',
+              borderTop: arrowStyle.borderTop || 'none',
+              borderBottom: arrowStyle.borderBottom || 'none',
+              filter: 'drop-shadow(0 2px 4px rgba(19, 124, 189, 0.5))'
+            }} />
           </div>
-          
-          <p style={{ 
-            marginBottom: '20px', 
-            lineHeight: '1.5',
-            color: '#333'
-          }}>
-            {step.content}
-          </p>
-          
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <div style={{ fontSize: '12px', color: '#666' }}>
-              Step {currentStep + 1} of {TUTORIAL_STEPS.length}
+        )}
+        
+        <Card style={getPositionStyle()} elevation={4}>
+          <div style={{ padding: '20px' }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: '15px'
+            }}>
+              <h3 style={{ margin: 0, color: '#137cbd' }}>
+                {step.title}
+              </h3>
+              <Button
+                minimal
+                icon={IconNames.CROSS}
+                onClick={onClose}
+                style={{ marginLeft: '10px' }}
+              />
             </div>
             
-            <div style={{ display: 'flex', gap: '10px' }}>
-              {step.showSkip && (
-                <Button
-                  text="Skip Tutorial"
-                  minimal
-                  onClick={onSkip}
-                />
-              )}
+            <p style={{ 
+              marginBottom: '20px', 
+              lineHeight: '1.5',
+              color: '#333'
+            }}>
+              {step.content}
+            </p>
+            
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div style={{ fontSize: '12px', color: '#666' }}>
+                Step {currentStep + 1} of {TUTORIAL_STEPS.length}
+              </div>
               
-              {step.showNext && (
-                <Button
-                  text="Next"
-                  intent="primary"
-                  onClick={onNext}
-                  rightIcon={IconNames.ARROW_RIGHT}
-                />
-              )}
-              
-              {step.showFinish && (
-                <Button
-                  text="Finish"
-                  intent="success"
-                  onClick={onFinish}
-                  rightIcon={IconNames.TICK}
-                />
-              )}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                {step.showSkip && (
+                  <Button
+                    text="Skip Tutorial"
+                    minimal
+                    onClick={onSkip}
+                  />
+                )}
+                
+                {step.showNext && (
+                  <Button
+                    text="Next"
+                    intent="primary"
+                    onClick={onNext}
+                    rightIcon={IconNames.ARROW_RIGHT}
+                  />
+                )}
+                
+                {step.showFinish && (
+                  <Button
+                    text="Finish"
+                    intent="success"
+                    onClick={onFinish}
+                    rightIcon={IconNames.TICK}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </>
   );
 });
 
