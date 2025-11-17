@@ -1,28 +1,3 @@
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    firebase.auth().onAuthStateChanged(async function(user) {
-        if (!user) {
-            window.location.href = "logreg.html";
-            return;
-        }
-        const uid = user.uid;
-        const snap = await firebase.database().ref('admins/' + uid).once('value');
-        const admin = snap.val();
-        if (!admin || admin.role !== "admin") {
-            document.getElementById('mainContent').style.display = "none";
-            alert("Access denied. Only admins can access this page.");
-            await firebase.auth().signOut();
-            window.location.href = "logreg.html";
-        } else {
-            document.getElementById('mainContent').style.display = "block";
-            // Show Gmail and role in the dropdown
-            document.getElementById('adminEmail').textContent = admin.email || user.email;
-            document.getElementById('adminUsername').textContent = '@' + (admin.role || 'admin');
-        }
-    });
-});
-</script>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -224,7 +199,29 @@ document.addEventListener("DOMContentLoaded", function() {
             background: #f7f9fb;         /* Optional: subtle background for contrast */
             padding: 10px 0;             /* Optional: inner padding */
             scrollbar-width: none;         /* Firefox */
-    -ms-overflow-style: none; 
+    -ms-overflow-style: none;
+        }
+        
+        /* Input focus styles for bulk creator */
+        #bulkAccountCreatorModal input:focus,
+        #bulkAccountCreatorModal input:hover {
+            border-color: #2196F3 !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(33,150,243,0.1);
+        }
+        
+        #bulkAccountCreatorModal button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+        
+        #bulkAccountCreatorModal button:active {
+            transform: translateY(0);
+        }
+        
+        #bulkAccountCreatorModal #bulkNamesFile:hover {
+            border-color: #1976D2 !important;
+            background: rgba(33,150,243,0.1) !important;
         }
         .admin-modal-card .profile-info::-webkit-scrollbar {
     display: none;                 /* Chrome, Safari, Opera */
@@ -583,6 +580,12 @@ td:hover .action-btns .reject,
                         <i class="fas fa-user-graduate" style="margin-right: 10px;"></i>Student Account Management
                     </h2>
                     <div style="display: flex; gap: 10px;">
+                        <button onclick="openBulkAccountCreator()" style="background: #2196F3; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                            <i class="fas fa-users"></i> Bulk Create Accounts
+                        </button>
+                        <button onclick="deleteDummyAccounts()" style="background: #f44336; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                            <i class="fas fa-trash-alt"></i> Delete Dummy Accounts
+                        </button>
                         <button onclick="exportStudentsCSV()" style="background: #2e8b57; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
                             <i class="fas fa-download"></i> Export CSV
                         </button>
@@ -735,6 +738,25 @@ td:hover .action-btns .reject,
                     <h2 style="color: #2e8b57; margin: 0; font-size: 1.8rem; font-weight: 700;">
                         <i class="fas fa-chart-bar" style="margin-right: 10px;"></i>System Analytics
                     </h2>
+                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <label style="color: #6c757d; font-size: 0.85rem; font-weight: 600;">Filter by Grade</label>
+                            <select id="analyticsGradeFilter" style="padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.9rem; min-width: 150px; cursor: pointer; background: white;" onchange="loadAdminAnalytics()">
+                                <option value="">All Grades</option>
+                                <option value="5">Grade 5</option>
+                                <option value="6">Grade 6</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <label style="color: #6c757d; font-size: 0.85rem; font-weight: 600;">Filter by Section</label>
+                            <select id="analyticsSectionFilter" style="padding: 8px 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 0.9rem; min-width: 150px; cursor: pointer; background: white;" onchange="loadAdminAnalytics()">
+                                <option value="">All Sections</option>
+                            </select>
+                        </div>
+                        <button onclick="loadAdminAnalytics()" style="padding: 8px 20px; background: #2e8b57; color: white; border: none; border-radius: 8px; font-size: 0.9rem; cursor: pointer; font-weight: 600; margin-top: 20px; transition: all 0.3s;" onmouseover="this.style.background='#256f47'" onmouseout="this.style.background='#2e8b57'">
+                            <i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Analytics Stats Grid -->
@@ -800,7 +822,7 @@ td:hover .action-btns .reject,
                 </div>
 
                 <!-- Activity Overview -->
-                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px;">
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
                     <h3 style="color: #2e8b57; margin-bottom: 20px; font-size: 1.3rem;">
                         <i class="fas fa-chart-line" style="margin-right: 10px;"></i>Activity Overview
                     </h3>
@@ -821,6 +843,61 @@ td:hover .action-btns .reject,
                             <div>
                                 <div style="color: #6c757d; font-size: 0.9rem; margin-bottom: 5px;">Quizzes Created</div>
                                 <div style="font-size: 1.5rem; font-weight: 700; color: #ff69b4;" id="analyticsQuizzesCreated">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance by Grade/Section -->
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+                    <h3 style="color: #2e8b57; margin-bottom: 20px; font-size: 1.3rem;">
+                        <i class="fas fa-table" style="margin-right: 10px;"></i>Performance Breakdown
+                    </h3>
+                    <div style="background: white; padding: 20px; border-radius: 8px; overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                            <thead>
+                                <tr style="background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #2e8b57;">Grade</th>
+                                    <th style="padding: 12px; text-align: left; font-weight: 600; color: #2e8b57;">Section</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #2e8b57;">Students</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #2e8b57;">Avg Grade</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #2e8b57;">Passing Rate</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #2e8b57;">Math Avg</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #2e8b57;">English Avg</th>
+                                    <th style="padding: 12px; text-align: center; font-weight: 600; color: #2e8b57;">Science Avg</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analyticsPerformanceTable">
+                                <tr>
+                                    <td colspan="8" style="padding: 20px; text-align: center; color: #6c757d;">Loading performance data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Grade Distribution -->
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 12px;">
+                    <h3 style="color: #2e8b57; margin-bottom: 20px; font-size: 1.3rem;">
+                        <i class="fas fa-chart-pie" style="margin-right: 10px;"></i>Grade Distribution
+                    </h3>
+                    <div style="background: white; padding: 20px; border-radius: 8px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                            <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; border-radius: 8px;">
+                                <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">Excellent (90-100)</div>
+                                <div style="font-size: 2rem; font-weight: 700;" id="analyticsExcellentCount">0</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); color: white; border-radius: 8px;">
+                                <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">Good (80-89)</div>
+                                <div style="font-size: 2rem; font-weight: 700;" id="analyticsGoodCount">0</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: white; border-radius: 8px;">
+                                <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">Fair (70-79)</div>
+                                <div style="font-size: 2rem; font-weight: 700;" id="analyticsFairCount">0</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); color: white; border-radius: 8px;">
+                                <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">Needs Improvement (&lt;70)</div>
+                                <div style="font-size: 2rem; font-weight: 700;" id="analyticsNeedsImprovementCount">0</div>
                             </div>
                         </div>
                     </div>
@@ -1141,6 +1218,7 @@ td:hover .action-btns .reject,
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script>
     // Your Firebase config
@@ -1156,6 +1234,37 @@ td:hover .action-btns .reject,
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+
+    // Authentication check
+    document.addEventListener("DOMContentLoaded", function() {
+        firebase.auth().onAuthStateChanged(async function(user) {
+            if (!user) {
+                window.location.href = "logreg.html";
+                return;
+            }
+            const uid = user.uid;
+            const snap = await firebase.database().ref('admins/' + uid).once('value');
+            const admin = snap.val();
+            if (!admin || admin.role !== "admin") {
+                document.getElementById('mainContent').style.display = "none";
+                alert("Access denied. Only admins can access this page.");
+                await firebase.auth().signOut();
+                window.location.href = "logreg.html";
+            } else {
+                document.getElementById('mainContent').style.display = "block";
+                // Show Gmail and role in the dropdown
+                document.getElementById('adminEmail').textContent = admin.email || user.email;
+                document.getElementById('adminUsername').textContent = '@' + (admin.role || 'admin');
+                
+                // Load statistics after authentication
+                setTimeout(() => {
+                    if (typeof loadStatistics === 'function') {
+                        loadStatistics();
+                    }
+                }, 1000);
+            }
+        });
+    });
 
     // Admin dropdown logic
     document.getElementById('adminDropdownBtn').onclick = function() {
@@ -1197,6 +1306,8 @@ function loadTeachers() {
 
             snapshot.forEach(child => {
                 const t = child.val();
+                if (t.deleted === true) return; // Skip deleted teachers in main view
+                
                 // Normalize grade level to Firebase format
                 if (t.grade || t.gradelevel) {
                     const rawGrade = t.grade || t.gradelevel;
@@ -1283,17 +1394,37 @@ function loadTeachers() {
         }
     }
 
-    // Delete teacher (separate from reject, always available)
+    // Delete teacher (separate from reject, always available - soft delete)
     function deleteTeacher(key) {
-        if (confirm('Delete this teacher account?')) {
-            db.ref('teachers/' + key).remove()
+        if (confirm('Delete this teacher account? They can be restored later.')) {
+            db.ref('teachers/' + key).update({
+                deleted: true,
+                deletedAt: new Date().toISOString()
+            })
                 .then(() => {
-                    alert('Teacher deleted.');
+                    alert('Teacher deleted. You can restore them from the Deleted Accounts section.');
                     loadTeachers();
                     logActivity('Deleted teacher: ' + key);
                     loadStatistics(); // Refresh stats
                 })
                 .catch(err => alert('Error deleting teacher: ' + err.message));
+        }
+    }
+
+    // Restore teacher function
+    function restoreTeacher(key) {
+        if (confirm('Are you sure you want to restore this teacher?')) {
+            db.ref('teachers/' + key).update({
+                deleted: null,
+                deletedAt: null
+            })
+                .then(() => {
+                    alert('Teacher restored successfully.');
+                    loadTeachers();
+                    logActivity('Restored teacher: ' + key);
+                    loadStatistics();
+                })
+                .catch(err => alert('Error restoring teacher: ' + err.message));
         }
     }
 
@@ -1526,6 +1657,8 @@ function loadAdmins() {
         }
         snapshot.forEach(child => {
             const a = child.val();
+            if (a.deleted === true) return; // Skip deleted admins in main view
+            
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${(a.fname || '') + ' ' + (a.lname || '')}</td>
@@ -1541,15 +1674,33 @@ function loadAdmins() {
     });
 }
 
-// Delete admin function (optional, add safety check)
+// Delete admin function (soft delete)
 function deleteAdmin(uid) {
-    if (confirm('Are you sure you want to delete this admin?')) {
-        db.ref('admins/' + uid).remove()
+    if (confirm('Are you sure you want to delete this admin? They can be restored later.')) {
+        db.ref('admins/' + uid).update({
+            deleted: true,
+            deletedAt: new Date().toISOString()
+        })
             .then(() => {
-                alert('Admin deleted.');
+                alert('Admin deleted. You can restore them from the Deleted Accounts section.');
                 loadAdmins();
             })
             .catch(err => alert('Error deleting admin: ' + err.message));
+    }
+}
+
+// Restore admin function
+function restoreAdmin(uid) {
+    if (confirm('Are you sure you want to restore this admin?')) {
+        db.ref('admins/' + uid).update({
+            deleted: null,
+            deletedAt: null
+        })
+            .then(() => {
+                alert('Admin restored successfully.');
+                loadAdmins();
+            })
+            .catch(err => alert('Error restoring admin: ' + err.message));
     }
 }
 
@@ -1576,7 +1727,7 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
     loadCurrentAdmin();
     loadStudents();
     loadTeachers();
-    enhanceTableStyling();
+    // enhanceTableStyling(); // Function not defined - removed
 
     // Edit Admin Functions
     function editAdmin(uid) {
@@ -1883,6 +2034,153 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
 
 <script src="../assets/js/Admin/showTab.js"></script>
 
+<!-- Bulk Account Creator Modal -->
+<div class="admin-modal-bg" id="bulkAccountCreatorModal" style="display:none;" aria-hidden="true" role="dialog">
+  <div class="admin-modal-card" style="max-width:700px; max-height:90vh; overflow-y:auto; text-align:left;">
+    <button class="close-btn" onclick="closeBulkAccountCreator()">&times;</button>
+    <div class="modal-title" style="margin-bottom:20px; text-align:center;">
+      <i class="fas fa-users" style="margin-right:8px; color:#2196F3;"></i>
+      Bulk Create Student Accounts
+    </div>
+    
+    <div style="background:rgba(255,193,7,0.15);border:1px solid #ffc107;border-radius:12px;padding:15px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <i class="fas fa-info-circle" style="color:#ff9800;font-size:18px;"></i>
+        <strong style="color:#f57c00;">Important Note</strong>
+      </div>
+      <div style="color:#666;font-size:14px;line-height:1.5;">
+        Accounts created via bulk creator will <strong>NOT require email verification</strong> and can log in immediately.
+      </div>
+    </div>
+    
+    <form id="bulkAccountForm" autocomplete="off" novalidate>
+      <!-- Configuration Section -->
+      <div style="background:rgba(255,255,255,0.6);border-radius:15px;padding:20px;margin-bottom:20px;border:1px solid rgba(0,0,0,0.1);">
+        <h3 style="margin:0 0 15px 0;color:#2e8b57;font-size:1.1rem;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-cog"></i> Configuration
+        </h3>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px;">
+          <div>
+            <label style="display:block;margin-bottom:8px;font-weight:600;color:#232946;font-size:14px;">
+              <i class="fas fa-graduation-cap" style="margin-right:5px;color:#2196F3;"></i>
+              Grade Levels
+            </label>
+            <input type="text" id="bulkGradeLevel" placeholder="5,6" required 
+                   style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;font-size:14px;transition:border-color 0.3s;">
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:8px;font-weight:600;color:#232946;font-size:14px;">
+              <i class="fas fa-user-plus" style="margin-right:5px;color:#4CAF50;"></i>
+              Accounts per Section
+            </label>
+            <input type="number" id="bulkAccountsPerSection" value="15" min="1" max="100" required 
+                   style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;font-size:14px;transition:border-color 0.3s;">
+          </div>
+        </div>
+        
+        <div style="margin-bottom:15px;">
+          <label style="display:block;margin-bottom:8px;font-weight:600;color:#232946;font-size:14px;">
+            <i class="fas fa-layer-group" style="margin-right:5px;color:#9C27B0;"></i>
+            Sections (Auto-assigned by Grade)
+          </label>
+          <div style="padding:12px;background:rgba(156,39,176,0.1);border-radius:8px;border:1px solid rgba(156,39,176,0.2);">
+            <div style="font-size:13px;color:#666;margin-bottom:8px;">
+              <strong>Grade 5:</strong> Melon, Kasoy, Ubas, Durian
+            </div>
+            <div style="font-size:13px;color:#666;">
+              <strong>Grade 6:</strong> Fruit Salad, Langka, Santol, Guyabano
+            </div>
+          </div>
+        </div>
+        
+        <div style="margin-bottom:15px;">
+          <label style="display:block;margin-bottom:8px;font-weight:600;color:#232946;font-size:14px;">
+            <i class="fas fa-book" style="margin-right:5px;color:#FF5722;"></i>
+            Subjects (comma-separated)
+          </label>
+          <input type="text" id="bulkSubjects" placeholder="Math,English,Science" value="Math,English,Science" required 
+                 style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;font-size:14px;transition:border-color 0.3s;">
+        </div>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+          <div>
+            <label style="display:block;margin-bottom:8px;font-weight:600;color:#232946;font-size:14px;">
+              <i class="fas fa-lock" style="margin-right:5px;color:#F44336;"></i>
+              Default Password
+            </label>
+            <input type="text" id="bulkPassword" value="StudentPass123!" required 
+                   style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;font-size:14px;transition:border-color 0.3s;">
+            <small style="color:#666;font-size:12px;display:block;margin-top:5px;">
+              All accounts will use this password
+            </small>
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:8px;font-weight:600;color:#232946;font-size:14px;">
+              <i class="fas fa-envelope" style="margin-right:5px;color:#00BCD4;"></i>
+              Email Domain
+            </label>
+            <input type="text" id="bulkEmailDomain" value="student.edu.ph" required 
+                   style="width:100%;padding:10px;border:2px solid #e9ecef;border-radius:8px;font-size:14px;transition:border-color 0.3s;">
+          </div>
+        </div>
+      </div>
+      
+      <!-- File Import Section -->
+      <div style="background:rgba(255,255,255,0.6);border-radius:15px;padding:20px;margin-bottom:20px;border:1px solid rgba(0,0,0,0.1);">
+        <h3 style="margin:0 0 15px 0;color:#2e8b57;font-size:1.1rem;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-file-upload"></i> Import Names from File (Optional)
+        </h3>
+        <input type="file" id="bulkNamesFile" accept=".txt,.csv" 
+               style="width:100%;padding:10px;border:2px dashed #2196F3;border-radius:8px;background:rgba(33,150,243,0.05);cursor:pointer;font-size:14px;transition:all 0.3s;">
+        <small style="color:#666;font-size:12px;display:block;margin-top:8px;line-height:1.5;">
+          <i class="fas fa-info-circle" style="margin-right:5px;"></i>
+          Upload a .txt or .csv file with one name per line. Format: "First Name Last Name" or "First Name,Last Name"
+        </small>
+        <div id="bulkNamesPreview" style="margin-top:15px;padding:15px;background:rgba(33,150,243,0.05);border-radius:10px;border:1px solid rgba(33,150,243,0.2);max-height:180px;overflow-y:auto;display:none;">
+          <div style="font-weight:600;margin-bottom:10px;color:#2196F3;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-check-circle"></i>
+            Preview (<span id="bulkNamesCount">0</span> names loaded)
+          </div>
+          <div id="bulkNamesPreviewContent" style="font-size:13px;color:#555;line-height:1.8;"></div>
+        </div>
+      </div>
+      
+      <!-- Error Message -->
+      <div id="bulkAccountErrorMsg" style="color:#d32f2f;min-height:20px;margin:0 0 15px 0;padding:10px;background:rgba(211,47,47,0.1);border-radius:8px;display:none;border-left:4px solid #d32f2f;"></div>
+      
+      <!-- Admin SDK Status Indicator -->
+      <div id="bulkAccountSDKStatus" style="margin-top:15px;padding:12px;background:rgba(33,150,243,0.1);border-radius:8px;border:1px solid rgba(33,150,243,0.3);display:none;">
+        <div style="display:flex;align-items:center;gap:10px;font-size:14px;">
+          <i class="fas fa-check-circle" style="color:#4CAF50;"></i>
+          <span style="color:#2196F3;font-weight:600;">Admin SDK Available</span>
+          <span style="color:#666;font-size:12px;">(No rate limits)</span>
+        </div>
+      </div>
+      
+      <!-- Status Section -->
+      <div id="bulkAccountStatus" style="margin-top:15px;padding:15px;background:rgba(33,150,243,0.05);border-radius:12px;border:1px solid rgba(33,150,243,0.2);max-height:250px;overflow-y:auto;display:none;">
+        <div style="font-weight:600;margin-bottom:10px;color:#2196F3;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-spinner fa-spin"></i> Creation Status
+        </div>
+        <div id="bulkAccountStatusContent" style="font-family:'Courier New',monospace;font-size:13px;line-height:1.8;"></div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div style="display:flex;gap:10px;margin-top:20px;justify-content:center;">
+        <button type="button" onclick="previewBulkConfig()" 
+                style="padding:12px 24px;background:#9C27B0;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.3s;">
+          <i class="fas fa-eye"></i> Preview
+        </button>
+        <button type="submit" 
+                style="padding:12px 24px;background:linear-gradient(135deg, #2196F3 0%, #1976D2 100%);color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.3s;box-shadow:0 4px 12px rgba(33,150,243,0.3);">
+          <i class="fas fa-rocket"></i> Create Accounts
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Admin Registration Modal (converted from addAdminSection) -->
 <div class="admin-modal-bg" id="addAdminModal" style="display:none;" aria-hidden="true" role="dialog">
   <div class="admin-modal-card" style="max-width:440px;">
@@ -1944,6 +2242,633 @@ function closeAddAdminModal() {
 document.getElementById('openAddAdminBtn').onclick = function(e) {
   e.preventDefault();
   openAddAdminModal();
+};
+
+// Bulk Account Creator Functions
+function openBulkAccountCreator() {
+  document.getElementById('bulkAccountCreatorModal').style.display = 'flex';
+  document.getElementById('bulkAccountCreatorModal').setAttribute('aria-hidden','false');
+  document.getElementById('bulkAccountStatus').style.display = 'none';
+  document.getElementById('bulkAccountStatusContent').innerHTML = '';
+  
+  // Check if Cloud Functions (Admin SDK) is available
+  const sdkStatusDiv = document.getElementById('bulkAccountSDKStatus');
+  if (typeof firebase !== 'undefined' && typeof firebase.functions !== 'undefined') {
+    sdkStatusDiv.style.display = 'block';
+  } else {
+    sdkStatusDiv.style.display = 'none';
+  }
+}
+
+function closeBulkAccountCreator() {
+  document.getElementById('bulkAccountCreatorModal').style.display = 'none';
+  document.getElementById('bulkAccountCreatorModal').setAttribute('aria-hidden','true');
+  document.getElementById('bulkAccountForm').reset();
+  document.getElementById('bulkAccountErrorMsg').textContent = '';
+  document.getElementById('bulkAccountStatus').style.display = 'none';
+  document.getElementById('bulkAccountStatusContent').innerHTML = '';
+  // Reset imported names
+  importedNames = [];
+  document.getElementById('bulkNamesPreview').style.display = 'none';
+  document.getElementById('bulkNamesCount').textContent = '0';
+  document.getElementById('bulkNamesPreviewContent').innerHTML = '';
+  // Reset error message
+  const errMsg = document.getElementById('bulkAccountErrorMsg');
+  errMsg.textContent = '';
+  errMsg.style.display = 'none';
+}
+
+// Client-side account creation fallback (used if Cloud Functions unavailable)
+async function createAccountsClientSide(studentsToCreate, password, statusContent) {
+  let totalCreated = 0;
+  let totalFailed = 0;
+  
+  // Use secondary app to avoid logging out current admin
+  let secondaryApp;
+  if (!window._secondaryApp) {
+    window._secondaryApp = firebase.initializeApp(firebase.app().options, 'secondary');
+  }
+  secondaryApp = window._secondaryApp;
+  
+  for (const studentData of studentsToCreate) {
+    try {
+      // Create Firebase Auth user using secondary app
+      const cred = await secondaryApp.auth().createUserWithEmailAndPassword(studentData.email, password);
+      const uid = cred.user.uid;
+      
+      // Remove password from student data before saving
+      const { password: _, ...dataToSave } = studentData;
+      
+      // Save student data with bulkCreated flag
+      await db.ref(`students/${uid}`).set(dataToSave);
+      
+      // Sign out the created user
+      await secondaryApp.auth().signOut();
+      
+      totalCreated++;
+      statusContent.innerHTML += `<div style="color:#4CAF50;">✅ Created: ${studentData.fname} ${studentData.lname} (${studentData.email})</div>`;
+      statusContent.scrollTop = statusContent.scrollHeight;
+      
+      // Delay to avoid overwhelming Firebase
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+    } catch (error) {
+      // Handle rate limiting with retry logic
+      if (error.code === 'auth/too-many-requests') {
+        statusContent.innerHTML += `<div style="color:#ff9800;">⚠️ Rate limited. Waiting 30 seconds before retry...</div>`;
+        statusContent.scrollTop = statusContent.scrollHeight;
+        
+        // Wait 30 seconds before retrying
+        await new Promise(resolve => setTimeout(resolve, 30000));
+        
+        try {
+          // Retry once
+          const cred = await secondaryApp.auth().createUserWithEmailAndPassword(studentData.email, password);
+          const uid = cred.user.uid;
+          const { password: _, ...dataToSave } = studentData;
+          await db.ref(`students/${uid}`).set(dataToSave);
+          await secondaryApp.auth().signOut();
+          
+          totalCreated++;
+          statusContent.innerHTML += `<div style="color:#4CAF50;">✅ Created (retry): ${studentData.fname} ${studentData.lname} (${studentData.email})</div>`;
+          statusContent.scrollTop = statusContent.scrollHeight;
+          
+          // Longer delay after retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (retryError) {
+          totalFailed++;
+          statusContent.innerHTML += `<div style="color:#f44336;">❌ Failed (retry): ${studentData.email} - ${retryError.message}</div>`;
+          statusContent.scrollTop = statusContent.scrollHeight;
+        }
+      } else {
+        totalFailed++;
+        statusContent.innerHTML += `<div style="color:#f44336;">❌ Failed: ${studentData.email} - ${error.message}</div>`;
+        statusContent.scrollTop = statusContent.scrollHeight;
+      }
+    }
+  }
+  
+  statusContent.innerHTML += `<div style="color:#4CAF50;font-weight:600;margin-top:15px;padding-top:15px;border-top:2px solid rgba(76,175,80,0.3);">
+    🎉 <strong>Completed!</strong> Created: <span style="color:#2e8b57;">${totalCreated}</span>, Failed: <span style="color:#f44336;">${totalFailed}</span>
+  </div>`;
+  
+  // Refresh statistics after creation completes
+  if (typeof loadStatistics === 'function') {
+    setTimeout(() => {
+      loadStatistics();
+    }, 1000);
+  }
+}
+
+// Delete dummy accounts with @student.edu.ph email
+async function deleteDummyAccounts() {
+  if (!confirm('⚠️ Are you sure you want to delete ALL accounts with @student.edu.ph email?\n\nThis action cannot be undone!')) {
+    return;
+  }
+  
+  const statusDiv = document.getElementById('bulkAccountStatus');
+  const statusContent = document.getElementById('bulkAccountStatusContent');
+  
+  // Open bulk creator modal to show status
+  openBulkAccountCreator();
+  
+  statusDiv.style.display = 'block';
+  statusContent.innerHTML = '<div style="color:#2196F3;">⏳ Searching for dummy accounts...</div>';
+  statusContent.scrollTop = statusContent.scrollHeight;
+  
+  try {
+    // Try Cloud Function first, fallback to client-side
+    const useCloudFunction = typeof firebase.functions !== 'undefined';
+    
+    if (useCloudFunction) {
+      try {
+        const deleteDummyAccountsFn = firebase.functions().httpsCallable('deleteDummyAccounts');
+        const result = await deleteDummyAccountsFn();
+        
+        const { deleted, failed, results: resultData } = result.data;
+        
+        if (resultData.deleted && resultData.deleted.length > 0) {
+          resultData.deleted.forEach(student => {
+            statusContent.innerHTML += `<div style="color:#4CAF50;">✅ Deleted: ${student.name} (${student.email})</div>`;
+          });
+        }
+        
+        if (resultData.failed && resultData.failed.length > 0) {
+          resultData.failed.forEach(failure => {
+            statusContent.innerHTML += `<div style="color:#f44336;">❌ Failed: ${failure.email} - ${failure.error}</div>`;
+          });
+        }
+        
+        statusContent.innerHTML += `<div style="color:#4CAF50;font-weight:600;margin-top:15px;padding-top:15px;border-top:2px solid rgba(76,175,80,0.3);">
+          🎉 <strong>Completed!</strong> Deleted: <span style="color:#2e8b57;">${deleted}</span>, Failed: <span style="color:#f44336;">${failed}</span>
+        </div>`;
+        
+      } catch (cloudError) {
+        // Fallback to client-side
+        statusContent.innerHTML += `<div style="color:#ff9800;">⚠️ Cloud Function unavailable, using client-side method...</div>`;
+        await deleteDummyAccountsClientSide(statusContent);
+      }
+    } else {
+      // Client-side fallback
+      await deleteDummyAccountsClientSide(statusContent);
+    }
+    
+    // Reload students list and statistics after a delay
+    setTimeout(() => {
+      if (typeof loadStudents === 'function') {
+        loadStudents();
+      }
+      if (typeof loadStatistics === 'function') {
+        loadStatistics();
+      }
+    }, 2000);
+    
+  } catch (error) {
+    statusContent.innerHTML += `<div style="color:#f44336;">❌ Error: ${error.message}</div>`;
+    statusContent.scrollTop = statusContent.scrollHeight;
+  }
+}
+
+// Client-side deletion fallback
+async function deleteDummyAccountsClientSide(statusContent) {
+  // Get all students
+  const studentsSnap = await db.ref('students').once('value');
+  const studentsToDelete = [];
+  
+  if (studentsSnap.exists()) {
+    studentsSnap.forEach(child => {
+      const student = child.val();
+      if (student.email && student.email.includes('@student.edu.ph')) {
+        studentsToDelete.push({
+          uid: child.key,
+          email: student.email,
+          name: `${student.fname || ''} ${student.lname || ''}`.trim() || 'Unknown'
+        });
+      }
+    });
+  }
+  
+  if (studentsToDelete.length === 0) {
+    statusContent.innerHTML = '<div style="color:#4CAF50;">✅ No dummy accounts found.</div>';
+    return;
+  }
+  
+  statusContent.innerHTML = `<div style="color:#ff9800;">Found ${studentsToDelete.length} dummy account(s).</div>`;
+  statusContent.innerHTML += `<div style="color:#ff9800;margin-top:10px;">⚠️ Note: Client-side can only delete from Database. Auth users will remain.</div>`;
+  statusContent.innerHTML += `<div style="color:#2196F3;margin-top:10px;">💡 Tip: Use Cloud Function or local script to delete from Auth too.</div>`;
+  statusContent.innerHTML += `<div style="color:#ff9800;margin-top:10px;">Starting deletion from Database...</div>`;
+  statusContent.scrollTop = statusContent.scrollHeight;
+  
+  let deletedCount = 0;
+  let failedCount = 0;
+  
+  for (const student of studentsToDelete) {
+    try {
+      // Delete from Realtime Database only (can't delete Auth users client-side)
+      await db.ref(`students/${student.uid}`).remove();
+      
+      deletedCount++;
+      statusContent.innerHTML += `<div style="color:#4CAF50;">✅ Deleted from DB: ${student.name} (${student.email})</div>`;
+      statusContent.scrollTop = statusContent.scrollHeight;
+      
+      // Delay to avoid overwhelming Firebase
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+    } catch (error) {
+      failedCount++;
+      statusContent.innerHTML += `<div style="color:#f44336;">❌ Failed: ${student.email} - ${error.message}</div>`;
+      statusContent.scrollTop = statusContent.scrollHeight;
+    }
+  }
+  
+  statusContent.innerHTML += `<div style="color:#ff9800;font-weight:600;margin-top:15px;padding-top:15px;border-top:2px solid rgba(255,152,0,0.3);">
+    ⚠️ <strong>Partial Deletion:</strong> Deleted from Database: <span style="color:#2e8b57;">${deletedCount}</span>, Failed: <span style="color:#f44336;">${failedCount}</span>
+  </div>`;
+  statusContent.innerHTML += `<div style="color:#2196F3;margin-top:10px;">
+    💡 To delete from Authentication too, use: <code>node scripts/delete-dummy-accounts.js</code>
+  </div>`;
+}
+
+// Generate student email
+function generateBulkEmail(fname, lname, index, domain) {
+  const cleanFname = fname.toLowerCase().replace(/[^a-z]/g, '');
+  const cleanLname = lname.toLowerCase().replace(/[^a-z]/g, '');
+  return `${cleanFname}.${cleanLname}${index}@${domain}`;
+}
+
+// Store imported names
+let importedNames = [];
+
+// Parse names from text file
+function parseNamesFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      const names = [];
+      
+      lines.forEach(line => {
+        // Try different formats
+        let fname = '', lname = '';
+        
+        // Format 1: "First Name,Last Name" (CSV)
+        if (line.includes(',')) {
+          const parts = line.split(',').map(p => p.trim());
+          if (parts.length >= 2) {
+            fname = parts[0];
+            lname = parts.slice(1).join(' '); // Handle multiple last names
+          }
+        }
+        // Format 2: "First Name Last Name" (space-separated)
+        else if (line.includes(' ')) {
+          const parts = line.split(/\s+/);
+          if (parts.length >= 2) {
+            fname = parts[0];
+            lname = parts.slice(1).join(' '); // Handle multiple last names
+          }
+        }
+        // Format 3: Single name (use as last name)
+        else {
+          lname = line;
+          fname = 'Student'; // Default first name
+        }
+        
+        if (fname && lname) {
+          names.push({ fname: fname, lname: lname });
+        }
+      });
+      
+      resolve(names);
+    };
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
+
+// Handle file upload
+const bulkNamesFileInput = document.getElementById('bulkNamesFile');
+if (bulkNamesFileInput) {
+  bulkNamesFileInput.addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) {
+      importedNames = [];
+      document.getElementById('bulkNamesPreview').style.display = 'none';
+      return;
+    }
+    
+    try {
+      const names = await parseNamesFromFile(file);
+      importedNames = names;
+      
+      const previewDiv = document.getElementById('bulkNamesPreview');
+      const previewContent = document.getElementById('bulkNamesPreviewContent');
+      const countSpan = document.getElementById('bulkNamesCount');
+      
+      countSpan.textContent = names.length;
+      previewContent.innerHTML = names.slice(0, 10).map(n => `• ${n.fname} ${n.lname}`).join('<br>');
+      if (names.length > 10) {
+        previewContent.innerHTML += `<br><em style="color:#999;">... and ${names.length - 10} more names</em>`;
+      }
+      previewDiv.style.display = 'block';
+    } catch (error) {
+      const errMsg = document.getElementById('bulkAccountErrorMsg');
+      errMsg.textContent = 'Error reading file: ' + error.message;
+      errMsg.style.display = 'block';
+      importedNames = [];
+      document.getElementById('bulkNamesPreview').style.display = 'none';
+    }
+  });
+}
+
+// Preview configuration function
+function previewBulkConfig() {
+  const gradeLevels = document.getElementById('bulkGradeLevel').value.split(',').map(g => g.trim()).filter(g => g);
+  const accountsPerSection = parseInt(document.getElementById('bulkAccountsPerSection').value) || 0;
+  const subjects = document.getElementById('bulkSubjects').value.split(',').map(s => s.trim()).filter(s => s);
+  
+  // Calculate total sections across all grades
+  let totalSections = 0;
+  let sectionsPreview = '';
+  gradeLevels.forEach(grade => {
+    const sections = getSectionsForGrade(grade);
+    totalSections += sections.length;
+    sectionsPreview += `<div style="margin-left:10px;">• Grade ${grade}: ${sections.join(', ')} (${sections.length} sections)</div>`;
+  });
+  
+  const totalAccounts = totalSections * accountsPerSection;
+  
+  const statusDiv = document.getElementById('bulkAccountStatus');
+  const statusContent = document.getElementById('bulkAccountStatusContent');
+  
+  statusDiv.style.display = 'block';
+  statusContent.innerHTML = `
+    <div style="color:#2196F3;margin-bottom:10px;"><strong>📋 Configuration Preview:</strong></div>
+    <div>• <strong>Grade Levels:</strong> ${gradeLevels.join(', ') || 'None specified'}</div>
+    <div>• <strong>Total Sections:</strong> ${totalSections}</div>
+    <div>• <strong>Accounts per Section:</strong> ${accountsPerSection}</div>
+    <div>• <strong>Sections (by Grade):</strong>${sectionsPreview || '<div style="margin-left:10px;">None specified</div>'}</div>
+    <div>• <strong>Subjects:</strong> ${subjects.join(', ') || 'None specified'}</div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(33,150,243,0.2);">
+      <strong style="color:#4CAF50;">Total accounts to create: ${totalAccounts}</strong>
+    </div>
+    ${importedNames.length > 0 ? `<div style="margin-top:8px;color:#9C27B0;">• <strong>Imported names:</strong> ${importedNames.length}</div>` : ''}
+  `;
+}
+
+// Get sections for a specific grade level
+function getSectionsForGrade(gradeLevel) {
+  const grade = parseInt(gradeLevel);
+  if (grade === 5) {
+    return ['Melon', 'Kasoy', 'Ubas', 'Durian'];
+  } else if (grade === 6) {
+    return ['Fruit Salad', 'Langka', 'Santol', 'Guyabano'];
+  }
+  // Fallback for other grades
+  return ['Melon', 'Kasoy', 'Ubas', 'Durian'];
+}
+
+// Generate student data
+function generateBulkStudentData(gradeLevel, subjects, section, index, emailDomain, nameIndex = null) {
+  let fname, lname;
+  
+  // Use imported names if available, otherwise use random names
+  if (importedNames.length > 0 && nameIndex !== null && nameIndex < importedNames.length) {
+    const name = importedNames[nameIndex];
+    fname = name.fname;
+    lname = name.lname;
+  } else {
+    // Fallback to random names
+    const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emily', 'James', 'Emma', 'Robert', 'Olivia', 'William', 'Sophia', 'Richard', 'Isabella', 'Joseph', 'Mia', 'Thomas', 'Charlotte', 'Charles', 'Amelia'];
+    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee'];
+    fname = firstNames[Math.floor(Math.random() * firstNames.length)];
+    lname = lastNames[Math.floor(Math.random() * lastNames.length)];
+  }
+  
+  const email = generateBulkEmail(fname, lname, index, emailDomain);
+  const studentId = `2024${String(index).padStart(7, '0')}`;
+  
+  // Handle subjects - if it's an array, use it; if it's a string (legacy), convert to array
+  const subjectsArray = Array.isArray(subjects) ? subjects : (typeof subjects === 'string' ? [subjects] : []);
+  
+  return {
+    id: studentId,
+    fname: fname,
+    mname: '',
+    lname: lname,
+    email: email,
+    gradelevel: gradeLevel.toString(),
+    grade: `grade=${gradeLevel}`,
+    section: section,
+    subjects: subjectsArray, // Store all subjects as an array
+    role: 'student',
+    school_year: new Date().getFullYear() + '-' + (new Date().getFullYear() + 1),
+    gender: Math.random() > 0.5 ? 'Male' : 'Female',
+    age: (10 + parseInt(gradeLevel) - 5).toString(),
+    address: {
+      street: `${Math.floor(Math.random() * 999) + 1} Main Street`,
+      barangay: 'Sample Barangay',
+      city: 'Angeles City',
+      province: 'Pampanga',
+      zip: '2009',
+      region: 'Region 3'
+    },
+    bulkCreated: true, // Flag to bypass email verification
+    bulkCreatedAt: new Date().toISOString(),
+    registeredAt: Date.now()
+  };
+}
+
+// Bulk account creation handler
+document.getElementById('bulkAccountForm').onsubmit = async function(e) {
+  e.preventDefault();
+  const err = document.getElementById('bulkAccountErrorMsg');
+  const statusDiv = document.getElementById('bulkAccountStatus');
+  const statusContent = document.getElementById('bulkAccountStatusContent');
+  err.textContent = '';
+  err.style.display = 'none';
+  statusDiv.style.display = 'block';
+  statusContent.innerHTML = '<div style="color:#2196F3;">⏳ Starting account creation...</div>';
+  
+  const gradeLevels = document.getElementById('bulkGradeLevel').value.split(',').map(g => g.trim());
+  const accountsPerSection = parseInt(document.getElementById('bulkAccountsPerSection').value);
+  const subjects = document.getElementById('bulkSubjects').value.split(',').map(s => s.trim());
+  const password = document.getElementById('bulkPassword').value;
+  const emailDomain = document.getElementById('bulkEmailDomain').value;
+  
+  if (!gradeLevels.length || !subjects.length) {
+    err.textContent = '⚠️ Please fill in all required fields.';
+    err.style.display = 'block';
+    return;
+  }
+  
+  if (password.length < 6) {
+    err.textContent = '⚠️ Password must be at least 6 characters.';
+    err.style.display = 'block';
+    return;
+  }
+  
+  // Use secondary app to avoid logging out current admin
+  let secondaryApp;
+  if (!window._secondaryApp) {
+    window._secondaryApp = firebase.initializeApp(firebase.app().options, 'secondary');
+  }
+  secondaryApp = window._secondaryApp;
+  
+  let nameIndex = 0; // Track which name to use from imported list
+  const allStudentsToCreate = []; // Collect all students to create
+  
+  // Calculate total sections across all grades
+  let totalSections = 0;
+  gradeLevels.forEach(grade => {
+    totalSections += getSectionsForGrade(grade).length;
+  });
+  
+  // Check if we have enough names
+  const totalAccountsNeeded = totalSections * accountsPerSection;
+  if (importedNames.length > 0 && importedNames.length < totalAccountsNeeded) {
+    statusContent.innerHTML += `<div style="color:#ff9800;">⚠️ Warning: Only ${importedNames.length} names imported, but ${totalAccountsNeeded} accounts will be created. Some will use random names.</div>`;
+  }
+  
+  try {
+    // Collect all student data first
+    for (const gradeLevel of gradeLevels) {
+      statusContent.innerHTML += `<div>📚 Preparing accounts for Grade ${gradeLevel}...</div>`;
+      statusContent.scrollTop = statusContent.scrollHeight;
+      
+      // Get sections for this specific grade level
+      const gradeSections = getSectionsForGrade(gradeLevel);
+      
+      for (const section of gradeSections) {
+        for (let i = 0; i < accountsPerSection; i++) {
+          const currentNameIndex = importedNames.length > 0 ? nameIndex : null;
+          // Pass all subjects as an array to the student data generator
+          const studentData = generateBulkStudentData(gradeLevel, subjects, section, allStudentsToCreate.length + 1, emailDomain, currentNameIndex);
+          
+          // Increment name index if using imported names
+          if (importedNames.length > 0) {
+            nameIndex = (nameIndex + 1) % importedNames.length; // Cycle through names if needed
+          }
+          
+          // Collect student data for batch processing
+          allStudentsToCreate.push({
+            ...studentData,
+            email: studentData.email,
+            password: password
+          });
+        }
+      }
+    }
+    
+    // Try to use Cloud Function (Admin SDK) first - no rate limits!
+    const useCloudFunction = typeof firebase.functions !== 'undefined';
+    
+    if (useCloudFunction) {
+      try {
+        statusContent.innerHTML += `<div style="color:#2196F3;font-weight:600;padding:10px;background:rgba(33,150,243,0.1);border-radius:8px;margin-bottom:10px;">
+          🚀 <strong>Using Admin SDK (Cloud Functions)</strong> - No rate limits!<br>
+          <small style="font-weight:400;">Creating ${allStudentsToCreate.length} accounts...</small>
+        </div>`;
+        statusContent.scrollTop = statusContent.scrollHeight;
+        
+        const bulkCreateStudents = firebase.functions().httpsCallable('bulkCreateStudents');
+        
+        // Show progress indicator
+        const progressInterval = setInterval(() => {
+          statusContent.innerHTML += `<div style="color:#2196F3;">⏳ Processing...</div>`;
+          statusContent.scrollTop = statusContent.scrollHeight;
+        }, 2000);
+        
+        const result = await bulkCreateStudents({ students: allStudentsToCreate });
+        
+        clearInterval(progressInterval);
+        
+        const { created, failed, results: resultData } = result.data;
+        
+        // Display results with better formatting
+        if (resultData.created && resultData.created.length > 0) {
+          statusContent.innerHTML += `<div style="color:#4CAF50;font-weight:600;margin-top:10px;padding:8px;background:rgba(76,175,80,0.1);border-radius:6px;">
+            ✅ Successfully Created (${resultData.created.length}):
+          </div>`;
+          
+          // Show first 10, then summarize
+          const toShow = resultData.created.slice(0, 10);
+          toShow.forEach(student => {
+            statusContent.innerHTML += `<div style="color:#4CAF50;margin-left:15px;">  ✓ ${student.name} (${student.email})</div>`;
+          });
+          
+          if (resultData.created.length > 10) {
+            statusContent.innerHTML += `<div style="color:#4CAF50;margin-left:15px;font-style:italic;">
+              ... and ${resultData.created.length - 10} more accounts
+            </div>`;
+          }
+        }
+        
+        if (resultData.failed && resultData.failed.length > 0) {
+          statusContent.innerHTML += `<div style="color:#f44336;font-weight:600;margin-top:10px;padding:8px;background:rgba(244,67,54,0.1);border-radius:6px;">
+            ❌ Failed (${resultData.failed.length}):
+          </div>`;
+          
+          resultData.failed.slice(0, 10).forEach(failure => {
+            statusContent.innerHTML += `<div style="color:#f44336;margin-left:15px;">  ✗ ${failure.email} - ${failure.error}</div>`;
+          });
+          
+          if (resultData.failed.length > 10) {
+            statusContent.innerHTML += `<div style="color:#f44336;margin-left:15px;font-style:italic;">
+              ... and ${resultData.failed.length - 10} more failures
+            </div>`;
+          }
+        }
+        
+        statusContent.innerHTML += `<div style="color:#4CAF50;font-weight:600;margin-top:15px;padding:12px;background:rgba(76,175,80,0.15);border-radius:8px;border:2px solid rgba(76,175,80,0.3);">
+          🎉 <strong>Completed!</strong><br>
+          Created: <span style="color:#2e8b57;font-size:1.1em;">${created}</span> | 
+          Failed: <span style="color:#f44336;font-size:1.1em;">${failed}</span> | 
+          Total: <span style="color:#2196F3;font-size:1.1em;">${allStudentsToCreate.length}</span>
+        </div>`;
+        
+        statusContent.scrollTop = statusContent.scrollHeight;
+        
+      } catch (cloudError) {
+        // Fallback to client-side if Cloud Function fails
+        statusContent.innerHTML += `<div style="color:#ff9800;padding:10px;background:rgba(255,152,0,0.1);border-radius:8px;margin-top:10px;">
+          ⚠️ <strong>Cloud Function Error:</strong> ${cloudError.message}<br>
+          <small>Falling back to client-side method (may hit rate limits)...</small>
+        </div>`;
+        statusContent.scrollTop = statusContent.scrollHeight;
+        
+        // Fall through to client-side creation
+        await createAccountsClientSide(allStudentsToCreate, password, statusContent);
+      }
+    } else {
+      // Fallback to client-side if Cloud Functions not available
+      statusContent.innerHTML += `<div style="color:#ff9800;padding:10px;background:rgba(255,152,0,0.1);border-radius:8px;margin-top:10px;">
+        ⚠️ <strong>Cloud Functions not available</strong><br>
+        <small>Using client-side method (may hit rate limits).<br>
+        💡 <strong>Tip:</strong> Deploy Cloud Functions to use Admin SDK and avoid rate limits!</small>
+      </div>`;
+      statusContent.scrollTop = statusContent.scrollHeight;
+      
+      await createAccountsClientSide(allStudentsToCreate, password, statusContent);
+    }
+    
+    err.style.display = 'none';
+    
+    // Reload students list and statistics after a delay
+    setTimeout(() => {
+      if (typeof loadStudents === 'function') {
+        loadStudents();
+      }
+      if (typeof loadStatistics === 'function') {
+        loadStatistics();
+      }
+    }, 2000);
+    
+  } catch (error) {
+    err.textContent = '❌ Error: ' + error.message;
+    err.style.display = 'block';
+    statusContent.innerHTML += `<div style="color:#f44336;">❌ Error: ${error.message}</div>`;
+  }
 };
 
 // Modal registration logic
@@ -2012,30 +2937,91 @@ document.getElementById('adminModalRegForm').onsubmit = async function(e) {
 
 // Load statistics for dashboard cards
 function loadStatistics() {
+    // Ensure db is defined
+    if (typeof db === 'undefined') {
+        console.warn('⚠️ Database not initialized yet, retrying in 500ms...');
+        setTimeout(loadStatistics, 500);
+        return;
+    }
+    
+    console.log('🔄 Loading statistics...');
+    
     Promise.all([
         db.ref('students').once('value'),
         db.ref('teachers').once('value'),
         db.ref('admins').once('value')
     ]).then(([studentsSnap, teachersSnap, adminsSnap]) => {
-        const students = [];
+        // Count students - use forEach for reliable counting
+        let totalStudents = 0;
+        if (studentsSnap.exists()) {
+            studentsSnap.forEach(() => {
+                totalStudents++;
+            });
+        }
+        
+        // Count teachers and pending approvals
         const teachers = [];
         let pendingApprovals = 0;
+        if (teachersSnap.exists()) {
+            teachersSnap.forEach(child => {
+                const t = child.val();
+                teachers.push(t);
+                if (!t.approved) pendingApprovals++;
+            });
+        }
         
-        studentsSnap.forEach(child => students.push(child.val()));
-        teachersSnap.forEach(child => {
-            const t = child.val();
-            teachers.push(t);
-            if (!t.approved) pendingApprovals++;
+        // Count admins - use forEach for reliable counting
+        let totalAdmins = 0;
+        if (adminsSnap.exists()) {
+            adminsSnap.forEach(() => {
+                totalAdmins++;
+            });
+        }
+        
+        // Update dashboard statistics
+        const statTotalStudentsEl = document.getElementById('statTotalStudents');
+        const statTotalTeachersEl = document.getElementById('statTotalTeachers');
+        const statPendingApprovalsEl = document.getElementById('statPendingApprovals');
+        const statTotalAdminsEl = document.getElementById('statTotalAdmins');
+        
+        if (statTotalStudentsEl) {
+            statTotalStudentsEl.textContent = totalStudents;
+            console.log('✅ Updated statTotalStudents:', totalStudents);
+        } else {
+            console.warn('⚠️ Element statTotalStudents not found');
+        }
+        
+        if (statTotalTeachersEl) {
+            statTotalTeachersEl.textContent = teachers.length;
+            console.log('✅ Updated statTotalTeachers:', teachers.length);
+        } else {
+            console.warn('⚠️ Element statTotalTeachers not found');
+        }
+        
+        if (statPendingApprovalsEl) {
+            statPendingApprovalsEl.textContent = pendingApprovals;
+            console.log('✅ Updated statPendingApprovals:', pendingApprovals);
+        } else {
+            console.warn('⚠️ Element statPendingApprovals not found');
+        }
+        
+        if (statTotalAdminsEl) {
+            statTotalAdminsEl.textContent = totalAdmins;
+            console.log('✅ Updated statTotalAdmins:', totalAdmins);
+        } else {
+            console.warn('⚠️ Element statTotalAdmins not found');
+        }
+        
+        console.log('📊 Statistics updated:', {
+            students: totalStudents,
+            teachers: teachers.length,
+            pendingApprovals: pendingApprovals,
+            admins: totalAdmins
         });
-        
-        const admins = [];
-        adminsSnap.forEach(child => admins.push(child.val()));
-        
-        document.getElementById('statTotalStudents').textContent = students.length;
-        document.getElementById('statTotalTeachers').textContent = teachers.length;
-        document.getElementById('statPendingApprovals').textContent = pendingApprovals;
-        document.getElementById('statTotalAdmins').textContent = admins.length;
-    }).catch(err => console.error('Error loading statistics:', err));
+    }).catch(err => {
+        console.error('❌ Error loading statistics:', err);
+        console.error('Error details:', err.message, err.stack);
+    });
 }
 
 // Activity logging
@@ -2322,6 +3308,79 @@ function exportTeachersCSV(type) {
             let englishGrades = [];
             let scienceGrades = [];
             
+            if (teachersSnap.exists()) {
+                const gradePromises = [];
+                teachersSnap.forEach(teacherSnap => {
+                    const teacher = teacherSnap.val();
+                    if (teacher && teacher.section) {
+                        const section = teacher.section;
+                        gradePromises.push(
+                            db.ref(`teachers/${teacherSnap.key}/sections/${section}/grades`).once('value')
+                                .then(gradesSnap => {
+                                    if (gradesSnap.exists()) {
+                                        gradesSnap.forEach(gradeSnap => {
+                                            const grade = gradeSnap.val();
+                                            allGrades.push(grade);
+                                            
+                                            // Categorize by subject
+                                            if (grade.subject === 'subject_math' || grade.subject === 'Math') {
+                                                mathGrades.push(grade);
+                                            } else if (grade.subject === 'subject_english' || grade.subject === 'English') {
+                                                englishGrades.push(grade);
+                                            } else if (grade.subject === 'subject_science' || grade.subject === 'Science') {
+                                                scienceGrades.push(grade);
+                                            }
+                                        });
+                                    }
+                                })
+                        );
+                    }
+                });
+                
+                await Promise.all(gradePromises);
+            }
+            
+            // Calculate grade analytics
+            document.getElementById('analyticsTotalGrades').textContent = allGrades.length;
+            
+            if (allGrades.length > 0) {
+                const averageGrade = allGrades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / allGrades.length;
+                document.getElementById('analyticsAverageGrade').textContent = averageGrade.toFixed(2);
+                
+                const passingCount = allGrades.filter(grade => (grade.finalGrade || 0) >= 75).length;
+                const passingRate = (passingCount / allGrades.length) * 100;
+                document.getElementById('analyticsPassingRate').textContent = Math.round(passingRate) + '%';
+            }
+            
+            // Calculate subject averages
+            if (mathGrades.length > 0) {
+                const mathAvg = mathGrades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / mathGrades.length;
+                document.getElementById('analyticsMathAverage').textContent = mathAvg.toFixed(2);
+            }
+            
+            if (englishGrades.length > 0) {
+                const englishAvg = englishGrades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / englishGrades.length;
+                document.getElementById('analyticsEnglishAverage').textContent = englishAvg.toFixed(2);
+            }
+            
+            if (scienceGrades.length > 0) {
+                const scienceAvg = scienceGrades.reduce((sum, grade) => sum + (grade.finalGrade || 0), 0) / scienceGrades.length;
+                document.getElementById('analyticsScienceAverage').textContent = scienceAvg.toFixed(2);
+            }
+            
+            // Count lessons and quizzes (from Supabase or Firebase)
+            // For now, we'll count from Firebase assessments
+            document.getElementById('analyticsLessonsCreated').textContent = totalAssessments; // Using assessments as proxy
+            document.getElementById('analyticsQuizzesCreated').textContent = totalQuizAttempts > 0 ? Math.ceil(totalQuizAttempts / 10) : 0; // Estimate
+            
+            console.log('📊 Admin Analytics loaded:', {
+                students: totalStudents,
+                teachers: totalTeachers,
+                assessments: totalAssessments,
+                grades: allGrades.length,
+                quizAttempts: totalQuizAttempts
+            });
+            
             if (teachersSnap && teachersSnap.exists()) {
                 const gradePromises = [];
                 teachersSnap.forEach(teacherSnap => {
@@ -2453,10 +3512,21 @@ function exportTeachersCSV(type) {
         }
     }
 
+// Wait for Firebase to be initialized before loading statistics
+function waitForFirebaseAndLoadStats() {
+    if (typeof firebase !== 'undefined' && typeof db !== 'undefined') {
+        console.log('✅ Firebase initialized, loading statistics...');
+        loadStatistics();
+        // Refresh statistics every 30 seconds
+        setInterval(loadStatistics, 30000);
+    } else {
+        console.log('⏳ Waiting for Firebase initialization...');
+        setTimeout(waitForFirebaseAndLoadStats, 100);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    loadStatistics();
-    // Refresh statistics every 30 seconds
-    setInterval(loadStatistics, 30000);
+    waitForFirebaseAndLoadStats();
 });
 </script>
 

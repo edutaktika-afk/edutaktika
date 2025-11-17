@@ -1,0 +1,242 @@
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        firebase.auth().onAuthStateChanged(async function(user) {
+            if (!user) {
+                window.location.href = "logreg.html";
+                return;
+            }
+            const uid = user.uid;
+            const snap = await firebase.database().ref('teachers/' + uid).once('value');
+            const teacher = snap.val();
+            if (!teacher || teacher.role !== "teacher") {
+                document.getElementById('mainContent').style.display = "none";
+                alert("Access denied.");
+                await firebase.auth().signOut();
+                window.location.href = "logreg.html";
+            } else {
+                document.getElementById('mainContent').style.display = "block";
+            }
+        });
+    });
+</script>
+    
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link rel="stylesheet" href="../CSS/fonts.css">
+<!-- ...inside <head> -->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../CSS/header.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/dropdown.css">
+    <link rel="stylesheet" href="../CSS/burger.css">
+    <link rel="icon" type="image/png" href="../images/icons/home.png" />
+    <title>Home</title>
+    
+</head>
+
+<body>
+<div id="mainContent" style="display:none;">
+    
+    <!-- Burger icon for mobile -->
+<button id="burgerBtn" class="burger-btn" aria-label="Open menu">
+    <span></span>
+    <span></span>
+    <span></span>
+</button>
+<!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+
+    <header>
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <!-- Replace your logo-text div with this for per-letter bounce -->
+                <div class="logo-text">
+                    <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="homepage.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="subject_math.html">Math</a></li>
+                            <li><a href="subject_english.html">English</a></li>
+                            <li><a href="subject_science.html">Science</a></li>
+                        </ul>
+                        </li>
+                    <li><a href="studentlist.html">Student</a></li>
+                    <li><a href="grading.html">Grading</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Assessments <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="assessment-builder.html">Create Assessment</a></li>
+                            <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                            <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="leaderboard_math.html">Math</a></li>
+                                <li><a href="leaderboard_english.html">English</a></li>
+                                <li><a href="leaderboard_science.html">Science</a></li>
+                            </ul>
+                        </li>
+                    <li>
+                        <a href="#" id="profileBtn">Profile</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    
+<!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
+
+ <!-- Profile Sidebar (Dynamic with Firebase) -->
+<div id="profileSidebar" class="profile-sidebar">
+    <div class="sidebar-content">
+        <button class="close-btn" id="closeSidebar">&times;</button>
+        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+            <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+            <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+        </div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <br>
+        <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+            <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+            Teacher
+        </div>
+            <div>
+                <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                <strong>ID:</strong> <span id="profileId">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                <strong>First Name:</strong> <span id="profileFirstName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                <strong>Last Name:</strong> <span id="profileLastName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                <strong>Section:</strong> <span id="profileSection">-</span>
+            </div>
+            <div>
+    <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+    <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+    <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+    <strong>City:</strong> <span id="profileAddressCity">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+    <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+    <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+    <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+</div>
+        </div>
+        <div class="logout-switch-row">
+            <div class="logout-switch" id="logoutSwitch">
+                <div class="logout-switch-circle"></div>
+            </div>
+            <span class="logout-label" id="logoutLabel">LOGOUT</span>
+        </div>
+    </div>
+</div>
+
+        <!-- Firebase App (the core Firebase SDK) -->
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+
+        <script src="../assets/js/Teacher Side/profile.js"></script>
+        
+
+    <script src="../assets/js/Teacher Side/header.js"></script>
+
+    <footer>
+  <div class="footer-wrap">
+    <div class="footer-col">
+      <h4 class="footer-brand">Eduktaktika</h4>
+      <p>Interactive, game‑based learning for Math, English, and Science.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <ul class="footer-social">
+        <li><a href="homepage.html">Homepage</a></li>
+        <li><a href="studentlist.html">Student</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Subjects</h4>
+      <ul class="footer-links">
+        <li><a href="subject_math.html">Math</a></li>
+        <li><a href="subject_english.html">English</a></li>
+        <li><a href="subject_science.html">Science</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Leaderboards</h4>
+      <ul class="footer-links">
+        <li><a href="leaderboard_math.html">Math</a></li>
+        <li><a href="leaderboard_english.html">English</a></li>
+        <li><a href="leaderboard_science.html">Science</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-social-row">
+      <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+    </div>
+    <p>© 2025 Eduktaktika. All rights reserved.</p>
+  </div>
+</footer>
+
+<script src="../assets/js/navbar.js"></script>
+
+</div>
+</body>
+</html>

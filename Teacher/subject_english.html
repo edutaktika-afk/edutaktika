@@ -46,39 +46,78 @@
             gap: 12px !important;
         }
     }
-
-    /* Make lessons-container display in grid layout like quizzes */
-    .quarter-section .lessons-container:not(#assessmentsContainer) {
-        display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 18px !important;
-        justify-content: stretch;
-        align-items: stretch;
-        margin-top: 10px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    /* Ensure quiz-list maintains its own grid layout */
-    .quarter-section .lessons-container #quiz-list {
-        grid-column: 1 / -1;
-        display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
-    }
-
-    /* Responsive adjustments for lessons-container */
-    @media (max-width: 1200px) {
-        .quarter-section .lessons-container:not(#assessmentsContainer) {
-            grid-template-columns: repeat(2, 1fr) !important;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .quarter-section .lessons-container:not(#assessmentsContainer) {
-            grid-template-columns: 1fr !important;
-        }
-    }
     </style>
+
+    <style>
+#quiz-list {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 18px !important;
+    justify-content: stretch;
+    align-items: stretch;
+    margin-top: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 320px;
+}
+
+/* MOBILE: 1 card per screen, horizontal scroll */
+@media (max-width: 700px) {
+  #quiz-list {
+    display: flex !important;
+    overflow-x: auto !important;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px !important;
+    padding: 0 10px 8px;
+    scroll-snap-type: x mandatory;
+  }
+  #quiz-list::-webkit-scrollbar { display: none; }
+  #quiz-list { scrollbar-width: none; }
+
+  #quiz-list > .lesson-item {
+    /* force one card per viewport */
+    flex: 0 0 calc(100% - 24px) !important;
+    min-width: calc(100% - 24px) !important;
+    max-width: calc(100% - 24px) !important;
+    margin: 0 !important;
+    scroll-snap-align: start;
+  }
+
+  /* relax global min/max widths coming from other styles */
+  #quiz-list > .lesson-item {
+    min-width: auto !important;
+    max-width: none !important;
+  }
+}
+</style>
+
+<style>
+/* MOBILE: one card per row in Quizzes (Quarter 5) */
+@media (max-width:700px){
+  #quarter-5 .lessons-container{ display:block !important; }
+
+  #quarter-5 #quiz-list{
+    display:grid !important;
+    grid-template-columns: 1fr !important;   /* single column */
+    gap:14px !important;
+    padding:0 10px !important;
+    overflow:visible !important;
+  }
+
+  /* cancel base min/max widths so card fills row */
+  #quarter-5 #quiz-list > .lesson-item{
+    flex: initial !important;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    margin:0 !important;
+  }
+
+  #quarter-5 #quiz-list .lesson-thumbnail{ height:120px; }
+}
+</style>
+
 </head>
 <body>
     <div id="mainContent" style="display:none;">
@@ -103,23 +142,7 @@
                 // Store teacher's grade level in sessionStorage for Editor
                 if (teacher && teacher.grade) {
                     const grade = teacher.grade.toString();
-                    // Normalize to Firebase format: grade=5, grade=6, etc.
-                    let gradeLevel;
-                    if (grade.includes('=')) {
-                        gradeLevel = grade; // Already in correct format
-                    } else {
-                        const numberMatch = grade.match(/(\d+)/);
-                        if (numberMatch) {
-                            const gradeNum = parseInt(numberMatch[1], 10);
-                            if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
-                                gradeLevel = `grade=${gradeNum}`;
-                            } else {
-                                gradeLevel = grade; // Keep as-is if invalid
-                            }
-                        } else {
-                            gradeLevel = grade; // Keep as-is if no number found
-                        }
-                    }
+                    const gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
                     sessionStorage.setItem('supabase-design-grade', gradeLevel);
                     console.log(`📚 Stored teacher grade level in sessionStorage: ${gradeLevel}`);
                 }
@@ -322,22 +345,7 @@ document.getElementById('createLessonBtn').onclick = async function() {
             const teacher = teacherSnap.val();
             if (teacher && teacher.grade) {
                 const grade = teacher.grade.toString();
-                // Normalize to Firebase format: grade=5, grade=6, etc.
-                if (grade.includes('=')) {
-                    gradeLevel = grade; // Already in correct format
-                } else {
-                    const numberMatch = grade.match(/(\d+)/);
-                    if (numberMatch) {
-                        const gradeNum = parseInt(numberMatch[1], 10);
-                        if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
-                            gradeLevel = `grade=${gradeNum}`;
-                        } else {
-                            gradeLevel = grade; // Keep as-is if invalid
-                        }
-                    } else {
-                        gradeLevel = grade; // Keep as-is if no number found
-                    }
-                }
+                gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
                 console.log(`📚 Found teacher grade level: ${teacher.grade} → normalized: ${gradeLevel}`);
             }
         }
@@ -1402,16 +1410,19 @@ async function loadTeacherQuizzes(quarter) {
         quizList.innerHTML = "<div>No quizzes found for this quarter.</div>";
         return;
     }
-    let quizzes = [];
-    snap.forEach(child => {
-        const data = child.val();
+let quizzes = [];
+snap.forEach(child => {
+    const data = child.val();
+    // Only include quizzes that are NOT deleted
+    if (!data.isDeleted) {
         quizzes.push({
             title: data.title || child.key,
             description: data.description || '',
             quarter: data.quarter || quarter,
             savedAt: data.savedAt || ""
         });
-    });
+    }
+});
      // Sort quizzes by savedAt (old to new)
     quizzes.sort((a, b) => new Date(a.savedAt) - new Date(b.savedAt));
     quizList.innerHTML = `

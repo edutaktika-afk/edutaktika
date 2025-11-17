@@ -1116,6 +1116,7 @@ function handleGameMessage(event) {
         // Enhanced game option selection with quiz-specific data structure
         document.querySelectorAll('.game-option').forEach(btn => {
             btn.onclick = function() {
+                console.log('Game option clicked:', this.dataset.game); // Debug log
                 
                 saveCurrentSlide();
                 
@@ -1143,6 +1144,8 @@ function handleGameMessage(event) {
                 gameUrl = selectedGameUrl; // Fix: assign to global variable
                 gameSlideIndex = currentSlide;
                 
+                console.log('Game data created:', gameData); // Debug log
+                console.log('Current slide updated:', slides[currentSlide]); // Debug log
                 
                 // Immediately show the game iframe
                 showGameIframe();
@@ -1176,6 +1179,7 @@ function saveCurrentSlide() {
 }
 
 function loadSlide(index) {
+    console.log('Loading slide:', index); // Debug log
     
     if (index >= 0 && index < slides.length && slides[index]) {
         canvas.loadFromJSON(slides[index], function() {
@@ -1186,9 +1190,11 @@ function loadSlide(index) {
             const hasGame = slides[index].game;
             
             if (hasGame) {
+                console.log('Slide has game, hiding canvas and showing game'); // Debug log
                 canvasElement.style.display = 'none';
                 showGameIframe();
             } else {
+                console.log('Slide has no game, showing canvas'); // Debug log
                 canvasElement.style.display = 'block';
                 // Remove any existing game iframe
                 const existing = document.getElementById('game-iframe');
@@ -1197,6 +1203,7 @@ function loadSlide(index) {
         });
     } else {
         // Create new slide
+        console.log('Creating new slide'); // Debug log
         canvas.clear();
         canvas.backgroundColor = '#fff';
         canvas.renderAll();
@@ -1822,8 +1829,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Fix the modal display issue
 document.getElementById('add-game-btn').addEventListener('click', function() {
+    console.log('Add game button clicked'); // Debug log
     const modal = document.getElementById('game-modal');
     modal.style.display = 'flex';
+    console.log('Modal display set to flex'); // Debug log
 });
 
 // Add a close modal function for the cancel button

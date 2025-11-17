@@ -241,6 +241,116 @@
         }
     }
 
+    // Detect if user is teacher and adjust back link and view
+    let isTeacher = false;
+    auth.onAuthStateChanged(async function(user) {
+        if (user) {
+            const uid = user.uid;
+            // Check if user is a teacher
+            const teacherSnap = await db.ref('teachers/' + uid).once('value');
+            const teacher = teacherSnap.val();
+            
+            if (teacher && teacher.role === "teacher") {
+                isTeacher = true;
+                // User is a teacher, update back link to teacher page
+                const backLink = document.getElementById('backLink');
+                if (backLink) {
+                    backLink.href = '../../Teacher/subject_math.html';
+                    backLink.innerHTML = '<i class="fa fa-arrow-left"></i> Back to Math (Teacher)';
+                }
+                
+                // Update navigation links for teachers
+                updateNavigationForTeachers();
+                
+                // Show teacher view with answers
+                showTeacherView();
+            } else {
+                // Enable navigation for students
+                enableNavigationForStudents();
+            }
+        }
+    });
+
+    // Function to update navigation links for teachers
+    function updateNavigationForTeachers() {
+        const navHome = document.getElementById('navHome');
+        const navMath = document.getElementById('navMath');
+        const navEnglish = document.getElementById('navEnglish');
+        const navScience = document.getElementById('navScience');
+        const navLeaderboard = document.getElementById('navLeaderboard');
+        
+        if (navHome) {
+            navHome.href = '../../Teacher/homepage.html';
+            navHome.onclick = null;
+            navHome.style.pointerEvents = 'auto';
+            navHome.style.opacity = '1';
+        }
+        if (navMath) {
+            navMath.href = '../../Teacher/subject_math.html';
+            navMath.onclick = null;
+            navMath.style.pointerEvents = 'auto';
+            navMath.style.opacity = '1';
+        }
+        if (navEnglish) {
+            navEnglish.href = '../../Teacher/subject_english.html';
+            navEnglish.onclick = null;
+            navEnglish.style.pointerEvents = 'auto';
+            navEnglish.style.opacity = '1';
+        }
+        if (navScience) {
+            navScience.href = '../../Teacher/subject_science.html';
+            navScience.onclick = null;
+            navScience.style.pointerEvents = 'auto';
+            navScience.style.opacity = '1';
+        }
+        if (navLeaderboard) {
+            navLeaderboard.href = '../../Teacher/leaderboard.html';
+            navLeaderboard.onclick = null;
+            navLeaderboard.style.pointerEvents = 'auto';
+            navLeaderboard.style.opacity = '1';
+        }
+    }
+
+    // Function to enable navigation for students
+    function enableNavigationForStudents() {
+        const navHome = document.getElementById('navHome');
+        const navMath = document.getElementById('navMath');
+        const navEnglish = document.getElementById('navEnglish');
+        const navScience = document.getElementById('navScience');
+        const navLeaderboard = document.getElementById('navLeaderboard');
+        
+        if (navHome) {
+            navHome.href = '../../Student/homepage.html';
+            navHome.onclick = null;
+            navHome.style.pointerEvents = 'auto';
+            navHome.style.opacity = '1';
+        }
+        if (navMath) {
+            navMath.href = '../../Student/subject_math.html';
+            navMath.onclick = null;
+            navMath.style.pointerEvents = 'auto';
+            navMath.style.opacity = '1';
+        }
+        if (navEnglish) {
+            navEnglish.href = '../../Student/subject_english.html';
+            navEnglish.onclick = null;
+            navEnglish.style.pointerEvents = 'auto';
+            navEnglish.style.opacity = '1';
+        }
+        if (navScience) {
+            navScience.href = '../../Student/subject_science.html';
+            navScience.onclick = null;
+            navScience.style.pointerEvents = 'auto';
+            navScience.style.opacity = '1';
+        }
+        if (navLeaderboard) {
+            navLeaderboard.href = '../../Student/leaderboard.html';
+            navLeaderboard.onclick = null;
+            navLeaderboard.style.pointerEvents = 'auto';
+            navLeaderboard.style.opacity = '1';
+        }
+    });
+
     const quizData = [
       { question: "Which word is a noun?", options: ["run","beautiful","book","quickly"], correct:2 },
       { question: "What is the plural of 'child'?", options: ["childs","children","childes","child"], correct:1 },
