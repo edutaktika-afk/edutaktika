@@ -2345,6 +2345,13 @@ async function createAccountsClientSide(studentsToCreate, password, statusConten
   statusContent.innerHTML += `<div style="color:#4CAF50;font-weight:600;margin-top:15px;padding-top:15px;border-top:2px solid rgba(76,175,80,0.3);">
     🎉 <strong>Completed!</strong> Created: <span style="color:#2e8b57;">${totalCreated}</span>, Failed: <span style="color:#f44336;">${totalFailed}</span>
   </div>`;
+  
+  // Refresh statistics after creation completes
+  if (typeof loadStatistics === 'function') {
+    setTimeout(() => {
+      loadStatistics();
+    }, 1000);
+  }
 }
 
 // Delete dummy accounts with @student.edu.ph email
@@ -2400,10 +2407,13 @@ async function deleteDummyAccounts() {
       await deleteDummyAccountsClientSide(statusContent);
     }
     
-    // Reload students list after a delay
+    // Reload students list and statistics after a delay
     setTimeout(() => {
       if (typeof loadStudents === 'function') {
         loadStudents();
+      }
+      if (typeof loadStatistics === 'function') {
+        loadStatistics();
       }
     }, 2000);
     
@@ -2838,10 +2848,13 @@ document.getElementById('bulkAccountForm').onsubmit = async function(e) {
     
     err.style.display = 'none';
     
-    // Reload students list after a delay
+    // Reload students list and statistics after a delay
     setTimeout(() => {
       if (typeof loadStudents === 'function') {
         loadStudents();
+      }
+      if (typeof loadStatistics === 'function') {
+        loadStatistics();
       }
     }, 2000);
     
@@ -2923,10 +2936,12 @@ function loadStatistics() {
         db.ref('teachers').once('value'),
         db.ref('admins').once('value')
     ]).then(([studentsSnap, teachersSnap, adminsSnap]) => {
-        // Count students - use reliable method
+        // Count students - use forEach for reliable counting
         let totalStudents = 0;
         if (studentsSnap.exists()) {
-            totalStudents = Object.keys(studentsSnap.val()).length;
+            studentsSnap.forEach(() => {
+                totalStudents++;
+            });
         }
         
         // Count teachers and pending approvals
@@ -2940,16 +2955,31 @@ function loadStatistics() {
             });
         }
         
-        // Count admins
+        // Count admins - use forEach for reliable counting
         let totalAdmins = 0;
         if (adminsSnap.exists()) {
-            totalAdmins = Object.keys(adminsSnap.val()).length;
+            adminsSnap.forEach(() => {
+                totalAdmins++;
+            });
         }
         
-        document.getElementById('statTotalStudents').textContent = totalStudents;
-        document.getElementById('statTotalTeachers').textContent = teachers.length;
-        document.getElementById('statPendingApprovals').textContent = pendingApprovals;
-        document.getElementById('statTotalAdmins').textContent = totalAdmins;
+        // Update dashboard statistics
+        const statTotalStudentsEl = document.getElementById('statTotalStudents');
+        const statTotalTeachersEl = document.getElementById('statTotalTeachers');
+        const statPendingApprovalsEl = document.getElementById('statPendingApprovals');
+        const statTotalAdminsEl = document.getElementById('statTotalAdmins');
+        
+        if (statTotalStudentsEl) statTotalStudentsEl.textContent = totalStudents;
+        if (statTotalTeachersEl) statTotalTeachersEl.textContent = teachers.length;
+        if (statPendingApprovalsEl) statPendingApprovalsEl.textContent = pendingApprovals;
+        if (statTotalAdminsEl) statTotalAdminsEl.textContent = totalAdmins;
+        
+        console.log('📊 Statistics updated:', {
+            students: totalStudents,
+            teachers: teachers.length,
+            pendingApprovals: pendingApprovals,
+            admins: totalAdmins
+        });
     }).catch(err => console.error('Error loading statistics:', err));
 }
 

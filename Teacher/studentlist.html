@@ -662,14 +662,9 @@ const rowsPerPage = 10;
             const gradeCounts = {};
             snapshot.forEach(child => {
                 const s = child.val();
-<<<<<<< HEAD
                 const studentGrade = normalizeGrade(s.grade);
                 if (s.section === teacherSection && studentGrade) {
                     gradeCounts[studentGrade] = (gradeCounts[studentGrade] || 0) + 1;
-=======
-                if (s.section === teacherSection && s.grade) {
-                    gradeCounts[s.grade] = (gradeCounts[s.grade] || 0) + 1;
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
                 }
             });
             
@@ -705,7 +700,6 @@ const rowsPerPage = 10;
             
             // Filter by teacher's school year
             if (teacherSY && s.school_year !== teacherSY) return;
-<<<<<<< HEAD
             
             // Filter by grade level (must match teacher's grade)
             if (teacherGrade && studentGrade !== teacherGrade) return;
@@ -717,9 +711,6 @@ const rowsPerPage = 10;
                 if (validSections.length > 0 && !validSections.includes(s.section)) return;
             }
             
-=======
-            if (teacherGrade && s.grade !== teacherGrade) return;
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             studentsArr.push({ key: child.key, ...s });
         });
 
@@ -882,12 +873,8 @@ async function filterAndSearchStudents() {
     const teacher = teacherSnap.val();
     const teacherSection = teacher && teacher.section ? teacher.section : null;
     const teacherSY = teacher && teacher.school_year ? teacher.school_year : null;
-<<<<<<< HEAD
     let teacherGrade = teacher && teacher.grade ? teacher.grade : null;
     teacherGrade = normalizeGrade(teacherGrade);
-=======
-    const teacherGrade = teacher && teacher.grade ? teacher.grade : null;
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
 
     // If teacher grade level is not set, try to determine it from the students or set a default
     if (!teacherGrade) {
@@ -895,14 +882,9 @@ async function filterAndSearchStudents() {
         const gradeCounts = {};
         snapshot.forEach(child => {
             const s = child.val();
-<<<<<<< HEAD
             const studentGrade = normalizeGrade(s.grade);
             if (s.section === teacherSection && studentGrade) {
                 gradeCounts[studentGrade] = (gradeCounts[studentGrade] || 0) + 1;
-=======
-            if (s.section === teacherSection && s.grade) {
-                gradeCounts[s.grade] = (gradeCounts[s.grade] || 0) + 1;
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             }
         });
         
@@ -921,11 +903,7 @@ async function filterAndSearchStudents() {
             
             // Update the teacher's grade level in Firebase
             await db.ref('teachers/' + firebase.auth().currentUser.uid).update({
-<<<<<<< HEAD
                 grade: teacherGrade
-=======
-                grade: effectiveTeacherGrade
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
             });
         } else {
             // If we can't determine from students, default to Grade 5
@@ -950,13 +928,9 @@ async function filterAndSearchStudents() {
         
         // Filter by school year
         if (teacherSY && s.school_year !== teacherSY) return;
-<<<<<<< HEAD
         
         // Filter by grade level (must match teacher's grade)
         if (teacherGrade && studentGrade !== teacherGrade) return;
-=======
-        if (effectiveTeacherGrade && s.grade !== effectiveTeacherGrade) return;
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
         
         total++;
         if (s.gender === 'Male') male++;
@@ -979,7 +953,6 @@ async function filterAndSearchStudents() {
         
         // Filter by school year
         if (teacherSY && s.school_year !== teacherSY) return;
-<<<<<<< HEAD
         
         // Filter by grade level (must match teacher's grade)
         if (teacherGrade && studentGrade !== teacherGrade) return;
