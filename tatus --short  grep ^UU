@@ -1,0 +1,314 @@
+Student/logreg.html:813: trailing whitespace.
+[32m+[m[41m        [m
+Student/logreg.html:827: trailing whitespace.
+[32m+[m[41m        [m
+Student/logreg.html:853: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_english.html:589: leftover conflict marker
+Student/subject_english.html:591: leftover conflict marker
+Student/subject_english.html:616: leftover conflict marker
+Student/subject_english.html:979: trailing whitespace.
+[32m+[m[41m            [m
+Student/subject_english.html:982: trailing whitespace.
+[32m+[m[41m            [m
+Student/subject_english.html:987: trailing whitespace.
+[32m+[m[41m            [m
+Student/subject_english.html:991: trailing whitespace.
+[32m+[m[41m            [m
+Student/subject_english.html:996: trailing whitespace.
+[32m+[m[41m            [m
+Student/subject_english.html:1000: trailing whitespace.
+[32m+[m[41m            [m
+Student/subject_english.html:1009: trailing whitespace.
+[32m+[m[41m                    [m
+Student/subject_english.html:1021: trailing whitespace.
+[32m+[m[41m                                        [m
+Student/subject_english.html:1029: trailing whitespace.
+[32m+[m[41m                                        [m
+Student/subject_english.html:1041: trailing whitespace.
+[32m+[m[41m                                        [m
+Student/subject_english.html:1070: trailing whitespace.
+[32m+[m[41m            [m
+Student/subject_math.html:629: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_math.html:749: leftover conflict marker
+Student/subject_math.html:985: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_math.html:988: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_math.html:993: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_math.html:997: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_math.html:1002: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_math.html:1005: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_math.html:1009: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_math.html:1019: trailing whitespace.
+[32m+[m[41m                                [m
+Student/subject_math.html:1027: trailing whitespace.
+[32m+[m[41m                                [m
+Student/subject_math.html:1041: trailing whitespace.
+[32m+[m[41m                                [m
+Student/subject_math.html:1043: trailing whitespace.
+[32m+[m[32m                                const gradeMatches = !normalizedAssessmentGrade || !normalizedStudentGrade ||[m[41m [m
+Student/subject_math.html:1046: trailing whitespace.
+[32m+[m[41m                        [m
+Student/subject_math.html:1057: trailing whitespace.
+[32m+[m[41m                                            [m
+Student/subject_math.html:1065: trailing whitespace.
+[32m+[m[41m                                            [m
+Student/subject_math.html:1077: trailing whitespace.
+[32m+[m[41m                                            [m
+Student/subject_math.html:1120: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_math.html:1123: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_math.html:1231: trailing whitespace.
+[32m+[m[41m    [m
+Student/subject_science.html:468: leftover conflict marker
+Student/subject_science.html:470: leftover conflict marker
+Student/subject_science.html:493: leftover conflict marker
+Student/subject_science.html:875: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_science.html:878: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_science.html:883: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_science.html:887: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_science.html:892: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_science.html:896: trailing whitespace.
+[32m+[m[41m                [m
+Student/subject_science.html:905: trailing whitespace.
+[32m+[m[41m                        [m
+Student/subject_science.html:916: trailing whitespace.
+[32m+[m[41m                                            [m
+Student/subject_science.html:924: trailing whitespace.
+[32m+[m[41m                                            [m
+Student/subject_science.html:936: trailing whitespace.
+[32m+[m[41m                                            [m
+Student/subject_science.html:965: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/assessment-builder.html:838: leftover conflict marker
+Teacher/assessment-builder.html:854: leftover conflict marker
+Teacher/assessment-builder.html:858: trailing whitespace.
+[32m+[m[32m                if (window.firebase &&[m[41m [m
+Teacher/assessment-builder.html:859: trailing whitespace.
+[32m+[m[32m                    typeof firebase.database === 'function' &&[m[41m [m
+Teacher/assessment-builder.html:860: trailing whitespace.
+[32m+[m[32m                    typeof firebase.auth === 'function' &&[m[41m [m
+Teacher/assessment-builder.html:891: leftover conflict marker
+Teacher/assessment-builder.html:1094: leftover conflict marker
+Teacher/assessment-builder.html:1138: leftover conflict marker
+Teacher/assessment-builder.html:1150: trailing whitespace.
+[32m+[m[41m                            [m
+Teacher/assessment-builder.html:1153: trailing whitespace.
+[32m+[m[41m                            [m
+Teacher/assessment-builder.html:1156: trailing whitespace.
+[32m+[m[41m                            [m
+Teacher/assessment-builder.html:1173: trailing whitespace.
+[32m+[m[41m                            [m
+Teacher/assessment-builder.html:1176: trailing whitespace.
+[32m+[m[41m                            [m
+Teacher/assessment-builder.html:1179: trailing whitespace.
+[32m+[m[41m                            [m
+Teacher/assessment-builder.html:1188: leftover conflict marker
+Teacher/assessment-builder.html:1252: leftover conflict marker
+Teacher/assessment-builder.html:1256: leftover conflict marker
+Teacher/assessment-builder.html:1266: leftover conflict marker
+Teacher/assessment-builder.html:1332: leftover conflict marker
+Teacher/assessment-builder.html:1336: leftover conflict marker
+Teacher/assessment-builder.html:1345: leftover conflict marker
+Teacher/assessment-builder.html:1434: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/assessment-builder.html:1451: trailing whitespace.
+[32m+[m[41m                        [m
+Teacher/assessment-builder.html:1454: trailing whitespace.
+[32m+[m[41m                        [m
+Teacher/assessment-builder.html:1467: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/assessment-builder.html:1471: trailing whitespace.
+[32m+[m[41m        [m
+Teacher/assessment-builder.html:1886: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/assessment-builder.html:1903: trailing whitespace.
+[32m+[m[41m        [m
+Teacher/assessment-builder.html:1936: trailing whitespace.
+[32m+[m[41m        [m
+Teacher/assessment-builder.html:1945: trailing whitespace.
+[32m+[m[41m            [m
+Teacher/assessment-builder.html:1950: trailing whitespace.
+[32m+[m[41m            [m
+Teacher/assessment-builder.html:1953: trailing whitespace.
+[32m+[m[41m            [m
+Teacher/assessment-builder.html:2022: trailing whitespace.
+[32m+[m[41m            [m
+Teacher/assessment-builder.html:2028: trailing whitespace.
+[32m+[m[41m        [m
+Teacher/assessment-builder.html:2033: trailing whitespace.
+[32m+[m[41m            [m
+Teacher/assessment-builder.html:2039: trailing whitespace.
+[32m+[m[41m            [m
+Teacher/assessment-builder.html:2042: trailing whitespace.
+[32m+[m[41m            [m
+Teacher/assessment-builder.html:2049: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/assessment-builder.html:2053: trailing whitespace.
+[32m+[m[41m                    [m
+Teacher/assessment-builder.html:2068: trailing whitespace.
+[32m+[m[41m                    [m
+Teacher/assessment-builder.html:2071: trailing whitespace.
+[32m+[m[41m                    [m
+Teacher/assessment-builder.html:2079: trailing whitespace.
+[32m+[m[41m                    [m
+Teacher/assessment-builder.html:2097: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/assessment-builder.html:2108: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/assessment-manager.html:726: leftover conflict marker
+Teacher/assessment-manager.html:813: leftover conflict marker
+Teacher/assessment-manager.html:890: leftover conflict marker
+Teacher/assessment-manager.html:1206: leftover conflict marker
+Teacher/assessment-manager.html:1222: leftover conflict marker
+Teacher/assessment-manager.html:1231: trailing whitespace.
+[32m+[m[41m        [m
+Teacher/assessment-manager.html:1258: trailing whitespace.
+[32m+[m[41m        [m
+Teacher/assessment-manager.html:1263: trailing whitespace.
+[32m+[m[41m        [m
+Teacher/assessment-manager.html:1267: leftover conflict marker
+Teacher/assessment-manager.html:1379: leftover conflict marker
+Teacher/assessment-manager.html:1404: leftover conflict marker
+Teacher/assessment-manager.html:1419: leftover conflict marker
+Teacher/assessment-manager.html:1440: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/assessment-manager.html:1468: leftover conflict marker
+Teacher/assessment-manager.html:1472: leftover conflict marker
+Teacher/assessment-manager.html:1480: leftover conflict marker
+Teacher/assessment-manager.html:1504: leftover conflict marker
+Teacher/assessment-manager.html:1508: leftover conflict marker
+Teacher/assessment-manager.html:1515: leftover conflict marker
+Teacher/assessment-manager.html:1531: leftover conflict marker
+Teacher/assessment-manager.html:1535: leftover conflict marker
+Teacher/assessment-manager.html:1542: leftover conflict marker
+Teacher/assessment-manager.html:1569: trailing whitespace.
+[32m+[m[41m            [m
+Teacher/assessment-manager.html:1571: trailing whitespace.
+[32m+[m[32m            const clickedBtn = event && event.target ? event.target :[m[41m [m
+Teacher/assessment-manager.html:2166: leftover conflict marker
+Teacher/assessment-manager.html:2169: leftover conflict marker
+Teacher/assessment-manager.html:2175: leftover conflict marker
+Teacher/assessment-manager.html:2233: leftover conflict marker
+Teacher/assessment-manager.html:2237: leftover conflict marker
+Teacher/assessment-manager.html:2239: leftover conflict marker
+Teacher/assessment-manager.html:2253: leftover conflict marker
+Teacher/assessment-manager.html:2256: leftover conflict marker
+Teacher/assessment-manager.html:2262: leftover conflict marker
+Teacher/grading.html:675: leftover conflict marker
+Teacher/grading.html:696: leftover conflict marker
+Teacher/grading.html:713: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:717: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:720: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:731: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:733: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:747: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:750: trailing whitespace.
+[32m+[m[41m                    [m
+Teacher/grading.html:757: trailing whitespace.
+[32m+[m[41m                    [m
+Teacher/grading.html:774: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:787: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:798: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:813: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:819: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:847: trailing whitespace.
+[32m+[m[41m            [m
+Teacher/grading.html:855: trailing whitespace.
+[32m+[m[41m            [m
+Teacher/grading.html:857: trailing whitespace.
+[32m+[m[41m            [m
+Teacher/grading.html:881: trailing whitespace.
+[32m+[m[41m              [m
+Teacher/grading.html:885: trailing whitespace.
+[32m+[m[41m              [m
+Teacher/grading.html:891: trailing whitespace.
+[32m+[m[41m            [m
+Teacher/grading.html:897: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:901: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:905: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:908: trailing whitespace.
+[32m+[m[41m            [m
+Teacher/grading.html:957: trailing whitespace.
+[32m+[m[32m                const existingGrade = filteredGrades.find(g =>[m[41m [m
+Teacher/grading.html:958: trailing whitespace.
+[32m+[m[32m                    g.studentUID === student.uid &&[m[41m [m
+Teacher/grading.html:959: trailing whitespace.
+[32m+[m[32m                    g.subject === subjectFilter &&[m[41m [m
+Teacher/grading.html:964: trailing whitespace.
+[32m+[m[32m                const grade = existingGrade || {[m[41m [m
+Teacher/grading.html:965: trailing whitespace.
+[32m+[m[32m                    id: null,[m[41m [m
+Teacher/grading.html:966: trailing whitespace.
+[32m+[m[32m                    studentUID: student.uid,[m[41m [m
+Teacher/grading.html:967: trailing whitespace.
+[32m+[m[32m                    subject: subjectFilter,[m[41m [m
+Teacher/grading.html:968: trailing whitespace.
+[32m+[m[32m                    quarter: quarterFilter,[m[41m [m
+Teacher/grading.html:969: trailing whitespace.
+[32m+[m[32m                    grades: {}[m[41m [m
+Teacher/grading.html:980: trailing whitespace.
+[32m+[m[41m                [m
+Teacher/grading.html:988: trailing whitespace.
+[32m+[m[32m                        const onClickHandler = grade.id ?[m[41m [m
+Teacher/grading.html:989: trailing whitespace.
+[32m+[m[32m                            `onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')"` :[m[41m [m
+Teacher/grading.html:991: trailing whitespace.
+[32m+[m[32m                        rowHTML += `<td class="${cellClass}" style="background: #f8f9fa;"[m[41m [m
+Teacher/grading.html:993: trailing whitespace.
+[32m+[m[32m                            data-grade-id="${grade.id || ''}"[m[41m [m
+Teacher/grading.html:998: trailing whitespace.
+[32m+[m[41m                    [m
+Teacher/grading.html:1005: trailing whitespace.
+[32m+[m[32m                        const onClickHandler = grade.id ?[m[41m [m
+Teacher/grading.html:1006: trailing whitespace.
+[32m+[m[32m                            `onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')"` :[m[41m [m
+Teacher/grading.html:1008: trailing whitespace.
+[32m+[m[32m                        rowHTML += `<td class="${cellClass}" style="background: #faf8ff;"[m[41m [m
+Teacher/grading.html:1010: trailing whitespace.
+[32m+[m[32m                            data-grade-id="${grade.id || ''}"[m[41m [m
+Teacher/grading.html:1015: trailing whitespace.
+[32m+[m[41m                    [m
+Teacher/grading.html:1022: trailing whitespace.
+[32m+[m[32m                        const onClickHandler = grade.id ?[m[41m [m
+Teacher/grading.html:1023: trailing whitespace.
+[32m+[m[32m                            `onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')"` :[m[41m [m
+Teacher/grading.html:1025: trailing whitespace.
+[32m+[m[32m                        rowHTML += `<td class="${cellClass}" style="background: #f1f8e9;"[m[41m [m
+Teacher/grading.html:1027: trailing whitespace.
+[32m+[m[32m                            data-grade-id="${grade.id || ''}"[m[41m [m
+Teacher/grading.html:1039: trailing whitespace.
+[32m+[m[32m                        rowHTML += `<td class="${cellClass}"[m[41m [m
+Teacher/grading.html:1040: trailing whitespace.
+[32m+[m[32m                            onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')"[m[41m [m
+Teacher/grading.html:1041: trailing whitespace.
+[32m+[m[32m                            data-grade-id="${grade.id}"[m[41m [m
+Teacher/grading.html:1062: trailing whitespace.
+[32m+[m[41m            
