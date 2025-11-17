@@ -76,49 +76,9 @@ export async function getUserGradeLevel() {
       return null;
     }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    // Normalize grade level format to Firebase format (e.g., "5" -> "grade=5", "grade5" -> "grade=5", "grade=5" -> "grade=5")
-    const grade = teacher.gradelevel.toString();
-    let normalizedGrade;
-    
-    // Handle Firebase format: "grade=5" or "grade=6"
-    if (grade.includes('=')) {
-      const parts = grade.split('=');
-      if (parts.length === 2 && parts[0].toLowerCase().trim() === 'grade') {
-        const gradeNum = parseInt(parts[1].trim(), 10);
-        if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
-          normalizedGrade = `grade=${gradeNum}`;
-        } else {
-          normalizedGrade = grade; // Keep as-is if invalid
-        }
-      } else {
-        normalizedGrade = grade; // Keep as-is if format is unexpected
-      }
-    } else {
-      // Extract number from formats like "5", "grade5", "Grade5"
-      const numberMatch = grade.match(/(\d+)/);
-      if (numberMatch) {
-        const gradeNum = parseInt(numberMatch[1], 10);
-        if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
-          normalizedGrade = `grade=${gradeNum}`;
-        } else {
-          normalizedGrade = grade; // Keep as-is if invalid
-        }
-      } else {
-        normalizedGrade = grade; // Keep as-is if no number found
-      }
-    }
-=======
     // Normalize grade level format (e.g., "5" -> "grade5", "grade5" -> "grade5")
     const grade = teacher.gradelevel.toString();
     const normalizedGrade = grade.startsWith('grade') ? grade : `grade${grade}`;
->>>>>>> main
-=======
-    // Normalize grade level format (e.g., "5" -> "grade5", "grade5" -> "grade5")
-    const grade = teacher.gradelevel.toString();
-    const normalizedGrade = grade.startsWith('grade') ? grade : `grade${grade}`;
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
 
     console.log(`✅ [getUserGradeLevel] Found teacher grade level: ${teacher.gradelevel} → normalized: ${normalizedGrade}`);
     return normalizedGrade;
@@ -173,31 +133,7 @@ export async function getUserGradeLevelWithFallback() {
     const urlParams = new URLSearchParams(window.location.search);
     const urlGrade = urlParams.get('grade');
     if (urlGrade) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-      // Normalize to Firebase format (grade=5)
-      let normalizedGrade;
-      if (urlGrade.includes('=')) {
-        normalizedGrade = urlGrade; // Already in correct format
-      } else {
-        const numberMatch = urlGrade.match(/(\d+)/);
-        if (numberMatch) {
-          const gradeNum = parseInt(numberMatch[1], 10);
-          if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
-            normalizedGrade = `grade=${gradeNum}`;
-          } else {
-            normalizedGrade = urlGrade; // Keep as-is if invalid
-          }
-        } else {
-          normalizedGrade = urlGrade; // Keep as-is if no number found
-        }
-      }
-=======
       const normalizedGrade = urlGrade.startsWith('grade') ? urlGrade : `grade${urlGrade}`;
->>>>>>> main
-=======
-      const normalizedGrade = urlGrade.startsWith('grade') ? urlGrade : `grade${urlGrade}`;
->>>>>>> 70e495d041eb638c071ee1f10edfa15b1439b5fc
       console.log(`✅ [getUserGradeLevelWithFallback] Found grade level from URL params: ${normalizedGrade}`);
       return normalizedGrade;
     } else {
