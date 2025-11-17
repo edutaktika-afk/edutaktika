@@ -1110,7 +1110,7 @@ async function loadFirebaseDesigns() {
         const designsData = snapshot.val();
 
         if (!designsData) {
-            container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No designs found.<br><small>Click "Create Design" to get started!</small></div>';
+            container.innerHTML = ''; // Empty - no message shown
             return;
         }
 
@@ -1452,7 +1452,7 @@ async function loadAllDesignsForQuarter(container) {
         
         // Render all designs together
         if (allDesigns.length === 0) {
-            container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No designs found.<br><small>Click "Create Lesson" to get started!</small></div>';
+            container.innerHTML = ''; // Empty - no message shown
             return;
         }
         
@@ -1500,23 +1500,31 @@ function renderDesignsForQuarter(designs, container) {
                         onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\'%3E%3Crect fill=\'%23e3f2fd\' width=\'300\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'20\' fill=\'%231976d2\'%3E${design.name}%3C/text%3E%3C/svg%3E'"
                     >
                     <div class="card-content" style="padding: 16px;">
-                        <div class="card-title" style="font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 8px;">${design.name}</div>
-                        <div class="card-description" style="font-size: 0.9rem; color: #666; margin-bottom: 12px;">${design.description}</div>
-                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <div class="card-title" style="font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 4px;">${design.name}</div>
+                        <div style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Lesson: ${design.name}</div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
                             <button onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openDesignViewer('${design.id}', 'subject_math', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}"
-                                    style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);"
+                                    style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);"
                                     onmouseover="this.style.background='#1976D2'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(33, 150, 243, 0.4)'"
                                     onmouseout="this.style.background='#2196F3'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(33, 150, 243, 0.3)'">
                                 <i class="fas fa-eye" style="margin-right: 6px;"></i>View Design
                             </button>
                             <button onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openDesignEditor('${design.id}', 'subject_math', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignEditor('${encodeURIComponent(design.jsonUrl)}')`}"
-                                    style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);"
+                                    style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);"
                                     onmouseover="this.style.background='#F57C00'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(255, 152, 0, 0.4)'"
                                     onmouseout="this.style.background='#FF9800'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(255, 152, 0, 0.3)'">
                                 <i class="fas fa-edit" style="margin-right: 6px;"></i>Edit Design
                             </button>
+                            ${design.source === 'supabase' ? `
+                            <button onclick="event.stopPropagation(); (async function() { try { if(typeof window.renameDesign === 'function') { await window.renameDesign('${design.id}', 'subject_math', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}', '${design.gradeLevel || ''}'); } else { alert('Rename function not loaded. Please refresh the page.'); console.error('window.renameDesign:', typeof window.renameDesign); } } catch(err) { console.error('Error calling renameDesign:', err); alert('Error: ' + err.message); } })();" 
+                                    style="background: #9C27B0; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(156, 39, 176, 0.3);"
+                                    onmouseover="this.style.background='#7B1FA2'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(156, 39, 176, 0.4)'"
+                                    onmouseout="this.style.background='#9C27B0'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(156, 39, 176, 0.3)'">
+                                <i class="fas fa-tag" style="margin-right: 6px;"></i>Rename
+                            </button>
+                            ` : ''}
                         </div>
-                        <div style="font-size: 0.8rem; color: #888;">Created: ${design.created} ${design.source ? `| ${design.source.toUpperCase()}` : ''}</div>
+                        <div style="font-size: 0.8rem; color: #888; margin-top: 8px;">Created: ${design.created || 'Unknown'} ${design.source ? `| ${design.source.toUpperCase()}` : '| SUPABASE'}</div>
                     </div>
                 </div>
             `).join('')}
@@ -1938,27 +1946,14 @@ async function loadYouTubeVideosTeacher() {
     }
 
     function addPlaceholder(section){
-        // Check if placeholder already exists
-        if(section.querySelector('.empty-quarter-msg')) return;
-        
-        const placeholder = document.createElement('div');
-        placeholder.className = 'empty-quarter-msg';
-        // Use HTML content with strong tag for green highlight (matches existing CSS)
-        placeholder.innerHTML = 'No lessons yet. Click <strong>"Create Lesson"</strong> to get started!';
-        
-        // Insert at the beginning of the lessons container
-        const lessonsContainer = section.querySelector('.lessons-container');
-        if(lessonsContainer) {
-            lessonsContainer.insertBefore(placeholder, lessonsContainer.firstChild);
-        }
+        // Placeholder disabled - no empty state message shown
+        // Just remove any existing placeholder
+        removePlaceholder(section);
     }
 
     function evaluate(section){
-        if(sectionHasLessonCards(section) || sectionHasVideoCards(section)){
-            removePlaceholder(section);
-        } else {
-            addPlaceholder(section);
-        }
+        // Always remove placeholder - no empty state messages
+        removePlaceholder(section);
     }
 
     // Initial evaluation (after DOM paint but before async Firebase completes)
