@@ -18,6 +18,13 @@ document.addEventListener("DOMContentLoaded", function() {
             // Show Gmail and role in the dropdown
             document.getElementById('adminEmail').textContent = admin.email || user.email;
             document.getElementById('adminUsername').textContent = '@' + (admin.role || 'admin');
+            
+            // Load statistics after authentication
+            setTimeout(() => {
+                if (typeof loadStatistics === 'function') {
+                    loadStatistics();
+                }
+            }, 1000);
         }
     });
 });
@@ -2931,6 +2938,15 @@ document.getElementById('adminModalRegForm').onsubmit = async function(e) {
 
 // Load statistics for dashboard cards
 function loadStatistics() {
+    // Ensure db is defined
+    if (typeof db === 'undefined') {
+        console.warn('⚠️ Database not initialized yet, retrying in 500ms...');
+        setTimeout(loadStatistics, 500);
+        return;
+    }
+    
+    console.log('🔄 Loading statistics...');
+    
     Promise.all([
         db.ref('students').once('value'),
         db.ref('teachers').once('value'),
@@ -2969,10 +2985,33 @@ function loadStatistics() {
         const statPendingApprovalsEl = document.getElementById('statPendingApprovals');
         const statTotalAdminsEl = document.getElementById('statTotalAdmins');
         
-        if (statTotalStudentsEl) statTotalStudentsEl.textContent = totalStudents;
-        if (statTotalTeachersEl) statTotalTeachersEl.textContent = teachers.length;
-        if (statPendingApprovalsEl) statPendingApprovalsEl.textContent = pendingApprovals;
-        if (statTotalAdminsEl) statTotalAdminsEl.textContent = totalAdmins;
+        if (statTotalStudentsEl) {
+            statTotalStudentsEl.textContent = totalStudents;
+            console.log('✅ Updated statTotalStudents:', totalStudents);
+        } else {
+            console.warn('⚠️ Element statTotalStudents not found');
+        }
+        
+        if (statTotalTeachersEl) {
+            statTotalTeachersEl.textContent = teachers.length;
+            console.log('✅ Updated statTotalTeachers:', teachers.length);
+        } else {
+            console.warn('⚠️ Element statTotalTeachers not found');
+        }
+        
+        if (statPendingApprovalsEl) {
+            statPendingApprovalsEl.textContent = pendingApprovals;
+            console.log('✅ Updated statPendingApprovals:', pendingApprovals);
+        } else {
+            console.warn('⚠️ Element statPendingApprovals not found');
+        }
+        
+        if (statTotalAdminsEl) {
+            statTotalAdminsEl.textContent = totalAdmins;
+            console.log('✅ Updated statTotalAdmins:', totalAdmins);
+        } else {
+            console.warn('⚠️ Element statTotalAdmins not found');
+        }
         
         console.log('📊 Statistics updated:', {
             students: totalStudents,
@@ -2980,7 +3019,10 @@ function loadStatistics() {
             pendingApprovals: pendingApprovals,
             admins: totalAdmins
         });
-    }).catch(err => console.error('Error loading statistics:', err));
+    }).catch(err => {
+        console.error('❌ Error loading statistics:', err);
+        console.error('Error details:', err.message, err.stack);
+    });
 }
 
 // Activity logging
@@ -3515,10 +3557,21 @@ function exportTeachersCSV(type) {
         }
     }
 
+// Wait for Firebase to be initialized before loading statistics
+function waitForFirebaseAndLoadStats() {
+    if (typeof firebase !== 'undefined' && typeof db !== 'undefined') {
+        console.log('✅ Firebase initialized, loading statistics...');
+        loadStatistics();
+        // Refresh statistics every 30 seconds
+        setInterval(loadStatistics, 30000);
+    } else {
+        console.log('⏳ Waiting for Firebase initialization...');
+        setTimeout(waitForFirebaseAndLoadStats, 100);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    loadStatistics();
-    // Refresh statistics every 30 seconds
-    setInterval(loadStatistics, 30000);
+    waitForFirebaseAndLoadStats();
 });
 </script>
 
