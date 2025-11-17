@@ -353,6 +353,14 @@
             });
             console.log('Total students found:', students.length);
 
+
+            // Load assessments to check subject field (since assessment IDs are Firebase push keys)
+            const assessmentsSnapshot = await db.ref('assessments').once('value');
+            const assessments = {};
+            assessmentsSnapshot.forEach(child => {
+                assessments[child.key] = child.val();
+            });
+
             // Calculate Science-specific scores
             students.forEach(s => {
                 // Science quiz points - only from Science quizzes
@@ -376,15 +384,25 @@
                     });
                 }
                 
-                // Science assessment points - only from Science assessments
+                // Science assessment points - check subject field from assessments collection
                 let scienceAssessmentPoints = 0;
                 if (s.assessments) {
                     Object.keys(s.assessments).forEach(aid => {
-                        // Only count Science-related assessments
-                        if (aid.includes('science') || aid === 'assessment3') {
-                            const summary = s.assessments[aid]?.summary;
-                            if (summary && typeof summary.best === 'number') {
-                                scienceAssessmentPoints += summary.best;
+                        const summary = s.assessments[aid]?.summary;
+                        if (summary && typeof summary.best === 'number') {
+                            // Check if this assessment is a Science assessment by looking up the assessment
+                            const assessment = assessments[aid];
+                            if (assessment && assessment.subject) {
+                                const subjectLower = assessment.subject.toLowerCase();
+                                // Check for Science-related subjects
+                                if (subjectLower === 'science') {
+                                    scienceAssessmentPoints += summary.best;
+                                }
+                            } else {
+                                // Fallback: check assessment ID pattern (for old assessments)
+                                if (aid.includes('science') || aid === 'assessment3') {
+                                    scienceAssessmentPoints += summary.best;
+                                }
                             }
                         }
                     });

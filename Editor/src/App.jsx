@@ -35,6 +35,7 @@ import en from './translations/en';
 // import zhCh from './translations/zh-ch';
 
 import Topbar from './topbar/topbar';
+import { presentSlideshow } from './topbar/topbar';
 // Lazy load Tutorial component (not critical for initial render)
 const Tutorial = lazy(() => import('./components/Tutorial'));
 
@@ -274,7 +275,32 @@ const App = observer(({ store }) => {
     // Handle Supabase designs
     if (supabaseDesign) {
       setIsViewOnly(viewMode && urlParams.get('view') === 'true');
-      loadSupabaseDesign(supabaseDesign, urlParams.get('subject'));
+      loadSupabaseDesign(supabaseDesign, urlParams.get('subject')).then(() => {
+        // Auto-trigger presentation mode if present=true
+        if (presentMode) {
+          setTimeout(() => {
+            // Directly call presentSlideshow function
+            if (typeof presentSlideshow === 'function') {
+              console.log('🎬 Auto-triggering presentation mode...');
+              presentSlideshow(store);
+            } else {
+              // Fallback: try to find and click the present button
+              const presentButton = document.querySelector('[title*="Present"], [title*="present"], button:contains("Present")');
+              if (presentButton) {
+                presentButton.click();
+              } else {
+                // Fallback: try to find by text content
+                const buttons = document.querySelectorAll('button, .bp5-button');
+                buttons.forEach(button => {
+                  if (button.textContent && (button.textContent.includes('Present') || button.textContent.includes('present'))) {
+                    button.click();
+                  }
+                });
+              }
+            }
+          }, 2000); // Wait 2 seconds for the design to load
+        }
+      });
       return;
     }
     
@@ -649,8 +675,8 @@ const App = observer(({ store }) => {
       }}
       onDrop={handleDrop}
     >
-      <Topbar store={store} isViewOnly={isViewOnly} />
-      <div style={{ height: 'calc(100% - 50px)' }}>
+      {!isViewOnly && <Topbar store={store} isViewOnly={isViewOnly} />}
+      <div style={{ height: isViewOnly ? '100%' : 'calc(100% - 50px)' }}>
         <PolotnoContainer className="polotno-app-container">
           {!isViewOnly && (
             <SidePanelWrap>

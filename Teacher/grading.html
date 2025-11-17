@@ -3255,9 +3255,37 @@
                 // Get teacher information first
                 const teacherSnap = await db.ref('teachers/' + currentTeacherUID).once('value');
                 const teacher = teacherSnap.val();
-                const teacherGrade = teacher && teacher.gradelevel ? teacher.gradelevel : null;
+                
+                // Check both 'gradelevel' and 'grade' for teacher's grade (backward compatibility)
+                const teacherGrade = teacher && (teacher.gradelevel || teacher.grade) ? (teacher.gradelevel || teacher.grade) : null;
                 const teacherSchoolYear = teacher && teacher.school_year ? teacher.school_year : null;
-                const teacherSubjects = teacher && teacher.subjects ? teacher.subjects : null;
+                
+                console.log('Teacher data loaded:', teacher);
+                console.log('Teacher grade (gradelevel/grade):', teacherGrade);
+                
+                // Get teacher subjects - check both 'subjects' (array) and 'subject' (single) for compatibility
+                let teacherSubjects = null;
+                if (teacher) {
+                    if (teacher.subjects && Array.isArray(teacher.subjects) && teacher.subjects.length > 0) {
+                        teacherSubjects = teacher.subjects;
+                    } else if (teacher.subject) {
+                        // Convert single subject to array
+                        teacherSubjects = [teacher.subject];
+                    }
+                }
+                
+                console.log('Teacher subjects (raw):', teacher ? (teacher.subjects || teacher.subject) : null);
+                
+                // Map subject values from registration format (subject_math) to grading format (math)
+                // Also handle direct format (math, english, science) for backward compatibility
+                if (teacherSubjects && Array.isArray(teacherSubjects)) {
+                    teacherSubjects = teacherSubjects.map(subj => {
+                        if (subj.startsWith('subject_')) {
+                            return subj.replace('subject_', '');
+                        }
+                        return subj.toLowerCase();
+                    });
+                }
 
                 const snapshot = await db.ref('students').once('value');
                 studentsData = [];
@@ -3428,7 +3456,12 @@
             // Generate table body
             tableBody.innerHTML = '';
 
-            if (filteredGrades.length === 0) {
+            // Get current filters
+            const subjectFilter = document.getElementById('subjectFilter').value;
+            const quarterFilter = document.getElementById('quarterFilter').value;
+
+            // If no students loaded, show message
+            if (studentsData.length === 0) {
                 const row = document.createElement('tr');
                 let totalCols;
                 if (hasCategorizedAttributes) {
@@ -3437,16 +3470,49 @@
                     totalCols = gradingAttributes.filter(attr => attr.percentage > 0).length + 4;
                 }
                 row.innerHTML = `<td colspan="${totalCols}" style="text-align: center; padding: 40px; color: var(--text-light);">
-                    <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                    No grade data available. Click "Add Grade Entry" to get started.
+                    <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    No students found for your assigned section and grade level.
+                    <br><small>Please contact the administrator to verify your teaching assignments.</small>
                 </td>`;
                 tableBody.appendChild(row);
                 return;
             }
 
-            filteredGrades.forEach(grade => {
-                const student = studentsData.find(s => s.uid === grade.studentUID);
-                const studentName = student ? `${student.fname} ${student.lname}` : 'Unknown Student';
+            // If no subject/quarter selected, show all students with message
+            if (!subjectFilter || !quarterFilter) {
+                const row = document.createElement('tr');
+                let totalCols;
+                if (hasCategorizedAttributes) {
+                    totalCols = writtenWorks.length + performanceTask.length + quarterlyAssessment.length + 4;
+                } else {
+                    totalCols = gradingAttributes.filter(attr => attr.percentage > 0).length + 4;
+                }
+                row.innerHTML = `<td colspan="${totalCols}" style="text-align: center; padding: 40px; color: var(--text-light);">
+                    <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    Please select a subject and quarter to view/add grades.
+                    <br><small>You have ${studentsData.length} student(s) in your section.</small>
+                </td>`;
+                tableBody.appendChild(row);
+                return;
+            }
+
+            // Show all students from the section, with their grades if they exist
+            studentsData.forEach(student => {
+                // Find existing grade for this student, subject, and quarter
+                const existingGrade = filteredGrades.find(g => 
+                    g.studentUID === student.uid && 
+                    g.subject === subjectFilter && 
+                    g.quarter === quarterFilter
+                );
+
+                const studentName = `${student.fname || student.firstname || ''} ${student.lname || student.lastname || ''}`.trim() || 'Unknown Student';
+                const grade = existingGrade || { 
+                    id: null, 
+                    studentUID: student.uid, 
+                    subject: subjectFilter, 
+                    quarter: quarterFilter, 
+                    grades: {} 
+                };
 
                 const row = document.createElement('tr');
                 let rowHTML = `
@@ -3460,47 +3526,67 @@
                 if (hasCategorizedAttributes) {
                     // Add Written Works columns
                     writtenWorks.forEach(attr => {
-                        const gradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
-                        const cellClass = getGradeClass(gradeValue) + ' editable-cell';
+                        const rawGradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
+                        const percentGrade = normalizeGradeToPercent(rawGradeValue);
+                        const cellClass = getGradeClass(percentGrade) + ' editable-cell';
+                        const displayValue = percentGrade > 0 ? percentGrade.toFixed(1) : '-';
+                        const onClickHandler = grade.id ? 
+                            `onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')"` : 
+                            `onclick="openGradeModalForStudent('${student.uid}', '${subjectFilter}', '${quarterFilter}')" style="cursor: pointer;" title="Click to add grade"`;
                         rowHTML += `<td class="${cellClass}" style="background: #f8f9fa;" 
-                            onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')" 
-                            data-grade-id="${grade.id}" 
-                            data-attribute="${attr.name}">${gradeValue.toFixed(1)}</td>`;
-                        finalGrade += (gradeValue * attr.percentage / 100);
+                            ${onClickHandler}
+                            data-grade-id="${grade.id || ''}" 
+                            data-attribute="${attr.name}">${displayValue}</td>`;
+                        // Apply weight: percent * (weight / 100)
+                        finalGrade += (percentGrade * attr.percentage / 100);
                     });
                     
                     // Add Performance Task columns
                     performanceTask.forEach(attr => {
-                        const gradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
-                        const cellClass = getGradeClass(gradeValue) + ' editable-cell';
+                        const rawGradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
+                        const percentGrade = normalizeGradeToPercent(rawGradeValue);
+                        const cellClass = getGradeClass(percentGrade) + ' editable-cell';
+                        const displayValue = percentGrade > 0 ? percentGrade.toFixed(1) : '-';
+                        const onClickHandler = grade.id ? 
+                            `onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')"` : 
+                            `onclick="openGradeModalForStudent('${student.uid}', '${subjectFilter}', '${quarterFilter}')" style="cursor: pointer;" title="Click to add grade"`;
                         rowHTML += `<td class="${cellClass}" style="background: #faf8ff;" 
-                            onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')" 
-                            data-grade-id="${grade.id}" 
-                            data-attribute="${attr.name}">${gradeValue.toFixed(1)}</td>`;
-                        finalGrade += (gradeValue * attr.percentage / 100);
+                            ${onClickHandler}
+                            data-grade-id="${grade.id || ''}" 
+                            data-attribute="${attr.name}">${displayValue}</td>`;
+                        // Apply weight: percent * (weight / 100)
+                        finalGrade += (percentGrade * attr.percentage / 100);
                     });
                     
                     // Add Quarterly Assessment columns
                     quarterlyAssessment.forEach(attr => {
-                        const gradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
-                        const cellClass = getGradeClass(gradeValue) + ' editable-cell';
+                        const rawGradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
+                        const percentGrade = normalizeGradeToPercent(rawGradeValue);
+                        const cellClass = getGradeClass(percentGrade) + ' editable-cell';
+                        const displayValue = percentGrade > 0 ? percentGrade.toFixed(1) : '-';
+                        const onClickHandler = grade.id ? 
+                            `onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')"` : 
+                            `onclick="openGradeModalForStudent('${student.uid}', '${subjectFilter}', '${quarterFilter}')" style="cursor: pointer;" title="Click to add grade"`;
                         rowHTML += `<td class="${cellClass}" style="background: #f1f8e9;" 
-                            onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')" 
-                            data-grade-id="${grade.id}" 
-                            data-attribute="${attr.name}">${gradeValue.toFixed(1)}</td>`;
-                        finalGrade += (gradeValue * attr.percentage / 100);
+                            ${onClickHandler}
+                            data-grade-id="${grade.id || ''}" 
+                            data-attribute="${attr.name}">${displayValue}</td>`;
+                        // Apply weight: percent * (weight / 100)
+                        finalGrade += (percentGrade * attr.percentage / 100);
                     });
                 } else {
                     // Add all attributes in simple format
                     const allAttributes = gradingAttributes.filter(attr => attr.percentage > 0);
                     allAttributes.forEach(attr => {
-                        const gradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
-                        const cellClass = getGradeClass(gradeValue) + ' editable-cell';
+                        const rawGradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
+                        const percentGrade = normalizeGradeToPercent(rawGradeValue);
+                        const cellClass = getGradeClass(percentGrade) + ' editable-cell';
                         rowHTML += `<td class="${cellClass}" 
                             onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')" 
                             data-grade-id="${grade.id}" 
-                            data-attribute="${attr.name}">${gradeValue.toFixed(1)}</td>`;
-                        finalGrade += (gradeValue * attr.percentage / 100);
+                            data-attribute="${attr.name}">${percentGrade.toFixed(1)}</td>`;
+                        // Apply weight: percent * (weight / 100)
+                        finalGrade += (percentGrade * attr.percentage / 100);
                     });
                 }
 
@@ -3512,6 +3598,28 @@
                 row.innerHTML = rowHTML;
                 tableBody.appendChild(row);
             });
+        }
+
+        // Helper function to normalize a grade value to percentage
+        // Handles both object format {score: X, total: Y} and raw number format (for backward compatibility)
+        function normalizeGradeToPercent(gradeValue) {
+            if (!gradeValue && gradeValue !== 0) return 0;
+            
+            // If it's an object with score and total
+            if (typeof gradeValue === 'object' && gradeValue !== null) {
+                const score = parseFloat(gradeValue.score) || 0;
+                const total = parseFloat(gradeValue.total) || 0;
+                if (total <= 0) return 0;
+                return (score / total) * 100;
+            }
+            
+            // If it's already a number, assume it's already a percentage (backward compatibility)
+            const numValue = parseFloat(gradeValue);
+            if (isNaN(numValue)) return 0;
+            
+            // If the value is > 100, it might be a raw score that needs normalization
+            // But we can't normalize without knowing the total, so assume it's already a percentage
+            return numValue;
         }
 
         // Get CSS class based on grade value
@@ -3542,8 +3650,10 @@
                 let finalGrade = 0;
                 gradingAttributes.forEach(attr => {
                     if (attr.percentage > 0) {
-                        const gradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
-                        finalGrade += (gradeValue * attr.percentage / 100);
+                        const rawGradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
+                        const percentGrade = normalizeGradeToPercent(rawGradeValue);
+                        // Apply weight: percent * (weight / 100)
+                        finalGrade += (percentGrade * attr.percentage / 100);
                     }
                 });
                 return finalGrade;
@@ -3626,25 +3736,82 @@
                 }
             }
 
-            // Auto-select subjects if teacher has subjects assigned
+            // Auto-select and filter subjects if teacher has subjects assigned
             if (teacherSubjects && Array.isArray(teacherSubjects) && teacherSubjects.length > 0) {
                 const subjectFilter = document.getElementById('subjectFilter');
-                if (subjectFilter && teacherSubjects.length === 1) {
-                    // If teacher teaches only one subject, auto-select it
-                    subjectFilter.value = teacherSubjects[0];
-                }
+                const subjectSelect = document.getElementById('subjectSelect');
+                const bulkSubjectSelect = document.getElementById('bulkSubjectSelect');
+                const attendanceSubjectFilter = document.getElementById('attendanceSubjectFilter');
+                const attendanceSubjectSelect = document.getElementById('attendanceSubjectSelect');
+                const historySubjectFilter = document.getElementById('historySubjectFilter');
+                const viewonlySubjectFilter = document.getElementById('viewonlySubjectFilter');
+                
+                // Subject mapping for display
+                const subjectMap = {
+                    'math': 'Math',
+                    'english': 'English',
+                    'science': 'Science'
+                };
+                
+                // Filter subject options to only show teacher's assigned subjects
+                const filterDropdowns = [subjectFilter, attendanceSubjectFilter, historySubjectFilter, viewonlySubjectFilter];
+                const selectDropdowns = [subjectSelect, bulkSubjectSelect, attendanceSubjectSelect];
+                
+                // Handle filter dropdowns (add "All Subjects" if multiple, auto-select if single subject)
+                filterDropdowns.forEach(dropdown => {
+                    if (!dropdown) return;
+                    dropdown.innerHTML = '';
+                    
+                    // Add "All Subjects" option if teacher has multiple subjects
+                    if (teacherSubjects.length > 1) {
+                        const allOption = document.createElement('option');
+                        allOption.value = '';
+                        allOption.textContent = 'All Subjects';
+                        dropdown.appendChild(allOption);
+                    }
+                    
+                    teacherSubjects.forEach(subj => {
+                        const option = document.createElement('option');
+                        option.value = subj;
+                        option.textContent = subjectMap[subj] || subj.charAt(0).toUpperCase() + subj.slice(1);
+                        dropdown.appendChild(option);
+                    });
+                    
+                    // Auto-select if teacher has only one subject
+                    if (teacherSubjects.length === 1) {
+                        dropdown.value = teacherSubjects[0];
+                    }
+                });
+                
+                // Handle select dropdowns (need "Select subject" option, don't auto-select)
+                selectDropdowns.forEach(dropdown => {
+                    if (!dropdown) return;
+                    dropdown.innerHTML = '';
+                    
+                    // Add "Select" option
+                    const selectOption = document.createElement('option');
+                    selectOption.value = '';
+                    if (dropdown === attendanceSubjectSelect) {
+                        selectOption.textContent = 'All Subjects';
+                    } else {
+                        selectOption.textContent = 'Select subject';
+                    }
+                    dropdown.appendChild(selectOption);
+                    
+                    // Add teacher's subjects
+                    teacherSubjects.forEach(subj => {
+                        const option = document.createElement('option');
+                        option.value = subj;
+                        option.textContent = subjectMap[subj] || subj.charAt(0).toUpperCase() + subj.slice(1);
+                        dropdown.appendChild(option);
+                    });
+                });
             }
 
-            // Update attendance filters as well
+            // Update attendance grade filter
             const attendanceGradeFilter = document.getElementById('attendanceGradeLevelFilter');
-            const attendanceSubjectFilter = document.getElementById('attendanceSubjectFilter');
-            
             if (attendanceGradeFilter && teacherGrade) {
                 attendanceGradeFilter.value = teacherGrade;
-            }
-            
-            if (attendanceSubjectFilter && teacherSubjects && Array.isArray(teacherSubjects) && teacherSubjects.length === 1) {
-                attendanceSubjectFilter.value = teacherSubjects[0];
             }
 
             // Apply filters immediately
@@ -3792,7 +3959,10 @@
                     let finalGrade = 0;
                     gradingAttributes.forEach(attr => {
                         if (attr.percentage > 0 && gradesData[gradeIndex].grades[attr.name]) {
-                            finalGrade += (gradesData[gradeIndex].grades[attr.name] * attr.percentage / 100);
+                            const rawGradeValue = gradesData[gradeIndex].grades[attr.name];
+                            const percentGrade = normalizeGradeToPercent(rawGradeValue);
+                            // Apply weight: percent * (weight / 100)
+                            finalGrade += (percentGrade * attr.percentage / 100);
                         }
                     });
                     gradesData[gradeIndex].finalGrade = finalGrade;
@@ -3824,6 +3994,21 @@
         function cancelInlineEdit(cell, originalValue) {
             cell.classList.remove('editing');
             cell.textContent = originalValue;
+        }
+
+        // Open grade modal for a specific student (helper function)
+        function openGradeModalForStudent(studentUID, subject, quarter) {
+            // Set the student, subject, and quarter in the form
+            const studentSelect = document.getElementById('studentSelect');
+            const subjectSelect = document.getElementById('subjectSelect');
+            const quarterSelect = document.getElementById('quarterSelect');
+            
+            if (studentSelect) studentSelect.value = studentUID;
+            if (subjectSelect) subjectSelect.value = subject;
+            if (quarterSelect) quarterSelect.value = quarter;
+            
+            // Open the modal
+            openGradeModal();
         }
 
         // Open grade modal
@@ -3886,6 +4071,8 @@
                     const input = document.querySelector(`input[name="grade_${attr.name}"]`);
                     if (input) {
                         const value = parseFloat(input.value) || 0;
+                        // Input is expected to be percentage (0-100) from the form
+                        // Apply weight: percent * (weight / 100)
                         finalGrade += (value * attr.percentage / 100);
                     }
                 }
@@ -3925,7 +4112,10 @@
             Object.keys(grades).forEach(attrName => {
                 const attr = gradingAttributes.find(a => a.name === attrName);
                 if (attr) {
-                    finalGrade += (grades[attrName] * attr.percentage / 100);
+                    const rawGradeValue = grades[attrName];
+                    const percentGrade = normalizeGradeToPercent(rawGradeValue);
+                    // Apply weight: percent * (weight / 100)
+                    finalGrade += (percentGrade * attr.percentage / 100);
                 }
             });
 
@@ -4127,6 +4317,8 @@
                     const input = document.querySelector(`input[data-student-uid="${studentUID}"][data-attribute="${attr.name}"]`);
                     if (input) {
                         const value = parseFloat(input.value) || 0;
+                        // Input is expected to be percentage (0-100) from the form
+                        // Apply weight: percent * (weight / 100)
                         finalGrade += (value * attr.percentage / 100);
                     }
                 }
@@ -4174,7 +4366,10 @@
                     Object.keys(grades).forEach(attrName => {
                         const attr = gradingAttributes.find(a => a.name === attrName);
                         if (attr) {
-                            finalGrade += (grades[attrName] * attr.percentage / 100);
+                            const rawGradeValue = grades[attrName];
+                            const percentGrade = normalizeGradeToPercent(rawGradeValue);
+                            // Apply weight: percent * (weight / 100)
+                            finalGrade += (percentGrade * attr.percentage / 100);
                         }
                     });
 
@@ -4525,7 +4720,7 @@
             try {
                 const snapshot = await db.ref(`teachers/${currentTeacherUID}/sections/${currentSection}/attendance`).once('value');
                 attendanceData = [];
-                
+
                 if (snapshot.exists()) {
                     snapshot.forEach(child => {
                         attendanceData.push({
@@ -4541,6 +4736,9 @@
                 console.error('Error loading attendance:', error);
             }
         }
+
+        // Make loadAttendanceData globally accessible
+        window.loadAttendanceData = loadAttendanceData;
 
         // Filter attendance based on subject, quarter, and date
         function filterAttendance() {
@@ -4565,12 +4763,18 @@
                 return;
             }
 
+            // Get list of student UIDs from teacher's section (studentsData is already filtered by section)
+            const teacherSectionStudentUIDs = new Set(studentsData.map(s => s.uid));
+
             filteredAttendance = attendanceData.filter(record => {
                 const matchSubject = !subjectFilter || record.subject === subjectFilter;
                 const matchQuarter = !quarterFilter || record.quarter === quarterFilter;
                 const matchDate = !dateFilter || record.date === dateFilter;
                 
-                return matchSubject && matchQuarter && matchDate;
+                // Ensure the student is in the teacher's section (same logic as grading)
+                const studentInSection = record.studentUID && teacherSectionStudentUIDs.has(record.studentUID);
+                
+                return matchSubject && matchQuarter && matchDate && studentInSection;
             });
 
             generateAttendanceTable();
@@ -4775,24 +4979,109 @@
                         status: newStatus,
                         updatedAt: new Date().toISOString()
                     });
+                    
+                    // Update local attendanceData array
+                    const recordIndex = attendanceData.findIndex(r => r.id === existingRecord.id);
+                    if (recordIndex !== -1) {
+                        attendanceData[recordIndex].status = newStatus;
+                        attendanceData[recordIndex].updatedAt = new Date().toISOString();
+                    }
                 } else {
                     // Create new record
                     const attendanceId = Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9);
+                    attendanceEntry.id = attendanceId;
                     await db.ref(`teachers/${currentTeacherUID}/sections/${currentSection}/attendance/${attendanceId}`).set(attendanceEntry);
+                    
+                    // Add to local attendanceData array
+                    attendanceData.push(attendanceEntry);
                 }
                 
-                // Update attendance stats without refreshing the whole table
+                // Update filteredAttendance to include the new/updated record
+                if (existingRecord) {
+                    const filteredIndex = filteredAttendance.findIndex(r => r.id === existingRecord.id);
+                    if (filteredIndex !== -1) {
+                        filteredAttendance[filteredIndex].status = newStatus;
+                    }
+                } else {
+                    // Add new record to filteredAttendance if it matches current filters
+                    const subjectFilter = document.getElementById('attendanceSubjectFilter').value;
+                    const quarterFilter = document.getElementById('attendanceQuarterFilter').value;
+                    if (subject === subjectFilter && quarter === quarterFilter) {
+                        filteredAttendance.push(attendanceEntry);
+                    }
+                }
+                
+                // Update the total count for this student's row immediately
+                const studentRow = clickedCell ? clickedCell.closest('tr') : null;
+                if (studentRow) {
+                    const summaryCell = studentRow.querySelector('.summary-cell');
+                    if (summaryCell) {
+                        const totalPresent = calculateTotalPresent(studentUID, subject, quarter);
+                        summaryCell.textContent = `${totalPresent}/40`;
+                    }
+                }
+                
+                // Update attendance stats
                 updateAttendanceStats();
+                
+                // Reload attendance data in background to ensure full sync (don't await to keep UI responsive)
+                // Use setTimeout to avoid blocking UI
+                setTimeout(async () => {
+                    try {
+                        if (!currentTeacherUID || !currentSection) return;
+                        
+                        const snapshot = await db.ref(`teachers/${currentTeacherUID}/sections/${currentSection}/attendance`).once('value');
+                        attendanceData = [];
+                        
+                        if (snapshot.exists()) {
+                            snapshot.forEach(child => {
+                                attendanceData.push({
+                                    id: child.key,
+                                    ...child.val()
+                                });
+                            });
+                        }
+                        
+                        // Recalculate totals for all students
+                        const tableBody = document.getElementById('attendanceTableBody');
+                        if (tableBody) {
+                            const rows = tableBody.querySelectorAll('tr');
+                            rows.forEach(row => {
+                                const firstCell = row.querySelector('.attendance-cell');
+                                if (firstCell) {
+                                    const onclickAttr = firstCell.getAttribute('onclick');
+                                    if (onclickAttr) {
+                                        const match = onclickAttr.match(/toggleAttendance\('([^']+)'/);
+                                        if (match) {
+                                            const studentUID = match[1];
+                                            const summaryCell = row.querySelector('.summary-cell');
+                                            if (summaryCell) {
+                                                const totalPresent = calculateTotalPresent(studentUID, subject, quarter);
+                                                summaryCell.textContent = `${totalPresent}/40`;
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        
+                        updateAttendanceStats();
+                    } catch (err) {
+                        console.error('Error reloading attendance:', err);
+                    }
+                }, 100);
                 
             } catch (error) {
                 console.error('Error updating attendance:', error);
                 // Revert the visual change if there was an error
-                if (newStatus == 1) {
-                    clickedCell.className = 'attendance-cell absent';
-                    clickedCell.textContent = '✗';
-                } else {
-                    clickedCell.className = 'attendance-cell present';
-                    clickedCell.textContent = '✓';
+                if (clickedCell) {
+                    if (newStatus == 1) {
+                        clickedCell.className = 'attendance-cell absent';
+                        clickedCell.textContent = '✗';
+                    } else {
+                        clickedCell.className = 'attendance-cell present';
+                        clickedCell.textContent = '✓';
+                    }
                 }
             }
         }
@@ -4825,7 +5114,7 @@
             
             if (recordId) {
                 modalTitle.textContent = 'Edit Attendance Entry';
-                loadAttendanceData(recordId);
+                loadAttendanceRecordForEdit(recordId);
             } else {
                 modalTitle.textContent = 'Add Attendance Entry';
                 document.getElementById('attendanceForm').reset();
@@ -4845,15 +5134,21 @@
             document.getElementById('attendanceForm').reset();
         }
 
-        // Populate student dropdown for attendance
+        // Populate student dropdown for attendance (only shows students from teacher's section)
         function populateAttendanceStudentDropdown() {
             const select = document.getElementById('attendanceStudentSelect');
+            if (!select) return;
+            
             select.innerHTML = '<option value="">Select a student</option>';
             
+            // Only show students from teacher's section (studentsData is already filtered by section in loadStudentsData)
             studentsData.forEach(student => {
                 const option = document.createElement('option');
                 option.value = student.uid;
-                option.textContent = `${student.fname} ${student.lname} (${student.id})`;
+                const firstName = student.fname || student.firstname || '';
+                const lastName = student.lname || student.lastname || '';
+                const studentId = student.id || '';
+                option.textContent = `${firstName} ${lastName}${studentId ? ' (' + studentId + ')' : ''}`;
                 select.appendChild(option);
             });
         }
@@ -4923,8 +5218,8 @@
             }
         }
 
-        // Load attendance data for editing
-        function loadAttendanceData(recordId) {
+        // Load attendance record for editing (renamed to avoid conflict)
+        function loadAttendanceRecordForEdit(recordId) {
             const record = attendanceData.find(r => r.id === recordId);
             if (!record) return;
 

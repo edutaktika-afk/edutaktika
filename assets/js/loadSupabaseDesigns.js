@@ -537,12 +537,15 @@ async function openDesignViewer(designId, subject, designName = 'Design', quarte
     
     // Get grade level
     // CRITICAL: Get grade level from Firebase - REQUIRED for grade-level isolation
+    // Check both teacher and student profiles (students don't have teacher profiles)
     let gradeLevel = null;
     try {
       const user = firebase.auth().currentUser;
       if (user) {
+        // First try teacher profile
         const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
         const teacher = teacherSnap.val();
+        
         if (teacher) {
           // Check both 'grade' and 'gradelevel' fields (Firebase stores as 'grade')
           const gradeValue = teacher.grade || teacher.gradelevel;
@@ -564,18 +567,52 @@ async function openDesignViewer(designId, subject, designName = 'Design', quarte
                 gradeLevel = grade; // Keep as-is if no number found
               }
             }
-            console.log(`📚 Grade level for viewer: ${gradeValue} → normalized: ${gradeLevel}`);
-          } else {
-            throw new Error('Grade level not found in teacher profile. Cannot open lesson.');
+            console.log(`📚 Grade level from teacher profile: ${gradeValue} → normalized: ${gradeLevel}`);
           }
-        } else {
-          throw new Error('Teacher profile not found. Cannot open lesson.');
+        }
+        
+        // If no teacher profile or no grade found, try student profile
+        if (!gradeLevel) {
+          const studentSnap = await firebase.database().ref('students/' + user.uid).once('value');
+          const student = studentSnap.val();
+          if (student) {
+            // Check both 'grade' and 'gradelevel' fields
+            const gradeValue = student.grade || student.gradelevel;
+            if (gradeValue) {
+              // Normalize to Firebase format: grade=5, grade=6, etc.
+              const grade = gradeValue.toString();
+              if (grade.includes('=')) {
+                gradeLevel = grade; // Already in correct format
+              } else {
+                const numberMatch = grade.match(/(\d+)/);
+                if (numberMatch) {
+                  const gradeNum = parseInt(numberMatch[1], 10);
+                  if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
+                    gradeLevel = `grade=${gradeNum}`;
+                  } else {
+                    gradeLevel = grade; // Keep as-is if invalid
+                  }
+                } else {
+                  gradeLevel = grade; // Keep as-is if no number found
+                }
+              }
+              console.log(`📚 Grade level from student profile: ${gradeValue} → normalized: ${gradeLevel}`);
+            }
+          }
+        }
+        
+        // If still no grade level found, throw error
+        if (!gradeLevel) {
+          throw new Error('Grade level not found in your profile. Please update your profile with your grade level.');
         }
       } else {
         throw new Error('User not authenticated. Cannot open lesson.');
       }
     } catch (error) {
       console.error('❌ Error fetching grade level:', error);
+      // Remove loading overlay on error
+      const overlay = document.getElementById('lesson-loading-overlay');
+      if (overlay) overlay.remove();
       alert(`Error: ${error.message}`);
       return;
     }
@@ -684,16 +721,18 @@ async function openDesignViewer(designId, subject, designName = 'Design', quarte
     params.set('quarter', quarter);
     if (gradeLevel) params.set('grade', gradeLevel);
     params.set('view', 'true');
+    params.set('present', 'true'); // Open in presentation mode (no editor UI)
     // Pass the JSON URL so editor can fetch directly (avoid sessionStorage quota)
     params.set('jsonUrl', jsonUrl);
     
     const editorUrl = editorBaseUrl + (editorBaseUrl.includes('?') ? '&' : '?') + params.toString();
-    console.log('🔗 Opening viewer:', editorUrl);
+    console.log('🔗 Opening viewer in presentation mode:', editorUrl);
     
     // Update loading text before opening
-    if (loadingText) loadingText.textContent = 'Launching Viewer...';
+    if (loadingText) loadingText.textContent = 'Launching Presentation...';
     
-    window.open(editorUrl, '_blank', 'width=1400,height=900');
+    // Open in fullscreen presentation mode
+    window.open(editorUrl, '_blank', 'fullscreen=yes');
     
     // Remove loading overlay after a short delay (allows window to open)
     setTimeout(() => {

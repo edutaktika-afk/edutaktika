@@ -723,6 +723,83 @@
         </div>
     </header>
 
+    <!-- Overlay for navbar -->
+    <div class="sidebar-overlay" id="navOverlay"></div>
+    <!-- Overlay for profile sidebar -->
+    <div class="sidebar-overlay" id="profileSidebarOverlay"></div>
+
+    <!-- Profile Sidebar (Dynamic with Firebase) -->
+    <div id="profileSidebar" class="profile-sidebar">
+        <div class="sidebar-content">
+            <button class="close-btn" id="closeSidebar">&times;</button>
+            <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+                <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+                <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+            </div>
+            <div class="profile-name" id="profileName">Loading...</div>
+            <br>
+            <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+                <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+                Teacher
+            </div>
+                <div>
+                    <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                    <strong>ID:</strong> <span id="profileId">-</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                    <strong>First Name:</strong> <span id="profileFirstName">-</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                    <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                    <strong>Last Name:</strong> <span id="profileLastName">-</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                    <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                    <strong>Section:</strong> <span id="profileSection">-</span>
+                </div>
+                <div>
+        <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+        <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+    </div>
+    <div>
+        <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+        <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+    </div>
+    <div>
+        <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+        <strong>City:</strong> <span id="profileAddressCity">-</span>
+    </div>
+    <div>
+        <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+        <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+    </div>
+    <div>
+        <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+        <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+    </div>
+    <div>
+        <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+        <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+    </div>
+            </div>
+            <div class="logout-switch-row">
+                <div class="logout-switch" id="logoutSwitch">
+                    <div class="logout-switch-circle"></div>
+                </div>
+                <span class="logout-label" id="logoutLabel">LOGOUT</span>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -1037,22 +1114,55 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
+    <script src="../assets/js/Teacher Side/profile.js"></script>
+    <script src="../assets/js/Teacher Side/header.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
-            authDomain: "edutaktika.firebaseapp.com",
-            databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
-            projectId: "edutaktika",
-            storageBucket: "edutaktika.appspot.com",
-            messagingSenderId: "676848575316",
-            appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
-            measurementId: "G-X3GT5TNN87"
+        // Stub for showTab to prevent errors before script loads
+        window.showTab = function(tabName) {
+            console.log('showTab called with:', tabName, '- waiting for full initialization');
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const auth = firebase.auth();
+        // Use Firebase instances from profile.js (now assigned to window.db and window.auth)
+        // profile.js already initializes Firebase and assigns db and auth to window
+        // We'll use window.db and window.auth directly to avoid redeclaration conflicts
+        
+        function waitForFirebaseInstances(callback) {
+            // Check if profile.js has set up window.db and window.auth
+            if (typeof window.db !== 'undefined' && typeof window.auth !== 'undefined') {
+                callback();
+                return;
+            }
+            // Also check if Firebase is initialized (fallback)
+            if (typeof window.firebase !== 'undefined' && firebase.database && firebase.auth) {
+                try {
+                    firebase.app();
+                    // Assign to window if not already there
+                    if (typeof window.db === 'undefined') {
+                        window.db = firebase.database();
+                    }
+                    if (typeof window.auth === 'undefined') {
+                        window.auth = firebase.auth();
+                    }
+                    callback();
+                    return;
+                } catch (e) {
+                    // App not initialized yet
+                }
+            }
+            // Wait a bit and try again
+            setTimeout(() => waitForFirebaseInstances(callback), 100);
+        }
+        
+        // Helper functions to get db and auth instances
+        function getDb() {
+            return window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+        }
+        
+        function getAuth() {
+            return window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        }
 
         // Global variables
         let assessments = [];
@@ -1062,12 +1172,20 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Check authentication
-            auth.onAuthStateChanged(function(user) {
-                if (!user) {
-                    window.location.href = 'logreg.html';
+            waitForFirebaseInstances(function() {
+                // Check authentication
+                const authInstance = getAuth();
+                if (authInstance) {
+                    authInstance.onAuthStateChanged(function(user) {
+                        if (!user) {
+                            window.location.href = 'logreg.html';
+                        } else {
+                            loadData();
+                        }
+                    });
                 } else {
-                    loadData();
+                    console.error('Firebase auth not available');
+                    window.location.href = 'logreg.html';
                 }
             });
         });
@@ -1083,16 +1201,20 @@
         // Load grades for analytics
         async function loadGrades() {
             try {
-                const user = auth.currentUser;
+                const authInstance = getAuth();
+                const dbInstance = getDb();
+                if (!authInstance || !dbInstance) return;
+                
+                const user = authInstance.currentUser;
                 if (!user) return;
                 
                 // Get teacher info to find section
-                const teacherSnap = await db.ref(`teachers/${user.uid}`).once('value');
+                const teacherSnap = await dbInstance.ref(`teachers/${user.uid}`).once('value');
                 const teacher = teacherSnap.val();
                 if (!teacher || !teacher.section) return;
                 
                 const section = teacher.section;
-                const gradesSnap = await db.ref(`teachers/${user.uid}/sections/${section}/grades`).once('value');
+                const gradesSnap = await dbInstance.ref(`teachers/${user.uid}/sections/${section}/grades`).once('value');
                 
                 grades = [];
                 if (gradesSnap.exists()) {
@@ -1110,7 +1232,13 @@
 
         // Load assessments
         function loadAssessments() {
-            db.ref('assessments').orderByChild('createdBy').equalTo(auth.currentUser.uid).once('value')
+            const dbInstance = getDb();
+            const authInstance = getAuth();
+            if (!dbInstance || !authInstance || !authInstance.currentUser) {
+                console.error('Firebase not initialized');
+                return;
+            }
+            dbInstance.ref('assessments').orderByChild('createdBy').equalTo(authInstance.currentUser.uid).once('value')
                 .then(snapshot => {
                     assessments = [];
                     snapshot.forEach(child => {
@@ -1126,7 +1254,12 @@
 
         // Load attempts
         function loadAttempts() {
-            db.ref('attempts').once('value')
+            const dbInstance = getDb();
+            if (!dbInstance) {
+                console.error('Firebase not initialized');
+                return;
+            }
+            dbInstance.ref('attempts').once('value')
                 .then(snapshot => {
                     attempts = [];
                     snapshot.forEach(child => {
@@ -1142,7 +1275,12 @@
 
         // Load students
         function loadStudents() {
-            db.ref('students').once('value')
+            const dbInstance = getDb();
+            if (!dbInstance) {
+                console.error('Firebase not initialized');
+                return;
+            }
+            dbInstance.ref('students').once('value')
                 .then(snapshot => {
                     students = [];
                     snapshot.forEach(child => {
@@ -1154,8 +1292,8 @@
                 });
         }
 
-        // Show tab
-        function showTab(tabName) {
+        // Show tab - make it globally accessible
+        window.showTab = function(tabName) {
             // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -1165,9 +1303,18 @@
             });
 
             // Show selected tab
-            document.getElementById(tabName + 'Tab').classList.add('active');
-            event.target.classList.add('active');
-        }
+            const targetTab = document.getElementById(tabName + 'Tab');
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+            
+            // Find and activate the button that was clicked
+            const clickedBtn = event && event.target ? event.target : 
+                document.querySelector(`[onclick*="showTab('${tabName}')"]`);
+            if (clickedBtn) {
+                clickedBtn.classList.add('active');
+            }
+        };
 
         // Render assessments
         function renderAssessments() {
@@ -1757,8 +1904,13 @@
 
         // Publish assessment
         function publishAssessment(assessmentId) {
+            const dbInstance = getDb();
+            if (!dbInstance) {
+                alert('Firebase not initialized. Please refresh the page.');
+                return;
+            }
             if (confirm('Are you sure you want to publish this assessment?')) {
-                db.ref('assessments/' + assessmentId).update({ status: 'published' })
+                dbInstance.ref('assessments/' + assessmentId).update({ status: 'published' })
                     .then(() => {
                         alert('Assessment published successfully!');
                         loadAssessments();
@@ -1788,6 +1940,12 @@
 
         // Duplicate assessment
         function duplicateAssessment(assessmentId) {
+            const dbInstance = getDb();
+            const authInstance = getAuth();
+            if (!dbInstance || !authInstance || !authInstance.currentUser) {
+                alert('Firebase not initialized. Please refresh the page.');
+                return;
+            }
             const assessment = assessments.find(a => a.id === assessmentId);
             if (!assessment) {
                 alert('Assessment not found');
@@ -1801,14 +1959,14 @@
                     title: assessment.title + ' (Copy)',
                     status: 'draft',
                     createdAt: new Date().toISOString(),
-                    createdBy: auth.currentUser.uid
+                    createdBy: authInstance.currentUser.uid
                 };
 
                 // Remove the id so Firebase creates a new one
                 delete duplicatedAssessment.id;
 
                 // Save to Firebase
-                db.ref('assessments').push(duplicatedAssessment)
+                dbInstance.ref('assessments').push(duplicatedAssessment)
                     .then(() => {
                         alert('Assessment duplicated successfully!');
                         loadAssessments();
@@ -1822,8 +1980,13 @@
 
         // Delete assessment
         function deleteAssessment(assessmentId) {
+            const dbInstance = getDb();
+            if (!dbInstance) {
+                alert('Firebase not initialized. Please refresh the page.');
+                return;
+            }
             if (confirm('Are you sure you want to delete this assessment? This action cannot be undone.')) {
-                db.ref('assessments/' + assessmentId).remove()
+                dbInstance.ref('assessments/' + assessmentId).remove()
                     .then(() => {
                         alert('Assessment deleted successfully!');
                         loadAssessments();
@@ -1906,9 +2069,14 @@
 
         // Logout function
         function logout() {
-            auth.signOut().then(() => {
+            const authInstance = getAuth();
+            if (authInstance) {
+                authInstance.signOut().then(() => {
+                    window.location.href = 'logreg.html';
+                });
+            } else {
                 window.location.href = 'logreg.html';
-            });
+            }
         }
     </script>
 

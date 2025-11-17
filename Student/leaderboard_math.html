@@ -350,6 +350,13 @@ async function loadLeaderboard() {
     });
     console.log('Total students found:', students.length);
 
+    // Load assessments to check subject field (since assessment IDs are Firebase push keys)
+    const assessmentsSnapshot = await db.ref('assessments').once('value');
+    const assessments = {};
+    assessmentsSnapshot.forEach(child => {
+        assessments[child.key] = child.val();
+    });
+
     // Calculate Math-specific scores
     students.forEach(s => {
         let mathQuizPoints = 0;
@@ -373,15 +380,26 @@ async function loadLeaderboard() {
             });
         }
         s.quizPoints = mathQuizPoints;
-        // Math assessment points - only from math assessments
+        
+        // Math assessment points - check subject field from assessments collection
         let mathAssessmentPoints = 0;
         if (s.assessments) {
             Object.keys(s.assessments).forEach(aid => {
-                // Only count math-related assessments
-                if (aid.includes('math') || aid === 'assessment1') {
-                    const summary = s.assessments[aid]?.summary;
-                    if (summary && typeof summary.best === 'number') {
-                        mathAssessmentPoints += summary.best;
+                const summary = s.assessments[aid]?.summary;
+                if (summary && typeof summary.best === 'number') {
+                    // Check if this assessment is a Math assessment by looking up the assessment
+                    const assessment = assessments[aid];
+                    if (assessment && assessment.subject) {
+                        const subjectLower = assessment.subject.toLowerCase();
+                        // Check for math-related subjects
+                        if (subjectLower === 'math' || subjectLower === 'mathematics') {
+                            mathAssessmentPoints += summary.best;
+                        }
+                    } else {
+                        // Fallback: check assessment ID pattern (for old assessments)
+                        if (aid.includes('math') || aid === 'assessment1') {
+                            mathAssessmentPoints += summary.best;
+                        }
                     }
                 }
             });

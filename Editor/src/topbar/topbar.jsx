@@ -23,6 +23,7 @@ import styled from 'polotno/utils/styled';
 import { useProject } from '../project';
 import { config } from '../utils/environment';
 import licenseHandler from '../utils/licenseHandler';
+import { getStoreKey } from '../utils/polotno-keys';
 
 import { FileMenu } from './file-menu';
 import { DownloadButton } from './download-button';
@@ -101,33 +102,50 @@ function exitFullscreen() {
   // Don't remove 'presenting' class here - it's only for slideshow mode
 }
 
-async function presentSlideshow(store) {
+export async function presentSlideshow(store) {
   // Hide license banners before presentation
   const currentConfig = window.edutaktikaConfig || config;
   if (currentConfig && currentConfig.license && currentConfig.license.hideInPresentation) {
     licenseHandler.hideBanner();
   }
   
-  // Export all pages as data URLs then open enhanced slideshow window
+  // Serialize store data to pass to presentation window
+  const storeJSON = JSON.stringify(store.toJSON());
+  const pages = store.pages.map((page, idx) => ({
+    id: page.id,
+    index: idx
+  }));
+  const polotnoKey = getStoreKey();
+  
+  // Store data in sessionStorage to avoid URL length limits
+  const presentationId = 'presentation_' + Date.now();
+  sessionStorage.setItem(presentationId, JSON.stringify({
+    storeData: storeJSON,
+    pages: pages,
+    key: polotnoKey
+  }));
+  
+  // Open presentation window with embedded Polotno
   const win = window.open('', '_blank', 'fullscreen=yes');
   if (!win) return;
-  
-  const html = `
+    
+    const html = `
 <html>
 <head>
   <title>Presentation Mode - Edutaktika</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/polotno@1.0.0/dist/polotno.bundle.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
+    html, body { 
       margin: 0; 
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      height: 100vh; 
-      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      padding: 0;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      transition: background 0.5s ease;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); 
+      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
     }
     
     /* Hide any license banners or watermarks */
@@ -148,37 +166,33 @@ async function presentSlideshow(store) {
       display: flex; 
       align-items: center; 
       justify-content: center;
+      overflow: hidden;
     }
-    img { 
-      max-width: 95vw; 
-      max-height: 95vh; 
-      display: none; 
-      box-shadow: 0 0 40px rgba(255, 255, 255, 0.1); 
-      border-radius: 8px;
-      transition: opacity 0.5s ease, transform 0.5s ease;
-      opacity: 0;
-      transform: scale(0.95);
+    
+    #polotno-canvas {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    img.active { 
-      display: block !important;
-      opacity: 1;
-      transform: scale(1);
+    
+    /* Hide Polotno UI elements in presentation */
+    #polotno-canvas .polotno-side-tabs-container,
+    #polotno-canvas .polotno-panel-container,
+    #polotno-canvas .bp5-navbar,
+    #polotno-canvas .topbar,
+    #polotno-canvas .polotno-pages-timeline,
+    #polotno-canvas .polotno-toolbar {
+      display: none !important;
     }
-    img.slide-in { animation: slideIn 0.5s ease-out; }
-    img.fade { animation: fade 0.5s ease-out; }
-    img.zoom { animation: zoomIn 0.5s ease-out; }
-    @keyframes slideIn { 
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
+    
+    #polotno-canvas .polotno-workspace {
+      width: 100vw !important;
+      height: 100vh !important;
+      background: transparent !important;
     }
-    @keyframes fade { 
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes zoomIn { 
-      from { transform: scale(0.9); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
+    
     #controls {
       position: fixed;
       bottom: 20px;
@@ -192,7 +206,7 @@ async function presentSlideshow(store) {
       align-items: center;
       gap: 20px;
       transition: opacity 0.3s ease;
-      z-index: 1000;
+      z-index: 10000;
     }
     #controls.hidden { opacity: 0; pointer-events: none; }
     button { 
@@ -219,6 +233,8 @@ async function presentSlideshow(store) {
       border-radius: 8px;
       transition: all 0.2s ease;
       font-size: 20px;
+      color: #fff;
+      user-select: none;
     }
     .control-icon:hover { 
       background: rgba(255, 255, 255, 0.2); 
@@ -238,7 +254,7 @@ async function presentSlideshow(store) {
       height: 3px;
       background: linear-gradient(90deg, #1976d2, #42a5f5);
       transition: width 0.3s ease;
-      z-index: 1001;
+      z-index: 10001;
     }
     #hint {
       position: fixed;
@@ -252,7 +268,8 @@ async function presentSlideshow(store) {
       border-radius: 20px;
       backdrop-filter: blur(10px);
       animation: fadeIn 1s ease-out;
-      z-index: 1000;
+      z-index: 10000;
+      pointer-events: none;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
@@ -266,6 +283,7 @@ async function presentSlideshow(store) {
       color: #fff;
       font-size: 18px;
       z-index: 9999;
+      text-align: center;
     }
     .spinner {
       border: 3px solid rgba(255, 255, 255, 0.1);
@@ -288,8 +306,9 @@ async function presentSlideshow(store) {
   <div id="presentation-container">
     <div class="loading">
       <div class="spinner"></div>
-      <div>Loading slides...</div>
+      <div>Loading presentation...</div>
     </div>
+    <div id="polotno-canvas"></div>
   </div>
   <div id="controls">
     <div class="control-icon" id="prevBtn" title="Previous (←)">◀</div>
@@ -298,127 +317,181 @@ async function presentSlideshow(store) {
     <button id="nextBtn" title="Next (→)">⏭</button>
     <div class="control-icon" id="fullscreenBtn" title="Toggle Fullscreen (F)">⛶</div>
   </div>
+  <script>
+    (async function() {
+      const { createStore } = polotno.store;
+      const { unstable_setAnimationsEnabled } = polotno.config;
+      
+      // Enable animations
+      unstable_setAnimationsEnabled(true);
+      
+      // Get store data from sessionStorage
+      const presentationId = '${presentationId}';
+      const storedData = JSON.parse(sessionStorage.getItem(presentationId) || '{}');
+      const storeData = storedData.storeData;
+      const pagesData = storedData.pages || [];
+      const polotnoKey = storedData.key || '${polotnoKey}';
+      
+      if (!storeData) {
+        document.querySelector('.loading').innerHTML = '<div class="spinner"></div><div>Error: Could not load presentation data</div>';
+        return;
+      }
+      
+      // Create store from data
+      const presentationStore = createStore({
+        key: polotnoKey,
+        showCredit: false
+      });
+      
+      // Load store data
+      await presentationStore.loadJSON(storeData);
+      
+      // Render workspace
+      const { Workspace } = polotno;
+      const React = polotno.React;
+      const ReactDOM = polotno.ReactDOM;
+      
+      const root = ReactDOM.createRoot(document.getElementById('polotno-canvas'));
+      root.render(React.createElement(Workspace, { store: presentationStore }));
+      
+      // Remove loading indicator
+      document.querySelector('.loading').remove();
+      
+      // Presentation controls
+      let currentPageIndex = 0;
+      const totalPages = pagesData.length;
+      
+      function updateSlideInfo() {
+        document.getElementById('slide-info').textContent = \`\${currentPageIndex + 1} / \${totalPages}\`;
+        const progress = ((currentPageIndex + 1) / totalPages) * 100;
+        document.getElementById('progress-bar').style.width = progress + '%';
+        
+        // Switch to the current page
+        if (pagesData[currentPageIndex]) {
+          presentationStore.setActivePage(pagesData[currentPageIndex].id);
+          
+          // Trigger animations by briefly hiding and showing elements
+          // This will cause Polotno to replay enter animations
+          setTimeout(() => {
+            const page = presentationStore.pages.find(p => p.id === pagesData[currentPageIndex].id);
+            if (page) {
+              // Force animation replay by updating elements
+              page.children.forEach(child => {
+                if (child.animations && child.animations.length > 0) {
+                  // Trigger animation by temporarily disabling and re-enabling
+                  const anims = child.animations;
+                  child.set('animations', []);
+                  setTimeout(() => {
+                    child.set('animations', anims);
+                  }, 50);
+                }
+              });
+            }
+          }, 100);
+        }
+      }
+      
+      // Auto-hide controls
+      let hideControlsTimeout;
+      function showControls() {
+        document.getElementById('controls').classList.remove('hidden');
+        clearTimeout(hideControlsTimeout);
+        hideControlsTimeout = setTimeout(() => {
+          document.getElementById('controls').classList.add('hidden');
+        }, 3000);
+      }
+      
+      // Navigation functions
+      function nextSlide() {
+        currentPageIndex = (currentPageIndex + 1) % totalPages;
+        updateSlideInfo();
+        showControls();
+      }
+      
+      function prevSlide() {
+        currentPageIndex = (currentPageIndex - 1 + totalPages) % totalPages;
+        updateSlideInfo();
+        showControls();
+      }
+      
+      // Initialize
+      updateSlideInfo();
+      showControls();
+      
+      // Event listeners
+      document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight') { 
+          nextSlide();
+        }
+        if (e.key === 'ArrowLeft') { 
+          prevSlide();
+        }
+        if (e.key === ' ') { // Spacebar for play/pause
+          e.preventDefault();
+          document.getElementById('playBtn').click();
+        }
+        if (e.key.toLowerCase() === 'f') { 
+          if (document.documentElement.requestFullscreen) {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen();
+            } else {
+              document.exitFullscreen();
+            }
+          }
+        }
+        if (e.key === 'Escape') { window.close(); }
+      });
+      
+      document.getElementById('prevBtn').onclick = prevSlide;
+      document.getElementById('nextBtn').onclick = nextSlide;
+      
+      let autoplay = false;
+      let autoplayInterval = null;
+      const slideDuration = 5000; // 5 seconds per slide
+      
+      document.getElementById('playBtn').onclick = () => {
+        autoplay = !autoplay;
+        const btn = document.getElementById('playBtn');
+        btn.textContent = autoplay ? '⏸' : '▶';
+        
+        if (autoplay) {
+          autoplayInterval = setInterval(() => {
+            nextSlide();
+          }, slideDuration);
+        } else {
+          clearInterval(autoplayInterval);
+        }
+        showControls();
+      };
+      
+      document.getElementById('fullscreenBtn').onclick = () => {
+        if (document.documentElement.requestFullscreen) {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+          } else {
+            document.exitFullscreen();
+          }
+        }
+      };
+      
+      // Mouse movement to show controls
+      document.addEventListener('mousemove', showControls);
+    })();
+  </script>
 </body>
 </html>`;
   
   win.document.write(html);
   win.document.close();
   
-  const imgs = [];
-  let i = 0;
-  let autoplay = false;
-  let autoplayInterval = null;
-  const slideDuration = 5000; // 5 seconds per slide
-  
-  // Load images
-  for (const page of store.pages) {
-    const url = await store.toDataURL({ pageId: page.id });
-    const img = win.document.createElement('img');
-    img.src = url;
-    img.classList.add('slide');
-    win.document.querySelector('#presentation-container').appendChild(img);
-    imgs.push(img);
-  }
-  
-  // Remove loading indicator
-  win.document.querySelector('.loading').remove();
-  
-  // Update slide info
-  function updateSlideInfo() {
-    win.document.getElementById('slide-info').textContent = `${i + 1} / ${imgs.length}`;
-    const progress = ((i + 1) / imgs.length) * 100;
-    win.document.getElementById('progress-bar').style.width = progress + '%';
-  }
-  
-  // Show slide with animation
-  function show(idx, animation = 'fade') {
-    imgs.forEach(im => im.classList.remove('active', 'slide-in', 'fade', 'zoom'));
-    imgs[idx].classList.add('active', animation);
-    updateSlideInfo();
-  }
-  
-  // Auto-hide controls
-  let hideControlsTimeout;
-  function showControls() {
-    win.document.getElementById('controls').classList.remove('hidden');
-    clearTimeout(hideControlsTimeout);
-    hideControlsTimeout = setTimeout(() => {
-      win.document.getElementById('controls').classList.add('hidden');
-    }, 3000);
-  }
-  
-  // Initialize
-  show(0);
-  showControls();
-  
-  // Event listeners
-  win.document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight') { 
-      i = (i + 1) % imgs.length; 
-      show(i, 'slide-in'); 
-      showControls();
+  // Clean up sessionStorage after a delay (in case user closes window)
+  setTimeout(() => {
+    try {
+      sessionStorage.removeItem(presentationId);
+    } catch (e) {
+      // Ignore errors
     }
-    if (e.key === 'ArrowLeft') { 
-      i = (i - 1 + imgs.length) % imgs.length; 
-      show(i, 'slide-in'); 
-      showControls();
-    }
-    if (e.key === ' ') { // Spacebar for play/pause
-      e.preventDefault();
-      win.document.getElementById('playBtn').click();
-    }
-    if (e.key.toLowerCase() === 'f') { 
-      if (win.document.documentElement.requestFullscreen) {
-        if (!win.document.fullscreenElement) {
-          win.document.documentElement.requestFullscreen();
-        } else {
-          win.document.exitFullscreen();
-        }
-      }
-    }
-    if (e.key === 'Escape') { win.close(); }
-  });
-  
-  win.document.getElementById('prevBtn').onclick = () => {
-    i = (i - 1 + imgs.length) % imgs.length;
-    show(i, 'fade');
-    showControls();
-  };
-  
-  win.document.getElementById('nextBtn').onclick = () => {
-    i = (i + 1) % imgs.length;
-    show(i, 'fade');
-    showControls();
-  };
-  
-  win.document.getElementById('playBtn').onclick = () => {
-    autoplay = !autoplay;
-    const btn = win.document.getElementById('playBtn');
-    btn.textContent = autoplay ? '⏸' : '▶';
-    
-    if (autoplay) {
-      autoplayInterval = setInterval(() => {
-        i = (i + 1) % imgs.length;
-        show(i, 'zoom');
-      }, slideDuration);
-    } else {
-      clearInterval(autoplayInterval);
-    }
-    showControls();
-  };
-  
-  win.document.getElementById('fullscreenBtn').onclick = () => {
-    if (win.document.documentElement.requestFullscreen) {
-      if (!win.document.fullscreenElement) {
-        win.document.documentElement.requestFullscreen();
-      } else {
-        win.document.exitFullscreen();
-      }
-    }
-  };
-  
-  // Mouse movement to show controls
-  win.document.addEventListener('mousemove', showControls);
+  }, 60000); // Clean up after 1 minute
 }
 
 export default observer(({ store, isViewOnly = false }) => {

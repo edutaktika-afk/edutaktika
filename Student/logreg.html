@@ -817,17 +817,23 @@ document.getElementById('loginForm').onsubmit = async function(e) {
     try {
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         const user = userCredential.user;
-        if (!user.emailVerified) {
-            
-            await auth.signOut();
-            return;
-        }
         const uid = user.uid;
+        
         // Check if user is a student in Realtime Database
         const snapshot = await db.ref('students/' + uid).once('value');
         const student = snapshot.val();
+        
+        // Check if this is a bulk-created account or Sampaloc email (bypass email verification)
+        const isBulkCreated = student && student.bulkCreated === true;
+        const isSampalocEmail = email && email.toLowerCase().endsWith('@sampaloclms.edu.ph');
+        
+        if (!user.emailVerified && !isBulkCreated && !isSampalocEmail) {
+            showCustomModal('Please verify your email before logging in.');
+            await auth.signOut();
+            return;
+        }
+        
         if (student) {
-            
             window.location.href = "homepage.html";
         } else {
             alert('No student record found. Please contact support.');
@@ -852,12 +858,17 @@ document.addEventListener("DOMContentLoaded", function() {
                 const uid = user.uid;
                 const snapshot = await db.ref('students/' + uid).once('value');
                 const student = snapshot.val();
-                if (student && user.emailVerified) {
-                    // Already logged in as student and email is verified, redirect to homepage
+                
+                // Check if this is a bulk-created account or Sampaloc email (bypass email verification)
+                const isBulkCreated = student && student.bulkCreated === true;
+                const isSampalocEmail = user.email && user.email.toLowerCase().endsWith('@sampaloclms.edu.ph');
+                
+                if (student && (user.emailVerified || isBulkCreated || isSampalocEmail)) {
+                    // Already logged in as student and email is verified (or bulk-created/Sampaloc), redirect to homepage
                     window.location.href = "homepage.html";
-                } else if (student && !user.emailVerified) {
+                } else if (student && !user.emailVerified && !isBulkCreated && !isSampalocEmail) {
                     // Only show alert if login tab is active (user is trying to log in)
-                    if (document.getElementById('loginSection').style.display !== "none") {
+                    if (document.getElementById('loginSection') && document.getElementById('loginSection').style.display !== "none") {
                         alert('Please verify your email before logging in.');
                     }
                     await firebase.auth().signOut();

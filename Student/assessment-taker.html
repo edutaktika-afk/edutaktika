@@ -579,6 +579,7 @@
         let startTime = null;
         let timeInterval = null;
         let timeRemaining = 0;
+        let currentAssessmentId = null; // Store assessment ID globally
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -607,6 +608,9 @@
                 showError('No assessment selected. Please go back and select an assessment.');
                 return;
             }
+
+            // Store assessment ID globally for later use
+            currentAssessmentId = assessmentId;
 
             // Check if student has already attempted this assessment
             checkPreviousAttempt(assessmentId);
@@ -644,6 +648,9 @@
 
         // Load assessment data from Firebase
         function loadAssessmentData(assessmentId) {
+            // Store assessment ID globally
+            currentAssessmentId = assessmentId;
+            
             db.ref('assessments/' + assessmentId).once('value')
                 .then(snapshot => {
                     assessment = snapshot.val();
@@ -945,9 +952,25 @@
             const timeTakenMinutes = Math.floor(timeTaken / 60);
             const timeTakenSeconds = timeTaken % 60;
 
+            // Get assessment ID (use stored ID or try to get from URL/sessionStorage)
+            let assessmentId = currentAssessmentId;
+            if (!assessmentId) {
+                assessmentId = new URLSearchParams(window.location.search).get('id');
+            }
+            if (!assessmentId) {
+                assessmentId = sessionStorage.getItem('currentAssessmentId');
+            }
+
+            if (!assessmentId) {
+                console.error('Assessment ID not found. Cannot save attempt.');
+                alert('Error: Assessment ID not found. Your results will not be saved.');
+                showResults(correctAnswers, assessment.questions.length, percentage, passed, timeTakenMinutes, timeTakenSeconds);
+                return;
+            }
+
             // Save attempt to Firebase
             const attempt = {
-                assessmentId: new URLSearchParams(window.location.search).get('id'),
+                assessmentId: assessmentId,
                 studentId: auth.currentUser.uid,
                 answers: answers,
                 score: earnedPoints,
@@ -958,12 +981,57 @@
                 submittedAt: new Date().toISOString()
             };
 
+            console.log('Saving assessment attempt:', attempt);
+
             db.ref('attempts').push(attempt)
-                .then(() => {
+                .then((ref) => {
+                    console.log('Assessment attempt saved successfully with ID:', ref.key);
+                    // Also save to student's personal attempts collection for easy access
+                    db.ref(`students/${auth.currentUser.uid}/assessmentAttempts/${assessmentId}`).set({
+                        attemptId: ref.key,
+                        score: earnedPoints,
+                        totalPoints: totalPoints,
+                        percentage: percentage,
+                        passed: passed,
+                        submittedAt: attempt.submittedAt
+                    }).catch(err => {
+                        console.warn('Could not save to student attempts collection:', err);
+                    });
+                    
+                    // Update summary structure for leaderboard compatibility (same as old assessment system)
+                    const summaryRef = db.ref(`students/${auth.currentUser.uid}/assessments/${assessmentId}/summary`);
+                    summaryRef.transaction(current => {
+                        if (!current) {
+                            return {
+                                best: earnedPoints,
+                                bestPercentage: percentage,
+                                last: earnedPoints,
+                                lastPercentage: percentage,
+                                total: totalPoints,
+                                attempts: 1,
+                                lastTimestamp: Date.now()
+                            };
+                        }
+                        const best = Math.max(current.best || 0, earnedPoints);
+                        return {
+                            best: best,
+                            bestPercentage: Math.round((best / totalPoints) * 100),
+                            last: earnedPoints,
+                            lastPercentage: percentage,
+                            total: totalPoints,
+                            attempts: (current.attempts || 0) + 1,
+                            lastTimestamp: Date.now()
+                        };
+                    }).catch(err => {
+                        console.warn('Could not update assessment summary:', err);
+                    });
+                    
                     showResults(correctAnswers, assessment.questions.length, percentage, passed, timeTakenMinutes, timeTakenSeconds);
                 })
                 .catch(error => {
-                    console.error('Error saving attempt:', error);
+                    console.error('Error saving attempt to Firebase:', error);
+                    console.error('Attempt data:', attempt);
+                    alert('Error saving your attempt. Please contact your teacher. Error: ' + error.message);
                     showResults(correctAnswers, assessment.questions.length, percentage, passed, timeTakenMinutes, timeTakenSeconds);
                 });
         }

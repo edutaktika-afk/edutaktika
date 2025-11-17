@@ -367,6 +367,14 @@ nav ul li .dropdown-content a.active {
             students.push(s);
         });
 
+
+            // Load assessments to check subject field (since assessment IDs are Firebase push keys)
+            const assessmentsSnapshot = await db.ref('assessments').once('value');
+            const assessments = {};
+            assessmentsSnapshot.forEach(child => {
+                assessments[child.key] = child.val();
+            });
+
             // Calculate Math-specific scores
             students.forEach(s => {
                 let mathQuizPoints = 0;
@@ -387,15 +395,25 @@ nav ul li .dropdown-content a.active {
                 }
                 s.quizPoints = mathQuizPoints;
                 
-                // Math assessment points - only from Science assessments
+                // Math assessment points - check subject field from assessments collection
                 let mathAssessmentPoints = 0;
                 if (s.assessments) {
                     Object.keys(s.assessments).forEach(aid => {
-                        // Only count Science-related assessments
-                        if (aid.includes('science') || aid === 'assessment2') {
-                            const summary = s.assessments[aid]?.summary;
-                            if (summary && typeof summary.best === 'number') {
-                                mathAssessmentPoints += summary.best;
+                        const summary = s.assessments[aid]?.summary;
+                        if (summary && typeof summary.best === 'number') {
+                            // Check if this assessment is a Math assessment by looking up the assessment
+                            const assessment = assessments[aid];
+                            if (assessment && assessment.subject) {
+                                const subjectLower = assessment.subject.toLowerCase();
+                                // Check for math-related subjects
+                                if (subjectLower === 'math' || subjectLower === 'mathematics') {
+                                    mathAssessmentPoints += summary.best;
+                                }
+                            } else {
+                                // Fallback: check assessment ID pattern (for old assessments)
+                                if (aid.includes('math') || aid === 'assessment1') {
+                                    mathAssessmentPoints += summary.best;
+                                }
                             }
                         }
                     });

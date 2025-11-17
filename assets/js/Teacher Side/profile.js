@@ -11,6 +11,9 @@ const firebaseConfig = {
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const auth = firebase.auth();
+        // Make them globally accessible
+        window.db = db;
+        window.auth = auth;
 
           // Listen for auth state
           firebase.auth().onAuthStateChanged(function(user) {
