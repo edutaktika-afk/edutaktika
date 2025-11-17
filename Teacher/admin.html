@@ -1,35 +1,3 @@
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    firebase.auth().onAuthStateChanged(async function(user) {
-        if (!user) {
-            window.location.href = "logreg.html";
-            return;
-        }
-        const uid = user.uid;
-        const snap = await firebase.database().ref('admins/' + uid).once('value');
-        const admin = snap.val();
-        if (!admin || admin.role !== "admin") {
-            document.getElementById('mainContent').style.display = "none";
-            alert("Access denied. Only admins can access this page.");
-            await firebase.auth().signOut();
-            window.location.href = "logreg.html";
-        } else {
-            document.getElementById('mainContent').style.display = "block";
-            // Show Gmail and role in the dropdown
-            document.getElementById('adminEmail').textContent = admin.email || user.email;
-            document.getElementById('adminUsername').textContent = '@' + (admin.role || 'admin');
-            
-            // Load statistics after authentication
-            setTimeout(() => {
-                if (typeof loadStatistics === 'function') {
-                    loadStatistics();
-                }
-            }, 1000);
-        }
-    });
-});
-</script>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -1267,6 +1235,37 @@ td:hover .action-btns .reject,
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Authentication check
+    document.addEventListener("DOMContentLoaded", function() {
+        firebase.auth().onAuthStateChanged(async function(user) {
+            if (!user) {
+                window.location.href = "logreg.html";
+                return;
+            }
+            const uid = user.uid;
+            const snap = await firebase.database().ref('admins/' + uid).once('value');
+            const admin = snap.val();
+            if (!admin || admin.role !== "admin") {
+                document.getElementById('mainContent').style.display = "none";
+                alert("Access denied. Only admins can access this page.");
+                await firebase.auth().signOut();
+                window.location.href = "logreg.html";
+            } else {
+                document.getElementById('mainContent').style.display = "block";
+                // Show Gmail and role in the dropdown
+                document.getElementById('adminEmail').textContent = admin.email || user.email;
+                document.getElementById('adminUsername').textContent = '@' + (admin.role || 'admin');
+                
+                // Load statistics after authentication
+                setTimeout(() => {
+                    if (typeof loadStatistics === 'function') {
+                        loadStatistics();
+                    }
+                }, 1000);
+            }
+        });
+    });
+
     // Admin dropdown logic
     document.getElementById('adminDropdownBtn').onclick = function() {
         document.getElementById('adminDropdownContent').classList.toggle('show');
@@ -1728,7 +1727,7 @@ document.getElementById('adminCreatedOk')?.addEventListener('click', closeAdminC
     loadCurrentAdmin();
     loadStudents();
     loadTeachers();
-    enhanceTableStyling();
+    // enhanceTableStyling(); // Function not defined - removed
 
     // Edit Admin Functions
     function editAdmin(uid) {
@@ -3231,36 +3230,6 @@ function exportTeachersCSV(type) {
     // Load admin analytics
     async function loadAdminAnalytics() {
         try {
-            // Load all students
-            const studentsSnap = await db.ref('students').once('value');
-            const totalStudents = studentsSnap.exists() ? Object.keys(studentsSnap.val()).length : 0;
-            document.getElementById('analyticsTotalStudents').textContent = totalStudents;
-            document.getElementById('analyticsActiveStudents').textContent = totalStudents; // Assuming all are active
-            
-            // Load all teachers
-            const teachersSnap = await db.ref('teachers').once('value');
-            const totalTeachers = teachersSnap.exists() ? Object.keys(teachersSnap.val()).length : 0;
-            document.getElementById('analyticsTotalTeachers').textContent = totalTeachers;
-            document.getElementById('analyticsActiveTeachers').textContent = totalTeachers; // Assuming all are active
-            
-            // Load all assessments
-            const assessmentsSnap = await db.ref('assessments').once('value');
-            const totalAssessments = assessmentsSnap.exists() ? Object.keys(assessmentsSnap.val()).length : 0;
-            document.getElementById('analyticsTotalAssessments').textContent = totalAssessments;
-            
-            // Load quiz attempts
-            const quizSummariesSnap = await db.ref('quizSummaries').once('value');
-            let totalQuizAttempts = 0;
-            if (quizSummariesSnap.exists()) {
-                quizSummariesSnap.forEach(quizSnap => {
-                    if (quizSnap.exists()) {
-                        totalQuizAttempts += Object.keys(quizSnap.val()).length;
-                    }
-                });
-            }
-            document.getElementById('analyticsTotalQuizAttempts').textContent = totalQuizAttempts;
-            
-            // Load all grades from all teachers with error handling
             // Initialize all analytics elements with default values
             const setDefaultValue = (id, value) => {
                 const el = document.getElementById(id);
