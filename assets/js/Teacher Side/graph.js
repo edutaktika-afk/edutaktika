@@ -1,13 +1,36 @@
+function renderSummaryGraphs() {
+    // 1. Get grades from localStorage (set by grading.html summary)
+    const grades = JSON.parse(localStorage.getItem('edutaktikaSummaryGrades') || '[]');
 
-    // Example data for demonstration
+    // 2. Compute analytics
+    let passed = grades.filter(g => g >= 75).length;
+    let failed = grades.filter(g => g > 0 && g < 75).length;
+    let total = grades.length;
+    let avg = total ? (grades.reduce((a, b) => a + b, 0) / total).toFixed(2) : 0;
+
+    // 3. Grade distribution bins
+    let bins = [0, 60, 70, 75, 80, 85, 90, 95, 100];
+    let binLabels = ['60', '60-69', '70-74', '75-79', '80-84', '85-89', '90-94', '95-100'];
+    let binCounts = Array(binLabels.length).fill(0);
+    grades.forEach(g => {
+        for (let i = 0; i < bins.length - 1; i++) {
+            if (g >= bins[i] && g < bins[i + 1]) {
+                binCounts[i]++;
+                return;
+            }
+        }
+        if (g >= 95) binCounts[binCounts.length - 1]++;
+    });
+
     // 1. Completion Rate Pie
-    new Chart(document.getElementById('completionGraph'), {
+    if (window.completionChart) window.completionChart.destroy();
+    window.completionChart = new Chart(document.getElementById('completionGraph'), {
         type: 'doughnut',
         data: {
-            labels: ['Completed', 'In Progress'],
+            labels: ['Passed', 'Failed'],
             datasets: [{
-                data: [75, 25],
-                backgroundColor: ['#2e8b57', '#ffe082'],
+                data: [passed, failed],
+                backgroundColor: ['#2e8b57', '#e74c3c'],
                 borderWidth: 2
             }]
         },
@@ -19,15 +42,16 @@
         }
     });
 
-    // 2. Average Scores per Subject Bar
-    new Chart(document.getElementById('subjectGraph'), {
+    // 2. Average Grade Bar (for this teacher's subject only)
+    if (window.avgChart) window.avgChart.destroy();
+    window.avgChart = new Chart(document.getElementById('subjectGraph'), {
         type: 'bar',
         data: {
-            labels: ['Math', 'English', 'Science'],
+            labels: ['Average Grade'],
             datasets: [{
-                label: 'Average Score',
-                data: [88, 79, 84],
-                backgroundColor: ['#2e8b57', '#ff69b4', '#ffe082']
+                label: 'Average',
+                data: [avg],
+                backgroundColor: ['#2e8b57']
             }]
         },
         options: {
@@ -40,18 +64,16 @@
         }
     });
 
-    // 3. Monthly Activity Line
-    new Chart(document.getElementById('monthlyGraph'), {
-        type: 'line',
+    // 3. Grade Distribution Histogram (instead of monthly activity)
+    if (window.distChart) window.distChart.destroy();
+    window.distChart = new Chart(document.getElementById('monthlyGraph'), {
+        type: 'bar',
         data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            labels: binLabels,
             datasets: [{
-                label: 'Activities',
-                data: [12, 19, 15, 22, 18, 25],
-                fill: false,
-                borderColor: '#2e8b57',
-                backgroundColor: '#ffe082',
-                tension: 0.3
+                label: 'Grade Distribution',
+                data: binCounts,
+                backgroundColor: '#ffe082'
             }]
         },
         options: {
@@ -63,8 +85,12 @@
             }
         }
     });
+}
 
-    // Scroll effect: fade in and slide up
+// Call this on homepage load
+document.addEventListener('DOMContentLoaded', renderSummaryGraphs);
+
+// Scroll effect: fade in and slide up
 document.addEventListener('DOMContentLoaded', function() {
     const scrollEls = document.querySelectorAll('.scroll-fade');
     const observer = new IntersectionObserver((entries) => {

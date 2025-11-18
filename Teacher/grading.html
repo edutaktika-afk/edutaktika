@@ -37,7 +37,7 @@
     <link rel="stylesheet" href="../CSS/dropdown.css">
     <link rel="stylesheet" href="../CSS/burger.css">
     <link rel="icon" type="image/png" href="../images/icons/home.png" />
-    <title>Grading Sheet</title>
+    <title>Home</title>
     <link rel="stylesheet" href="../CSS/gradingSheet.css">
   <style>
     .highlight-row {
@@ -275,9 +275,15 @@ input[type=number]::-webkit-outer-spin-button {
 <div class="tab-nav" style="display:flex; gap:10px; margin-bottom:18px; justify-content: center; margin-top: 18px;">
   <button id="tabGrading" class="tab-btn active">Grading Sheet</button>
   <button id="tabAttendance" class="tab-btn">Attendance</button>
+  <button id="tabSummary" class="tab-btn">Summary</button>
 </div>
+
+
+
+
+    <div id="gradingTab" class="tab-content" style="display:block;">
   <div class="container">
-    <div class="controls" style="display:flex; align-items:center; gap:18px; margin-bottom:18px; flex-wrap:wrap;">
+        <div class="controls" style="display:flex; align-items:center; gap:18px; margin-bottom:18px; flex-wrap:wrap;">
       <span id="subjectDisplay" style="font-weight:600; color:#2e8b57; font-size:1.08em;">
         Subject: <span id="subjectName">Loading...</span>
       </span>
@@ -291,14 +297,12 @@ input[type=number]::-webkit-outer-spin-button {
       </select>
       
       <input type="text" id="studentSearch" placeholder="🔍 Search student..." style="margin-left:10px; padding:5px 12px; border-radius:5px; border:1px solid #b5b5b5; font-size:1em; min-width:180px;">
-      <button id="editPercentBtn" style="margin-left:10px; display:none;">Edit Percentages</button>
+      <button id="editPercentBtn" style="margin-left:10px;">Edit Percentages</button>
 
     </div>
-<div id="quarterLabel" style="text-align:center; font-size:1.15em; font-weight:700; color:#2e8b57; margin-bottom:10px;">
+    <div id="quarterLabel" style="text-align:center; font-size:1.15em; font-weight:700; color:#2e8b57; margin-bottom:10px;">
         Quarter 1
       </div>
-    <div id="gradingTab" class="tab-content" style="display:block;">
-  <div class="container">
     <div class="sheet-wrap">
       
       <table id="sheet">
@@ -310,21 +314,40 @@ input[type=number]::-webkit-outer-spin-button {
 </div>
     
    
-  </div>
   
 
   <div class="tab-content" id="attendanceTab" style="display:none;">
   <div class="sheet-wrap">
     <div id="attendanceHeader" style="text-align:center; font-size:1.3em; font-weight:700; color:#2e8b57; margin-bottom:10px;">
       8-Week Attendance Sheet
-      <div style="font-size:0.8em; color:#333; font-weight:400;">
-        <span id="attendanceSubject">Math</span> - <span id="attendanceQuarter">Quarter 1</span> - 8-Week Attendance Sheet
-      </div>
     </div>
     <table id="attendanceSheet" style="width:100%; border-collapse:collapse;">
       <thead id="attendanceThead"></thead>
       <tbody id="attendanceTbody"></tbody>
     </table>
+  </div>
+</div>
+
+<div class="tab-content" id="summaryTab" style="display:none;">
+  <div class="sheet-wrap">
+    <div id="summaryHeader" style="text-align:center; font-size:1.3em; font-weight:700; color:#2e8b57; margin-bottom:10px;">
+      Summary
+    </div>
+    <div id="summaryStats" style="text-align:center; margin-bottom:18px;"></div>
+<table id="summaryTable" style="width:100%; border-collapse:collapse;">
+  <thead>
+    <tr>
+      <th>Student Name</th>
+      <th>Total Present</th>
+      <th>Q1</th>
+      <th>Q2</th>
+      <th>Q3</th>
+      <th>Q4</th>
+      <th>Final Grade</th>
+    </tr>
+  </thead>
+  <tbody id="summaryTbody"></tbody>
+</table>
   </div>
 </div>
   
@@ -377,13 +400,13 @@ const s2 = (n) => Number(n).toFixed(2);
     const r1=document.createElement('tr');
     r1.appendChild(th("LEARNERS' NAMES",{rowSpan:3}));
 
-function percentStr(val) {
-  const n = val * 100;
-  return Number.isInteger(n) ? n : n.toFixed(2);
-}
-const wwPercent = percentStr(getCurrentWeights().WW);
-const ptPercent = percentStr(getCurrentWeights().PT);
-const qaPercent = percentStr(getCurrentWeights().QA);
+    function percentStr(val) {
+      const n = val * 100;
+      return Number.isInteger(n) ? n : n.toFixed(2);
+    }
+    const wwPercent = percentStr(getCurrentWeights().WW);
+    const ptPercent = percentStr(getCurrentWeights().PT);
+    const qaPercent = percentStr(getCurrentWeights().QA);
 
     const wwTh = document.createElement('th');
     wwTh.colSpan = WW + 3;
@@ -465,9 +488,9 @@ const qaPercent = percentStr(getCurrentWeights().QA);
     };
     c.appendChild(inp); r3.appendChild(c);
   }
-r3.appendChild(th(s2(sum(getCurrentHPS().PT))));
-r3.appendChild(th('100.00'));
-r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
+    r3.appendChild(th(s2(sum(getCurrentHPS().PT))));
+    r3.appendChild(th('100.00'));
+    r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
 
     // QA HPS
     for(let i=0;i<QA;i++){
@@ -492,9 +515,29 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
     r3.appendChild(th(percentStr(getCurrentWeights().QA) + '%'));
 
     thead.appendChild(r3);
-  }
 
+    if (window.percentEditMode) attachPercentListeners();
+  }
   
+function attachPercentListeners() {
+  [
+    {id:'wwPercentInput', key:'WW'},
+    {id:'ptPercentInput', key:'PT'},
+    {id:'qaPercentInput', key:'QA'}
+  ].forEach(({id,key}) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', function() {
+      let v = Math.max(0, Math.min(100, parseFloat(this.value)||0));
+      this.value = v;
+      getCurrentWeights()[key] = v/100;
+      // Recompute grades and update display
+      buildHead();
+      recomputeAll();
+      saveSheetToFirebase();
+    });
+  });
+}
   // Toggle edit mode for percentages
 
   
@@ -586,51 +629,109 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
     recomputeRow(tr);
   };
 
-  function recomputeRow(tr){
-    const getVals=(start,count)=> {
-      const arr=[];
-      for(let i=0;i<count;i++){
-        const cell = tr.children[start+i].querySelector('input');
+  function fetchAndDisplayStudents() {
+    const info = getProfileInfo();
+    if (!info) return;
+    const { grade, section, schoolYear } = info;
+    tbody.innerHTML = '';
+    firebase.database().ref('students').once('value', snap => {
+        if (snap.exists()) {
+            snap.forEach(child => {
+                const student = child.val();
+                if (
+                    (student.grade + '').trim() === grade &&
+                    (student.section + '').trim() === section &&
+                    (student.school_year + '').trim() === schoolYear
+                ) {
+                    const name = (student.lname ? student.lname + ', ' : '') +
+                                 (student.fname || '') +
+                                 (student.mname ? ' ' + student.mname : '');
+                    addStudentRowDisplayOnly(name, []);
+                }
+            });
+        }
+    });
+}
+
+function recomputeRow(tr){
+  const getVals=(start,count,hpsArr)=> {
+    const arr=[];
+    for(let i=0;i<count;i++){
+      const cell = tr.children[start+i].querySelector('input');
+      // If HPS is 0, ignore this score (treat as 0)
+      if (parseFloat(hpsArr[i]) === 0) {
+        arr.push(0);
+      } else {
         arr.push(parseFloat(cell?.value||'0'));
       }
-      return arr;
-    };
+    }
+    return arr;
+  };
 
-    const wwScores = getVals(1, WW);
-    const wwTotal = sum(wwScores);
-    const wwPS = ps(wwTotal, sum(getCurrentHPS().WW));
-    const wwWS = wwPS * getCurrentWeights().WW;
+  const wwHPS = getCurrentHPS().WW;
+  const ptHPS = getCurrentHPS().PT;
+  const qaHPS = getCurrentHPS().QA;
 
-    const ptStart = 1 + WW + 3;
-    const ptScores = getVals(ptStart, PT);
-    const ptTotal = sum(ptScores);
-    const ptPS = ps(ptTotal, sum(getCurrentHPS().PT));
-    const ptWS = ptPS * getCurrentWeights().PT;
+  const wwScores = getVals(1, WW, wwHPS);
+  const wwTotal = sum(wwScores);
+  const wwHpsSum = sum(wwHPS.map(h=>parseFloat(h)||0));
+  const wwPS = wwHpsSum > 0 ? (wwTotal/wwHpsSum)*100 : 0;
+  const wwWS = wwPS * getCurrentWeights().WW;
 
-    const qaStart = ptStart + PT + 3;
-    const qaScores = getVals(qaStart, QA);
-    const qaPS = ps(sum(qaScores), sum(getCurrentHPS().QA));
-    const qaWS = qaPS * getCurrentWeights().QA;
+  const ptStart = 1 + WW + 3;
+  const ptScores = getVals(ptStart, PT, ptHPS);
+  const ptTotal = sum(ptScores);
+  const ptHpsSum = sum(ptHPS.map(h=>parseFloat(h)||0));
+  const ptPS = ptHpsSum > 0 ? (ptTotal/ptHpsSum)*100 : 0;
+  const ptWS = ptPS * getCurrentWeights().PT;
 
-    tr.querySelector('.ww-total').textContent = s2(wwTotal);
-    tr.querySelector('.ww-ps').textContent    = s2(wwPS);
-    tr.querySelector('.ww-ws').textContent    = s2(wwWS);
+  const qaStart = ptStart + PT + 3;
+  const qaScores = getVals(qaStart, QA, qaHPS);
+  const qaHpsSum = sum(qaHPS.map(h=>parseFloat(h)||0));
+  const qaPS = qaHpsSum > 0 ? (sum(qaScores)/qaHpsSum)*100 : 0;
+  const qaWS = qaPS * getCurrentWeights().QA;
 
-    tr.querySelector('.pt-total').textContent = s2(ptTotal);
-    tr.querySelector('.pt-ps').textContent    = s2(ptPS);
-    tr.querySelector('.pt-ws').textContent    = s2(ptWS);
+  tr.querySelector('.ww-total').textContent = s2(wwTotal);
+  tr.querySelector('.ww-ps').textContent    = s2(wwPS);
+  tr.querySelector('.ww-ws').textContent    = s2(wwWS);
 
-    tr.querySelector('.qa-ps').textContent    = s2(qaPS);
-    tr.querySelector('.qa-ws').textContent    = s2(qaWS);
+  tr.querySelector('.pt-total').textContent = s2(ptTotal);
+  tr.querySelector('.pt-ps').textContent    = s2(ptPS);
+  tr.querySelector('.pt-ws').textContent    = s2(ptWS);
 
-    const initial = wwWS + ptWS + qaWS;
-    tr.querySelector('.initial').textContent   = s2(initial);
-    tr.querySelector('.quarterly').textContent = s2(initial);
-  }
+  tr.querySelector('.qa-ps').textContent    = s2(qaPS);
+  tr.querySelector('.qa-ws').textContent    = s2(qaWS);
 
-  function recomputeAll(){
-    [...tbody.querySelectorAll('tr')].forEach(recomputeRow);
-  }
+  const initial = wwWS + ptWS + qaWS;
+  tr.querySelector('.initial').textContent   = s2(initial);
+  tr.querySelector('.quarterly').textContent = s2(initial);
+}
+function recomputeAll(){
+  [...tbody.querySelectorAll('tr')].forEach(recomputeRow);
+
+  // Disable/enable WW score inputs based on HPS
+  const wwHPS = getCurrentHPS().WW;
+  const ptHPS = getCurrentHPS().PT;
+  const qaHPS = getCurrentHPS().QA;
+
+  [...tbody.querySelectorAll('tr')].forEach(tr => {
+    // WW
+    for(let i=0;i<wwHPS.length;i++) {
+      const inp = tr.children[1+i]?.querySelector('input');
+      if (inp) inp.disabled = (parseFloat(wwHPS[i]) === 0);
+    }
+    // PT
+    for(let i=0;i<ptHPS.length;i++) {
+      const inp = tr.children[1+wwHPS.length+3+i]?.querySelector('input');
+      if (inp) inp.disabled = (parseFloat(ptHPS[i]) === 0);
+    }
+    // QA
+    for(let i=0;i<qaHPS.length;i++) {
+      const inp = tr.children[1+wwHPS.length+3+ptHPS.length+3+i]?.querySelector('input');
+      if (inp) inp.disabled = (parseFloat(qaHPS[i]) === 0);
+    }
+  });
+}
 
   // --- FIREBASE CONFIGURATION (replace with your own config) ---
 
@@ -672,76 +773,51 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
 
 
 
-        function fetchAndDisplayStudents() {
-            const info = getProfileInfo();
-            if (!info) return;
-            const { grade, section, schoolYear } = info;
-            tbody.innerHTML = '';
-            firebase.database().ref('students').once('value', snap => {
-                if (snap.exists()) {
-                    snap.forEach(child => {
-                        const student = child.val();
-                        if (
-                            (student.grade + '').trim() === grade &&
-                            (student.section + '').trim() === section &&
-                            (student.school_year + '').trim() === schoolYear
-                        ) {
-                            // Always pass an empty array for scores if not restoring from Firebase
-                            addStudentRowDisplayOnly(
-                                (student.lname ? student.lname + ', ' : '') +
-                                (student.fname || '') +
-                                (student.mname ? ' ' + student.mname : ''),
-                                []
-                            );
-                        }
-                    });
-                }
-            });
-        }
-
 function waitForProfileAndFetch() {
-    function afterProfileLoaded() {
-        loadSheetFromFirebase(function(data) {
-buildHead();
-tbody.innerHTML = '';
+        function afterProfileLoaded() {
+  loadSheetFromFirebase(function(data) {
+    buildHead();
+    tbody.innerHTML = '';
 if (data && Array.isArray(data.students) && data.students.length > 0) {
+    // Only add students from grading data
     data.students.forEach(stu => {
         addStudentRowDisplayOnly(stu.name, stu.scores);
     });
 } else {
-    fetchAndDisplayStudents();
-}
-if (data && data.hps) {
-    quarterData[getCurrentQuarter()].hps = {
-        WW: data.hps.WW || [...DEFAULT_HPS.WW],
-        PT: data.hps.PT || [...DEFAULT_HPS.PT],
-        QA: data.hps.QA || [...DEFAULT_HPS.QA]
-    };
-}
-if (data && data.weights) {
-    quarterData[getCurrentQuarter()].weights = {
-        WW: data.weights.WW ?? DEFAULT_WEIGHTS.WW,
-        PT: data.weights.PT ?? DEFAULT_WEIGHTS.PT,
-        QA: data.weights.QA ?? DEFAULT_WEIGHTS.QA
-    };
-}
-        });
-    }
-    // Wait for profile info to be loaded
-    function checkProfile() {
-        const grade = document.getElementById('profileGrade')?.textContent?.trim();
-        const section = document.getElementById('profileSection')?.textContent?.trim();
-        const schoolYear = localStorage.getItem('schoolYear');
-        if (grade && grade !== '-' && section && section !== '-' && schoolYear) {
-            afterProfileLoaded();
-        } else {
-            setTimeout(checkProfile, 200);
+    // Only if NO grading data, fetch students for this section/year and add blank rows
+    const info = getProfileInfo();
+    if (!info) return;
+    const { grade, section, schoolYear } = info;
+    firebase.database().ref('students/' + schoolYear + '/' + section).once('value', snap => {
+        if (snap.exists()) {
+            snap.forEach(child => {
+                const student = child.val();
+                const name = (student.lname ? student.lname + ', ' : '') +
+                             (student.fname || '') +
+                             (student.mname ? ' ' + student.mname : '');
+                
+            });
         }
-    }
-    checkProfile();
-}
-waitForProfileAndFetch();
     });
+}
+    // ...rest of your code for hps/weights...
+});
+        }
+        // Wait for profile info to be loaded
+        function checkProfile() {
+            const grade = document.getElementById('profileGrade')?.textContent?.trim();
+            const section = document.getElementById('profileSection')?.textContent?.trim();
+            const schoolYear = localStorage.getItem('schoolYear');
+            if (grade && grade !== '-' && section && section !== '-' && schoolYear) {
+                afterProfileLoaded();
+            } else {
+                setTimeout(checkProfile, 200);
+            }
+        }
+        checkProfile();
+    }
+    waitForProfileAndFetch();
+        });
 });
 
 // Helper to get the current teacher's grading sheet path for the selected quarter
@@ -821,6 +897,15 @@ function getCurrentWeights() {
 function getCurrentHPS() {
   return quarterData[getCurrentQuarter()].hps;
 }
+
+
+window.loadSheetFromFirebase = loadSheetFromFirebase;
+window.getCurrentQuarter = getCurrentQuarter;
+window.getCurrentWeights = getCurrentWeights;
+window.getCurrentHPS = getCurrentHPS;
+window.saveSheetToFirebase = saveSheetToFirebase;
+window.buildHead = buildHead;
+window.fetchAndDisplayStudents = fetchAndDisplayStudents;
 })();
 
 document.addEventListener('click', function(e) {
@@ -859,46 +944,8 @@ document.getElementById('studentSearch').addEventListener('input', function() {
 });
 
 // Quarter filter functionality (stub, implement as needed)
-document.getElementById('quarterSelect').addEventListener('change', function() {
-    localStorage.setItem('selectedQuarter', this.value);
-    if (document.getElementById('quarterLabel')) {
-        document.getElementById('quarterLabel').textContent = "Quarter " + this.value;
-    }
-    window.percentEditMode = false;
-    loadSheetFromFirebase(function(data) {
-          buildHead();
-        tbody.innerHTML = '';
-        if (data && Array.isArray(data.students) && data.students.length > 0) {
-            data.students.forEach(stu => {
-                addStudentRowDisplayOnly(stu.name, stu.scores);
-            });
-        } else {
-            fetchAndDisplayStudents();
-        }
-        if (data && data.hps) {
-            quarterData[getCurrentQuarter()].hps = {
-                WW: data.hps.WW || [...DEFAULT_HPS.WW],
-                PT: data.hps.PT || [...DEFAULT_HPS.PT],
-                QA: data.hps.QA || [...DEFAULT_HPS.QA]
-            };
-        }
-        if (data && data.weights) {
-            quarterData[getCurrentQuarter()].weights = {
-                WW: data.weights.WW ?? DEFAULT_WEIGHTS.WW,
-                PT: data.weights.PT ?? DEFAULT_WEIGHTS.PT,
-                QA: data.weights.QA ?? DEFAULT_WEIGHTS.QA
-            };
-        }
-    });
-});
 
-window.loadSheetFromFirebase = loadSheetFromFirebase;
-window.getCurrentQuarter = getCurrentQuarter;
-window.getCurrentWeights = getCurrentWeights;
-window.getCurrentHPS = getCurrentHPS;
-window.saveSheetToFirebase = saveSheetToFirebase;
-window.buildHead = buildHead;
-window.fetchAndDisplayStudents = fetchAndDisplayStudents;
+
 
 function fetchAndDisplayStudentsWithRestore(savedStudents) {
     const info = getProfileInfo();
@@ -991,7 +1038,10 @@ function fetchAndDisplayStudentsWithRestore(savedStudents) {
   <script src="../assets/js/gradingSheet.js"></script>
 </div>
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {
+
+  const tabSummary = document.getElementById('tabSummary');
+  const summaryTab = document.getElementById('summaryTab');
   const tabGrading = document.getElementById('tabGrading');
   const tabAttendance = document.getElementById('tabAttendance');
   const gradingTab = document.getElementById('gradingTab');
@@ -1000,14 +1050,27 @@ function fetchAndDisplayStudentsWithRestore(savedStudents) {
   tabGrading.addEventListener('click', function() {
     tabGrading.classList.add('active');
     tabAttendance.classList.remove('active');
+    tabSummary.classList.remove('active');
     gradingTab.style.display = 'block';
     attendanceTab.style.display = 'none';
+    summaryTab.style.display = 'none';
   });
   tabAttendance.addEventListener('click', function() {
     tabAttendance.classList.add('active');
     tabGrading.classList.remove('active');
+    tabSummary.classList.remove('active');
     gradingTab.style.display = 'none';
     attendanceTab.style.display = 'block';
+    summaryTab.style.display = 'none';
+  });
+  tabSummary.addEventListener('click', function() {
+    tabSummary.classList.add('active');
+    tabGrading.classList.remove('active');
+    tabAttendance.classList.remove('active');
+    gradingTab.style.display = 'none';
+    attendanceTab.style.display = 'none';
+    summaryTab.style.display = 'block';
+    loadSummaryTab();
   });
 });
 
@@ -1062,9 +1125,10 @@ function buildAttendanceBody(students) {
         const inp = document.createElement('input');
         inp.type = 'checkbox';
         inp.className = 'att-checkbox';
-        inp.addEventListener('change', function() {
-          updateAttendanceTotal(tr);
-        });
+inp.addEventListener('change', function() {
+  updateAttendanceTotal(tr);
+  saveAttendanceToFirebase(); // <-- add this line
+});
         td.appendChild(inp);
         tr.appendChild(td);
       }
@@ -1092,40 +1156,104 @@ function updateAttendanceTotal(tr) {
 function loadAttendanceStudents() {
   const info = typeof getProfileInfo === "function" ? getProfileInfo() : null;
   if (!info) return;
-  const { grade, section, schoolYear } = info;
-  const students = [];
-  firebase.database().ref('students').once('value', snap => {
+  const { section, schoolYear } = info;
+  const subject = document.getElementById('subjectName')?.textContent.trim() || 'N/A';
+  const quarter = document.getElementById('quarterSelect')?.value || '1';
+  const path = `attendance/${subject}/${schoolYear}/${section}/${quarter}`;
+
+  firebase.database().ref(path).once('value', snap => {
     if (snap.exists()) {
-      snap.forEach(child => {
-        const student = child.val();
-        if (
-          (student.grade + '').trim() === grade &&
-          (student.section + '').trim() === section &&
-          (student.school_year + '').trim() === schoolYear
-        ) {
-          students.push(
-            (student.lname ? student.lname + ', ' : '') +
-            (student.fname || '') +
-            (student.mname ? ' ' + student.mname : '')
-          );
+      // Attendance data exists, load it
+      const data = snap.val();
+      buildAttendanceHead();
+      buildAttendanceBodyWithChecks(data);
+    } else {
+      // No attendance data yet, fetch student list
+      firebase.database().ref('students/' + schoolYear + '/' + section).once('value', snap2 => {
+        const students = [];
+        if (snap2.exists()) {
+          snap2.forEach(child => {
+            const student = child.val();
+            const name = (student.lname ? student.lname + ', ' : '') +
+                         (student.fname || '') +
+                         (student.mname ? ' ' + student.mname : '');
+            students.push(name);
+          });
         }
+        buildAttendanceHead();
+        buildAttendanceBody(students);
       });
     }
-    buildAttendanceHead();
-    buildAttendanceBody(students);
   });
 }
-
 // When Attendance tab is shown, build the table
 document.getElementById('tabAttendance').addEventListener('click', function() {
-  buildAttendanceHead();
   loadAttendanceStudents();
   // Optionally update subject/quarter display
   document.getElementById('attendanceSubject').textContent = document.getElementById('subjectName').textContent;
   document.getElementById('attendanceQuarter').textContent = document.getElementById('quarterSelect').selectedOptions[0].textContent;
 });
+
+function saveAttendanceToFirebase() {
+  const info = typeof getProfileInfo === "function" ? getProfileInfo() : null;
+  if (!info) return;
+  const { section, schoolYear } = info;
+  const subject = document.getElementById('subjectName')?.textContent.trim() || 'N/A';
+  const quarter = document.getElementById('quarterSelect')?.value || '1';
+
+  const data = [];
+  document.querySelectorAll('#attendanceTbody tr').forEach(tr => {
+    const name = tr.querySelector('.sticky-name')?.textContent || '';
+    const checks = Array.from(tr.querySelectorAll('input.att-checkbox')).map(chk => chk.checked ? 1 : 0);
+    data.push({ name, checks });
+  });
+
+  const path = `attendance/${subject}/${schoolYear}/${section}/${quarter}`;
+  firebase.database().ref(path).set(data);
+}
+
+function buildAttendanceBodyWithChecks(data) {
+  const tbody = document.getElementById('attendanceTbody');
+  tbody.innerHTML = '';
+  data.forEach(row => {
+    const tr = document.createElement('tr');
+    const nameTd = document.createElement('td');
+    nameTd.className = 'sticky-name';
+    nameTd.textContent = row.name;
+    tr.appendChild(nameTd);
+
+    let checkIdx = 0;
+    for(let w=0;w<attendanceWeeks;w++) {
+      for(let d=0;d<attendanceDays.length;d++) {
+        const td = document.createElement('td');
+        td.style = 'text-align:center;';
+        const inp = document.createElement('input');
+        inp.type = 'checkbox';
+        inp.className = 'att-checkbox';
+        inp.checked = !!row.checks[checkIdx];
+        inp.addEventListener('change', function() {
+          updateAttendanceTotal(tr);
+          saveAttendanceToFirebase();
+        });
+        td.appendChild(inp);
+        tr.appendChild(td);
+        checkIdx++;
+      }
+    }
+    const totalTd = document.createElement('td');
+    totalTd.className = 'att-total';
+    totalTd.style = 'color:#2e8b57;font-weight:600;text-align:center;';
+    totalTd.textContent = (row.checks ? row.checks.filter(Boolean).length : 0) + '/40';
+    tr.appendChild(totalTd);
+
+    tbody.appendChild(tr);
+    updateAttendanceTotal(tr);
+  });
+}
 </script>
 </div>
+
+<script src="../assets/js/summary.js"></script>
 </body>
 
 </html>
