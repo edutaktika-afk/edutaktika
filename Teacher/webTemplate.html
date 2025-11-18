@@ -25,13 +25,14 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="../CSS/fonts.css">
 <!-- ...inside <head> -->
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="../CSS/header.css">
+    <link rel="stylesheet" href="../CSS/homepage.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/dropdown.css">
     <link rel="stylesheet" href="../CSS/burger.css">
@@ -194,7 +195,9 @@
 
     <script src="../assets/js/Teacher Side/header.js"></script>
 
-    <footer>
+
+
+<footer>
   <div class="footer-wrap">
     <div class="footer-col">
       <h4 class="footer-brand">Eduktaktika</h4>
@@ -235,8 +238,55 @@
   </div>
 </footer>
 
+    <!-- Edit Profile Modal -->
+
+<link rel="stylesheet" href="../CSS/editProfile.css">
+
+<div id="editProfileModal" class="edit-profile-modal">
+    <div class="edit-profile-card">
+        <button type="button" class="close-btn" onclick="closeEditProfileModal()">&times;</button>
+        <h3>Edit Profile</h3>
+        <form id="editProfileForm">
+            <label>First Name:
+                <input type="text" id="edit_fname" required>
+            </label>
+            <label>Middle Name:
+                <input type="text" id="edit_mname">
+            </label>
+            <label>Last Name:
+                <input type="text" id="edit_lname" required>
+            </label>
+            <label>Grade Level:
+                <input type="text" id="edit_gradelevel" required>
+            </label>
+            <label>Section:
+                <input type="text" id="edit_section" required>
+            </label>
+            <div class="edit-profile-actions">
+                <button type="button" onclick="closeEditProfileModal()">Cancel</button>
+                <button type="submit">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../assets/js/Teacher Side/editProfile.js"></script>
+
+
 <script src="../assets/js/navbar.js"></script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const navLinks = document.querySelectorAll("nav ul li a");
+    const current = window.location.pathname.split('/').pop();
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
+        }
+    });
+});
+</script>
 </div>
 </body>
+
 </html>

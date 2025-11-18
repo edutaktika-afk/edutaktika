@@ -1011,19 +1011,23 @@ export const ScienceTemplatesPanel = observer(({ store }) => {
       
       // If not found in embedded data, try to fetch from /templates/ directory
       if (!templateData) {
-        console.log(`Template "${templateName}" not found in TEMPLATE_DATA, trying to fetch from /templates/`);
+        console.log(`Template "${templateName}" not found in TEMPLATE_DATA, trying to fetch from templates/`);
         try {
-          const response = await fetch(`/templates/${templateName}.json`);
+          // Use relative path to work with base: './' in vite.config.js
+          // This ensures templates work both locally and on Netlify
+          const baseUrl = import.meta.env.BASE_URL || './';
+          const templatePath = `${baseUrl}templates/${templateName}.json`;
+          const response = await fetch(templatePath);
           if (response.ok) {
             templateData = await response.json();
-            console.log(`Successfully loaded template from /templates/${templateName}.json`);
+            console.log(`Successfully loaded template from ${templatePath}`);
           } else {
             console.error(`Failed to fetch template: ${response.status} ${response.statusText}`);
             throw new Error(`Template file not found: ${templateName}.json`);
           }
         } catch (fetchError) {
-          console.error(`Error fetching template from /templates/:`, fetchError);
-          console.error(`Template "${templateName}" not found in TEMPLATE_DATA or /templates/`);
+          console.error(`Error fetching template from templates/:`, fetchError);
+          console.error(`Template "${templateName}" not found in TEMPLATE_DATA or templates/`);
           console.log('Available templates in TEMPLATE_DATA:', Object.keys(TEMPLATE_DATA));
           alert(`Error: Template "${templateName}" not found. Please contact support.`);
           return;

@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="../CSS/fonts.css">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../CSS/header.css">
+    <link rel="stylesheet" href="../CSS/homepage.css">
+    <link rel="stylesheet" href="../CSS/footer.css">
+    <link rel="stylesheet" href="../CSS/dropdown.css">
+    <link rel="stylesheet" href="../CSS/burger.css">
+    <link rel="icon" type="image/png" href="../images/icons/home.png" />
+    <title>Grading System | Edutaktika</title>
+    <link rel="stylesheet" href="../CSS/grading.css">
+
+</head>
+
+<body>
+    <!-- Authentication Check Script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            auth.onAuthStateChanged(async function(user) {
+                if (!user) {
+                    window.location.href = "logreg.html";
+                    return;
+                }
+                const uid = user.uid;
+                const snap = await db.ref('teachers/' + uid).once('value');
+                const teacher = snap.val();
+                if (!teacher || teacher.role !== "teacher") {
+                    document.getElementById('mainContent').style.display = "none";
+                    alert("Access denied.");
+                    await auth.signOut();
+                    window.location.href = "logreg.html";
+                } else {
+                    document.getElementById('mainContent').style.display = "block";
+                }
+            });
+        });
+    </script>
+
+    <div id="mainContent" style="display:none;">
+        <!-- Burger icon for mobile -->
+        <button id="burgerBtn" class="burger-btn" aria-label="Open menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <!-- Overlay for navbar -->
+        <div class="sidebar-overlay" id="navOverlay"></div>
+        <!-- Overlay for profile sidebar -->
+        <div class="sidebar-overlay" id="profileSidebarOverlay"></div>
+
+    <header>
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <!-- Replace your logo-text div with this for per-letter bounce -->
+                <div class="logo-text">
+                    <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
+                </div>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="homepage.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="subject_math.html">Math</a></li>
+                            <li><a href="subject_english.html">English</a></li>
+                            <li><a href="subject_science.html">Science</a></li>
+                        </ul>
+                        </li>
+                    <li><a href="studentlist.html">Student</a></li>
+                    <li><a href="grading.html">Grading</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Assessments <i class="fa fa-caret-down"></i></a>
+                        <ul class="dropdown-content">
+                            <li><a href="assessment-builder.html">Create Assessment</a></li>
+                            <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                            <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="leaderboard_math.html">Math</a></li>
+                                <li><a href="leaderboard_english.html">English</a></li>
+                                <li><a href="leaderboard_science.html">Science</a></li>
+                            </ul>
+                        </li>
+                    <li>
+                        <a href="#" id="profileBtn">Profile</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+        <!-- Profile Sidebar (Dynamic with Firebase) -->
+        <div id="profileSidebar" class="profile-sidebar">
+            <div class="sidebar-content">
+                <button class="close-btn" id="closeSidebar">&times;</button>
+                <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+                    <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+                    <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+                </div>
+                <div class="profile-name" id="profileName">Loading...</div>
+                <br>
+                <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+                    <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+                        Teacher
+                    </div>
+                    <div>
+                        <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                        <strong>ID:</strong> <span id="profileId">-</span>
+                    </div>
+                    <div>
+                        <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                        <strong>First Name:</strong> <span id="profileFirstName">-</span>
+                    </div>
+                    <div>
+                        <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                        <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+                    </div>
+                    <div>
+                        <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                        <strong>Last Name:</strong> <span id="profileLastName">-</span>
+                    </div>
+                    <div>
+                        <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                        <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+                    </div>
+                    <div>
+                        <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                        <strong>Section:</strong> <span id="profileSection">-</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+                        <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+                        <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+                        <strong>City:</strong> <span id="profileAddressCity">-</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+                        <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+                        <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+                        <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+                    </div>
+                </div>
+                <div class="logout-switch-row">
+                    <div class="logout-switch" id="logoutSwitch">
+                        <div class="logout-switch-circle"></div>
+                    </div>
+                    <span class="logout-label" id="logoutLabel">LOGOUT</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-container">
+            <div class="page-header">
+                <h1><i class="fas fa-chart-line"></i> Grading System</h1>
+                <p>Manage grading configuration and student grades in one place.</p>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" onclick="switchTab('config')" id="configTab">
+                    <i class="fas fa-cogs"></i> Configuration
+                </button>
+                <button class="tab-btn" onclick="switchTab('sheet')" id="sheetTab">
+                    <i class="fas fa-table"></i> Grading Sheet
+                </button>
+                <button class="tab-btn" onclick="switchTab('attendance')" id="attendanceTab">
+                    <i class="fas fa-user-check"></i> Attendance
+                </button>
+                <button class="tab-btn" onclick="switchTab('viewonly')" id="viewonlyTab">
+                    <i class="fas fa-eye"></i> View Only
+                </button>
+            </div>
+
+            <!-- Tab Content: Configuration -->
+            <div id="configContent" class="tab-content active">
+            <div class="grading-container">
+                <div class="grading-form">
+                    <div class="form-section">
+                        <h3><i class="fas fa-cogs"></i> Grading Attributes</h3>
+                        <div class="info-note" style="background: #e3f2fd; border-left: 4px solid var(--primary); padding: 12px; margin-bottom: 20px; border-radius: 8px;">
+                            <i class="fas fa-info-circle" style="color: var(--primary); margin-right: 8px;"></i>
+                            <strong>Smart Validation:</strong> The system automatically prevents any single attribute from exceeding the remaining percentage to keep the total at or below 100%.
+                        </div>
+                        <div id="attributesList">
+                            <!-- Default attributes will be populated here -->
+                        </div>
+                        
+                        <div class="add-attribute">
+                            <input type="text" id="newAttributeName" class="add-input" placeholder="Enter new attribute name (e.g., Project, Group Work)" maxlength="50">
+                            <button id="addAttributeBtn" class="add-btn">
+                                <i class="fas fa-plus"></i> Add Attribute
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-panel">
+                    <h3><i class="fas fa-calculator"></i> Summary</h3>
+                    
+                    <div class="total-percentage">
+                        <div id="totalValue" class="total-value">0</div>
+                        <div class="total-label">Total Percentage</div>
+                    </div>
+
+                    <div id="validationMessage" class="validation-message error">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Total must equal 100%
+                    </div>
+
+                    <div class="attributes-list">
+                        <h4 style="margin-bottom: 15px; color: var(--text-main);">Current Attributes:</h4>
+                        <div id="attributesPreview">
+                            <!-- Preview will be populated here -->
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="saveBtn" class="save-btn" disabled>
+                            <i class="fas fa-save"></i> Save Configuration
+                        </button>
+                        <button id="resetBtn" class="reset-btn">
+                            <i class="fas fa-undo"></i> Reset to Default
+                        </button>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <!-- End Config Tab Content -->
+
+            <!-- Tab Content: Grading Sheet -->
+            <div id="sheetContent" class="tab-content">
+        <div class="grading-sheet-section" id="gradingSheetSection">
+            <div class="section-header">
+                <h2><i class="fas fa-table"></i> Student Grading Sheet</h2>
+                <p>View and manage student grades based on your configured grading criteria.</p>
+            </div>
+
+            <div class="grading-controls">
+                <div class="filter-controls">
+                    <select id="subjectFilter" class="filter-select">
+                        <option value="math">Math</option>
+                        <option value="english">English</option>
+                        <option value="science">Science</option>
+                    </select>
+                    <select id="quarterFilter" class="filter-select">
+                        <option value="1">Quarter 1</option>
+                        <option value="2">Quarter 2</option>
+                        <option value="3">Quarter 3</option>
+                        <option value="4">Quarter 4</option>
+                    </select>
+                    <select id="gradeLevelFilter" class="filter-select">
+                        <option value="5">Grade 5</option>
+                        <option value="6">Grade 6</option>
+                    </select>
+                    <button id="refreshGradesBtn" class="refresh-btn">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                </div>
+                <div class="grade-actions">
+                    <button id="bulkGradeBtn" class="export-btn" style="background: #ff9800;">
+                        <i class="fas fa-upload"></i> Bulk Grade Entry
+                    </button>
+                    <button id="gradeHistoryBtn" class="export-btn">
+                        <i class="fas fa-history"></i> Grade History
+                    </button>
+                    <button id="addGradeBtn" class="add-grade-btn">
+                        <i class="fas fa-plus"></i> Add Grade Entry
+                    </button>
+                </div>
+            </div>
+
+            <div class="grading-table-container">
+                <table id="gradingTable" class="grading-table">
+                    <thead id="gradingTableHead">
+                        <!-- Dynamic headers will be generated based on grading attributes -->
+                    </thead>
+                    <tbody id="gradingTableBody">
+                        <!-- Student grade data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="grading-summary">
+                <div class="summary-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalStudents">0</div>
+                        <div class="stat-label">Total Students</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="averageGrade">0.0</div>
+                        <div class="stat-label">Class Average</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="passingRate">0%</div>
+                        <div class="stat-label">Passing Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="highestGrade">0.0</div>
+                        <div class="stat-label">Highest Grade</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="lowestGrade">0.0</div>
+                        <div class="stat-label">Lowest Grade</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="gradeRange">0.0</div>
+                        <div class="stat-label">Grade Range</div>
+                    </div>
+                </div>
+                
+                <!-- Grade Distribution Chart -->
+                <div class="grade-distribution" style="margin-top: 30px;">
+                    <h4 style="color: var(--primary); margin-bottom: 20px; text-align: center;">
+                        <i class="fas fa-chart-pie"></i> Grade Distribution
+                    </h4>
+                    <div class="distribution-bars" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+                        <div class="distribution-item" style="text-align: center;">
+                            <div class="distribution-bar" id="excellentBar" style="height: 0px; background: #4caf50; border-radius: 4px 4px 0 0; transition: height 0.5s ease;"></div>
+                            <div class="distribution-label" style="margin-top: 10px; font-weight: 600; color: var(--text-main);">Excellent<br><span style="color: #4caf50; font-size: 1.2rem;" id="excellentCount">0</span></div>
+                            <div style="font-size: 0.8rem; color: var(--text-light);">90-100</div>
+                        </div>
+                        <div class="distribution-item" style="text-align: center;">
+                            <div class="distribution-bar" id="goodBar" style="height: 0px; background: #ff9800; border-radius: 4px 4px 0 0; transition: height 0.5s ease;"></div>
+                            <div class="distribution-label" style="margin-top: 10px; font-weight: 600; color: var(--text-main);">Good<br><span style="color: #ff9800; font-size: 1.2rem;" id="goodCount">0</span></div>
+                            <div style="font-size: 0.8rem; color: var(--text-light);">80-89</div>
+                        </div>
+                        <div class="distribution-item" style="text-align: center;">
+                            <div class="distribution-bar" id="fairBar" style="height: 0px; background: #ff5722; border-radius: 4px 4px 0 0; transition: height 0.5s ease;"></div>
+                            <div class="distribution-label" style="margin-top: 10px; font-weight: 600; color: var(--text-main);">Fair<br><span style="color: #ff5722; font-size: 1.2rem;" id="fairCount">0</span></div>
+                            <div style="font-size: 0.8rem; color: var(--text-light);">70-79</div>
+                        </div>
+                        <div class="distribution-item" style="text-align: center;">
+                            <div class="distribution-bar" id="poorBar" style="height: 0px; background: #f44336; border-radius: 4px 4px 0 0; transition: height 0.5s ease;"></div>
+                            <div class="distribution-label" style="margin-top: 10px; font-weight: 600; color: var(--text-main);">Needs Improvement<br><span style="color: #f44336; font-size: 1.2rem;" id="poorCount">0</span></div>
+                            <div style="font-size: 0.8rem; color: var(--text-light);">Below 70</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grade Entry Modal -->
+        <div id="gradeModal" class="grade-modal">
+            <div class="grade-modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-edit"></i> <span id="modalTitle">Add Grade Entry</span></h3>
+                    <button class="modal-close" id="closeGradeModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="gradeForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="studentSelect">Student:</label>
+                                <select id="studentSelect" required>
+                                    <option value="">Select a student</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="subjectSelect">Subject:</label>
+                                <select id="subjectSelect" required>
+                                    <option value="">Select subject</option>
+                                    <option value="math">Math</option>
+                                    <option value="english">English</option>
+                                    <option value="science">Science</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="quarterSelect">Quarter:</label>
+                                <select id="quarterSelect" required>
+                                    <option value="">Select quarter</option>
+                                    <option value="1">Quarter 1</option>
+                                    <option value="2">Quarter 2</option>
+                                    <option value="3">Quarter 3</option>
+                                    <option value="4">Quarter 4</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="gradingPeriod">Grading Period:</label>
+                                <input type="text" id="gradingPeriod" placeholder="e.g., 2024-2025" required>
+                            </div>
+                        </div>
+                        <div id="gradeInputs" class="grade-inputs">
+                            <!-- Dynamic grade inputs based on grading attributes -->
+                        </div>
+                        <div class="calculated-grade">
+                            <label>Calculated Final Grade:</label>
+                            <div class="final-grade-display" id="finalGradeDisplay">0.00</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeGradeModal()">Cancel</button>
+                    <button type="submit" form="gradeForm" class="btn-save">Save Grade</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Grade Entry Modal -->
+        <div id="bulkGradeModal" class="grade-modal">
+            <div class="grade-modal-content" style="max-width: 800px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-upload"></i> Bulk Grade Entry</h3>
+                    <button class="modal-close" id="closeBulkGradeModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="bulk-grade-info" style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: var(--primary);">
+                            <i class="fas fa-info-circle"></i> Bulk Grade Entry Instructions
+                        </h4>
+                        <p style="margin: 0; font-size: 0.9rem;">
+                            Select a subject, quarter, and grading period. Then enter grades for all students in your class for the selected criteria.
+                        </p>
+                    </div>
+                    
+                    <form id="bulkGradeForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bulkSubjectSelect">Subject:</label>
+                                <select id="bulkSubjectSelect" required>
+                                    <option value="">Select subject</option>
+                                    <option value="math">Math</option>
+                                    <option value="english">English</option>
+                                    <option value="science">Science</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="bulkQuarterSelect">Quarter:</label>
+                                <select id="bulkQuarterSelect" required>
+                                    <option value="">Select quarter</option>
+                                    <option value="1">Quarter 1</option>
+                                    <option value="2">Quarter 2</option>
+                                    <option value="3">Quarter 3</option>
+                                    <option value="4">Quarter 4</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bulkGradingPeriod">Grading Period:</label>
+                                <input type="text" id="bulkGradingPeriod" placeholder="e.g., 2024-2025" required>
+                            </div>
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="button" id="generateBulkInputs" class="btn-save" style="width: 100%;">
+                                    <i class="fas fa-table"></i> Generate Grade Inputs
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="bulkGradeInputs" class="bulk-grade-inputs" style="display: none;">
+                            <h4 style="margin-bottom: 15px; color: var(--primary);">Student Grades:</h4>
+                            <div id="bulkStudentsList">
+                                <!-- Dynamic student grade inputs will be generated here -->
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeBulkGradeModal()">Cancel</button>
+                    <button type="submit" form="bulkGradeForm" class="btn-save" id="saveBulkGrades" style="display: none;">
+                        <i class="fas fa-save"></i> Save All Grades
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grade History Modal -->
+        <div id="gradeHistoryModal" class="grade-modal">
+            <div class="grade-modal-content" style="max-width: 900px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-history"></i> Grade History & Audit Trail</h3>
+                    <button class="modal-close" id="closeGradeHistoryModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="history-filters" style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <div class="form-group" style="flex: 1; min-width: 150px;">
+                            <label for="historyStudentFilter">Student:</label>
+                            <select id="historyStudentFilter" class="filter-select">
+                                <option value="">All Students</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 150px;">
+                            <label for="historySubjectFilter">Subject:</label>
+                            <select id="historySubjectFilter" class="filter-select">
+                                <option value="">All Subjects</option>
+                                <option value="math">Math</option>
+                                <option value="english">English</option>
+                                <option value="science">Science</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 150px;">
+                            <label for="historyQuarterFilter">Quarter:</label>
+                            <select id="historyQuarterFilter" class="filter-select">
+                                <option value="">All Quarters</option>
+                                <option value="1">Quarter 1</option>
+                                <option value="2">Quarter 2</option>
+                                <option value="3">Quarter 3</option>
+                                <option value="4">Quarter 4</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1; min-width: 150px;">
+                            <label for="historyActionFilter">Action:</label>
+                            <select id="historyActionFilter" class="filter-select">
+                                <option value="">All Actions</option>
+                                <option value="created">Created</option>
+                                <option value="updated">Updated</option>
+                                <option value="deleted">Deleted</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="history-table-container" style="max-height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px;">
+                        <table class="grading-table" style="margin: 0;">
+                            <thead style="position: sticky; top: 0; z-index: 10;">
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Student</th>
+                                    <th>Subject</th>
+                                    <th>Quarter</th>
+                                    <th>Action</th>
+                                    <th>Final Grade</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="gradeHistoryBody">
+                                <!-- History entries will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="history-summary" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <h4 style="margin: 0 0 10px 0; color: var(--primary);">Summary</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                            <div>
+                                <strong>Total Entries:</strong> <span id="historyTotalEntries">0</span>
+                            </div>
+                            <div>
+                                <strong>Created:</strong> <span id="historyCreated">0</span>
+                            </div>
+                            <div>
+                                <strong>Updated:</strong> <span id="historyUpdated">0</span>
+                            </div>
+                            <div>
+                                <strong>Deleted:</strong> <span id="historyDeleted">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeGradeHistoryModal()">Close</button>
+                    <button type="button" class="btn-save" onclick="exportGradeHistory()">
+                        <i class="fas fa-download"></i> Export History
+                    </button>
+                </div>
+            </div>
+        </div>
+            </div>
+            <!-- End Grading Sheet Tab Content -->
+
+            <!-- Tab Content: Attendance -->
+            <div id="attendanceContent" class="tab-content">
+                <div class="grading-sheet-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-user-check"></i> Student Attendance</h2>
+                        <p>Track student attendance with presence (1) or absence (0) indicators.</p>
+                    </div>
+
+                    <div class="grading-controls">
+                        <div class="filter-controls">
+                            <select id="attendanceSubjectFilter" class="filter-select">
+                               
+                                <option value="math">Math</option>
+                                <option value="english">English</option>
+                                <option value="science">Science</option>
+                            </select>
+                            <select id="attendanceQuarterFilter" class="filter-select">
+                                <option value="1">Quarter 1</option>
+                                <option value="2">Quarter 2</option>
+                                <option value="3">Quarter 3</option>
+                                <option value="4">Quarter 4</option>
+                            </select>
+                            <input type="date" id="attendanceDateFilter" class="filter-select" placeholder="Select Date">
+                            <button id="refreshAttendanceBtn" class="refresh-btn">
+                                <i class="fas fa-sync-alt"></i> Refresh Data
+                            </button>
+                        </div>
+                        <div class="grade-actions">
+                            <button id="markAllPresentBtn" class="export-btn" style="background: #4caf50;">
+                                <i class="fas fa-check-circle"></i> Mark All Present
+                            </button>
+                            <button id="markAllAbsentBtn" class="export-btn" style="background: #f44336;">
+                                <i class="fas fa-times-circle"></i> Mark All Absent
+                            </button>
+                            <button id="addAttendanceBtn" class="add-grade-btn">
+                                <i class="fas fa-plus"></i> Add Attendance Entry
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="attendance-table-container">
+                        <div class="attendance-sheet-header">
+                            <h3 id="attendanceSheetTitle">8-Week Attendance Sheet</h3>
+                            <div class="attendance-sheet-info">
+                                <span id="attendanceSheetInfo">Select subject, quarter, and date range to view attendance</span>
+                            </div>
+                        </div>
+                        
+                        <div class="attendance-grid-container">
+                            <table id="attendanceTable" class="attendance-grid-table">
+                                <thead id="attendanceTableHead">
+                                    <tr>
+                                        <th class="student-column" rowspan="2">Student Name</th>
+                                        <th class="week-header" colspan="5">Week 1</th>
+                                        <th class="week-header" colspan="5">Week 2</th>
+                                        <th class="week-header" colspan="5">Week 3</th>
+                                        <th class="week-header" colspan="5">Week 4</th>
+                                        <th class="week-header" colspan="5">Week 5</th>
+                                        <th class="week-header" colspan="5">Week 6</th>
+                                        <th class="week-header" colspan="5">Week 7</th>
+                                        <th class="week-header" colspan="5">Week 8</th>
+                                        <th class="summary-column" rowspan="2">Total</th>
+                                    </tr>
+                                    <tr class="date-row">
+                                        <th class="day-header">Mon</th>
+                                        <th class="day-header">Tue</th>
+                                        <th class="day-header">Wed</th>
+                                        <th class="day-header">Thu</th>
+                                        <th class="day-header">Fri</th>
+                                        <th class="day-header">Mon</th>
+                                        <th class="day-header">Tue</th>
+                                        <th class="day-header">Wed</th>
+                                        <th class="day-header">Thu</th>
+                                        <th class="day-header">Fri</th>
+                                        <th class="day-header">Mon</th>
+                                        <th class="day-header">Tue</th>
+                                        <th class="day-header">Wed</th>
+                                        <th class="day-header">Thu</th>
+                                        <th class="day-header">Fri</th>
+                                        <th class="day-header">Mon</th>
+                                        <th class="day-header">Tue</th>
+                                        <th class="day-header">Wed</th>
+                                        <th class="day-header">Thu</th>
+                                        <th class="day-header">Fri</th>
+                                        <th class="day-header">Mon</th>
+                                        <th class="day-header">Tue</th>
+                                        <th class="day-header">Wed</th>
+                                        <th class="day-header">Thu</th>
+                                        <th class="day-header">Fri</th>
+                                        <th class="day-header">Mon</th>
+                                        <th class="day-header">Tue</th>
+                                        <th class="day-header">Wed</th>
+                                        <th class="day-header">Thu</th>
+                                        <th class="day-header">Fri</th>
+                                        <th class="day-header">Mon</th>
+                                        <th class="day-header">Tue</th>
+                                        <th class="day-header">Wed</th>
+                                        <th class="day-header">Thu</th>
+                                        <th class="day-header">Fri</th>
+                                        <th class="day-header">Mon</th>
+                                        <th class="day-header">Tue</th>
+                                        <th class="day-header">Wed</th>
+                                        <th class="day-header">Thu</th>
+                                        <th class="day-header">Fri</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendanceTableBody">
+                                    <!-- Student attendance rows will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="attendance-summary">
+                        <div class="summary-stats">
+                            <div class="stat-card">
+                                <div class="stat-number" id="totalAttendanceRecords">0</div>
+                                <div class="stat-label">Total Records</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="presentCount">0</div>
+                                <div class="stat-label">Present</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="absentCount">0</div>
+                                <div class="stat-label">Absent</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="attendanceRate">0%</div>
+                                <div class="stat-label">Attendance Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Entry Modal -->
+                <div id="attendanceModal" class="grade-modal">
+                    <div class="grade-modal-content">
+                        <div class="modal-header">
+                            <h3><i class="fas fa-user-check"></i> <span id="attendanceModalTitle">Add Attendance Entry</span></h3>
+                            <button class="modal-close" id="closeAttendanceModal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="attendanceForm">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="attendanceStudentSelect">Student:</label>
+                                        <select id="attendanceStudentSelect" required>
+                                            <option value="">Select a student</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="attendanceSubjectSelect">Subject:</label>
+                                        <select id="attendanceSubjectSelect" required>
+                                            <option value="">Select subject</option>
+                                            <option value="math">Math</option>
+                                            <option value="english">English</option>
+                                            <option value="science">Science</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="attendanceQuarterSelect">Quarter:</label>
+                                        <select id="attendanceQuarterSelect" required>
+                                            <option value="">Select quarter</option>
+                                            <option value="1">Quarter 1</option>
+                                            <option value="2">Quarter 2</option>
+                                            <option value="3">Quarter 3</option>
+                                            <option value="4">Quarter 4</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="attendanceDate">Date:</label>
+                                        <input type="date" id="attendanceDate" required>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="attendanceStatus">Status:</label>
+                                        <select id="attendanceStatus" required>
+                                            <option value="">Select status</option>
+                                            <option value="1">Present (1)</option>
+                                            <option value="0">Absent (0)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="attendanceNotes">Notes (Optional):</label>
+                                        <input type="text" id="attendanceNotes" placeholder="Additional notes">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-cancel" onclick="closeAttendanceModal()">Cancel</button>
+                            <button type="submit" form="attendanceForm" class="btn-save">Save Attendance</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Attendance Tab Content -->
+
+            <!-- Tab Content: View Only -->
+            <div id="viewonlyContent" class="tab-content">
+                <div class="grading-sheet-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-eye"></i> View Only - Final Grades</h2>
+                        <p>Simplified view showing only final grades for each student.</p>
+                    </div>
+                    
+                    <div class="viewonly-controls">
+                        <div class="filter-controls">
+                            <select id="viewonlySubjectFilter" class="filter-select">
+
+                                <option value="math">Math</option>
+                                <option value="english">English</option>
+                                <option value="science">Science</option>
+                            </select>
+                            <select id="viewonlyQuarterFilter" class="filter-select">
+                                <option value="1">Quarter 1</option>
+                                <option value="2">Quarter 2</option>
+                                <option value="3">Quarter 3</option>
+                                <option value="4">Quarter 4</option>
+                            </select>
+                            <select id="viewonlyGradeLevelFilter" class="filter-select">
+                                <option value="5">Grade 5</option>
+                                <option value="6">Grade 6</option>
+                            </select>
+                            <button id="refreshViewonlyBtn" class="refresh-btn">
+                                <i class="fas fa-sync-alt"></i> Refresh Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="viewonly-table-container">
+                        <table id="viewonlyTable" class="viewonly-table">
+                            <thead id="viewonlyTableHead">
+                                <!-- Headers will be populated by JavaScript -->
+                            </thead>
+                            <tbody id="viewonlyTableBody">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- End View Only Tab Content -->
+        </div>
+        <!-- End Main Container -->
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-wrap">
+                <div class="footer-col">
+                    <h4 class="footer-brand">Eduktaktika</h4>
+                    <p>Interactive, game‑based learning for Math, English, and Science.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Connect</h4>
+                    <ul class="footer-social">
+                        <li><a href="homepage.html">Homepage</a></li>
+                        <li><a href="studentlist.html">Student</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Subjects</h4>
+                    <ul class="footer-links">
+                        <li><a href="subject_math.html">Math</a></li>
+                        <li><a href="subject_english.html">English</a></li>
+                        <li><a href="subject_science.html">Science</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Leaderboards</h4>
+                    <ul class="footer-links">
+                        <li><a href="leaderboard_math.html">Math</a></li>
+                        <li><a href="leaderboard_english.html">English</a></li>
+                        <li><a href="leaderboard_science.html">Science</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="footer-social-row">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                </div>
+                <p>© 2025 Eduktaktika. All rights reserved.</p>
+            </div>
+        </footer>
+
+        <!-- Custom Warning Modal -->
+        <div id="warningModal" class="warning-modal">
+            <div class="warning-modal-content">
+                <div class="warning-header">
+                    <div class="warning-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3>Delete Required Attribute</h3>
+                </div>
+                <div class="warning-body">
+                    <p id="warningMessage">Are you sure you want to delete this attribute?</p>
+                    <div class="warning-details">
+                        <p><strong>⚠️ WARNING:</strong> This action cannot be undone and may affect your grading system.</p>
+                    </div>
+                </div>
+                <div class="warning-footer">
+                    <button type="button" class="btn-cancel" onclick="closeWarningModal()">Cancel</button>
+                    <button type="button" class="btn-delete" onclick="confirmDelete()">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Profile Modal -->
+        <link rel="stylesheet" href="../CSS/editProfile.css">
+        <div id="editProfileModal" class="edit-profile-modal">
+            <div class="edit-profile-card">
+                <button type="button" class="close-btn" onclick="closeEditProfileModal()">&times;</button>
+                <h3>Edit Profile</h3>
+                <form id="editProfileForm">
+                    <label>First Name:
+                        <input type="text" id="edit_fname" required>
+                    </label>
+                    <label>Middle Name:
+                        <input type="text" id="edit_mname">
+                    </label>
+                    <label>Last Name:
+                        <input type="text" id="edit_lname" required>
+                    </label>
+                    <label>Grade Level:
+                        <input type="text" id="edit_gradelevel" required>
+                    </label>
+                    <label>Section:
+                        <input type="text" id="edit_section" required>
+                    </label>
+                    <div class="edit-profile-actions">
+                        <button type="button" onclick="closeEditProfileModal()">Cancel</button>
+                        <button type="submit">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <!-- Firebase Configuration -->
+    <script>
+        // Firebase config is already initialized in profile.js
+        // Use the existing db and auth variables from profile.js
+    </script>
+
+    <!-- Include existing scripts -->
+    <script src="../assets/js/Teacher Side/profile.js"></script>
+    <script src="../assets/js/Teacher Side/header.js"></script>
+    <script src="../assets/js/Teacher Side/editProfile.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+    <script src="../assets/js/header-dynamic-labels.js"></script>
+    <script src="../assets/js/Teacher Side/grading-sheet-demo.js"></script>
+
+<script src="../assets/js/gr"></script>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function() {
+    const navLinks = document.querySelectorAll("nav ul li a");
+    const current = window.location.pathname.split('/').pop();
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
+        }
+    });
+});
+</script>
+</body>
+</html>
