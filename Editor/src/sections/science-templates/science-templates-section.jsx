@@ -144,7 +144,109 @@ const EDUCATIONAL_BACKGROUNDS_DISABLED = [
 
 // Educational template layouts for all subjects
 const EDUCATIONAL_TEMPLATES = [
-  // Multi-page templates from assets/templates/
+  // Science Templates (1-5) - New templates with custom thumbnails
+  {
+    id: 'science-template-1',
+    name: 'Science Template 1',
+    preview: './templates/template science 1.png',
+    category: 'science',
+    icon: FaFlask,
+    isMultiPage: true,
+    fileName: 'science-template-1',
+    description: 'Science lesson template with comprehensive content'
+  },
+  {
+    id: 'science-template-2',
+    name: 'Science Template 2',
+    preview: './templates/template science 2.png',
+    category: 'science',
+    icon: FaMicroscope,
+    isMultiPage: true,
+    fileName: 'science-template-2',
+    description: 'Science lesson template with detailed sections'
+  },
+  {
+    id: 'science-template-3',
+    name: 'Science Template 3',
+    preview: './templates/template science 3.png',
+    category: 'science',
+    icon: FaRocket,
+    isMultiPage: true,
+    fileName: 'science-template-3',
+    description: 'Science lesson template with interactive elements'
+  },
+  {
+    id: 'science-template-4',
+    name: 'Science Template 4',
+    preview: './templates/template science 4.png',
+    category: 'science',
+    icon: FaAtom,
+    isMultiPage: true,
+    fileName: 'science-template-4',
+    description: 'Science lesson template with visual aids'
+  },
+  {
+    id: 'science-template-5',
+    name: 'Science Template 5',
+    preview: './templates/template science 5.png',
+    category: 'science',
+    icon: FaDna,
+    isMultiPage: true,
+    fileName: 'science-template-5',
+    description: 'Science lesson template with comprehensive layout'
+  },
+  // English Templates (1-5) - New templates with custom thumbnails
+  {
+    id: 'english-template-1',
+    name: 'English Template 1',
+    preview: './templates/template english 1.png',
+    category: 'english',
+    icon: FaBook,
+    isMultiPage: true,
+    fileName: 'english-template-1',
+    description: 'English lesson template with comprehensive content'
+  },
+  {
+    id: 'english-template-2',
+    name: 'English Template 2',
+    preview: './templates/template english 2.png',
+    category: 'english',
+    icon: FaLanguage,
+    isMultiPage: true,
+    fileName: 'english-template-2',
+    description: 'English lesson template with detailed sections'
+  },
+  {
+    id: 'english-template-3',
+    name: 'English Template 3',
+    preview: './templates/template english 3.png',
+    category: 'english',
+    icon: FaBook,
+    isMultiPage: true,
+    fileName: 'english-template-3',
+    description: 'English lesson template with interactive elements'
+  },
+  {
+    id: 'english-template-4',
+    name: 'English Template 4',
+    preview: './templates/template english 4.png',
+    category: 'english',
+    icon: FaLanguage,
+    isMultiPage: true,
+    fileName: 'english-template-4',
+    description: 'English lesson template with visual aids'
+  },
+  {
+    id: 'english-template-5',
+    name: 'English Template 5',
+    preview: './templates/template english 5.png',
+    category: 'english',
+    icon: FaBook,
+    isMultiPage: true,
+    fileName: 'english-template-5',
+    description: 'English lesson template with comprehensive layout'
+  },
+  // Multi-page templates from assets/templates/ - Legacy templates
   {
     id: 'science-lesson-multipage',
     name: 'Science Lesson (Multi-page)',
@@ -204,108 +306,6 @@ const EDUCATIONAL_TEMPLATES = [
     isMultiPage: true,
     fileName: 'blank-presentation',
     description: 'Clean starter template for any subject'
-  },
-  // Science Templates (1-5)
-  {
-    id: 'science-template-1',
-    name: 'Science Template 1',
-    preview: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=200&h=150&fit=crop',
-    category: 'science',
-    icon: FaFlask,
-    isMultiPage: true,
-    fileName: 'science-template-1',
-    description: 'Science lesson template with comprehensive content'
-  },
-  {
-    id: 'science-template-2',
-    name: 'Science Template 2',
-    preview: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=200&h=150&fit=crop',
-    category: 'science',
-    icon: FaMicroscope,
-    isMultiPage: true,
-    fileName: 'science-template-2',
-    description: 'Science lesson template with detailed sections'
-  },
-  {
-    id: 'science-template-3',
-    name: 'Science Template 3',
-    preview: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=150&fit=crop',
-    category: 'science',
-    icon: FaRocket,
-    isMultiPage: true,
-    fileName: 'science-template-3',
-    description: 'Science lesson template with interactive elements'
-  },
-  {
-    id: 'science-template-4',
-    name: 'Science Template 4',
-    preview: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=200&h=150&fit=crop',
-    category: 'science',
-    icon: FaAtom,
-    isMultiPage: true,
-    fileName: 'science-template-4',
-    description: 'Science lesson template with visual aids'
-  },
-  {
-    id: 'science-template-5',
-    name: 'Science Template 5',
-    preview: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=200&h=150&fit=crop',
-    category: 'science',
-    icon: FaDna,
-    isMultiPage: true,
-    fileName: 'science-template-5',
-    description: 'Science lesson template with comprehensive layout'
-  },
-  // English Templates (1-5)
-  {
-    id: 'english-template-1',
-    name: 'English Template 1',
-    preview: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=150&fit=crop',
-    category: 'english',
-    icon: FaBook,
-    isMultiPage: true,
-    fileName: 'english-template-1',
-    description: 'English lesson template with comprehensive content'
-  },
-  {
-    id: 'english-template-2',
-    name: 'English Template 2',
-    preview: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=200&h=150&fit=crop',
-    category: 'english',
-    icon: FaLanguage,
-    isMultiPage: true,
-    fileName: 'english-template-2',
-    description: 'English lesson template with detailed sections'
-  },
-  {
-    id: 'english-template-3',
-    name: 'English Template 3',
-    preview: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=150&fit=crop',
-    category: 'english',
-    icon: FaBook,
-    isMultiPage: true,
-    fileName: 'english-template-3',
-    description: 'English lesson template with interactive elements'
-  },
-  {
-    id: 'english-template-4',
-    name: 'English Template 4',
-    preview: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=200&h=150&fit=crop',
-    category: 'english',
-    icon: FaLanguage,
-    isMultiPage: true,
-    fileName: 'english-template-4',
-    description: 'English lesson template with visual aids'
-  },
-  {
-    id: 'english-template-5',
-    name: 'English Template 5',
-    preview: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=200&h=150&fit=crop',
-    category: 'english',
-    icon: FaBook,
-    isMultiPage: true,
-    fileName: 'english-template-5',
-    description: 'English lesson template with comprehensive layout'
   },
   // Quick single-page templates - following multi-page design principles
   {
