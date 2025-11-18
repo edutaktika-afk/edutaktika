@@ -23,6 +23,11 @@
                 window.location.href = "logreg.html";
             } else {
                 document.getElementById('mainContent').style.display = "block";
+                // Hide loading screen
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
             }
         });
     });
@@ -43,6 +48,7 @@
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/burger.css">
     <link rel="stylesheet" href="../CSS/loadQuizzes.css">
+    <link rel="stylesheet" href="../CSS/loading.css">
     <title>English</title>
     <style>
         nav ul {
@@ -111,6 +117,20 @@
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-overlay">
+        <div class="loading-container">
+            <div class="loading-spinner">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="loading-text">Loading English Lessons</div>
+            <div class="loading-subtext">Please wait while we prepare your content...</div>
+            <div class="loading-progress-container">
+                <div class="loading-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+    
     <div id="mainContent" style="display:none;">
 
             <!-- Burger icon for mobile -->
@@ -1466,6 +1486,11 @@ firebase.auth().onAuthStateChanged(async function(user) {
         }
 
         document.getElementById('mainContent').style.display = "block";
+        // Hide loading screen
+        const loadingScreen = document.getElementById('loadingScreen');
+        if (loadingScreen) {
+            loadingScreen.style.display = 'none';
+        }
 
         // Load quizzes initially (all quarters)
         await loadStudentAvailableQuizzes(studentUID);

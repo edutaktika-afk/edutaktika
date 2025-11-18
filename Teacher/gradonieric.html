@@ -666,42 +666,6 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
     });
   }
 
-  document.addEventListener("DOMContentLoaded", function() {
-    firebase.auth().onAuthStateChanged(async function(user) {
-        if (!user) return;
-
-
-
-<<<<<<< HEAD
-        function fetchAndDisplayStudents() {
-            const info = getProfileInfo();
-            if (!info) return;
-            const { grade, section, schoolYear } = info;
-            tbody.innerHTML = '';
-            firebase.database().ref('students').once('value', snap => {
-                if (snap.exists()) {
-                    snap.forEach(child => {
-                        const student = child.val();
-                        if (
-                            (student.grade + '').trim() === grade &&
-                            (student.section + '').trim() === section &&
-                            (student.school_year + '').trim() === schoolYear
-                        ) {
-                            // Always pass an empty array for scores if not restoring from Firebase
-                            addStudentRowDisplayOnly(
-                                (student.lname ? student.lname + ', ' : '') +
-                                (student.fname || '') +
-                                (student.mname ? ' ' + student.mname : ''),
-                                []
-=======
-            // Close modal when clicking outside
-            document.getElementById('gradeModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeGradeModal();
-                }
-            });
-        }
-
         // Load students data from Firebase
         async function loadStudentsData() {
             if (!currentTeacherUID || !currentSection) return;
@@ -710,37 +674,9 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                 // Get teacher information first
                 const teacherSnap = await db.ref('teachers/' + currentTeacherUID).once('value');
                 const teacher = teacherSnap.val();
-                
-                // Check both 'gradelevel' and 'grade' for teacher's grade (backward compatibility)
-                const teacherGrade = teacher && (teacher.gradelevel || teacher.grade) ? (teacher.gradelevel || teacher.grade) : null;
+                const teacherGrade = teacher && teacher.gradelevel ? teacher.gradelevel : null;
                 const teacherSchoolYear = teacher && teacher.school_year ? teacher.school_year : null;
-                
-                console.log('Teacher data loaded:', teacher);
-                console.log('Teacher grade (gradelevel/grade):', teacherGrade);
-                
-                // Get teacher subjects - check both 'subjects' (array) and 'subject' (single) for compatibility
-                let teacherSubjects = null;
-                if (teacher) {
-                    if (teacher.subjects && Array.isArray(teacher.subjects) && teacher.subjects.length > 0) {
-                        teacherSubjects = teacher.subjects;
-                    } else if (teacher.subject) {
-                        // Convert single subject to array
-                        teacherSubjects = [teacher.subject];
-                    }
-                }
-                
-                console.log('Teacher subjects (raw):', teacher ? (teacher.subjects || teacher.subject) : null);
-                
-                // Map subject values from registration format (subject_math) to grading format (math)
-                // Also handle direct format (math, english, science) for backward compatibility
-                if (teacherSubjects && Array.isArray(teacherSubjects)) {
-                    teacherSubjects = teacherSubjects.map(subj => {
-                        if (subj.startsWith('subject_')) {
-                            return subj.replace('subject_', '');
-                        }
-                        return subj.toLowerCase();
-                    });
-                }
+                const teacherSubjects = teacher && teacher.subjects ? teacher.subjects : null;
 
                 const snapshot = await db.ref('students').once('value');
                 studentsData = [];
@@ -911,12 +847,7 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
             // Generate table body
             tableBody.innerHTML = '';
 
-            // Get current filters
-            const subjectFilter = document.getElementById('subjectFilter').value;
-            const quarterFilter = document.getElementById('quarterFilter').value;
-
-            // If no students loaded, show message
-            if (studentsData.length === 0) {
+            if (filteredGrades.length === 0) {
                 const row = document.createElement('tr');
                 let totalCols;
                 if (hasCategorizedAttributes) {
@@ -925,49 +856,16 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                     totalCols = gradingAttributes.filter(attr => attr.percentage > 0).length + 4;
                 }
                 row.innerHTML = `<td colspan="${totalCols}" style="text-align: center; padding: 40px; color: var(--text-light);">
-                    <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                    No students found for your assigned section and grade level.
-                    <br><small>Please contact the administrator to verify your teaching assignments.</small>
+                    <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    No grade data available. Click "Add Grade Entry" to get started.
                 </td>`;
                 tableBody.appendChild(row);
                 return;
             }
 
-            // If no subject/quarter selected, show all students with message
-            if (!subjectFilter || !quarterFilter) {
-                const row = document.createElement('tr');
-                let totalCols;
-                if (hasCategorizedAttributes) {
-                    totalCols = writtenWorks.length + performanceTask.length + quarterlyAssessment.length + 4;
-                } else {
-                    totalCols = gradingAttributes.filter(attr => attr.percentage > 0).length + 4;
-                }
-                row.innerHTML = `<td colspan="${totalCols}" style="text-align: center; padding: 40px; color: var(--text-light);">
-                    <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                    Please select a subject and quarter to view/add grades.
-                    <br><small>You have ${studentsData.length} student(s) in your section.</small>
-                </td>`;
-                tableBody.appendChild(row);
-                return;
-            }
-
-            // Show all students from the section, with their grades if they exist
-            studentsData.forEach(student => {
-                // Find existing grade for this student, subject, and quarter
-                const existingGrade = filteredGrades.find(g => 
-                    g.studentUID === student.uid && 
-                    g.subject === subjectFilter && 
-                    g.quarter === quarterFilter
-                );
-
-                const studentName = `${student.fname || student.firstname || ''} ${student.lname || student.lastname || ''}`.trim() || 'Unknown Student';
-                const grade = existingGrade || { 
-                    id: null, 
-                    studentUID: student.uid, 
-                    subject: subjectFilter, 
-                    quarter: quarterFilter, 
-                    grades: {} 
-                };
+            filteredGrades.forEach(grade => {
+                const student = studentsData.find(s => s.uid === grade.studentUID);
+                const studentName = student ? `${student.fname} ${student.lname}` : 'Unknown Student';
 
                 const row = document.createElement('tr');
                 let rowHTML = `
@@ -981,67 +879,47 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                 if (hasCategorizedAttributes) {
                     // Add Written Works columns
                     writtenWorks.forEach(attr => {
-                        const rawGradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
-                        const percentGrade = normalizeGradeToPercent(rawGradeValue);
-                        const cellClass = getGradeClass(percentGrade) + ' editable-cell';
-                        const displayValue = percentGrade > 0 ? percentGrade.toFixed(1) : '-';
-                        const onClickHandler = grade.id ? 
-                            `onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')"` : 
-                            `onclick="openGradeModalForStudent('${student.uid}', '${subjectFilter}', '${quarterFilter}')" style="cursor: pointer;" title="Click to add grade"`;
+                        const gradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
+                        const cellClass = getGradeClass(gradeValue) + ' editable-cell';
                         rowHTML += `<td class="${cellClass}" style="background: #f8f9fa;" 
-                            ${onClickHandler}
-                            data-grade-id="${grade.id || ''}" 
-                            data-attribute="${attr.name}">${displayValue}</td>`;
-                        // Apply weight: percent * (weight / 100)
-                        finalGrade += (percentGrade * attr.percentage / 100);
+                            onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')" 
+                            data-grade-id="${grade.id}" 
+                            data-attribute="${attr.name}">${gradeValue.toFixed(1)}</td>`;
+                        finalGrade += (gradeValue * attr.percentage / 100);
                     });
                     
                     // Add Performance Task columns
                     performanceTask.forEach(attr => {
-                        const rawGradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
-                        const percentGrade = normalizeGradeToPercent(rawGradeValue);
-                        const cellClass = getGradeClass(percentGrade) + ' editable-cell';
-                        const displayValue = percentGrade > 0 ? percentGrade.toFixed(1) : '-';
-                        const onClickHandler = grade.id ? 
-                            `onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')"` : 
-                            `onclick="openGradeModalForStudent('${student.uid}', '${subjectFilter}', '${quarterFilter}')" style="cursor: pointer;" title="Click to add grade"`;
+                        const gradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
+                        const cellClass = getGradeClass(gradeValue) + ' editable-cell';
                         rowHTML += `<td class="${cellClass}" style="background: #faf8ff;" 
-                            ${onClickHandler}
-                            data-grade-id="${grade.id || ''}" 
-                            data-attribute="${attr.name}">${displayValue}</td>`;
-                        // Apply weight: percent * (weight / 100)
-                        finalGrade += (percentGrade * attr.percentage / 100);
+                            onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')" 
+                            data-grade-id="${grade.id}" 
+                            data-attribute="${attr.name}">${gradeValue.toFixed(1)}</td>`;
+                        finalGrade += (gradeValue * attr.percentage / 100);
                     });
                     
                     // Add Quarterly Assessment columns
                     quarterlyAssessment.forEach(attr => {
-                        const rawGradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
-                        const percentGrade = normalizeGradeToPercent(rawGradeValue);
-                        const cellClass = getGradeClass(percentGrade) + ' editable-cell';
-                        const displayValue = percentGrade > 0 ? percentGrade.toFixed(1) : '-';
-                        const onClickHandler = grade.id ? 
-                            `onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')"` : 
-                            `onclick="openGradeModalForStudent('${student.uid}', '${subjectFilter}', '${quarterFilter}')" style="cursor: pointer;" title="Click to add grade"`;
+                        const gradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
+                        const cellClass = getGradeClass(gradeValue) + ' editable-cell';
                         rowHTML += `<td class="${cellClass}" style="background: #f1f8e9;" 
-                            ${onClickHandler}
-                            data-grade-id="${grade.id || ''}" 
-                            data-attribute="${attr.name}">${displayValue}</td>`;
-                        // Apply weight: percent * (weight / 100)
-                        finalGrade += (percentGrade * attr.percentage / 100);
+                            onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')" 
+                            data-grade-id="${grade.id}" 
+                            data-attribute="${attr.name}">${gradeValue.toFixed(1)}</td>`;
+                        finalGrade += (gradeValue * attr.percentage / 100);
                     });
                 } else {
                     // Add all attributes in simple format
                     const allAttributes = gradingAttributes.filter(attr => attr.percentage > 0);
                     allAttributes.forEach(attr => {
-                        const rawGradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
-                        const percentGrade = normalizeGradeToPercent(rawGradeValue);
-                        const cellClass = getGradeClass(percentGrade) + ' editable-cell';
+                        const gradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
+                        const cellClass = getGradeClass(gradeValue) + ' editable-cell';
                         rowHTML += `<td class="${cellClass}" 
                             onclick="startInlineEdit(this, '${grade.id}', '${attr.name}')" 
                             data-grade-id="${grade.id}" 
-                            data-attribute="${attr.name}">${percentGrade.toFixed(1)}</td>`;
-                        // Apply weight: percent * (weight / 100)
-                        finalGrade += (percentGrade * attr.percentage / 100);
+                            data-attribute="${attr.name}">${gradeValue.toFixed(1)}</td>`;
+                        finalGrade += (gradeValue * attr.percentage / 100);
                     });
                 }
 
@@ -1053,28 +931,6 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                 row.innerHTML = rowHTML;
                 tableBody.appendChild(row);
             });
-        }
-
-        // Helper function to normalize a grade value to percentage
-        // Handles both object format {score: X, total: Y} and raw number format (for backward compatibility)
-        function normalizeGradeToPercent(gradeValue) {
-            if (!gradeValue && gradeValue !== 0) return 0;
-            
-            // If it's an object with score and total
-            if (typeof gradeValue === 'object' && gradeValue !== null) {
-                const score = parseFloat(gradeValue.score) || 0;
-                const total = parseFloat(gradeValue.total) || 0;
-                if (total <= 0) return 0;
-                return (score / total) * 100;
-            }
-            
-            // If it's already a number, assume it's already a percentage (backward compatibility)
-            const numValue = parseFloat(gradeValue);
-            if (isNaN(numValue)) return 0;
-            
-            // If the value is > 100, it might be a raw score that needs normalization
-            // But we can't normalize without knowing the total, so assume it's already a percentage
-            return numValue;
         }
 
         // Get CSS class based on grade value
@@ -1105,10 +961,8 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                 let finalGrade = 0;
                 gradingAttributes.forEach(attr => {
                     if (attr.percentage > 0) {
-                        const rawGradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
-                        const percentGrade = normalizeGradeToPercent(rawGradeValue);
-                        // Apply weight: percent * (weight / 100)
-                        finalGrade += (percentGrade * attr.percentage / 100);
+                        const gradeValue = grade.grades && grade.grades[attr.name] ? grade.grades[attr.name] : 0;
+                        finalGrade += (gradeValue * attr.percentage / 100);
                     }
                 });
                 return finalGrade;
@@ -1191,82 +1045,25 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                 }
             }
 
-            // Auto-select and filter subjects if teacher has subjects assigned
+            // Auto-select subjects if teacher has subjects assigned
             if (teacherSubjects && Array.isArray(teacherSubjects) && teacherSubjects.length > 0) {
                 const subjectFilter = document.getElementById('subjectFilter');
-                const subjectSelect = document.getElementById('subjectSelect');
-                const bulkSubjectSelect = document.getElementById('bulkSubjectSelect');
-                const attendanceSubjectFilter = document.getElementById('attendanceSubjectFilter');
-                const attendanceSubjectSelect = document.getElementById('attendanceSubjectSelect');
-                const historySubjectFilter = document.getElementById('historySubjectFilter');
-                const viewonlySubjectFilter = document.getElementById('viewonlySubjectFilter');
-                
-                // Subject mapping for display
-                const subjectMap = {
-                    'math': 'Math',
-                    'english': 'English',
-                    'science': 'Science'
-                };
-                
-                // Filter subject options to only show teacher's assigned subjects
-                const filterDropdowns = [subjectFilter, attendanceSubjectFilter, historySubjectFilter, viewonlySubjectFilter];
-                const selectDropdowns = [subjectSelect, bulkSubjectSelect, attendanceSubjectSelect];
-                
-                // Handle filter dropdowns (add "All Subjects" if multiple, auto-select if single subject)
-                filterDropdowns.forEach(dropdown => {
-                    if (!dropdown) return;
-                    dropdown.innerHTML = '';
-                    
-                    // Add "All Subjects" option if teacher has multiple subjects
-                    if (teacherSubjects.length > 1) {
-                        const allOption = document.createElement('option');
-                        allOption.value = '';
-                        allOption.textContent = 'All Subjects';
-                        dropdown.appendChild(allOption);
-                    }
-                    
-                    teacherSubjects.forEach(subj => {
-                        const option = document.createElement('option');
-                        option.value = subj;
-                        option.textContent = subjectMap[subj] || subj.charAt(0).toUpperCase() + subj.slice(1);
-                        dropdown.appendChild(option);
-                    });
-                    
-                    // Auto-select if teacher has only one subject
-                    if (teacherSubjects.length === 1) {
-                        dropdown.value = teacherSubjects[0];
-                    }
-                });
-                
-                // Handle select dropdowns (need "Select subject" option, don't auto-select)
-                selectDropdowns.forEach(dropdown => {
-                    if (!dropdown) return;
-                    dropdown.innerHTML = '';
-                    
-                    // Add "Select" option
-                    const selectOption = document.createElement('option');
-                    selectOption.value = '';
-                    if (dropdown === attendanceSubjectSelect) {
-                        selectOption.textContent = 'All Subjects';
-                    } else {
-                        selectOption.textContent = 'Select subject';
-                    }
-                    dropdown.appendChild(selectOption);
-                    
-                    // Add teacher's subjects
-                    teacherSubjects.forEach(subj => {
-                        const option = document.createElement('option');
-                        option.value = subj;
-                        option.textContent = subjectMap[subj] || subj.charAt(0).toUpperCase() + subj.slice(1);
-                        dropdown.appendChild(option);
-                    });
-                });
+                if (subjectFilter && teacherSubjects.length === 1) {
+                    // If teacher teaches only one subject, auto-select it
+                    subjectFilter.value = teacherSubjects[0];
+                }
             }
 
-            // Update attendance grade filter
+            // Update attendance filters as well
             const attendanceGradeFilter = document.getElementById('attendanceGradeLevelFilter');
+            const attendanceSubjectFilter = document.getElementById('attendanceSubjectFilter');
+            
             if (attendanceGradeFilter && teacherGrade) {
                 attendanceGradeFilter.value = teacherGrade;
+            }
+            
+            if (attendanceSubjectFilter && teacherSubjects && Array.isArray(teacherSubjects) && teacherSubjects.length === 1) {
+                attendanceSubjectFilter.value = teacherSubjects[0];
             }
 
             // Apply filters immediately
@@ -1414,10 +1211,7 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                     let finalGrade = 0;
                     gradingAttributes.forEach(attr => {
                         if (attr.percentage > 0 && gradesData[gradeIndex].grades[attr.name]) {
-                            const rawGradeValue = gradesData[gradeIndex].grades[attr.name];
-                            const percentGrade = normalizeGradeToPercent(rawGradeValue);
-                            // Apply weight: percent * (weight / 100)
-                            finalGrade += (percentGrade * attr.percentage / 100);
+                            finalGrade += (gradesData[gradeIndex].grades[attr.name] * attr.percentage / 100);
                         }
                     });
                     gradesData[gradeIndex].finalGrade = finalGrade;
@@ -1449,21 +1243,6 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
         function cancelInlineEdit(cell, originalValue) {
             cell.classList.remove('editing');
             cell.textContent = originalValue;
-        }
-
-        // Open grade modal for a specific student (helper function)
-        function openGradeModalForStudent(studentUID, subject, quarter) {
-            // Set the student, subject, and quarter in the form
-            const studentSelect = document.getElementById('studentSelect');
-            const subjectSelect = document.getElementById('subjectSelect');
-            const quarterSelect = document.getElementById('quarterSelect');
-            
-            if (studentSelect) studentSelect.value = studentUID;
-            if (subjectSelect) subjectSelect.value = subject;
-            if (quarterSelect) quarterSelect.value = quarter;
-            
-            // Open the modal
-            openGradeModal();
         }
 
         // Open grade modal
@@ -1526,8 +1305,6 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                     const input = document.querySelector(`input[name="grade_${attr.name}"]`);
                     if (input) {
                         const value = parseFloat(input.value) || 0;
-                        // Input is expected to be percentage (0-100) from the form
-                        // Apply weight: percent * (weight / 100)
                         finalGrade += (value * attr.percentage / 100);
                     }
                 }
@@ -1567,10 +1344,7 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
             Object.keys(grades).forEach(attrName => {
                 const attr = gradingAttributes.find(a => a.name === attrName);
                 if (attr) {
-                    const rawGradeValue = grades[attrName];
-                    const percentGrade = normalizeGradeToPercent(rawGradeValue);
-                    // Apply weight: percent * (weight / 100)
-                    finalGrade += (percentGrade * attr.percentage / 100);
+                    finalGrade += (grades[attrName] * attr.percentage / 100);
                 }
             });
 
@@ -1772,8 +1546,6 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                     const input = document.querySelector(`input[data-student-uid="${studentUID}"][data-attribute="${attr.name}"]`);
                     if (input) {
                         const value = parseFloat(input.value) || 0;
-                        // Input is expected to be percentage (0-100) from the form
-                        // Apply weight: percent * (weight / 100)
                         finalGrade += (value * attr.percentage / 100);
                     }
                 }
@@ -1821,10 +1593,7 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                     Object.keys(grades).forEach(attrName => {
                         const attr = gradingAttributes.find(a => a.name === attrName);
                         if (attr) {
-                            const rawGradeValue = grades[attrName];
-                            const percentGrade = normalizeGradeToPercent(rawGradeValue);
-                            // Apply weight: percent * (weight / 100)
-                            finalGrade += (percentGrade * attr.percentage / 100);
+                            finalGrade += (grades[attrName] * attr.percentage / 100);
                         }
                     });
 
@@ -2175,7 +1944,7 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
             try {
                 const snapshot = await db.ref(`teachers/${currentTeacherUID}/sections/${currentSection}/attendance`).once('value');
                 attendanceData = [];
-
+                
                 if (snapshot.exists()) {
                     snapshot.forEach(child => {
                         attendanceData.push({
@@ -2191,9 +1960,6 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                 console.error('Error loading attendance:', error);
             }
         }
-
-        // Make loadAttendanceData globally accessible
-        window.loadAttendanceData = loadAttendanceData;
 
         // Filter attendance based on subject, quarter, and date
         function filterAttendance() {
@@ -2218,18 +1984,12 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                 return;
             }
 
-            // Get list of student UIDs from teacher's section (studentsData is already filtered by section)
-            const teacherSectionStudentUIDs = new Set(studentsData.map(s => s.uid));
-
             filteredAttendance = attendanceData.filter(record => {
                 const matchSubject = !subjectFilter || record.subject === subjectFilter;
                 const matchQuarter = !quarterFilter || record.quarter === quarterFilter;
                 const matchDate = !dateFilter || record.date === dateFilter;
                 
-                // Ensure the student is in the teacher's section (same logic as grading)
-                const studentInSection = record.studentUID && teacherSectionStudentUIDs.has(record.studentUID);
-                
-                return matchSubject && matchQuarter && matchDate && studentInSection;
+                return matchSubject && matchQuarter && matchDate;
             });
 
             generateAttendanceTable();
@@ -2434,109 +2194,24 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                         status: newStatus,
                         updatedAt: new Date().toISOString()
                     });
-                    
-                    // Update local attendanceData array
-                    const recordIndex = attendanceData.findIndex(r => r.id === existingRecord.id);
-                    if (recordIndex !== -1) {
-                        attendanceData[recordIndex].status = newStatus;
-                        attendanceData[recordIndex].updatedAt = new Date().toISOString();
-                    }
                 } else {
                     // Create new record
                     const attendanceId = Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9);
-                    attendanceEntry.id = attendanceId;
                     await db.ref(`teachers/${currentTeacherUID}/sections/${currentSection}/attendance/${attendanceId}`).set(attendanceEntry);
-                    
-                    // Add to local attendanceData array
-                    attendanceData.push(attendanceEntry);
                 }
                 
-                // Update filteredAttendance to include the new/updated record
-                if (existingRecord) {
-                    const filteredIndex = filteredAttendance.findIndex(r => r.id === existingRecord.id);
-                    if (filteredIndex !== -1) {
-                        filteredAttendance[filteredIndex].status = newStatus;
-                    }
-                } else {
-                    // Add new record to filteredAttendance if it matches current filters
-                    const subjectFilter = document.getElementById('attendanceSubjectFilter').value;
-                    const quarterFilter = document.getElementById('attendanceQuarterFilter').value;
-                    if (subject === subjectFilter && quarter === quarterFilter) {
-                        filteredAttendance.push(attendanceEntry);
-                    }
-                }
-                
-                // Update the total count for this student's row immediately
-                const studentRow = clickedCell ? clickedCell.closest('tr') : null;
-                if (studentRow) {
-                    const summaryCell = studentRow.querySelector('.summary-cell');
-                    if (summaryCell) {
-                        const totalPresent = calculateTotalPresent(studentUID, subject, quarter);
-                        summaryCell.textContent = `${totalPresent}/40`;
-                    }
-                }
-                
-                // Update attendance stats
+                // Update attendance stats without refreshing the whole table
                 updateAttendanceStats();
-                
-                // Reload attendance data in background to ensure full sync (don't await to keep UI responsive)
-                // Use setTimeout to avoid blocking UI
-                setTimeout(async () => {
-                    try {
-                        if (!currentTeacherUID || !currentSection) return;
-                        
-                        const snapshot = await db.ref(`teachers/${currentTeacherUID}/sections/${currentSection}/attendance`).once('value');
-                        attendanceData = [];
-                        
-                        if (snapshot.exists()) {
-                            snapshot.forEach(child => {
-                                attendanceData.push({
-                                    id: child.key,
-                                    ...child.val()
-                                });
-                            });
-                        }
-                        
-                        // Recalculate totals for all students
-                        const tableBody = document.getElementById('attendanceTableBody');
-                        if (tableBody) {
-                            const rows = tableBody.querySelectorAll('tr');
-                            rows.forEach(row => {
-                                const firstCell = row.querySelector('.attendance-cell');
-                                if (firstCell) {
-                                    const onclickAttr = firstCell.getAttribute('onclick');
-                                    if (onclickAttr) {
-                                        const match = onclickAttr.match(/toggleAttendance\('([^']+)'/);
-                                        if (match) {
-                                            const studentUID = match[1];
-                                            const summaryCell = row.querySelector('.summary-cell');
-                                            if (summaryCell) {
-                                                const totalPresent = calculateTotalPresent(studentUID, subject, quarter);
-                                                summaryCell.textContent = `${totalPresent}/40`;
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                        }
-                        
-                        updateAttendanceStats();
-                    } catch (err) {
-                        console.error('Error reloading attendance:', err);
-                    }
-                }, 100);
                 
             } catch (error) {
                 console.error('Error updating attendance:', error);
                 // Revert the visual change if there was an error
-                if (clickedCell) {
-                    if (newStatus == 1) {
-                        clickedCell.className = 'attendance-cell absent';
-                        clickedCell.textContent = '✗';
-                    } else {
-                        clickedCell.className = 'attendance-cell present';
-                        clickedCell.textContent = '✓';
-                    }
+                if (newStatus == 1) {
+                    clickedCell.className = 'attendance-cell absent';
+                    clickedCell.textContent = '✗';
+                } else {
+                    clickedCell.className = 'attendance-cell present';
+                    clickedCell.textContent = '✓';
                 }
             }
         }
@@ -2569,7 +2244,7 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
             
             if (recordId) {
                 modalTitle.textContent = 'Edit Attendance Entry';
-                loadAttendanceRecordForEdit(recordId);
+                loadAttendanceData(recordId);
             } else {
                 modalTitle.textContent = 'Add Attendance Entry';
                 document.getElementById('attendanceForm').reset();
@@ -2589,21 +2264,15 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
             document.getElementById('attendanceForm').reset();
         }
 
-        // Populate student dropdown for attendance (only shows students from teacher's section)
+        // Populate student dropdown for attendance
         function populateAttendanceStudentDropdown() {
             const select = document.getElementById('attendanceStudentSelect');
-            if (!select) return;
-            
             select.innerHTML = '<option value="">Select a student</option>';
             
-            // Only show students from teacher's section (studentsData is already filtered by section in loadStudentsData)
             studentsData.forEach(student => {
                 const option = document.createElement('option');
                 option.value = student.uid;
-                const firstName = student.fname || student.firstname || '';
-                const lastName = student.lname || student.lastname || '';
-                const studentId = student.id || '';
-                option.textContent = `${firstName} ${lastName}${studentId ? ' (' + studentId + ')' : ''}`;
+                option.textContent = `${student.fname} ${student.lname} (${student.id})`;
                 select.appendChild(option);
             });
         }
@@ -2673,8 +2342,8 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
             }
         }
 
-        // Load attendance record for editing (renamed to avoid conflict)
-        function loadAttendanceRecordForEdit(recordId) {
+        // Load attendance data for editing
+        function loadAttendanceData(recordId) {
             const record = attendanceData.find(r => r.id === recordId);
             if (!record) return;
 
@@ -2729,441 +2398,203 @@ r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
                             
                             batch.push(
                                 db.ref(`teachers/${currentTeacherUID}/sections/${currentSection}/attendance/${attendanceId}`).set(attendanceEntry)
->>>>>>> 5337a7f (major major changes, mga fix upcoming)
                             );
+                        });
+                    }
+                }
+
+                await Promise.all(batch);
+                showTemporaryMessage(`Marked all students as present for all 8 weeks (40 days) - ${studentsData.length} students!`, 'success');
+                loadAttendanceData();
+                
+            } catch (error) {
+                console.error('Error marking all present:', error);
+                alert('Error marking all students present. Please try again.');
+            }
+        }
+
+        // Mark all students absent for current week
+        async function markAllAbsent() {
+            const subject = document.getElementById('attendanceSubjectFilter').value;
+            const quarter = document.getElementById('attendanceQuarterFilter').value;
+
+            if (!subject || !quarter) {
+                alert('Please select subject and quarter first.');
+                return;
+            }
+
+            if (!confirm(`Mark all students as absent for ${subject} Q${quarter} for all 8 weeks (40 days)?`)) {
+                return;
+            }
+
+            try {
+                const batch = [];
+                const today = new Date().toISOString();
+
+                for (let week = 1; week <= 8; week++) {
+                    for (let day = 1; day <= 5; day++) { // Monday to Friday
+                        const dayDate = getWeekDayDate(week, day);
+                        
+                        studentsData.forEach(student => {
+                            const attendanceId = Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9);
+                            const attendanceEntry = {
+                                studentUID: student.uid,
+                                subject,
+                                quarter,
+                                date: dayDate,
+                                status: 0,
+                                notes: `Week ${week}, Day ${day} - Bulk marked absent`,
+                                createdAt: today,
+                                updatedAt: today
+                            };
+                            
+                            batch.push(
+                                db.ref(`teachers/${currentTeacherUID}/sections/${currentSection}/attendance/${attendanceId}`).set(attendanceEntry)
+                            );
+                        });
+                    }
+                }
+
+                await Promise.all(batch);
+                showTemporaryMessage(`Marked all students as absent for all 8 weeks (40 days) - ${studentsData.length} students!`, 'success');
+                loadAttendanceData();
+                
+            } catch (error) {
+                console.error('Error marking all absent:', error);
+                alert('Error marking all students absent. Please try again.');
+            }
+        }
+
+        // Load Teacher Profile Information
+        function loadTeacherProfile() {
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    console.log('Loading profile for user:', user.uid);
+                    db.ref('teachers/' + user.uid).once('value').then(function(snapshot) {
+                        const data = snapshot.val();
+                        console.log('Teacher data loaded:', data);
+                        if (data) {
+                            // Update profile sidebar information
+                            if (document.getElementById('profileName')) {
+                                document.getElementById('profileName').textContent = (data.fname || '') + ' ' + (data.lname || '');
+                            }
+                            if (document.getElementById('profileId')) {
+                                document.getElementById('profileId').textContent = data.id || user.uid;
+                            }
+                            if (document.getElementById('profileFirstName')) {
+                                document.getElementById('profileFirstName').textContent = data.fname || '-';
+                            }
+                            if (document.getElementById('profileMiddleName')) {
+                                document.getElementById('profileMiddleName').textContent = data.mname || '-';
+                            }
+                            if (document.getElementById('profileLastName')) {
+                                document.getElementById('profileLastName').textContent = data.lname || '-';
+                            }
+                            if (document.getElementById('profileGrade')) {
+                                // Students use "grade" field (not "gradelevel") - check both for backward compatibility
+                                document.getElementById('profileGrade').textContent = data.grade || data.gradelevel || '-';
+                            }
+                            if (document.getElementById('profileSection')) {
+                                document.getElementById('profileSection').textContent = data.section || '-';
+                            }
+                            if (document.getElementById('profileAvatar')) {
+                                document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "user");
+                            }
+                            
+                            // Update address information
+                            if (data.address) {
+                                if (document.getElementById('profileAddressStreet')) {
+                                    document.getElementById('profileAddressStreet').textContent = data.address.street || '-';
+                                }
+                                if (document.getElementById('profileAddressBarangay')) {
+                                    document.getElementById('profileAddressBarangay').textContent = data.address.barangay || '-';
+                                }
+                                if (document.getElementById('profileAddressCity')) {
+                                    document.getElementById('profileAddressCity').textContent = data.address.city || '-';
+                                }
+                                if (document.getElementById('profileAddressProvince')) {
+                                    document.getElementById('profileAddressProvince').textContent = data.address.province || '-';
+                                }
+                                if (document.getElementById('profileAddressZip')) {
+                                    document.getElementById('profileAddressZip').textContent = data.address.zip || '-';
+                                }
+                                if (document.getElementById('profileAddressRegion')) {
+                                    document.getElementById('profileAddressRegion').textContent = data.address.region || '-';
+                                }
+                            } else {
+                                // Set default values if no address data
+                                const addressFields = ['profileAddressStreet', 'profileAddressBarangay', 'profileAddressCity', 
+                                                     'profileAddressProvince', 'profileAddressZip', 'profileAddressRegion'];
+                                addressFields.forEach(fieldId => {
+                                    if (document.getElementById(fieldId)) {
+                                        document.getElementById(fieldId).textContent = '-';
+                                    }
+                                });
+                            }
+                        } else {
+                            console.log('No teacher data found for user:', user.uid);
+                        }
+                    }).catch(function(error) {
+                        console.error('Error loading teacher profile:', error);
+                    });
+                } else {
+                    console.log('No user authenticated');
+                }
+            });
+        }
+
+        // Advanced Session Management
+        document.addEventListener("DOMContentLoaded", function() {
+            function checkAuthReady(cb) {
+                if (window.firebase && firebase.auth && auth) cb();
+                else setTimeout(() => checkAuthReady(cb), 100);
+            }
+            checkAuthReady(function() {
+                auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
+                    auth.onAuthStateChanged(function(user) {
+                        if (!user) {
+                            window.location.href = "logreg.html";
+                        } else {
+                            user.getIdTokenResult().then(idTokenResult => {
+                                if (idTokenResult.claims.role && idTokenResult.claims.role !== "teacher") {
+                                    alert("Access denied. Not a teacher account.");
+                                    auth.signOut();
+                                    window.location.href = "logreg.html";
+                                }
+                            });
+
+                            sessionStorage.setItem("edutaktikaUser", JSON.stringify({
+                                uid: user.uid,
+                                email: user.email,
+                                displayName: user.displayName,
+                                photoURL: user.photoURL
+                            }));
+
+                            // Load teacher profile information
+                            loadTeacherProfile();
                         }
                     });
-                }
+
+                    window.addEventListener('storage', function(e) {
+                        if (e.key === 'firebase:authUser:' + firebase.app().options.apiKey + ':[DEFAULT]' && !e.newValue) {
+                            window.location.href = "logreg.html";
+                        }
+                    });
+                });
             });
-        }
-
-function waitForProfileAndFetch() {
-    function afterProfileLoaded() {
-        loadSheetFromFirebase(function(data) {
-buildHead();
-tbody.innerHTML = '';
-if (data && Array.isArray(data.students) && data.students.length > 0) {
-    data.students.forEach(stu => {
-        addStudentRowDisplayOnly(stu.name, stu.scores);
-    });
-} else {
-    fetchAndDisplayStudents();
-}
-if (data && data.hps) {
-    quarterData[getCurrentQuarter()].hps = {
-        WW: data.hps.WW || [...DEFAULT_HPS.WW],
-        PT: data.hps.PT || [...DEFAULT_HPS.PT],
-        QA: data.hps.QA || [...DEFAULT_HPS.QA]
-    };
-}
-if (data && data.weights) {
-    quarterData[getCurrentQuarter()].weights = {
-        WW: data.weights.WW ?? DEFAULT_WEIGHTS.WW,
-        PT: data.weights.PT ?? DEFAULT_WEIGHTS.PT,
-        QA: data.weights.QA ?? DEFAULT_WEIGHTS.QA
-    };
-}
         });
-    }
-    // Wait for profile info to be loaded
-    function checkProfile() {
-        const grade = document.getElementById('profileGrade')?.textContent?.trim();
-        const section = document.getElementById('profileSection')?.textContent?.trim();
-        const schoolYear = localStorage.getItem('schoolYear');
-        if (grade && grade !== '-' && section && section !== '-' && schoolYear) {
-            afterProfileLoaded();
-        } else {
-            setTimeout(checkProfile, 200);
-        }
-    }
-    checkProfile();
-}
-waitForProfileAndFetch();
-    });
-});
+    </script>
 
-// Helper to get the current teacher's grading sheet path for the selected quarter
-function getCurrentSheetPath() {
-    const user = firebase.auth().currentUser;
-    if (!user) return null;
-    const teacherId = user.uid;
-    const subject = document.getElementById('subjectName')?.textContent.trim();
-    const schoolYear = localStorage.getItem('schoolYear');
-    const section = document.getElementById('profileSection')?.textContent.trim();
-    const quarter = document.getElementById('quarterSelect')?.value || '1';
-
-    if (
-        !teacherId ||
-        !subject || subject === "Loading..." || subject === "N/A" ||
-        !schoolYear || !section || section === "-" || schoolYear === "-"
-    ) {
-        return null;
-    }
-    return `teachers/${teacherId}/gradingSheets/${subject}/${schoolYear}/${section}/${quarter}`;
-}
-
-// Gather all sheet data (HPS and scores)
-function getSheetData() {
-    const hps = { WW: [...getCurrentHPS().WW], PT: [...getCurrentHPS().PT], QA: [...getCurrentHPS().QA] };
-    const weights = { ...getCurrentWeights() };
-    const students = [];
-    tbody.querySelectorAll('tr').forEach(tr => {
-        const name = tr.querySelector('.sticky-name')?.textContent || '';
-        const scores = [];
-        tr.querySelectorAll('input.score').forEach(inp => {
-            scores.push(parseFloat(inp.value) || 0);
-        });
-        students.push({ name, scores });
-    });
-    return { hps, weights, students };
-}
-
-// Save to Firebase
-function saveSheetToFirebase() {
-    const path = getCurrentSheetPath();
-    if (!path) {
-        // Optionally, log for debugging:
-        // console.warn("Sheet not saved: path is null");
-        return;
-    }
-    const data = getSheetData();
-    firebase.database().ref(path).set(data);
-}
-
-// Load from Firebase
-function loadSheetFromFirebase(callback) {
-    const path = getCurrentSheetPath();
-    if (!path) return;
-    firebase.database().ref(path).once('value', snap => {
-        const data = snap.val();
-        callback(data);
-    });
-}
-
-const DEFAULT_WEIGHTS = { WW:0.20, PT:0.60, QA:0.20 };
-const DEFAULT_HPS = { WW:Array(WW).fill(10), PT:Array(PT).fill(10), QA:Array(QA).fill(50) };
-
-let quarterData = {
-  1: { weights: {...DEFAULT_WEIGHTS}, hps: JSON.parse(JSON.stringify(DEFAULT_HPS)) },
-  2: { weights: {...DEFAULT_WEIGHTS}, hps: JSON.parse(JSON.stringify(DEFAULT_HPS)) },
-  3: { weights: {...DEFAULT_WEIGHTS}, hps: JSON.parse(JSON.stringify(DEFAULT_HPS)) },
-  4: { weights: {...DEFAULT_WEIGHTS}, hps: JSON.parse(JSON.stringify(DEFAULT_HPS)) }
-};
-
-function getCurrentQuarter() {
-  return document.getElementById('quarterSelect')?.value || '1';
-}
-function getCurrentWeights() {
-  return quarterData[getCurrentQuarter()].weights;
-}
-function getCurrentHPS() {
-  return quarterData[getCurrentQuarter()].hps;
-}
-})();
-
-document.addEventListener('click', function(e) {
-    // Only remove highlight if you didn't click a sticky-name cell
-    if (!e.target.classList.contains('sticky-name')) {
-        Array.from(document.querySelectorAll('#tbody tr')).forEach(row => row.classList.remove('highlight-row'));
-    }
-});
-
-
-// Set subject from teacher data (after Firebase loads teacher)
-function updateSubjectDisplay(subject) {
-    document.getElementById('subjectName').textContent = subject || "N/A";
-}
-
-// Example: After loading teacher data
+    <script>
 document.addEventListener("DOMContentLoaded", function() {
-    firebase.auth().onAuthStateChanged(async function(user) {
-        if (!user) return;
-        const uid = user.uid;
-        const snap = await firebase.database().ref('teachers/' + uid).once('value');
-        const teacher = snap.val();
-        // Set subject in controls
-        updateSubjectDisplay(teacher?.subject || "N/A");
-    });
-});
-
-// Student search functionality
-document.getElementById('studentSearch').addEventListener('input', function() {
-    const search = this.value.toLowerCase();
-    Array.from(document.querySelectorAll('#tbody tr')).forEach(row => {
-        const nameCell = row.querySelector('.sticky-name');
-        if (!nameCell) return;
-        row.style.display = nameCell.textContent.toLowerCase().includes(search) ? '' : 'none';
-    });
-});
-
-// Quarter filter functionality (stub, implement as needed)
-document.getElementById('quarterSelect').addEventListener('change', function() {
-    localStorage.setItem('selectedQuarter', this.value);
-    if (document.getElementById('quarterLabel')) {
-        document.getElementById('quarterLabel').textContent = "Quarter " + this.value;
-    }
-    window.percentEditMode = false;
-    loadSheetFromFirebase(function(data) {
-          buildHead();
-        tbody.innerHTML = '';
-        if (data && Array.isArray(data.students) && data.students.length > 0) {
-            data.students.forEach(stu => {
-                addStudentRowDisplayOnly(stu.name, stu.scores);
-            });
-        } else {
-            fetchAndDisplayStudents();
-        }
-        if (data && data.hps) {
-            quarterData[getCurrentQuarter()].hps = {
-                WW: data.hps.WW || [...DEFAULT_HPS.WW],
-                PT: data.hps.PT || [...DEFAULT_HPS.PT],
-                QA: data.hps.QA || [...DEFAULT_HPS.QA]
-            };
-        }
-        if (data && data.weights) {
-            quarterData[getCurrentQuarter()].weights = {
-                WW: data.weights.WW ?? DEFAULT_WEIGHTS.WW,
-                PT: data.weights.PT ?? DEFAULT_WEIGHTS.PT,
-                QA: data.weights.QA ?? DEFAULT_WEIGHTS.QA
-            };
+    const navLinks = document.querySelectorAll("nav ul li a");
+    const current = window.location.pathname.split('/').pop();
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
         }
     });
-});
-
-window.loadSheetFromFirebase = loadSheetFromFirebase;
-window.getCurrentQuarter = getCurrentQuarter;
-window.getCurrentWeights = getCurrentWeights;
-window.getCurrentHPS = getCurrentHPS;
-window.saveSheetToFirebase = saveSheetToFirebase;
-window.buildHead = buildHead;
-window.fetchAndDisplayStudents = fetchAndDisplayStudents;
-
-function fetchAndDisplayStudentsWithRestore(savedStudents) {
-    const info = getProfileInfo();
-    if (!info) return;
-    const { grade, section, schoolYear } = info;
-    tbody.innerHTML = '';
-    firebase.database().ref('students').once('value', snap => {
-        if (snap.exists()) {
-            snap.forEach(child => {
-                const student = child.val();
-                if (
-                    (student.grade + '').trim() === grade &&
-                    (student.section + '').trim() === section &&
-                    (student.school_year + '').trim() === schoolYear
-                ) {
-                    const name = (student.lname ? student.lname + ', ' : '') +
-                                 (student.fname || '') +
-                                 (student.mname ? ' ' + student.mname : '');
-                    let scores = [];
-                    if (savedStudents) {
-                        const found = savedStudents.find(s => s.name === name);
-                        if (found) scores = found.scores;
-                    }
-                    addStudentRowDisplayOnly(name, scores);
-                }
-            });
-        }
-    });
-}
-</script>
-
-<div id="pageBottom">
-  <footer>
-    <div class="footer-wrap">
-      <div class="footer-col">
-        <h4 class="footer-brand">Eduktaktika</h4>
-        <p>Interactive, game‑based learning for Math, English, and Science.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Connect</h4>
-        <ul class="footer-social">
-          <li><a href="homepage.html">Homepage</a></li>
-          <li><a href="studentlist.html">Student</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Subjects</h4>
-        <ul class="footer-links">
-          <li><a href="subject_math.html">Math</a></li>
-          <li><a href="subject_english.html">English</a></li>
-          <li><a href="subject_science.html">Science</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Leaderboards</h4>
-        <ul class="footer-links">
-          <li><a href="leaderboard_math.html">Math</a></li>
-          <li><a href="leaderboard_english.html">English</a></li>
-          <li><a href="leaderboard_science.html">Science</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <div class="footer-social-row">
-        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-      </div>
-      <p>© 2025 Eduktaktika. All rights reserved.</p>
-    </div>
-  </footer>
-
-  <!-- Edit Profile Modal -->
-
-  <script src="../assets/js/navbar.js"></script>
-
-  <script>
-  document.addEventListener("DOMContentLoaded", function() {
-      const navLinks = document.querySelectorAll("nav ul li a");
-      const current = window.location.pathname.split('/').pop();
-      navLinks.forEach(link => {
-          if (link.getAttribute("href") === current) {
-              link.classList.add("active");
-          }
-      });
-  });
-  </script>
-
-  <script src="../assets/js/gradingSheet.js"></script>
-</div>
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-  const tabGrading = document.getElementById('tabGrading');
-  const tabAttendance = document.getElementById('tabAttendance');
-  const gradingTab = document.getElementById('gradingTab');
-  const attendanceTab = document.getElementById('attendanceTab');
-
-  tabGrading.addEventListener('click', function() {
-    tabGrading.classList.add('active');
-    tabAttendance.classList.remove('active');
-    gradingTab.style.display = 'block';
-    attendanceTab.style.display = 'none';
-  });
-  tabAttendance.addEventListener('click', function() {
-    tabAttendance.classList.add('active');
-    tabGrading.classList.remove('active');
-    gradingTab.style.display = 'none';
-    attendanceTab.style.display = 'block';
-  });
-});
-
-// --- Attendance Tab Logic ---
-// --- Attendance Tab Logic ---
-const attendanceWeeks = 8;
-const attendanceDays = ['Mon','Tue','Wed','Thu','Fri'];
-
-// Build attendance table header
-function buildAttendanceHead() {
-  const thead = document.getElementById('attendanceThead');
-  thead.innerHTML = '';
-  const tr1 = document.createElement('tr');
-  tr1.appendChild(th('Student Name', {rowSpan:2, className:'sticky-name', style:'background:#2e8b57;color:#fff;'}));
-  for(let w=1;w<=attendanceWeeks;w++) {
-    const thw = document.createElement('th');
-    thw.colSpan = attendanceDays.length;
-    thw.style = 'background:#2e8b57;color:#fff;';
-    thw.textContent = `Week ${w}`;
-    tr1.appendChild(thw);
-  }
-  tr1.appendChild(th('Total', {rowSpan:2, style:'background:#2e8b57;color:#fff;'}));
-  thead.appendChild(tr1);
-
-  const tr2 = document.createElement('tr');
-  for(let w=1;w<=attendanceWeeks;w++) {
-    for(let d=0;d<attendanceDays.length;d++) {
-      const thd = document.createElement('th');
-      thd.style = 'background:#2e8b57;color:#fff;';
-      thd.textContent = attendanceDays[d];
-      tr2.appendChild(thd);
-    }
-  }
-  thead.appendChild(tr2);
-}
-
-// Build attendance table body
-function buildAttendanceBody(students) {
-  const tbody = document.getElementById('attendanceTbody');
-  tbody.innerHTML = '';
-  students.forEach(stu => {
-    const tr = document.createElement('tr');
-    const nameTd = document.createElement('td');
-    nameTd.className = 'sticky-name';
-    nameTd.textContent = stu;
-    tr.appendChild(nameTd);
-
-    for(let w=0;w<attendanceWeeks;w++) {
-      for(let d=0;d<attendanceDays.length;d++) {
-        const td = document.createElement('td');
-        td.style = 'text-align:center;';
-        const inp = document.createElement('input');
-        inp.type = 'checkbox';
-        inp.className = 'att-checkbox';
-        inp.addEventListener('change', function() {
-          updateAttendanceTotal(tr);
-        });
-        td.appendChild(inp);
-        tr.appendChild(td);
-      }
-    }
-    const totalTd = document.createElement('td');
-    totalTd.className = 'att-total';
-    totalTd.style = 'color:#2e8b57;font-weight:600;text-align:center;';
-    totalTd.textContent = '0/40';
-    tr.appendChild(totalTd);
-
-    tbody.appendChild(tr);
-    updateAttendanceTotal(tr);
-  });
-}
-
-// Update total present for a row
-function updateAttendanceTotal(tr) {
-  const checks = tr.querySelectorAll('input.att-checkbox');
-  let count = 0;
-  checks.forEach(chk => { if(chk.checked) count++; });
-  tr.querySelector('.att-total').textContent = `${count}/40`;
-}
-
-// Fetch students and build attendance table (same logic as grading sheet)
-function loadAttendanceStudents() {
-  const info = typeof getProfileInfo === "function" ? getProfileInfo() : null;
-  if (!info) return;
-  const { grade, section, schoolYear } = info;
-  const students = [];
-  firebase.database().ref('students').once('value', snap => {
-    if (snap.exists()) {
-      snap.forEach(child => {
-        const student = child.val();
-        if (
-          (student.grade + '').trim() === grade &&
-          (student.section + '').trim() === section &&
-          (student.school_year + '').trim() === schoolYear
-        ) {
-          students.push(
-            (student.lname ? student.lname + ', ' : '') +
-            (student.fname || '') +
-            (student.mname ? ' ' + student.mname : '')
-          );
-        }
-      });
-    }
-    buildAttendanceHead();
-    buildAttendanceBody(students);
-  });
-}
-
-// When Attendance tab is shown, build the table
-document.getElementById('tabAttendance').addEventListener('click', function() {
-  buildAttendanceHead();
-  loadAttendanceStudents();
-  // Optionally update subject/quarter display
-  document.getElementById('attendanceSubject').textContent = document.getElementById('subjectName').textContent;
-  document.getElementById('attendanceQuarter').textContent = document.getElementById('quarterSelect').selectedOptions[0].textContent;
 });
 </script>
-</div>
 </body>
-
 </html>
