@@ -3,10 +3,19 @@
   publish = "deploy"
 
 # Editor SPA deep link handling
+# This redirect preserves query parameters automatically
 [[redirects]]
   from = "/editor/*"
   to = "/editor/index.html"
   status = 200
+  force = false
+
+# Explicit redirect for editor root (without trailing path)
+[[redirects]]
+  from = "/editor"
+  to = "/editor/index.html"
+  status = 200
+  force = false
 
 # Teacher/Student sections (routes land on their own HTML entrypoints)
 [[redirects]]

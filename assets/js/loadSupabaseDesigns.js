@@ -19,6 +19,14 @@ let supabaseClient = null;
 async function initializeSupabaseClient() {
   if (supabaseClient) return supabaseClient;
   
+  // Wait for Supabase SDK to be available (for Netlify/CDN loading delays)
+  let attempts = 0;
+  const maxAttempts = 10;
+  while (attempts < maxAttempts && (typeof supabase === 'undefined' || (typeof window.supabase === 'undefined' || typeof window.supabase.createClient !== 'function'))) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    attempts++;
+  }
+  
   // Try to use existing client from window or global scope (if loaded via script tag)
   if (typeof window !== 'undefined') {
     // When Supabase JS is loaded via CDN script tag, it exposes supabase.createClient globally
@@ -239,10 +247,10 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
     // Show loading state with styled indicator
     if (container) {
       container.innerHTML = `
-        <div class="lessons-loading">
-          <div class="lessons-loading-spinner"></div>
-          <div class="lessons-loading-text">Loading Lessons</div>
-          <div class="lessons-loading-subtext">Fetching from Supabase...</div>
+        <div class="lessons-loading" style="text-align:center;padding:20px;color:#666;">
+          <i class="fa fa-spinner fa-spin" style="font-size:24px;margin-bottom:10px;"></i>
+          <div style="font-size:1rem;font-weight:600;margin-bottom:4px;">Loading Lessons</div>
+          <div style="font-size:0.9rem;color:#888;">Fetching from Supabase...</div>
         </div>
       `;
     }
@@ -275,6 +283,24 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
     let client = getSupabaseClient();
     if (!client) {
       client = await initializeSupabaseClient();
+    }
+    
+    // If client still not available, try one more time with a delay (for Netlify/CDN loading)
+    if (!client || !client.storage) {
+      console.warn('⚠️ Supabase client not ready, waiting 500ms and retrying...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      client = getSupabaseClient();
+      if (!client) {
+        client = await initializeSupabaseClient();
+      }
+    }
+    
+    if (!client || !client.storage) {
+      console.error('❌ Supabase client not available after retries');
+      if (container) {
+        container.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">⚠️ Supabase client not available. Please refresh the page.<br><small>Make sure Supabase SDK is loaded.</small></div>';
+      }
+      return [];
     }
     
     // Try to load design-ids.json and list files for each prefix
@@ -444,8 +470,22 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
 
   } catch (error) {
     console.error('❌ Error loading designs from Supabase:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      subject: subject,
+      quarter: quarter,
+      gradeLevel: gradeLevel
+    });
     if (container) {
-      container.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">Error loading designs. Please refresh the page.</div>';
+      container.innerHTML = `
+        <div style="text-align:center;padding:20px;color:#f44336;">
+          <i class="fas fa-exclamation-triangle" style="font-size:32px;margin-bottom:10px;"></i>
+          <div style="font-weight:600;margin-bottom:8px;">Error loading lessons</div>
+          <div style="font-size:0.9rem;color:#666;">${error.message || 'Unknown error'}</div>
+          <button onclick="location.reload()" style="margin-top:12px;padding:8px 16px;background:#2196F3;color:white;border:none;border-radius:6px;cursor:pointer;">Refresh Page</button>
+        </div>
+      `;
     }
     return [];
   }
