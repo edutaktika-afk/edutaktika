@@ -58,3 +58,14 @@
 #
 # Note: Vite only exposes variables prefixed with VITE_ to the client
 # The pipe character "|" is added by Polotno SDK internally, don't include it in the value
+
+# Secrets Scanning Configuration
+# IMPORTANT: Set this environment variable in Netlify Dashboard to allow Firebase API keys
+# Firebase API keys are safe to expose in client-side code (they're meant to be public)
+# 
+# Go to: Netlify Dashboard > Site settings > Environment variables
+# Add: SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES
+# Value: AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE
+#
+# This tells Netlify's secrets scanner to ignore this specific Firebase API key
+# while still scanning for other actual secrets

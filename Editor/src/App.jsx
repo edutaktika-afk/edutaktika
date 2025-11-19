@@ -275,7 +275,12 @@ const App = observer(({ store }) => {
 
   React.useEffect(() => {
     // Check for view-only mode
+    // Use window.location.search directly to ensure we get params even after Netlify redirects
     const urlParams = new URLSearchParams(window.location.search);
+    console.log('🔍 Editor URL params:', {
+      search: window.location.search,
+      params: Object.fromEntries(urlParams.entries())
+    });
     const designUrl = urlParams.get('design');
     const supabaseDesign = urlParams.get('supabaseDesign');
     const isNew = urlParams.get('new') === 'true' || urlParams.get('mode') === 'create';
@@ -356,8 +361,15 @@ const App = observer(({ store }) => {
       console.log('🎨 Loading Supabase design:', designId, subject);
       
       // Check if JSON URL was provided as parameter (avoids sessionStorage quota issues)
+      // Always read from window.location.search to ensure we get params after Netlify redirects
       const urlParams = new URLSearchParams(window.location.search);
       const jsonUrl = urlParams.get('jsonUrl');
+      console.log('📋 Load params:', {
+        designId,
+        subject,
+        jsonUrl,
+        allParams: Object.fromEntries(urlParams.entries())
+      });
       let designData;
       
       if (jsonUrl) {
