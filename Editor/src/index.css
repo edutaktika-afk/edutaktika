@@ -265,3 +265,65 @@ dialog {
   opacity: 1 !important;
   transform: none !important;
 }
+
+/* View-only mode (student view) - hide all UI except pages timeline, similar to presentation mode */
+body.view-only-mode .polotno-side-tabs-container,
+body.view-only-mode .polotno-panel-container,
+body.view-only-mode .polotno-toolbar,
+body.view-only-mode .polotno-toolbar-container,
+body.view-only-mode .polotno-toolbar-wrapper,
+body.view-only-mode .polotno-zoom-buttons,
+body.view-only-mode .floating-animation-panel,
+body.view-only-mode .bp5-popover-target,
+body.view-only-mode [aria-label*="Move"],
+body.view-only-mode [aria-label*="move"],
+body.view-only-mode .bp5-button[aria-label*="Move"],
+body.view-only-mode .bp5-button[aria-label*="move"],
+body.view-only-mode .bp5-icon-chevron-up,
+body.view-only-mode .bp5-icon-chevron-down,
+body.view-only-mode button[aria-label*="Move up"],
+body.view-only-mode button[aria-label*="Move down"],
+body.view-only-mode button[aria-label*="Duplicate"],
+body.view-only-mode button[aria-label*="Delete"],
+body.view-only-mode button[aria-label*="Add"],
+body.view-only-mode .polotno-toolbar button,
+body.view-only-mode .polotno-toolbar .bp5-button,
+body.view-only-mode .polotno-toolbar .bp5-popover-target,
+body.view-only-mode .bp5-navbar.topbar,
+body.view-only-mode .topbar,
+body.view-only-mode .bp5-navbar,
+body.view-only-mode [class*="bp5-navbar"],
+body.view-only-mode [class*="topbar"],
+body.view-only-mode [class*="go"][class*="bp5-navbar"],
+body.view-only-mode [class*="go"][class*="topbar"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Keep pages timeline visible in view-only mode */
+body.view-only-mode .polotno-pages-timeline {
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Make workspace fill entire screen in view-only mode */
+body.view-only-mode .polotno-workspace {
+  width: 100vw !important;
+  height: calc(100vh - 60px) !important; /* Account for pages timeline only */
+  max-width: 100vw !important;
+}
+
+body.view-only-mode .polotno-workspace-container {
+  width: 100vw !important;
+  height: calc(100vh - 60px) !important;
+  max-width: 100vw !important;
+}
+
+body.view-only-mode .polotno-workspace-wrap {
+  width: 100vw !important;
+  height: calc(100vh - 60px) !important;
+}

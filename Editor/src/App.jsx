@@ -38,6 +38,8 @@ import Topbar from './topbar/topbar';
 import { presentSlideshow } from './topbar/topbar';
 // Lazy load Tutorial component (not critical for initial render)
 const Tutorial = lazy(() => import('./components/Tutorial'));
+import { ToolbarAnimationButton } from './components/ToolbarAnimationButton';
+import { StudentAnimationControls } from './components/StudentAnimationControls';
 
 // load default translations
 setTranslations(en);
@@ -241,6 +243,19 @@ const App = observer(({ store }) => {
   const height = useHeight();
   const [isViewOnly, setIsViewOnly] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  
+  // Add/remove view-only-mode class to body for CSS styling
+  React.useEffect(() => {
+    if (isViewOnly) {
+      document.body.classList.add('view-only-mode');
+    } else {
+      document.body.classList.remove('view-only-mode');
+    }
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('view-only-mode');
+    };
+  }, [isViewOnly]);
 
   React.useEffect(() => {
     if (project.language.startsWith('fr')) {
@@ -346,7 +361,7 @@ const App = observer(({ store }) => {
       let designData;
       
       if (jsonUrl) {
-        // Fetch directly from provided URL (no sessionStorage needed)
+        // Fetch directly from provided URL (no sessionStorage needed - avoids quota issues)
         console.log('📥 Fetching design from provided JSON URL:', jsonUrl);
         try {
           const response = await fetch(jsonUrl);
@@ -356,31 +371,20 @@ const App = observer(({ store }) => {
           const responseText = await response.text();
           
           // Check for quota errors
-          if (responseText.includes('quota has been exceeded') || responseText.includes('quota exceeded')) {
+          if (responseText.includes('quota has been exceeded') || responseText.includes('quota exceeded') || responseText.includes('Quota')) {
             throw new Error('Supabase Quota Exceeded: Please check your Supabase dashboard for quota limits.');
           }
           
           designData = JSON.parse(responseText);
           console.log('✅ Downloaded design from provided JSON URL');
         } catch (fetchError) {
-          console.error('❌ Failed to fetch from jsonUrl, trying Supabase SDK...', fetchError);
-          // Fall through to Supabase SDK method
+          console.error('❌ Failed to fetch from jsonUrl:', fetchError);
+          throw fetchError; // Don't fall through - jsonUrl should always work if provided
         }
       }
       
-      // Try sessionStorage next (works if opened from same tab) - but only if small
-      if (!designData) {
-        try {
-          let designJSONString = sessionStorage.getItem('supabase-design-to-load');
-          if (designJSONString) {
-            console.log('✅ Found design in sessionStorage');
-            designData = JSON.parse(designJSONString);
-          }
-        } catch (storageError) {
-          // If sessionStorage read fails (quota exceeded), continue to fetch from Supabase
-          console.warn('⚠️ Could not read from sessionStorage, fetching from Supabase:', storageError);
-        }
-      }
+      // OLD METHOD REMOVED: No longer using sessionStorage for large JSON data
+      // This prevents quota exceeded errors and conflicts between old/new save methods
       
       // Final fallback: download directly from Supabase
       if (!designData) {
@@ -482,23 +486,53 @@ const App = observer(({ store }) => {
         store.addPage();
       }
       
-      // Set project ID and name for overwriting capability
-      const designName = sessionStorage.getItem('supabase-design-name') || 'Design';
-      const quarter = sessionStorage.getItem('supabase-design-quarter') || '1';
+      // Get metadata from URL params first (new method), then fallback to sessionStorage (old method)
+      // Reuse urlParams declared at the start of the function
+      const designName = urlParams.get('name') || 
+                        sessionStorage.getItem('supabase-design-name') || 
+                        'Design';
+      const quarter = urlParams.get('quarter') || 
+                     sessionStorage.getItem('supabase-design-quarter') || 
+                     '1';
+      const gradeLevel = urlParams.get('grade') || 
+                        sessionStorage.getItem('supabase-design-grade') || 
+                        '';
+      
       project.id = designId;
       project.name = designName;
       project.status = 'saved';
       
-      console.log(`📌 Loaded design: "${designName}" (ID: ${designId}, Subject: ${subject}, Quarter: ${quarter})`);
+      console.log(`📌 Loaded design: "${designName}" (ID: ${designId}, Subject: ${subject}, Quarter: ${quarter}, Grade: ${gradeLevel || 'none'})`);
       
-      // Store design metadata in session storage for later retrieval
-      const designMetadata = {
-        id: designId,
-        subject: subject,
-        quarter: quarter,
-        name: designName
-      };
-      sessionStorage.setItem('current-supabase-design', JSON.stringify(designMetadata));
+      // Store design metadata in session storage for later retrieval (small data only - no JSON)
+      // This is safe and won't cause quota issues
+      try {
+        const designMetadata = {
+          id: designId,
+          subject: subject,
+          quarter: quarter,
+          name: designName,
+          gradeLevel: gradeLevel
+        };
+        sessionStorage.setItem('current-supabase-design', JSON.stringify(designMetadata));
+        
+        // Also store individual items for backward compatibility (small strings only)
+        sessionStorage.setItem('supabase-design-id', designId);
+        sessionStorage.setItem('supabase-design-subject', subject);
+        sessionStorage.setItem('supabase-design-name', designName);
+        sessionStorage.setItem('supabase-design-quarter', quarter);
+        if (gradeLevel) sessionStorage.setItem('supabase-design-grade', gradeLevel);
+        
+        // Clean up old large JSON storage keys that might cause conflicts
+        try {
+          sessionStorage.removeItem('supabase-design-to-load');
+        } catch (e) {
+          // Ignore if already removed or quota issue
+        }
+      } catch (storageError) {
+        // If sessionStorage quota exceeded, continue anyway - metadata is optional
+        console.warn('⚠️ Could not store metadata in sessionStorage (quota may be exceeded):', storageError);
+      }
       
       // Load the design into the store
       store.loadJSON(designData);
@@ -704,9 +738,12 @@ const App = observer(({ store }) => {
           )}
           <WorkspaceWrap>
             {!isViewOnly && <Toolbar store={store} />}
+            {!isViewOnly && <ToolbarAnimationButton store={store} />}
               <Workspace store={store} />
             {!isViewOnly && <ZoomButtons store={store} />}
-            {!isViewOnly && <PagesTimeline store={store} />}
+            <PagesTimeline store={store} />
+            {/* Student animation controls - only visible in view-only mode */}
+            <StudentAnimationControls store={store} />
           </WorkspaceWrap>
         </PolotnoContainer>
       </div>

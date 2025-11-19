@@ -133,7 +133,7 @@ export const AnimationPanel = observer(({ store }) => {
       {/* Header */}
       <div style={{ padding: '15px 10px', textAlign: 'center' }}>
         <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#333', marginBottom: '4px' }}>
-          Custom Animations
+          More Animations
         </h3>
         <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>
           Click to apply custom animations
@@ -144,13 +144,14 @@ export const AnimationPanel = observer(({ store }) => {
         <div style={{ 
           padding: '20px', 
           textAlign: 'center', 
-          color: '#999', 
-          fontSize: '12px',
-          backgroundColor: '#f5f5f5',
+          color: '#666', 
+          fontSize: '13px',
+          backgroundColor: '#fff3cd',
           borderRadius: '6px',
-          marginBottom: '15px'
+          marginBottom: '15px',
+          border: '1px solid #ffc107'
         }}>
-          Select an element to add animations
+          <strong>Select an element</strong> on the canvas to apply animations
         </div>
       )}
 
@@ -193,23 +194,37 @@ export const FloatingAnimationPanel = observer(({ store }) => {
   const selectedElement = store.selectedElements?.[0];
   const [isOpen, setIsOpen] = React.useState(false);
 
-  // Open panel when element is selected
-  React.useEffect(() => {
-    if (selectedElement) {
-      setIsOpen(true);
-    } else {
-      // Keep it open for a moment when deselecting to allow smooth transition
-      const timer = setTimeout(() => setIsOpen(false), 100);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedElement?.id]);
-
   // Close button handler
   const handleClose = () => {
     setIsOpen(false);
+    // Store the closed state
+    window._animationPanelOpen = false;
   };
 
-  if (!selectedElement || !isOpen) {
+  // Listen for open/close requests from the button
+  React.useEffect(() => {
+    const handleToggle = () => {
+      setIsOpen(prev => {
+        const newState = !prev;
+        window._animationPanelOpen = newState;
+        return newState;
+      });
+    };
+
+    window.addEventListener('toggle-animation-panel', handleToggle);
+    return () => {
+      window.removeEventListener('toggle-animation-panel', handleToggle);
+    };
+  }, []);
+
+  // Sync with global state
+  React.useEffect(() => {
+    if (window._animationPanelOpen !== undefined) {
+      setIsOpen(window._animationPanelOpen);
+    }
+  }, []);
+
+  if (!isOpen) {
     return null;
   }
 
