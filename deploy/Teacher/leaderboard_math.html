@@ -121,6 +121,12 @@
   .leaderboard-table td { font-size: .68rem !important; }
   .player-cell img { width: 26px; height: 26px; }
 }
+nav ul li a.active,
+nav ul li .dropdown-content a.active {
+    background-color: #2e8b57 !important; /* Green background */
+    color: #fff !important;               /* White text */
+    border-radius: 8px;
+}
     </style>
 </head>
 <body>
@@ -152,14 +158,7 @@
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="subject_math.html">Math</a></li>
-                            <li><a href="subject_english.html">English</a></li>
-                            <li><a href="subject_science.html">Science</a></li>
-                        </ul>
-                    </li>
+                    <li><a href="#" id="lessonNavBtn">Lesson</a></li>
                     <li><a href="studentlist.html">Student</a></li>
                     <li><a href="grading.html">Grading</a></li>
                     <li class="dropdown">
@@ -178,7 +177,7 @@
                             </ul>
                         </li>
                     <li>
-                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                        <a href="#" id="profileBtn">Profile</a>
                     </li>
                 </ul>
             </nav>
@@ -284,6 +283,35 @@
             
 
     <script src="../assets/js/Teacher Side/header.js"></script>
+    
+    <script>
+    // Set Lesson button href based on teacher's selected subject
+    firebase.auth().onAuthStateChanged(async function(user) {
+        if (user) {
+            try {
+                const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
+                const teacher = teacherSnap.val();
+                if (teacher && teacher.subject) {
+                    const subject = teacher.subject.toLowerCase();
+                    const lessonBtn = document.getElementById('lessonNavBtn');
+                    if (lessonBtn) {
+                        // Map subject to page URL
+                        const subjectMap = {
+                            'math': 'subject_math.html',
+                            'english': 'subject_english.html',
+                            'science': 'subject_science.html'
+                        };
+                        const subjectUrl = subjectMap[subject] || 'subject_math.html';
+                        lessonBtn.href = subjectUrl;
+                        console.log(`📚 Lesson button set to: ${subjectUrl} (teacher subject: ${subject})`);
+                    }
+                }
+            } catch (error) {
+                console.error('Error setting lesson button:', error);
+            }
+        }
+    });
+    </script>
 
     <div class="leaderboard-container">
             <div class="leaderboard-title">🌟 Math Leaderboard - Grade 5 🌟</div>
@@ -311,7 +339,9 @@
     </div>
     
     <script>
-        const firebaseConfig = {
+        // Firebase configuration - Only initialize if not already initialized
+        if (typeof firebase !== 'undefined' && (!firebase.apps || firebase.apps.length === 0)) {
+            const firebaseConfig = {
                 apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
                 authDomain: "edutaktika.firebaseapp.com",
                 databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
@@ -321,10 +351,25 @@
                 appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
                 measurementId: "G-X3GT5TNN87"
             };
-            // Removed legacy v8 firebase-app.js & firebase-database.js to prevent duplicate global definition
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.database();
-            const auth = firebase.auth();
+            try {
+                firebase.initializeApp(firebaseConfig);
+            } catch (e) {
+                console.log('Firebase already initialized');
+            }
+        }
+        
+        // Use global db and auth if available, otherwise create them
+        // Don't redeclare if they already exist
+        if (typeof db === 'undefined') {
+            var db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+        }
+        if (typeof auth === 'undefined') {
+            var auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        }
+        
+        // Make them globally available
+        if (db) window.db = db;
+        if (auth) window.auth = auth;
        
 
         // 2. Fetch and display leaderboard (Math subject only - teacher's section)
@@ -336,7 +381,7 @@
             const teacherSnapshot = await db.ref('teachers/' + currentUser.uid).once('value');
             const teacherData = teacherSnapshot.val();
             const teacherSection = teacherData ? teacherData.section : null;
-            const teacherGrade = teacherData ? teacherData.gradelevel : null;
+            const teacherGrade = teacherData ? teacherData.grade : null;
             
             if (!teacherSection || !teacherGrade) {
                 console.error('Could not determine teacher section or grade level');
@@ -361,12 +406,19 @@
             students.push(s);
         });
 
+
+            // Load assessments to check subject field (since assessment IDs are Firebase push keys)
+            const assessmentsSnapshot = await db.ref('assessments').once('value');
+            const assessments = {};
+            assessmentsSnapshot.forEach(child => {
+                assessments[child.key] = child.val();
+            });
+
             // Calculate Math-specific scores
             students.forEach(s => {
-                // Math quiz points - only from math quizzes
                 let mathQuizPoints = 0;
-                if (s.quizzes && Array.isArray(s.quizzes.subject_math)) {
-                    s.quizzes.subject_math.forEach(quarterObj => {
+                if (s.quizzes && s.quizzes.subject_math && typeof s.quizzes.subject_math === 'object') {
+                    Object.values(s.quizzes.subject_math).forEach(quarterObj => {
                         if (quarterObj && typeof quarterObj === 'object') {
                             Object.values(quarterObj).forEach(quizObj => {
                                 if (
@@ -382,15 +434,25 @@
                 }
                 s.quizPoints = mathQuizPoints;
                 
-                // Math assessment points - only from math assessments
+                // Math assessment points - check subject field from assessments collection
                 let mathAssessmentPoints = 0;
                 if (s.assessments) {
                     Object.keys(s.assessments).forEach(aid => {
-                        // Only count math-related assessments
-                        if (aid.includes('math') || aid === 'assessment1') {
-                            const summary = s.assessments[aid]?.summary;
-                            if (summary && typeof summary.best === 'number') {
-                                mathAssessmentPoints += summary.best;
+                        const summary = s.assessments[aid]?.summary;
+                        if (summary && typeof summary.best === 'number') {
+                            // Check if this assessment is a Math assessment by looking up the assessment
+                            const assessment = assessments[aid];
+                            if (assessment && assessment.subject) {
+                                const subjectLower = assessment.subject.toLowerCase();
+                                // Check for math-related subjects
+                                if (subjectLower === 'math' || subjectLower === 'mathematics') {
+                                    mathAssessmentPoints += summary.best;
+                                }
+                            } else {
+                                // Fallback: check assessment ID pattern (for old assessments)
+                                if (aid.includes('math') || aid === 'assessment1') {
+                                    mathAssessmentPoints += summary.best;
+                                }
                             }
                         }
                     });
@@ -402,7 +464,7 @@
             });
 
             // Filter for teacher's section and grade level only
-            students = students.filter(s => s.section === teacherSection && s.gradelevel == teacherGrade);
+            students = students.filter(s => s.section === teacherSection && s.grade == teacherGrade);
 
             // Sort descending by combined, then assessment, then quiz, then name
             students.sort((a,b) => {
@@ -452,7 +514,7 @@
                             <img src="${avatar}" alt="${s.fname||''}">
                             <span>${(s.fname||'') + ' ' + (s.lname||'')}</span>
                         </td>
-                        <td>${s.quizPoints}</td> <!-- This shows the combined math quiz score -->
+                        <td>${s.quizPoints}</td> <!-- Math quiz points -->
                         <td>${s.assessmentPoints}</td>
                         <td>${s.combinedPoints}</td>
                         <td>${s.badges || ''}</td>
@@ -592,7 +654,7 @@
                     document.getElementById('profileFirstName').textContent = data.fname || '';
                     document.getElementById('profileMiddleName').textContent = data.mname || '';
                     document.getElementById('profileLastName').textContent = data.lname || '';
-                    document.getElementById('profileGrade').textContent = data.gradelevel || '-';
+                    document.getElementById('profileGrade').textContent = data.grade || '-';
                     document.getElementById('profileSection').textContent = data.section || '-';
                     document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "teacher");
                 }
@@ -632,5 +694,17 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Add to each leaderboard page -->
 <script src="../assets/js/leaderboardPagination.js"></script>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const navLinks = document.querySelectorAll("nav ul li a");
+    const current = window.location.pathname.split('/').pop();
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
+        }
+    });
+});
+</script>
+
 </body>
 </html>

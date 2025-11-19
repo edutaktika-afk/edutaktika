@@ -690,14 +690,7 @@
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="subject_math.html">Math</a></li>
-                            <li><a href="subject_english.html">English</a></li>
-                            <li><a href="subject_science.html">Science</a></li>
-                        </ul>
-                        </li>
+                    <li><a href="#" id="lessonNavBtn">Lesson</a></li>
                     <li><a href="studentlist.html">Student</a></li>
                     <li><a href="grading.html">Grading</a></li>
                     <li class="dropdown">
@@ -723,82 +716,95 @@
         </div>
     </header>
 
-    <!-- Overlay for navbar -->
-    <div class="sidebar-overlay" id="navOverlay"></div>
-    <!-- Overlay for profile sidebar -->
-    <div class="sidebar-overlay" id="profileSidebarOverlay"></div>
+<!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
 
-    <!-- Profile Sidebar (Dynamic with Firebase) -->
-    <div id="profileSidebar" class="profile-sidebar">
-        <div class="sidebar-content">
-            <button class="close-btn" id="closeSidebar">&times;</button>
-            <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
-                <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
-                <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+ <!-- Profile Sidebar (Dynamic with Firebase) -->
+<div id="profileSidebar" class="profile-sidebar">
+    <div class="sidebar-content">
+        <button class="close-btn" id="closeSidebar">&times;</button>
+        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+            <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+            <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+        </div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <br>
+        <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+            <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+            Teacher
+        </div>
+            <div>
+                <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                <strong>ID:</strong> <span id="profileId">-</span>
             </div>
-            <div class="profile-name" id="profileName">Loading...</div>
-            <br>
-            <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
-                <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
-                Teacher
+            <div>
+                <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                <strong>First Name:</strong> <span id="profileFirstName">-</span>
             </div>
-                <div>
-                    <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
-                    <strong>ID:</strong> <span id="profileId">-</span>
-                </div>
-                <div>
-                    <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
-                    <strong>First Name:</strong> <span id="profileFirstName">-</span>
-                </div>
-                <div>
-                    <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
-                    <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
-                </div>
-                <div>
-                    <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
-                    <strong>Last Name:</strong> <span id="profileLastName">-</span>
-                </div>
-                <div>
-                    <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
-                    <strong>Grade Level:</strong> <span id="profileGrade">-</span>
-                </div>
-                <div>
-                    <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
-                    <strong>Section:</strong> <span id="profileSection">-</span>
-                </div>
-                <div>
-        <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
-        <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
-    </div>
-    <div>
-        <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
-        <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
-    </div>
-    <div>
-        <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
-        <strong>City:</strong> <span id="profileAddressCity">-</span>
-    </div>
-    <div>
-        <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
-        <strong>Province:</strong> <span id="profileAddressProvince">-</span>
-    </div>
-    <div>
-        <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
-        <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
-    </div>
-    <div>
-        <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
-        <strong>Region:</strong> <span id="profileAddressRegion">-</span>
-    </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
             </div>
-            <div class="logout-switch-row">
-                <div class="logout-switch" id="logoutSwitch">
-                    <div class="logout-switch-circle"></div>
-                </div>
-                <span class="logout-label" id="logoutLabel">LOGOUT</span>
+            <div>
+                <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                <strong>Last Name:</strong> <span id="profileLastName">-</span>
             </div>
+            <div>
+                <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                <strong>Section:</strong> <span id="profileSection">-</span>
+            </div>
+            <div>
+    <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+    <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+    <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+    <strong>City:</strong> <span id="profileAddressCity">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+    <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+    <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+    <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+</div>
+        </div>
+        <div class="logout-switch-row">
+            <div class="logout-switch" id="logoutSwitch">
+                <div class="logout-switch-circle"></div>
+            </div>
+            <span class="logout-label" id="logoutLabel">LOGOUT</span>
         </div>
     </div>
+</div>
+
+<style>
+    .profile-sidebar {
+    margin-top: 20px;
+    max-height: 95vh;
+    overflow-y: auto;
+    scrollbar-width: none;         /* Firefox */
+    -ms-overflow-style: none;      /* IE and Edge */
+}
+.profile-sidebar::-webkit-scrollbar {
+    display: none;                 /* Chrome, Safari, Opera */
+}
+</style>
 
     <div class="container">
         <!-- Header -->
@@ -1113,79 +1119,227 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    
+    <script>
+        // Firebase configuration - MUST be initialized before any Firebase calls
+        // Only initialize if not already initialized (profile.js may have done it)
+        if (typeof firebase !== 'undefined' && (!firebase.apps || firebase.apps.length === 0)) {
+            const firebaseConfig = {
+                apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+                authDomain: "edutaktika.firebaseapp.com",
+                databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+                projectId: "edutaktika",
+                storageBucket: "edutaktika.appspot.com",
+                messagingSenderId: "676848575316",
+                appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+                measurementId: "G-X3GT5TNN87"
+            };
+            try {
+                firebase.initializeApp(firebaseConfig);
+            } catch (e) {
+                console.log('Firebase already initialized');
+            }
+        }
+        
+        // Use global db and auth if available (from profile.js), otherwise create them
+        // Don't redeclare if they already exist
+        if (typeof db === 'undefined') {
+            var db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+        }
+        if (typeof auth === 'undefined') {
+            var auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        }
+        
+        // Make them globally available
+        if (db) window.db = db;
+        if (auth) window.auth = auth;
+    </script>
 
     <script src="../assets/js/Teacher Side/profile.js"></script>
     <script src="../assets/js/Teacher Side/header.js"></script>
-    <script src="../assets/js/navbar.js"></script>
-
+    
     <script>
-        // Stub for showTab to prevent errors before script loads
-        window.showTab = function(tabName) {
-            console.log('showTab called with:', tabName, '- waiting for full initialization');
-        };
-
-        // Use Firebase instances from profile.js (now assigned to window.db and window.auth)
-        // profile.js already initializes Firebase and assigns db and auth to window
-        // We'll use window.db and window.auth directly to avoid redeclaration conflicts
+    // Set Lesson button href based on teacher's selected subject
+    // Wait for Firebase to be ready
+    function setLessonButton() {
+        const authInstance = window.auth || (typeof auth !== 'undefined' ? auth : null);
+        if (!authInstance) {
+            // Wait a bit for Firebase to initialize
+            setTimeout(setLessonButton, 100);
+            return;
+        }
         
-        function waitForFirebaseInstances(callback) {
-            // Check if profile.js has set up window.db and window.auth
-            if (typeof window.db !== 'undefined' && typeof window.auth !== 'undefined') {
-                callback();
-                return;
-            }
-            // Also check if Firebase is initialized (fallback)
-            if (typeof window.firebase !== 'undefined' && firebase.database && firebase.auth) {
+        authInstance.onAuthStateChanged(async function(user) {
+            if (user) {
                 try {
-                    firebase.app();
-                    // Assign to window if not already there
-                    if (typeof window.db === 'undefined') {
-                        window.db = firebase.database();
+                    const dbInstance = window.db || (typeof db !== 'undefined' ? db : null);
+                    if (!dbInstance) {
+                        console.error('Database not available');
+                        return;
                     }
-                    if (typeof window.auth === 'undefined') {
-                        window.auth = firebase.auth();
+                    const teacherSnap = await dbInstance.ref('teachers/' + user.uid).once('value');
+                    const teacher = teacherSnap.val();
+                    if (teacher && teacher.subject) {
+                        const subject = teacher.subject.toLowerCase();
+                        const lessonBtn = document.getElementById('lessonNavBtn');
+                        if (lessonBtn) {
+                            // Map subject to page URL
+                            const subjectMap = {
+                                'math': 'subject_math.html',
+                                'english': 'subject_english.html',
+                                'science': 'subject_science.html'
+                            };
+                            const subjectUrl = subjectMap[subject] || 'subject_math.html';
+                            lessonBtn.href = subjectUrl;
+                            console.log(`📚 Lesson button set to: ${subjectUrl} (teacher subject: ${subject})`);
+                        }
                     }
-                    callback();
-                    return;
-                } catch (e) {
-                    // App not initialized yet
+                } catch (error) {
+                    console.error('Error setting lesson button:', error);
                 }
             }
-            // Wait a bit and try again
-            setTimeout(() => waitForFirebaseInstances(callback), 100);
-        }
-        
-        // Helper functions to get db and auth instances
-        function getDb() {
-            return window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
-        }
-        
-        function getAuth() {
-            return window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
-        }
+        });
+    }
+    
+    // Start after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setLessonButton);
+    } else {
+        setLessonButton();
+    }
+    </script>
+
+    <script>
 
         // Global variables
         let assessments = [];
         let attempts = [];
         let students = [];
         let grades = []; // Added for grade analytics
+        // Helper function to normalize grade level
+        function normalizeGrade(grade) {
+            if (!grade) return null;
+            let normalized = String(grade).trim();
+            
+            // Handle Firebase format: "grade=5" or "grade=6"
+            if (normalized.includes('=')) {
+                const parts = normalized.split('=');
+                if (parts.length === 2 && parts[0].toLowerCase().trim() === 'grade') {
+                    return parts[1].trim();
+                }
+            }
+            
+            // Remove common suffixes
+            normalized = normalized.replace(/(\d+)(th|st|nd|rd)/i, '$1');
+            
+            // Remove "grade" prefix if present
+            if (/^grade/i.test(normalized)) {
+                normalized = normalized.replace(/^grade/i, '');
+            }
+            
+            // Extract just the number
+            const numberMatch = normalized.match(/(\d+)/);
+            if (numberMatch) {
+                return numberMatch[1];
+            }
+            
+            return normalized;
+        }
+
+        // Helper function to map subject to dropdown value
+        function mapSubjectToDropdown(subject) {
+            if (!subject) return '';
+            const subjectLower = String(subject).toLowerCase();
+            if (subjectLower.includes('math')) return 'Math';
+            if (subjectLower.includes('english')) return 'English';
+            if (subjectLower.includes('science')) return 'Science';
+            return '';
+        }
+
+        // Wait for Firebase helper function
+        function waitForFirebase(callback) {
+            if (window.db && window.auth) {
+                callback();
+                return;
+            }
+            if (typeof db !== 'undefined' && typeof auth !== 'undefined') {
+                callback();
+                return;
+            }
+            setTimeout(() => waitForFirebase(callback), 100);
+        }
+
+        // Load teacher data and auto-populate filters
+        async function loadTeacherData() {
+            if (!db || !auth) {
+                waitForFirebase(() => loadTeacherData());
+                return;
+            }
+            
+            const user = auth.currentUser;
+            if (!user) return;
+
+            try {
+                const teacherSnap = await db.ref('teachers/' + user.uid).once('value');
+                const teacher = teacherSnap.val();
+                
+                if (teacher) {
+                    // Auto-populate subject filter
+                    if (teacher.subjects && Array.isArray(teacher.subjects) && teacher.subjects.length > 0) {
+                        const firstSubject = teacher.subjects[0];
+                        const mappedSubject = mapSubjectToDropdown(firstSubject);
+                        if (mappedSubject) {
+                            const subjectFilter = document.getElementById('subjectFilter');
+                            if (subjectFilter) {
+                                subjectFilter.value = mappedSubject;
+                            }
+                        }
+                    } else if (teacher.subject) {
+                        const mappedSubject = mapSubjectToDropdown(teacher.subject);
+                        if (mappedSubject) {
+                            const subjectFilter = document.getElementById('subjectFilter');
+                            if (subjectFilter) {
+                                subjectFilter.value = mappedSubject;
+                            }
+                        }
+                    }
+
+                    // Auto-populate grade level filter
+                    let teacherGrade = teacher.grade || teacher.gradelevel;
+                    teacherGrade = normalizeGrade(teacherGrade);
+                    
+                    if (teacherGrade) {
+                        const gradeValue = `Grade ${teacherGrade}`;
+                        const gradeFilter = document.getElementById('gradeFilter');
+                        if (gradeFilter) {
+                            const optionExists = Array.from(gradeFilter.options).some(opt => opt.value === gradeValue);
+                            if (optionExists) {
+                                gradeFilter.value = gradeValue;
+                            }
+                        }
+                    }
+                    
+                    // Trigger filter after setting values to show filtered results immediately
+                    // Wait a bit longer to ensure assessments are loaded
+                    setTimeout(() => {
+                        if (typeof filterAssessments === 'function' && assessments.length > 0) {
+                            filterAssessments();
+                        }
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Error loading teacher data:', error);
+            }
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            waitForFirebaseInstances(function() {
-                // Check authentication
-                const authInstance = getAuth();
-                if (authInstance) {
-                    authInstance.onAuthStateChanged(function(user) {
-                        if (!user) {
-                            window.location.href = 'logreg.html';
-                        } else {
-                            loadData();
-                        }
-                    });
-                } else {
-                    console.error('Firebase auth not available');
+            // Check authentication
+            auth.onAuthStateChanged(function(user) {
+                if (!user) {
                     window.location.href = 'logreg.html';
+                } else {
+                    loadData();
                 }
             });
         });
@@ -1200,21 +1354,22 @@
         
         // Load grades for analytics
         async function loadGrades() {
+            if (!db || !auth) {
+                waitForFirebase(() => loadGrades());
+                return;
+            }
+            
             try {
-                const authInstance = getAuth();
-                const dbInstance = getDb();
-                if (!authInstance || !dbInstance) return;
-                
-                const user = authInstance.currentUser;
+                const user = auth.currentUser;
                 if (!user) return;
                 
                 // Get teacher info to find section
-                const teacherSnap = await dbInstance.ref(`teachers/${user.uid}`).once('value');
+                const teacherSnap = await db.ref(`teachers/${user.uid}`).once('value');
                 const teacher = teacherSnap.val();
                 if (!teacher || !teacher.section) return;
                 
                 const section = teacher.section;
-                const gradesSnap = await dbInstance.ref(`teachers/${user.uid}/sections/${section}/grades`).once('value');
+                const gradesSnap = await db.ref(`teachers/${user.uid}/sections/${section}/grades`).once('value');
                 
                 grades = [];
                 if (gradesSnap.exists()) {
@@ -1232,13 +1387,7 @@
 
         // Load assessments
         function loadAssessments() {
-            const dbInstance = getDb();
-            const authInstance = getAuth();
-            if (!dbInstance || !authInstance || !authInstance.currentUser) {
-                console.error('Firebase not initialized');
-                return;
-            }
-            dbInstance.ref('assessments').orderByChild('createdBy').equalTo(authInstance.currentUser.uid).once('value')
+            db.ref('assessments').orderByChild('createdBy').equalTo(auth.currentUser.uid).once('value')
                 .then(snapshot => {
                     assessments = [];
                     snapshot.forEach(child => {
@@ -1246,6 +1395,14 @@
                     });
                     renderAssessments();
                     updateAnalytics();
+                    
+                    // After assessments are loaded, check if filters need to be applied
+                    // This ensures filters work even if loadTeacherData hasn't finished yet
+                    const subjectFilter = document.getElementById('subjectFilter');
+                    const gradeFilter = document.getElementById('gradeFilter');
+                    if ((subjectFilter && subjectFilter.value) || (gradeFilter && gradeFilter.value)) {
+                        filterAssessments();
+                    }
                 })
                 .catch(error => {
                     console.error('Error loading assessments:', error);
@@ -1253,43 +1410,175 @@
         }
 
         // Load attempts
-        function loadAttempts() {
-            const dbInstance = getDb();
-            if (!dbInstance) {
-                console.error('Firebase not initialized');
+        // Load attempts - filter by teacher's section
+        async function loadAttempts() {
+            if (!db || !auth) {
+                waitForFirebase(() => loadAttempts());
                 return;
             }
-            dbInstance.ref('attempts').once('value')
-                .then(snapshot => {
+            
+            try {
+                const user = auth.currentUser;
+                if (!user) return;
+                
+                // Get teacher info to find section
+                const teacherSnap = await db.ref(`teachers/${user.uid}`).once('value');
+                const teacher = teacherSnap.val();
+                if (!teacher || !teacher.section) {
+                    console.warn('Teacher section not found');
                     attempts = [];
-                    snapshot.forEach(child => {
-                        attempts.push({ ...child.val(), id: child.key });
-                    });
                     renderAttempts();
                     updateAnalytics();
-                })
-                .catch(error => {
-                    console.error('Error loading attempts:', error);
+                    return;
+                }
+                
+                const teacherSection = (teacher.section || '').toString().trim().toLowerCase();
+                const teacherGrade = normalizeGrade(teacher.grade || teacher.gradelevel);
+                
+                // Load all attempts from the main attempts collection
+                const attemptsSnap = await db.ref('attempts').once('value');
+                attempts = [];
+                
+                // Also load attempts from students' personal collections
+                const studentsSnap = await db.ref('students').once('value');
+                const studentAttemptsPromises = [];
+                
+                if (studentsSnap.exists()) {
+                    studentsSnap.forEach(studentSnap => {
+                        const student = studentSnap.val();
+                        const studentUID = studentSnap.key;
+                        
+                        // Check if student is in teacher's section and grade
+                        const studentSection = (student.section || '').toString().trim().toLowerCase();
+                        const studentGrade = normalizeGrade(student.grade || student.gradelevel);
+                        
+                        if (studentSection === teacherSection && studentGrade === teacherGrade) {
+                            // Load attempts from this student's assessmentAttempts
+                            studentAttemptsPromises.push(
+                                db.ref(`students/${studentUID}/assessmentAttempts`).once('value')
+                                    .then(assessmentSnap => {
+                                        if (assessmentSnap.exists()) {
+                                            assessmentSnap.forEach(assessmentSnap => {
+                                                const assessmentId = assessmentSnap.key;
+                                                const attemptData = assessmentSnap.val();
+                                                attempts.push({
+                                                    ...attemptData,
+                                                    id: attemptData.attemptId || `${studentUID}_${assessmentId}`,
+                                                    studentId: studentUID,
+                                                    studentName: `${student.firstname || ''} ${student.lastname || ''}`.trim(),
+                                                    assessmentId: assessmentId,
+                                                    timestamp: attemptData.submittedAt ? new Date(attemptData.submittedAt).getTime() : Date.now()
+                                                });
+                                            });
+                                        }
+                                    })
+                            );
+                        }
+                    });
+                }
+                
+                // Process main attempts collection
+                const mainAttemptPromises = [];
+                if (attemptsSnap.exists()) {
+                    attemptsSnap.forEach(child => {
+                        const attempt = child.val();
+                        // Only include attempts from students in teacher's section
+                        if (attempt.studentId) {
+                            // Check if this student is in teacher's section
+                            mainAttemptPromises.push(
+                                db.ref(`students/${attempt.studentId}`).once('value')
+                                    .then(studentSnap => {
+                                        if (studentSnap.exists()) {
+                                            const student = studentSnap.val();
+                                            const studentSection = (student.section || '').toString().trim().toLowerCase();
+                                            const studentGrade = normalizeGrade(student.grade || student.gradelevel);
+                                            
+                                            if (studentSection === teacherSection && studentGrade === teacherGrade) {
+                                                attempts.push({
+                                                    ...attempt,
+                                                    id: child.key,
+                                                    studentId: attempt.studentId,
+                                                    studentName: `${student.firstname || ''} ${student.lastname || ''}`.trim(),
+                                                    timestamp: attempt.submittedAt ? new Date(attempt.submittedAt).getTime() : Date.now()
+                                                });
+                                            }
+                                        }
+                                    })
+                            );
+                        }
+                    });
+                }
+                
+                // Wait for all attempts to load (both main collection and student collections)
+                await Promise.all([...studentAttemptsPromises, ...mainAttemptPromises]);
+                
+                // Remove duplicates (in case same attempt is in both places)
+                const uniqueAttempts = [];
+                const seenIds = new Set();
+                attempts.forEach(attempt => {
+                    const attemptId = attempt.id || `${attempt.studentId}_${attempt.assessmentId}`;
+                    if (!seenIds.has(attemptId)) {
+                        seenIds.add(attemptId);
+                        uniqueAttempts.push(attempt);
+                    }
                 });
+                attempts = uniqueAttempts;
+                
+                console.log(`📊 Loaded ${attempts.length} attempts for teacher's section (${teacherSection}, grade ${teacherGrade})`);
+                renderAttempts();
+                updateAnalytics();
+            } catch (error) {
+                console.error('Error loading attempts:', error);
+                attempts = [];
+                renderAttempts();
+                updateAnalytics();
+            }
         }
 
-        // Load students
-        function loadStudents() {
-            const dbInstance = getDb();
-            if (!dbInstance) {
-                console.error('Firebase not initialized');
+        // Load students - filter by teacher's section
+        async function loadStudents() {
+            if (!db || !auth) {
+                waitForFirebase(() => loadStudents());
                 return;
             }
-            dbInstance.ref('students').once('value')
-                .then(snapshot => {
+            
+            try {
+                const user = auth.currentUser;
+                if (!user) return;
+                
+                // Get teacher info to find section
+                const teacherSnap = await db.ref(`teachers/${user.uid}`).once('value');
+                const teacher = teacherSnap.val();
+                if (!teacher || !teacher.section) {
+                    console.warn('Teacher section not found');
                     students = [];
-                    snapshot.forEach(child => {
-                        students.push({ ...child.val(), uid: child.key });
+                    return;
+                }
+                
+                const teacherSection = (teacher.section || '').toString().trim().toLowerCase();
+                const teacherGrade = normalizeGrade(teacher.grade || teacher.gradelevel);
+                
+                const studentsSnap = await db.ref('students').once('value');
+                students = [];
+                
+                if (studentsSnap.exists()) {
+                    studentsSnap.forEach(child => {
+                        const student = child.val();
+                        const studentSection = (student.section || '').toString().trim().toLowerCase();
+                        const studentGrade = normalizeGrade(student.grade || student.gradelevel);
+                        
+                        // Only include students in teacher's section and grade
+                        if (studentSection === teacherSection && studentGrade === teacherGrade) {
+                            students.push({ ...student, uid: child.key });
+                        }
                     });
-                })
-                .catch(error => {
-                    console.error('Error loading students:', error);
-                });
+                }
+                
+                console.log(`👥 Loaded ${students.length} students for teacher's section (${teacherSection}, grade ${teacherGrade})`);
+            } catch (error) {
+                console.error('Error loading students:', error);
+                students = [];
+            }
         }
 
         // Show tab - make it globally accessible
@@ -1706,7 +1995,7 @@
             return 'Hard';
         }
 
-        // Update trends
+        // Update trends - using real data from attempts
         function updateTrends() {
             const ctx = document.getElementById('improvementChart');
             if (!ctx) return;
@@ -1716,20 +2005,55 @@
                 window.improvementChart.destroy();
             }
 
-            // Generate sample trend data (in real implementation, this would come from Firebase)
+            // Generate real trend data from attempts
             const days = 30;
             const labels = [];
             const scores = [];
-            const attempts = [];
+            const attemptCounts = [];
+            
+            // Group attempts by date
+            const attemptsByDate = {};
+            attempts.forEach(attempt => {
+                const attemptDate = attempt.submittedAt ? new Date(attempt.submittedAt) : 
+                                  (attempt.timestamp ? new Date(attempt.timestamp) : new Date());
+                const dateKey = attemptDate.toLocaleDateString();
+                
+                if (!attemptsByDate[dateKey]) {
+                    attemptsByDate[dateKey] = {
+                        scores: [],
+                        count: 0
+                    };
+                }
+                
+                // Use percentage if available, otherwise calculate from score/total
+                const percentage = attempt.percentage || 
+                                 (attempt.score && attempt.totalPoints ? 
+                                  Math.round((attempt.score / attempt.totalPoints) * 100) : 0);
+                
+                if (percentage > 0) {
+                    attemptsByDate[dateKey].scores.push(percentage);
+                    attemptsByDate[dateKey].count++;
+                }
+            });
 
+            // Generate data for last 30 days
             for (let i = days - 1; i >= 0; i--) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
-                labels.push(date.toLocaleDateString());
+                const dateKey = date.toLocaleDateString();
+                labels.push(dateKey);
                 
-                // Generate sample data
-                scores.push(Math.random() * 40 + 60); // 60-100%
-                attempts.push(Math.floor(Math.random() * 10) + 1);
+                // Get real data for this date
+                if (attemptsByDate[dateKey] && attemptsByDate[dateKey].scores.length > 0) {
+                    const avgScore = attemptsByDate[dateKey].scores.reduce((sum, s) => sum + s, 0) / 
+                                    attemptsByDate[dateKey].scores.length;
+                    scores.push(Math.round(avgScore));
+                    attemptCounts.push(attemptsByDate[dateKey].count);
+                } else {
+                    // No data for this date
+                    scores.push(null);
+                    attemptCounts.push(0);
+                }
             }
 
             window.improvementChart = new Chart(ctx, {
@@ -1742,10 +2066,11 @@
                         borderColor: '#2e8b57',
                         backgroundColor: 'rgba(46, 139, 87, 0.1)',
                         tension: 0.4,
-                        yAxisID: 'y'
+                        yAxisID: 'y',
+                        spanGaps: true
                     }, {
                         label: 'Number of Attempts',
-                        data: attempts,
+                        data: attemptCounts,
                         borderColor: '#dc3545',
                         backgroundColor: 'rgba(220, 53, 69, 0.1)',
                         tension: 0.4,
@@ -1792,7 +2117,7 @@
             });
         }
 
-        // Update distribution charts
+        // Update distribution charts - using real data from attempts
         function updateDistributionCharts() {
             // Score Distribution Chart
             const scoreCtx = document.getElementById('scoreDistributionChart');
@@ -1801,8 +2126,21 @@
                     window.scoreDistributionChart.destroy();
                 }
 
+                // Calculate real score distribution from attempts
                 const scoreRanges = ['0-20%', '21-40%', '41-60%', '61-80%', '81-100%'];
-                const scoreData = [5, 10, 25, 35, 25]; // Sample data
+                const scoreData = [0, 0, 0, 0, 0];
+                
+                attempts.forEach(attempt => {
+                    const percentage = attempt.percentage || 
+                                     (attempt.score && attempt.totalPoints ? 
+                                      Math.round((attempt.score / attempt.totalPoints) * 100) : 0);
+                    
+                    if (percentage >= 0 && percentage <= 20) scoreData[0]++;
+                    else if (percentage <= 40) scoreData[1]++;
+                    else if (percentage <= 60) scoreData[2]++;
+                    else if (percentage <= 80) scoreData[3]++;
+                    else if (percentage <= 100) scoreData[4]++;
+                });
 
                 window.scoreDistributionChart = new Chart(scoreCtx, {
                     type: 'doughnut',
@@ -1830,15 +2168,26 @@
                 });
             }
 
-            // Time Distribution Chart
+            // Time Distribution Chart - using real data from attempts
             const timeCtx = document.getElementById('timeDistributionChart');
             if (timeCtx) {
                 if (window.timeDistributionChart && typeof window.timeDistributionChart.destroy === 'function') {
                     window.timeDistributionChart.destroy();
                 }
 
+                // Calculate real time distribution from attempts
                 const timeRanges = ['< 30min', '30-60min', '60-90min', '> 90min'];
-                const timeData = [30, 40, 20, 10]; // Sample data
+                const timeData = [0, 0, 0, 0];
+                
+                attempts.forEach(attempt => {
+                    // timeTaken is in seconds, convert to minutes
+                    const timeMinutes = attempt.timeTaken ? (attempt.timeTaken / 60) : 0;
+                    
+                    if (timeMinutes < 30) timeData[0]++;
+                    else if (timeMinutes < 60) timeData[1]++;
+                    else if (timeMinutes < 90) timeData[2]++;
+                    else timeData[3]++;
+                });
 
                 window.timeDistributionChart = new Chart(timeCtx, {
                     type: 'pie',
@@ -1904,13 +2253,8 @@
 
         // Publish assessment
         function publishAssessment(assessmentId) {
-            const dbInstance = getDb();
-            if (!dbInstance) {
-                alert('Firebase not initialized. Please refresh the page.');
-                return;
-            }
             if (confirm('Are you sure you want to publish this assessment?')) {
-                dbInstance.ref('assessments/' + assessmentId).update({ status: 'published' })
+                db.ref('assessments/' + assessmentId).update({ status: 'published' })
                     .then(() => {
                         alert('Assessment published successfully!');
                         loadAssessments();
@@ -1940,9 +2284,7 @@
 
         // Duplicate assessment
         function duplicateAssessment(assessmentId) {
-            const dbInstance = getDb();
-            const authInstance = getAuth();
-            if (!dbInstance || !authInstance || !authInstance.currentUser) {
+            if (!db || !auth || !auth.currentUser) {
                 alert('Firebase not initialized. Please refresh the page.');
                 return;
             }
@@ -1959,14 +2301,14 @@
                     title: assessment.title + ' (Copy)',
                     status: 'draft',
                     createdAt: new Date().toISOString(),
-                    createdBy: authInstance.currentUser.uid
+                    createdBy: auth.currentUser.uid
                 };
 
                 // Remove the id so Firebase creates a new one
                 delete duplicatedAssessment.id;
 
                 // Save to Firebase
-                dbInstance.ref('assessments').push(duplicatedAssessment)
+                db.ref('assessments').push(duplicatedAssessment)
                     .then(() => {
                         alert('Assessment duplicated successfully!');
                         loadAssessments();
@@ -1980,13 +2322,8 @@
 
         // Delete assessment
         function deleteAssessment(assessmentId) {
-            const dbInstance = getDb();
-            if (!dbInstance) {
-                alert('Firebase not initialized. Please refresh the page.');
-                return;
-            }
             if (confirm('Are you sure you want to delete this assessment? This action cannot be undone.')) {
-                dbInstance.ref('assessments/' + assessmentId).remove()
+                db.ref('assessments/' + assessmentId).remove()
                     .then(() => {
                         alert('Assessment deleted successfully!');
                         loadAssessments();
@@ -2069,9 +2406,8 @@
 
         // Logout function
         function logout() {
-            const authInstance = getAuth();
-            if (authInstance) {
-                authInstance.signOut().then(() => {
+            if (auth) {
+                auth.signOut().then(() => {
                     window.location.href = 'logreg.html';
                 });
             } else {

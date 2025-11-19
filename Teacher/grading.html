@@ -1,901 +1,944 @@
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        firebase.auth().onAuthStateChanged(async function(user) {
-            if (!user) {
-                window.location.href = "logreg.html";
-                return;
-            }
-            const uid = user.uid;
-            const snap = await firebase.database().ref('teachers/' + uid).once('value');
-            const teacher = snap.val();
-            if (!teacher || teacher.role !== "teacher") {
-                document.getElementById('mainContent').style.display = "none";
-                alert("Access denied.");
-                await firebase.auth().signOut();
-                window.location.href = "logreg.html";
-            } else {
-                document.getElementById('mainContent').style.display = "block";
-            }
-        });
-    });
+  document.addEventListener("DOMContentLoaded", function() {
+      firebase.auth().onAuthStateChanged(async function(user) {
+          if (!user) {
+              window.location.href = "logreg.html";
+              return;
+          }
+          const uid = user.uid;
+          const snap = await firebase.database().ref('teachers/' + uid).once('value');
+          const teacher = snap.val();
+          if (!teacher || teacher.role !== "teacher") {
+              document.getElementById('mainContent').style.display = "none";
+              alert("Access denied.");
+              await firebase.auth().signOut();
+              window.location.href = "logreg.html";
+          } else {
+              document.getElementById('mainContent').style.display = "block";
+          }
+      });
+  });
 </script>
-    
+  
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="../CSS/fonts.css">
 <!-- ...inside <head> -->
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="../CSS/header.css">
-    <link rel="stylesheet" href="../CSS/homepage.css">
-    <link rel="stylesheet" href="../CSS/footer.css">
-    <link rel="stylesheet" href="../CSS/dropdown.css">
-    <link rel="stylesheet" href="../CSS/burger.css">
-    <link rel="icon" type="image/png" href="../images/icons/home.png" />
-    <title>Home</title>
-    <link rel="stylesheet" href="../CSS/gradingSheet.css">
-  <style>
-    .highlight-row {
-      background: #ffe066 !important;
-  }
-  #sheet tr.highlight-row,
+  <link rel="stylesheet" href="../CSS/header.css">
+  <link rel="stylesheet" href="../CSS/homepage.css">
+  <link rel="stylesheet" href="../CSS/footer.css">
+  <link rel="stylesheet" href="../CSS/dropdown.css">
+  <link rel="stylesheet" href="../CSS/burger.css">
+  <link rel="icon" type="image/png" href="../images/icons/home.png" />
+  <title>Home</title>
+  <link rel="stylesheet" href="../CSS/gradingSheet.css">
+<style>
+  .highlight-row {
+    background: #ffe066 !important;
+}
+#sheet tr.highlight-row,
 #sheet tr.highlight-row td,
 #sheet tr.highlight-row input {
-    background-color: #ffe066 !important;
-    transition: background 0.2s;
+  background-color: #ffe066 !important;
+  transition: background 0.2s;
 }
 /* Remove number input spinners for all browsers */
 input[type=number]::-webkit-inner-spin-button, 
 input[type=number]::-webkit-outer-spin-button { 
-  -webkit-appearance: none;
-  margin: 0;
+-webkit-appearance: none;
+margin: 0;
 }
 #sheetHeader {
-  background: #f6f8fa;
-  border-radius: 8px;
-  padding: 12px 0 10px 0;
-  margin-bottom: 18px;
-  font-size: 1.08em;
-  font-weight: 500;
-  box-shadow: 0 2px 8px #0001;
-  letter-spacing: 0.5px;
+background: #f6f8fa;
+border-radius: 8px;
+padding: 12px 0 10px 0;
+margin-bottom: 18px;
+font-size: 1.08em;
+font-weight: 500;
+box-shadow: 0 2px 8px #0001;
+letter-spacing: 0.5px;
 }
 #sheetHeader b {
-  color: #2e8b57;
-  font-weight: 700;
+color: #2e8b57;
+font-weight: 700;
 }
 .controls {
-  background: #f8fafc;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px #0001;
-  padding: 12px 16px;
-  margin-bottom: 20px;
-  align-items: center;
-  flex-wrap: wrap;
+background: #f8fafc;
+border-radius: 8px;
+box-shadow: 0 2px 8px #0001;
+padding: 12px 16px;
+margin-bottom: 20px;
+align-items: center;
+flex-wrap: wrap;
 }
 #quarterSelect:focus, #studentSearch:focus {
-  outline: 2px solid #2e8b57;
-  border-color: #2e8b57;
+outline: 2px solid #2e8b57;
+border-color: #2e8b57;
 }
 #studentSearch {
-  transition: border 0.2s, box-shadow 0.2s;
+transition: border 0.2s, box-shadow 0.2s;
 }
 .tab-btn {
-  padding: 8px 24px;
-  border: none;
-  border-radius: 6px 6px 0 0;
-  background: #f6f8fa;
-  color: #2e8b57;
-  font-weight: 600;
-  font-size: 1em;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+padding: 8px 24px;
+border: none;
+border-radius: 6px 6px 0 0;
+background: #f6f8fa;
+color: #2e8b57;
+font-weight: 600;
+font-size: 1em;
+cursor: pointer;
+transition: background 0.2s, color 0.2s;
 }
 .tab-btn.active {
-  background: #2e8b57;
-  color: #fff;
+background: #2e8b57;
+color: #fff;
 }
 .tab-content {
-  border-radius: 0 0 8px 8px;
-  background: #fff;
-  box-shadow: 0 2px 8px #0001;
+border-radius: 0 0 8px 8px;
+background: #fff;
+box-shadow: 0 2px 8px #0001;
 }
 #attendanceSheet .sticky-name {
-  position: sticky;
-  left: 0;
-  background: #fff;
-  z-index: 2;
+position: sticky;
+left: 0;
+background: #fff;
+z-index: 2;
 }
-  </style>
+</style>
 </head>
 
 <body>
 <div id="mainContent" style="display:none;">
-    
-    <!-- Burger icon for mobile -->
+  
+  <!-- Burger icon for mobile -->
 <button id="burgerBtn" class="burger-btn" aria-label="Open menu">
-    <span></span>
-    <span></span>
-    <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
 </button>
 <!-- Overlay for navbar -->
 <div class="sidebar-overlay" id="navOverlay"></div>
 
-    <header>
-        <div class="floating-elements">
-            <div class="floating-element"></div>
-            <div class="floating-element"></div>
-            <div class="floating-element"></div>
-            <div class="floating-element"></div>
-        </div>
-        <div class="header-content">
-            <div class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                </div>
-                <!-- Replace your logo-text div with this for per-letter bounce -->
-                <div class="logo-text">
-                    <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
-                </div>
-            </div>
-            <nav>
-                <ul>
-                    <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="subject_math.html">Math</a></li>
-                            <li><a href="subject_english.html">English</a></li>
-                            <li><a href="subject_science.html">Science</a></li>
-                        </ul>
-                        </li>
-                    <li><a href="studentlist.html">Student</a></li>
-                    <li><a href="grading.html">Grading</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Assessments <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="assessment-builder.html">Create Assessment</a></li>
-                            <li><a href="assessment-manager.html">Manage Assessments</a></li>
-                        </ul>
-                    </li>
-                    <li class="dropdown">
-                            <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
-                            <ul class="dropdown-content">
-                                <li><a href="leaderboard_math.html">Math</a></li>
-                                <li><a href="leaderboard_english.html">English</a></li>
-                                <li><a href="leaderboard_science.html">Science</a></li>
-                            </ul>
-                        </li>
-                    <li>
-                        <a href="#" id="profileBtn">Profile</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+  <header>
+      <div class="floating-elements">
+          <div class="floating-element"></div>
+          <div class="floating-element"></div>
+          <div class="floating-element"></div>
+          <div class="floating-element"></div>
+      </div>
+      <div class="header-content">
+          <div class="logo">
+              <div class="logo-icon">
+                  <i class="fas fa-graduation-cap"></i>
+              </div>
+              <!-- Replace your logo-text div with this for per-letter bounce -->
+              <div class="logo-text">
+                  <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
+              </div>
+          </div>
+          <nav>
+              <ul>
+                  <li><a href="homepage.html">Home</a></li>
+                  <li><a href="#" id="lessonNavBtn">Lesson</a></li>
+                  <li><a href="studentlist.html">Student</a></li>
+                  <li><a href="grading.html">Grading</a></li>
+                  <li class="dropdown">
+                      <a href="#" class="dropbtn">Assessments <i class="fa fa-caret-down"></i></a>
+                      <ul class="dropdown-content">
+                          <li><a href="assessment-builder.html">Create Assessment</a></li>
+                          <li><a href="assessment-manager.html">Manage Assessments</a></li>
+                      </ul>
+                  </li>
+                  <li class="dropdown">
+                          <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                          <ul class="dropdown-content">
+                              <li><a href="leaderboard_math.html">Math</a></li>
+                              <li><a href="leaderboard_english.html">English</a></li>
+                              <li><a href="leaderboard_science.html">Science</a></li>
+                          </ul>
+                      </li>
+                  <li>
+                      <a href="#" id="profileBtn">Profile</a>
+                  </li>
+              </ul>
+          </nav>
+      </div>
+  </header>
 
-    
+  
 <!-- Overlay for navbar -->
 <div class="sidebar-overlay" id="navOverlay"></div>
 <!-- Overlay for profile sidebar -->
 <div class="sidebar-overlay" id="profileSidebarOverlay"></div>
 
- <!-- Profile Sidebar (Dynamic with Firebase) -->
+<!-- Profile Sidebar (Dynamic with Firebase) -->
 <div id="profileSidebar" class="profile-sidebar">
-    <div class="sidebar-content">
-        <button class="close-btn" id="closeSidebar">&times;</button>
-        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
-            <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
-            <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
-        </div>
-        <div class="profile-name" id="profileName">Loading...</div>
-        <br>
-        <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
-            <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
-            Teacher
-        </div>
-            <div>
-                <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
-                <strong>ID:</strong> <span id="profileId">-</span>
-            </div>
-            <div>
-                <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
-                <strong>First Name:</strong> <span id="profileFirstName">-</span>
-            </div>
-            <div>
-                <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
-                <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
-            </div>
-            <div>
-                <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
-                <strong>Last Name:</strong> <span id="profileLastName">-</span>
-            </div>
-            <div>
-                <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
-                <strong>Grade Level:</strong> <span id="profileGrade">-</span>
-            </div>
-            <div>
-                <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
-                <strong>Section:</strong> <span id="profileSection">-</span>
-            </div>
-            <div>
-    <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
-    <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
-</div>
-<div>
-    <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
-    <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
-</div>
-<div>
-    <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
-    <strong>City:</strong> <span id="profileAddressCity">-</span>
-</div>
-<div>
-    <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
-    <strong>Province:</strong> <span id="profileAddressProvince">-</span>
-</div>
-<div>
-    <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
-    <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
-</div>
-<div>
-    <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
-    <strong>Region:</strong> <span id="profileAddressRegion">-</span>
-</div>
-        </div>
-        <div class="logout-switch-row">
-            <div class="logout-switch" id="logoutSwitch">
-                <div class="logout-switch-circle"></div>
-            </div>
-            <span class="logout-label" id="logoutLabel">LOGOUT</span>
-        </div>
-    </div>
-</div>
-
-        <!-- Firebase App (the core Firebase SDK) -->
-        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-
-        <script src="../assets/js/Teacher Side/profile.js"></script>
-        
-
-    <script src="../assets/js/Teacher Side/header.js"></script>
-
-            <div class="page-header" style="text-align: center; justify-content: center; margin-top: 30px;">
-                <h1><i class="fas fa-chart-line"></i> Grading System</h1>
-                <p>Manage grading configuration and student grades in one place.</p>
-            </div>
-<div class="tab-nav" style="display:flex; gap:10px; margin-bottom:18px; justify-content: center; margin-top: 18px;">
-  <button id="tabGrading" class="tab-btn active">Grading Sheet</button>
-  <button id="tabAttendance" class="tab-btn">Attendance</button>
-  <button id="tabSummary" class="tab-btn">Summary</button>
-</div>
-
-
-
-
-    <div id="gradingTab" class="tab-content" style="display:block;">
-  <div class="container">
-        <div class="controls" style="display:flex; align-items:center; gap:18px; margin-bottom:18px; flex-wrap:wrap;">
-      <span id="subjectDisplay" style="font-weight:600; color:#2e8b57; font-size:1.08em;">
-        Subject: <span id="subjectName">Loading...</span>
-      </span>
-      
-      <label for="quarterSelect" style="margin-left:10px; font-weight:500;">Quarter:</label>
-      <select id="quarterSelect" style="padding:4px 10px; border-radius:5px; border:1px solid #b5b5b5; font-size:1em;">
-        <option value="1">Quarter 1</option>
-        <option value="2">Quarter 2</option>
-        <option value="3">Quarter 3</option>
-        <option value="4">Quarter 4</option>
-      </select>
-      
-      <input type="text" id="studentSearch" placeholder="🔍 Search student..." style="margin-left:10px; padding:5px 12px; border-radius:5px; border:1px solid #b5b5b5; font-size:1em; min-width:180px;">
-      <button id="editPercentBtn" style="margin-left:10px;">Edit Percentages</button>
-
-    </div>
-    <div id="quarterLabel" style="text-align:center; font-size:1.15em; font-weight:700; color:#2e8b57; margin-bottom:10px;">
-        Quarter 1
+  <div class="sidebar-content">
+      <button class="close-btn" id="closeSidebar">&times;</button>
+      <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+          <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+          <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
       </div>
-    <div class="sheet-wrap">
-      
-      <table id="sheet">
-        <thead id="thead"></thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
+      <div class="profile-name" id="profileName">Loading...</div>
+      <br>
+      <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+          <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+          Teacher
+      </div>
+          <div>
+              <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+              <strong>ID:</strong> <span id="profileId">-</span>
+          </div>
+          <div>
+              <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+              <strong>First Name:</strong> <span id="profileFirstName">-</span>
+          </div>
+          <div>
+              <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+              <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+          </div>
+          <div>
+              <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+              <strong>Last Name:</strong> <span id="profileLastName">-</span>
+          </div>
+          <div>
+              <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+              <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+          </div>
+          <div>
+              <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+              <strong>Section:</strong> <span id="profileSection">-</span>
+          </div>
+          <div>
+  <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+  <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+</div>
+<div>
+  <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+  <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+</div>
+<div>
+  <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+  <strong>City:</strong> <span id="profileAddressCity">-</span>
+</div>
+<div>
+  <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+  <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+</div>
+<div>
+  <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+  <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+</div>
+<div>
+  <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+  <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+</div>
+      </div>
+      <div class="logout-switch-row">
+          <div class="logout-switch" id="logoutSwitch">
+              <div class="logout-switch-circle"></div>
+          </div>
+          <span class="logout-label" id="logoutLabel">LOGOUT</span>
+      </div>
   </div>
 </div>
-    
-   
-  
 
-  <div class="tab-content" id="attendanceTab" style="display:none;">
-  <div class="sheet-wrap">
-    <div id="attendanceHeader" style="text-align:center; font-size:1.3em; font-weight:700; color:#2e8b57; margin-bottom:10px;">
-      8-Week Attendance Sheet
+      <!-- Firebase App (the core Firebase SDK) -->
+      <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+
+      <script src="../assets/js/Teacher Side/profile.js"></script>
+      
+
+  <script src="../assets/js/Teacher Side/header.js"></script>
+
+  <script>
+    // Set Lesson button based on teacher's subject
+    function setLessonButton() {
+        const authInstance = window.auth || (typeof auth !== 'undefined' ? auth : null);
+        if (!authInstance) {
+            // Wait a bit for Firebase to initialize
+            setTimeout(setLessonButton, 100);
+            return;
+        }
+        
+        authInstance.onAuthStateChanged(async function(user) {
+            if (user) {
+                try {
+                    const dbInstance = window.db || (typeof db !== 'undefined' ? db : null);
+                    if (!dbInstance) {
+                        console.error('Database not available');
+                        return;
+                    }
+                    const teacherSnap = await dbInstance.ref('teachers/' + user.uid).once('value');
+                    const teacher = teacherSnap.val();
+                    if (teacher && teacher.subject) {
+                        const subject = teacher.subject.toLowerCase();
+                        const lessonBtn = document.getElementById('lessonNavBtn');
+                        if (lessonBtn) {
+                            // Map subject to page URL
+                            const subjectMap = {
+                                'math': 'subject_math.html',
+                                'english': 'subject_english.html',
+                                'science': 'subject_science.html'
+                            };
+                            const subjectUrl = subjectMap[subject] || 'subject_math.html';
+                            lessonBtn.href = subjectUrl;
+                            console.log(`📚 Lesson button set to: ${subjectUrl} (teacher subject: ${subject})`);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error setting lesson button:', error);
+                }
+            }
+        });
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setLessonButton);
+    } else {
+        setLessonButton();
+    }
+  </script>
+
+          <div class="page-header" style="text-align: center; justify-content: center; margin-top: 30px;">
+              <h1><i class="fas fa-chart-line"></i> Grading System</h1>
+              <p>Manage grading configuration and student grades in one place.</p>
+          </div>
+<div class="tab-nav" style="display:flex; gap:10px; margin-bottom:18px; justify-content: center; margin-top: 18px;">
+<button id="tabGrading" class="tab-btn active">Grading Sheet</button>
+<button id="tabAttendance" class="tab-btn">Attendance</button>
+<button id="tabSummary" class="tab-btn">Summary</button>
+</div>
+
+
+
+
+  <div id="gradingTab" class="tab-content" style="display:block;">
+<div class="container">
+      <div class="controls" style="display:flex; align-items:center; gap:18px; margin-bottom:18px; flex-wrap:wrap;">
+    <span id="subjectDisplay" style="font-weight:600; color:#2e8b57; font-size:1.08em;">
+      Subject: <span id="subjectName">Loading...</span>
+    </span>
+    
+    <label for="quarterSelect" style="margin-left:10px; font-weight:500;">Quarter:</label>
+    <select id="quarterSelect" style="padding:4px 10px; border-radius:5px; border:1px solid #b5b5b5; font-size:1em;">
+      <option value="1">Quarter 1</option>
+      <option value="2">Quarter 2</option>
+      <option value="3">Quarter 3</option>
+      <option value="4">Quarter 4</option>
+    </select>
+    
+    <input type="text" id="studentSearch" placeholder="🔍 Search student..." style="margin-left:10px; padding:5px 12px; border-radius:5px; border:1px solid #b5b5b5; font-size:1em; min-width:180px;">
+    <button id="editPercentBtn" style="margin-left:10px;">Edit Percentages</button>
+
+  </div>
+  <div id="quarterLabel" style="text-align:center; font-size:1.15em; font-weight:700; color:#2e8b57; margin-bottom:10px;">
+      Quarter 1
     </div>
-    <table id="attendanceSheet" style="width:100%; border-collapse:collapse;">
-      <thead id="attendanceThead"></thead>
-      <tbody id="attendanceTbody"></tbody>
+  <div class="sheet-wrap">
+    
+    <table id="sheet">
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
     </table>
   </div>
 </div>
-
-<div class="tab-content" id="summaryTab" style="display:none;">
-  <div class="sheet-wrap">
-    <div id="summaryHeader" style="text-align:center; font-size:1.3em; font-weight:700; color:#2e8b57; margin-bottom:10px;">
-      Summary
-    </div>
-    <div id="summaryStats" style="text-align:center; margin-bottom:18px;"></div>
-<table id="summaryTable" style="width:100%; border-collapse:collapse;">
-  <thead>
-    <tr>
-      <th>Student Name</th>
-      <th>Total Present</th>
-      <th>Q1</th>
-      <th>Q2</th>
-      <th>Q3</th>
-      <th>Q4</th>
-      <th>Final Grade</th>
-    </tr>
-  </thead>
-  <tbody id="summaryTbody"></tbody>
-</table>
-  </div>
 </div>
   
+ 
+
+
+<div class="tab-content" id="attendanceTab" style="display:none;">
+<div class="sheet-wrap">
+  <div id="attendanceHeader" style="text-align:center; font-size:1.3em; font-weight:700; color:#2e8b57; margin-bottom:10px;">
+    8-Week Attendance Sheet
+  </div>
+  <table id="attendanceSheet" style="width:100%; border-collapse:collapse;">
+    <thead id="attendanceThead"></thead>
+    <tbody id="attendanceTbody"></tbody>
+  </table>
+</div>
+</div>
+
+<div class="tab-content" id="summaryTab" style="display:none;">
+<div class="sheet-wrap">
+  <div id="summaryHeader" style="text-align:center; font-size:1.3em; font-weight:700; color:#2e8b57; margin-bottom:10px;">
+    Summary
+  </div>
+  <div id="summaryStats" style="text-align:center; margin-bottom:18px;"></div>
+<table id="summaryTable" style="width:100%; border-collapse:collapse;">
+<thead>
+  <tr>
+    <th>Student Name</th>
+    <th>Total Present</th>
+    <th>Q1</th>
+    <th>Q2</th>
+    <th>Q3</th>
+    <th>Q4</th>
+    <th>Final Grade</th>
+  </tr>
+</thead>
+<tbody id="summaryTbody"></tbody>
+</table>
+</div>
+</div>
+
 <script>
-          function getProfileInfo() {
-            const grade = document.getElementById('profileGrade')?.textContent?.trim();
-            const section = document.getElementById('profileSection')?.textContent?.trim();
-            const schoolYear = localStorage.getItem('schoolYear');
-            if (grade && grade !== '-' && section && section !== '-' && schoolYear) {
-                return { grade, section, schoolYear };
-            }
-            return null;
-        }
+        function getProfileInfo() {
+          const grade = document.getElementById('profileGrade')?.textContent?.trim();
+          const section = document.getElementById('profileSection')?.textContent?.trim();
+          const schoolYear = localStorage.getItem('schoolYear');
+          if (grade && grade !== '-' && section && section !== '-' && schoolYear) {
+              return { grade, section, schoolYear };
+          }
+          return null;
+      }
 </script>
 
 <script>
-  function th(txt, opts={}) {
-  const e = document.createElement('th');
-  if (opts.colSpan) e.colSpan = opts.colSpan;
-  if (opts.rowSpan) e.rowSpan = opts.rowSpan;
-  if (opts.className) e.className = opts.className;
-  if (opts.style) e.style = opts.style;
-  e.textContent = txt;
-  return e;
+function th(txt, opts={}) {
+const e = document.createElement('th');
+if (opts.colSpan) e.colSpan = opts.colSpan;
+if (opts.rowSpan) e.rowSpan = opts.rowSpan;
+if (opts.className) e.className = opts.className;
+if (opts.style) e.style = opts.style;
+e.textContent = txt;
+return e;
 }
-  window.percentEditMode = false;
+window.percentEditMode = false;
 (function(){
-  const WW = 10, PT = 10, QA = 1;
-  const WEIGHT = { WW:0.20, PT:0.60, QA:0.20 };
+const WW = 10, PT = 10, QA = 1;
+const WEIGHT = { WW:0.20, PT:0.60, QA:0.20 };
 
-  const thead = document.getElementById('thead');
-  const tbody = document.getElementById('tbody');
+const thead = document.getElementById('thead');
+const tbody = document.getElementById('tbody');
 
-  let HPS = { WW:Array(WW).fill(10), PT:Array(PT).fill(10), QA:Array(QA).fill(50) };
+let HPS = { WW:Array(WW).fill(10), PT:Array(PT).fill(10), QA:Array(QA).fill(50) };
 
-  function th(txt,opts={}){ const e=document.createElement('th'); if(opts.colSpan) e.colSpan=opts.colSpan; if(opts.rowSpan) e.rowSpan=opts.rowSpan; e.textContent=txt; return e; }
-  function td(txt,opts={}){ const e=document.createElement('td'); if(opts.colSpan) e.colSpan=opts.colSpan; if(opts.className) e.className=opts.className; e.textContent=txt??''; return e; }
+function th(txt,opts={}){ const e=document.createElement('th'); if(opts.colSpan) e.colSpan=opts.colSpan; if(opts.rowSpan) e.rowSpan=opts.rowSpan; e.textContent=txt; return e; }
+function td(txt,opts={}){ const e=document.createElement('td'); if(opts.colSpan) e.colSpan=opts.colSpan; if(opts.className) e.className=opts.className; e.textContent=txt??''; return e; }
 const s2 = (n) => Number(n).toFixed(2);
-  const sum=(a)=> a.reduce((x,y)=>x+(parseFloat(y)||0),0);
-  const ps=(tot,hps)=> hps>0 ? (tot/hps)*100 : 0;
+const sum=(a)=> a.reduce((x,y)=>x+(parseFloat(y)||0),0);
+const ps=(tot,hps)=> hps>0 ? (tot/hps)*100 : 0;
 
-  let percentEditMode = false; // Add this line
+let percentEditMode = false; // Add this line
 
-  function buildHead(){
-    thead.innerHTML='';
+function buildHead(){
+  thead.innerHTML='';
 
-    // Use global percentEditMode
-    let percentEditMode = window.percentEditMode;
+  // Use global percentEditMode
+  let percentEditMode = window.percentEditMode;
 
-    const r1=document.createElement('tr');
-    r1.appendChild(th("LEARNERS' NAMES",{rowSpan:3}));
+  const r1=document.createElement('tr');
+  r1.appendChild(th("LEARNERS' NAMES",{rowSpan:3}));
 
-    function percentStr(val) {
-      const n = val * 100;
-      return Number.isInteger(n) ? n : n.toFixed(2);
-    }
-    const wwPercent = percentStr(getCurrentWeights().WW);
-    const ptPercent = percentStr(getCurrentWeights().PT);
-    const qaPercent = percentStr(getCurrentWeights().QA);
+  function percentStr(val) {
+    const n = val * 100;
+    return Number.isInteger(n) ? n : n.toFixed(2);
+  }
+  const wwPercent = percentStr(getCurrentWeights().WW);
+  const ptPercent = percentStr(getCurrentWeights().PT);
+  const qaPercent = percentStr(getCurrentWeights().QA);
 
-    const wwTh = document.createElement('th');
-    wwTh.colSpan = WW + 3;
-    wwTh.innerHTML = `WRITTEN WORKS (<span id="wwPercentDisplay">${wwPercent}%</span>)` +
-      (percentEditMode ? ` <input id="wwPercentInput" type="number" min="0" max="100" value="${wwPercent}" style="width:48px;">` : '');
-    r1.appendChild(wwTh);
+  const wwTh = document.createElement('th');
+  wwTh.colSpan = WW + 3;
+  wwTh.innerHTML = `WRITTEN WORKS (<span id="wwPercentDisplay">${wwPercent}%</span>)` +
+    (percentEditMode ? ` <input id="wwPercentInput" type="number" min="0" max="100" value="${wwPercent}" style="width:48px;">` : '');
+  r1.appendChild(wwTh);
 
-    const ptTh = document.createElement('th');
-    ptTh.colSpan = PT + 3;
-    ptTh.innerHTML = `PERFORMANCE TASKS (<span id="ptPercentDisplay">${ptPercent}%</span>)` +
-      (percentEditMode ? ` <input id="ptPercentInput" type="number" min="0" max="100" value="${ptPercent}" style="width:48px;">` : '');
-    r1.appendChild(ptTh);
+  const ptTh = document.createElement('th');
+  ptTh.colSpan = PT + 3;
+  ptTh.innerHTML = `PERFORMANCE TASKS (<span id="ptPercentDisplay">${ptPercent}%</span>)` +
+    (percentEditMode ? ` <input id="ptPercentInput" type="number" min="0" max="100" value="${ptPercent}" style="width:48px;">` : '');
+  r1.appendChild(ptTh);
 
-    const qaTh = document.createElement('th');
-    qaTh.colSpan = QA + 2;
-    qaTh.innerHTML = `QUARTERLY ASSESSMENT (<span id="qaPercentDisplay">${qaPercent}%</span>)` +
-      (percentEditMode ? ` <input id="qaPercentInput" type="number" min="0" max="100" value="${qaPercent}" style="width:48px;">` : '');
-    r1.appendChild(qaTh);
+  const qaTh = document.createElement('th');
+  qaTh.colSpan = QA + 2;
+  qaTh.innerHTML = `QUARTERLY ASSESSMENT (<span id="qaPercentDisplay">${qaPercent}%</span>)` +
+    (percentEditMode ? ` <input id="qaPercentInput" type="number" min="0" max="100" value="${qaPercent}" style="width:48px;">` : '');
+  r1.appendChild(qaTh);
 
-    r1.appendChild(th('Initial Grade',{rowSpan:3}));
-    r1.appendChild(th('Quarterly Grade',{rowSpan:3}));
-    thead.appendChild(r1);
+  r1.appendChild(th('Initial Grade',{rowSpan:3}));
+  r1.appendChild(th('Quarterly Grade',{rowSpan:3}));
+  thead.appendChild(r1);
 
-    const r2=document.createElement('tr');
-    for(let i=1;i<=WW;i++) r2.appendChild(th(i));
-    r2.appendChild(th('Total')); r2.appendChild(th('PS')); r2.appendChild(th('WS'));
-    for(let i=1;i<=PT;i++) r2.appendChild(th(i));
-    r2.appendChild(th('Total')); r2.appendChild(th('PS')); r2.appendChild(th('WS'));
-    for(let i=1;i<=QA;i++) r2.appendChild(th(i));
-    r2.appendChild(th('PS')); r2.appendChild(th('WS'));
-    thead.appendChild(r2);
+  const r2=document.createElement('tr');
+  for(let i=1;i<=WW;i++) r2.appendChild(th(i));
+  r2.appendChild(th('Total')); r2.appendChild(th('PS')); r2.appendChild(th('WS'));
+  for(let i=1;i<=PT;i++) r2.appendChild(th(i));
+  r2.appendChild(th('Total')); r2.appendChild(th('PS')); r2.appendChild(th('WS'));
+  for(let i=1;i<=QA;i++) r2.appendChild(th(i));
+  r2.appendChild(th('PS')); r2.appendChild(th('WS'));
+  thead.appendChild(r2);
 
-    const r3=document.createElement('tr');
-    // WW HPS
-    for(let i=0;i<WW;i++){
-      const c = document.createElement('th'); c.className = 'hps-cell';
-      const inp = document.createElement('input');
-      inp.type = 'number';
-      inp.step = '0.01';
-      inp.min = '0';
-      inp.value = getCurrentHPS().WW[i];
-      inp.className = 'score';
-      inp.oninput = function() {
-        if (this.value !== "" && parseFloat(this.value) < 0) this.value = 0;
-      };
-      inp.onchange = function() {
-        if (this.value !== "") {
-          getCurrentHPS().WW[i] = parseFloat(this.value);
-          recomputeAll();
-          updateHpsTotals();
-          saveSheetToFirebase();
-        }
-      };
-      c.appendChild(inp); r3.appendChild(c);
-    }
-    r3.appendChild(th(s2(sum(getCurrentHPS().WW))));
-    r3.appendChild(th('100.00'));
-    r3.appendChild(th(percentStr(getCurrentWeights().WW) + '%'));
-
-    // PT HPS
-    for(let i=0;i<PT;i++){
-      const c = document.createElement('th'); c.className = 'hps-cell';
-      const inp = document.createElement('input');
-      inp.type = 'number';
-      inp.step = '0.01';
-      inp.min = '0';
-      inp.value = getCurrentHPS().PT[i];
-      inp.className = 'score';
-      inp.oninput = function() {
+  const r3=document.createElement('tr');
+  // WW HPS
+  for(let i=0;i<WW;i++){
+    const c = document.createElement('th'); c.className = 'hps-cell';
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.step = '0.01';
+    inp.min = '0';
+    inp.value = getCurrentHPS().WW[i];
+    inp.className = 'score';
+    inp.oninput = function() {
       if (this.value !== "" && parseFloat(this.value) < 0) this.value = 0;
     };
     inp.onchange = function() {
       if (this.value !== "") {
-        getCurrentHPS().PT[i] = parseFloat(this.value);
+        getCurrentHPS().WW[i] = parseFloat(this.value);
         recomputeAll();
         updateHpsTotals();
-        saveSheetToFirebase(); 
+        saveSheetToFirebase();
       }
     };
     c.appendChild(inp); r3.appendChild(c);
   }
-    r3.appendChild(th(s2(sum(getCurrentHPS().PT))));
-    r3.appendChild(th('100.00'));
-    r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
+  r3.appendChild(th(s2(sum(getCurrentHPS().WW))));
+  r3.appendChild(th('100.00'));
+  r3.appendChild(th(percentStr(getCurrentWeights().WW) + '%'));
 
-    // QA HPS
-    for(let i=0;i<QA;i++){
-      const c = document.createElement('th'); c.className = 'hps-cell';
-      const inp = document.createElement('input');
-      inp.type = 'number';
-      inp.step = '0.01';
-      inp.min = '0';
-      inp.value = getCurrentHPS().QA[i];
-      inp.className = 'score';
-      inp.oninput = function() {
-        if (this.value !== "" && parseFloat(this.value) < 0) this.value = 0;
-        if (this.value !== "") {
-          getCurrentHPS().QA[i] = parseFloat(this.value);
-        }
-        recomputeAll();
-        saveSheetToFirebase(); 
-      };
-      c.appendChild(inp); r3.appendChild(c);
-    }
-    r3.appendChild(th('100.00'));
-    r3.appendChild(th(percentStr(getCurrentWeights().QA) + '%'));
-
-    thead.appendChild(r3);
-
-    if (window.percentEditMode) attachPercentListeners();
-  }
-  
-function attachPercentListeners() {
-  [
-    {id:'wwPercentInput', key:'WW'},
-    {id:'ptPercentInput', key:'PT'},
-    {id:'qaPercentInput', key:'QA'}
-  ].forEach(({id,key}) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.addEventListener('change', function() {
-      let v = Math.max(0, Math.min(100, parseFloat(this.value)||0));
-      this.value = v;
-      getCurrentWeights()[key] = v/100;
-      // Recompute grades and update display
-      buildHead();
-      recomputeAll();
-      saveSheetToFirebase();
-    });
-  });
-}
-  // Toggle edit mode for percentages
-
-  
-  function updateHpsTotals(){
-    buildHead();
-  }
-
-  // Display-only student name row (not editable)
-  window.addStudentRowDisplayOnly = function(name='', scores=[]) {
-    const tr=document.createElement('tr');
-
-    // Name cell (not input)
-    const nameTd = document.createElement('td');
-    nameTd.className = 'sticky-name';
-    nameTd.textContent = name;
-    nameTd.style.cursor = "pointer";
-    nameTd.addEventListener('click', function(e) {
-        const allRows = tbody.querySelectorAll('tr');
-        allRows.forEach(row => row.classList.remove('highlight-row'));
-        tr.classList.add('highlight-row');
-    });
-    tr.appendChild(nameTd);
-
-    let scoreIdx = 0;
-
-    // WW
-    for(let i=0;i<WW;i++){
-      const c=document.createElement('td');
-      const inp=document.createElement('input');
-      inp.type='number';
-      inp.step='0.01';
-      inp.min='0'
-      inp.className='score';
-      inp.value = scores[scoreIdx] !== undefined ? scores[scoreIdx] : '';
-      inp.oninput = () => {
-          recomputeRow(tr);
-          saveSheetToFirebase();
-      };
-      c.appendChild(inp); tr.appendChild(c);
-      scoreIdx++;
-    }
-    tr.appendChild(td('0.00',{className:'bold ww-total'}));
-    tr.appendChild(td('0.00',{className:'ww-ps'}));
-    tr.appendChild(td('0.00',{className:'ww-ws'}));
-
-    // PT
-    for(let i=0;i<PT;i++){
-      const c=document.createElement('td');
-      const inp=document.createElement('input');
-      inp.type='number';
-      inp.step='0.01';
-      inp.min='0'
-      inp.className='score';
-      inp.value = scores[scoreIdx] !== undefined ? scores[scoreIdx] : '';
-      inp.oninput = () => {
-          recomputeRow(tr);
-          saveSheetToFirebase();
-      };
-      c.appendChild(inp); tr.appendChild(c);
-      scoreIdx++;
-    }
-    tr.appendChild(td('0.00',{className:'bold pt-total'}));
-    tr.appendChild(td('0.00',{className:'pt-ps'}));
-    tr.appendChild(td('0.00',{className:'pt-ws'}));
-
-    // QA
-    for(let i=0;i<QA;i++){
-      const c=document.createElement('td');
-      const inp=document.createElement('input');
-      inp.type='number';
-      inp.step='0.01';
-      inp.min='0'
-      inp.className='score';
-      inp.value = scores[scoreIdx] !== undefined ? scores[scoreIdx] : '';
-      inp.oninput = () => {
-          recomputeRow(tr);
-          saveSheetToFirebase();
-      };
-      c.appendChild(inp); tr.appendChild(c);
-      scoreIdx++;
-    }
-    tr.appendChild(td('0.00',{className:'qa-ps'}));
-    tr.appendChild(td('0.00',{className:'qa-ws'}));
-
-    tr.appendChild(td('0.00',{className:'bold initial'}));
-    tr.appendChild(td('0.00',{className:'bold quarterly'}));
-
-    tbody.appendChild(tr);
-    recomputeRow(tr);
+  // PT HPS
+  for(let i=0;i<PT;i++){
+    const c = document.createElement('th'); c.className = 'hps-cell';
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.step = '0.01';
+    inp.min = '0';
+    inp.value = getCurrentHPS().PT[i];
+    inp.className = 'score';
+    inp.oninput = function() {
+    if (this.value !== "" && parseFloat(this.value) < 0) this.value = 0;
   };
+  inp.onchange = function() {
+    if (this.value !== "") {
+      getCurrentHPS().PT[i] = parseFloat(this.value);
+      recomputeAll();
+      updateHpsTotals();
+      saveSheetToFirebase(); 
+    }
+  };
+  c.appendChild(inp); r3.appendChild(c);
+}
+  r3.appendChild(th(s2(sum(getCurrentHPS().PT))));
+  r3.appendChild(th('100.00'));
+  r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));
 
-  function fetchAndDisplayStudents() {
-    const info = getProfileInfo();
-    if (!info) return;
-    const { grade, section, schoolYear } = info;
-    tbody.innerHTML = '';
-    firebase.database().ref('students').once('value', snap => {
-        if (snap.exists()) {
-            snap.forEach(child => {
-                const student = child.val();
-                if (
-                    (student.grade + '').trim() === grade &&
-                    (student.section + '').trim() === section &&
-                    (student.school_year + '').trim() === schoolYear
-                ) {
-                    const name = (student.lname ? student.lname + ', ' : '') +
-                                 (student.fname || '') +
-                                 (student.mname ? ' ' + student.mname : '');
-                    addStudentRowDisplayOnly(name, []);
-                }
-            });
-        }
-    });
+  // QA HPS
+  for(let i=0;i<QA;i++){
+    const c = document.createElement('th'); c.className = 'hps-cell';
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.step = '0.01';
+    inp.min = '0';
+    inp.value = getCurrentHPS().QA[i];
+    inp.className = 'score';
+    inp.oninput = function() {
+      if (this.value !== "" && parseFloat(this.value) < 0) this.value = 0;
+      if (this.value !== "") {
+        getCurrentHPS().QA[i] = parseFloat(this.value);
+      }
+      recomputeAll();
+      saveSheetToFirebase(); 
+    };
+    c.appendChild(inp); r3.appendChild(c);
+  }
+  r3.appendChild(th('100.00'));
+  r3.appendChild(th(percentStr(getCurrentWeights().QA) + '%'));
+
+  thead.appendChild(r3);
+
+  if (window.percentEditMode) attachPercentListeners();
+}
+
+function attachPercentListeners() {
+[
+  {id:'wwPercentInput', key:'WW'},
+  {id:'ptPercentInput', key:'PT'},
+  {id:'qaPercentInput', key:'QA'}
+].forEach(({id,key}) => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('change', function() {
+    let v = Math.max(0, Math.min(100, parseFloat(this.value)||0));
+    this.value = v;
+    getCurrentWeights()[key] = v/100;
+    // Recompute grades and update display
+    buildHead();
+    recomputeAll();
+    saveSheetToFirebase();
+  });
+});
+}
+// Toggle edit mode for percentages
+
+
+function updateHpsTotals(){
+  buildHead();
+}
+
+// Display-only student name row (not editable)
+window.addStudentRowDisplayOnly = function(name='', scores=[]) {
+  const tr=document.createElement('tr');
+
+  // Name cell (not input)
+  const nameTd = document.createElement('td');
+  nameTd.className = 'sticky-name';
+  nameTd.textContent = name;
+  nameTd.style.cursor = "pointer";
+  nameTd.addEventListener('click', function(e) {
+      const allRows = tbody.querySelectorAll('tr');
+      allRows.forEach(row => row.classList.remove('highlight-row'));
+      tr.classList.add('highlight-row');
+  });
+  tr.appendChild(nameTd);
+
+  let scoreIdx = 0;
+
+  // WW
+  for(let i=0;i<WW;i++){
+    const c=document.createElement('td');
+    const inp=document.createElement('input');
+    inp.type='number';
+    inp.step='0.01';
+    inp.min='0'
+    inp.className='score';
+    inp.value = scores[scoreIdx] !== undefined ? scores[scoreIdx] : '';
+    inp.oninput = () => {
+        recomputeRow(tr);
+        saveSheetToFirebase();
+    };
+    c.appendChild(inp); tr.appendChild(c);
+    scoreIdx++;
+  }
+  tr.appendChild(td('0.00',{className:'bold ww-total'}));
+  tr.appendChild(td('0.00',{className:'ww-ps'}));
+  tr.appendChild(td('0.00',{className:'ww-ws'}));
+
+  // PT
+  for(let i=0;i<PT;i++){
+    const c=document.createElement('td');
+    const inp=document.createElement('input');
+    inp.type='number';
+    inp.step='0.01';
+    inp.min='0'
+    inp.className='score';
+    inp.value = scores[scoreIdx] !== undefined ? scores[scoreIdx] : '';
+    inp.oninput = () => {
+        recomputeRow(tr);
+        saveSheetToFirebase();
+    };
+    c.appendChild(inp); tr.appendChild(c);
+    scoreIdx++;
+  }
+  tr.appendChild(td('0.00',{className:'bold pt-total'}));
+  tr.appendChild(td('0.00',{className:'pt-ps'}));
+  tr.appendChild(td('0.00',{className:'pt-ws'}));
+
+  // QA
+  for(let i=0;i<QA;i++){
+    const c=document.createElement('td');
+    const inp=document.createElement('input');
+    inp.type='number';
+    inp.step='0.01';
+    inp.min='0'
+    inp.className='score';
+    inp.value = scores[scoreIdx] !== undefined ? scores[scoreIdx] : '';
+    inp.oninput = () => {
+        recomputeRow(tr);
+        saveSheetToFirebase();
+    };
+    c.appendChild(inp); tr.appendChild(c);
+    scoreIdx++;
+  }
+  tr.appendChild(td('0.00',{className:'qa-ps'}));
+  tr.appendChild(td('0.00',{className:'qa-ws'}));
+
+  tr.appendChild(td('0.00',{className:'bold initial'}));
+  tr.appendChild(td('0.00',{className:'bold quarterly'}));
+
+  tbody.appendChild(tr);
+  recomputeRow(tr);
+};
+
+function fetchAndDisplayStudents() {
+  const info = getProfileInfo();
+  if (!info) return;
+  const { grade, section, schoolYear } = info;
+  tbody.innerHTML = '';
+  firebase.database().ref('students').once('value', snap => {
+      if (snap.exists()) {
+          snap.forEach(child => {
+              const student = child.val();
+              if (
+                  (student.grade + '').trim() === grade &&
+                  (student.section + '').trim() === section &&
+                  (student.school_year + '').trim() === schoolYear
+              ) {
+                  const name = (student.lname ? student.lname + ', ' : '') +
+                               (student.fname || '') +
+                               (student.mname ? ' ' + student.mname : '');
+                  addStudentRowDisplayOnly(name, []);
+              }
+          });
+      }
+  });
 }
 
 function recomputeRow(tr){
-  const getVals=(start,count,hpsArr)=> {
-    const arr=[];
-    for(let i=0;i<count;i++){
-      const cell = tr.children[start+i].querySelector('input');
-      // If HPS is 0, ignore this score (treat as 0)
-      if (parseFloat(hpsArr[i]) === 0) {
-        arr.push(0);
-      } else {
-        arr.push(parseFloat(cell?.value||'0'));
-      }
+const getVals=(start,count,hpsArr)=> {
+  const arr=[];
+  for(let i=0;i<count;i++){
+    const cell = tr.children[start+i].querySelector('input');
+    // If HPS is 0, ignore this score (treat as 0)
+    if (parseFloat(hpsArr[i]) === 0) {
+      arr.push(0);
+    } else {
+      arr.push(parseFloat(cell?.value||'0'));
     }
-    return arr;
-  };
+  }
+  return arr;
+};
 
-  const wwHPS = getCurrentHPS().WW;
-  const ptHPS = getCurrentHPS().PT;
-  const qaHPS = getCurrentHPS().QA;
+const wwHPS = getCurrentHPS().WW;
+const ptHPS = getCurrentHPS().PT;
+const qaHPS = getCurrentHPS().QA;
 
-  const wwScores = getVals(1, WW, wwHPS);
-  const wwTotal = sum(wwScores);
-  const wwHpsSum = sum(wwHPS.map(h=>parseFloat(h)||0));
-  const wwPS = wwHpsSum > 0 ? (wwTotal/wwHpsSum)*100 : 0;
-  const wwWS = wwPS * getCurrentWeights().WW;
+const wwScores = getVals(1, WW, wwHPS);
+const wwTotal = sum(wwScores);
+const wwHpsSum = sum(wwHPS.map(h=>parseFloat(h)||0));
+const wwPS = wwHpsSum > 0 ? (wwTotal/wwHpsSum)*100 : 0;
+const wwWS = wwPS * getCurrentWeights().WW;
 
-  const ptStart = 1 + WW + 3;
-  const ptScores = getVals(ptStart, PT, ptHPS);
-  const ptTotal = sum(ptScores);
-  const ptHpsSum = sum(ptHPS.map(h=>parseFloat(h)||0));
-  const ptPS = ptHpsSum > 0 ? (ptTotal/ptHpsSum)*100 : 0;
-  const ptWS = ptPS * getCurrentWeights().PT;
+const ptStart = 1 + WW + 3;
+const ptScores = getVals(ptStart, PT, ptHPS);
+const ptTotal = sum(ptScores);
+const ptHpsSum = sum(ptHPS.map(h=>parseFloat(h)||0));
+const ptPS = ptHpsSum > 0 ? (ptTotal/ptHpsSum)*100 : 0;
+const ptWS = ptPS * getCurrentWeights().PT;
 
-  const qaStart = ptStart + PT + 3;
-  const qaScores = getVals(qaStart, QA, qaHPS);
-  const qaHpsSum = sum(qaHPS.map(h=>parseFloat(h)||0));
-  const qaPS = qaHpsSum > 0 ? (sum(qaScores)/qaHpsSum)*100 : 0;
-  const qaWS = qaPS * getCurrentWeights().QA;
+const qaStart = ptStart + PT + 3;
+const qaScores = getVals(qaStart, QA, qaHPS);
+const qaHpsSum = sum(qaHPS.map(h=>parseFloat(h)||0));
+const qaPS = qaHpsSum > 0 ? (sum(qaScores)/qaHpsSum)*100 : 0;
+const qaWS = qaPS * getCurrentWeights().QA;
 
-  tr.querySelector('.ww-total').textContent = s2(wwTotal);
-  tr.querySelector('.ww-ps').textContent    = s2(wwPS);
-  tr.querySelector('.ww-ws').textContent    = s2(wwWS);
+tr.querySelector('.ww-total').textContent = s2(wwTotal);
+tr.querySelector('.ww-ps').textContent    = s2(wwPS);
+tr.querySelector('.ww-ws').textContent    = s2(wwWS);
 
-  tr.querySelector('.pt-total').textContent = s2(ptTotal);
-  tr.querySelector('.pt-ps').textContent    = s2(ptPS);
-  tr.querySelector('.pt-ws').textContent    = s2(ptWS);
+tr.querySelector('.pt-total').textContent = s2(ptTotal);
+tr.querySelector('.pt-ps').textContent    = s2(ptPS);
+tr.querySelector('.pt-ws').textContent    = s2(ptWS);
 
-  tr.querySelector('.qa-ps').textContent    = s2(qaPS);
-  tr.querySelector('.qa-ws').textContent    = s2(qaWS);
+tr.querySelector('.qa-ps').textContent    = s2(qaPS);
+tr.querySelector('.qa-ws').textContent    = s2(qaWS);
 
-  const initial = wwWS + ptWS + qaWS;
-  tr.querySelector('.initial').textContent   = s2(initial);
-  tr.querySelector('.quarterly').textContent = s2(initial);
+const initial = wwWS + ptWS + qaWS;
+tr.querySelector('.initial').textContent   = s2(initial);
+tr.querySelector('.quarterly').textContent = s2(initial);
 }
 function recomputeAll(){
-  [...tbody.querySelectorAll('tr')].forEach(recomputeRow);
+[...tbody.querySelectorAll('tr')].forEach(recomputeRow);
 
-  // Disable/enable WW score inputs based on HPS
-  const wwHPS = getCurrentHPS().WW;
-  const ptHPS = getCurrentHPS().PT;
-  const qaHPS = getCurrentHPS().QA;
+// Disable/enable WW score inputs based on HPS
+const wwHPS = getCurrentHPS().WW;
+const ptHPS = getCurrentHPS().PT;
+const qaHPS = getCurrentHPS().QA;
 
-  [...tbody.querySelectorAll('tr')].forEach(tr => {
-    // WW
-    for(let i=0;i<wwHPS.length;i++) {
-      const inp = tr.children[1+i]?.querySelector('input');
-      if (inp) inp.disabled = (parseFloat(wwHPS[i]) === 0);
-    }
-    // PT
-    for(let i=0;i<ptHPS.length;i++) {
-      const inp = tr.children[1+wwHPS.length+3+i]?.querySelector('input');
-      if (inp) inp.disabled = (parseFloat(ptHPS[i]) === 0);
-    }
-    // QA
-    for(let i=0;i<qaHPS.length;i++) {
-      const inp = tr.children[1+wwHPS.length+3+ptHPS.length+3+i]?.querySelector('input');
-      if (inp) inp.disabled = (parseFloat(qaHPS[i]) === 0);
+[...tbody.querySelectorAll('tr')].forEach(tr => {
+  // WW
+  for(let i=0;i<wwHPS.length;i++) {
+    const inp = tr.children[1+i]?.querySelector('input');
+    if (inp) inp.disabled = (parseFloat(wwHPS[i]) === 0);
+  }
+  // PT
+  for(let i=0;i<ptHPS.length;i++) {
+    const inp = tr.children[1+wwHPS.length+3+i]?.querySelector('input');
+    if (inp) inp.disabled = (parseFloat(ptHPS[i]) === 0);
+  }
+  // QA
+  for(let i=0;i<qaHPS.length;i++) {
+    const inp = tr.children[1+wwHPS.length+3+ptHPS.length+3+i]?.querySelector('input');
+    if (inp) inp.disabled = (parseFloat(qaHPS[i]) === 0);
+  }
+});
+}
+
+// --- FIREBASE CONFIGURATION ---
+// Firebase is initialized in profile.js, use global instances
+// Use window.db and window.auth if available, otherwise fallback to firebase.database()/auth()
+var db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+var auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+
+function getSectionAndYear() {
+  const section = document.getElementById('profileSection')?.textContent?.trim();
+  let schoolYear = localStorage.getItem('schoolYear');
+  if (!schoolYear) {
+    schoolYear = prompt('Enter School Year (e.g., 2025-2026):');
+    if (schoolYear) localStorage.setItem('schoolYear', schoolYear);
+  }
+  return { section, schoolYear };
+}
+
+function loadStudentsForSectionAndYear() {
+  const { section, schoolYear } = getSectionAndYear();
+  if (!section || !schoolYear) {
+    alert('Section or School Year not set.');
+    return;
+  }
+  db.ref('students/' + schoolYear + '/' + section).once('value', snap => {
+    tbody.innerHTML = '';
+    if (snap.exists()) {
+      snap.forEach(child => {
+        const student = child.val();
+        addStudentRowDisplayOnly(student.name || student.fullName || '');
+      });
+    } else {
+      tbody.innerHTML = '';
     }
   });
 }
 
-  // --- FIREBASE CONFIGURATION (replace with your own config) ---
-
-  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  function getSectionAndYear() {
-    const section = document.getElementById('profileSection')?.textContent?.trim();
-    let schoolYear = localStorage.getItem('schoolYear');
-    if (!schoolYear) {
-      schoolYear = prompt('Enter School Year (e.g., 2025-2026):');
-      if (schoolYear) localStorage.setItem('schoolYear', schoolYear);
-    }
-    return { section, schoolYear };
-  }
-
-  function loadStudentsForSectionAndYear() {
-    const { section, schoolYear } = getSectionAndYear();
-    if (!section || !schoolYear) {
-      alert('Section or School Year not set.');
-      return;
-    }
-    db.ref('students/' + schoolYear + '/' + section).once('value', snap => {
-      tbody.innerHTML = '';
-      if (snap.exists()) {
-        snap.forEach(child => {
-          const student = child.val();
-          addStudentRowDisplayOnly(student.name || student.fullName || '');
-        });
-      } else {
-        tbody.innerHTML = '';
-      }
-    });
-  }
-
-  document.addEventListener("DOMContentLoaded", function() {
-    firebase.auth().onAuthStateChanged(async function(user) {
-        if (!user) return;
+document.addEventListener("DOMContentLoaded", function() {
+  firebase.auth().onAuthStateChanged(async function(user) {
+      if (!user) return;
 
 
 
 function waitForProfileAndFetch() {
-        function afterProfileLoaded() {
-  loadSheetFromFirebase(function(data) {
-    buildHead();
-    tbody.innerHTML = '';
+      function afterProfileLoaded() {
+loadSheetFromFirebase(function(data) {
+  buildHead();
+  tbody.innerHTML = '';
 if (data && Array.isArray(data.students) && data.students.length > 0) {
-    // Only add students from grading data
-    data.students.forEach(stu => {
-        addStudentRowDisplayOnly(stu.name, stu.scores);
-    });
+  // Only add students from grading data
+  data.students.forEach(stu => {
+      addStudentRowDisplayOnly(stu.name, stu.scores);
+  });
 } else {
-    // Only if NO grading data, fetch students for this section/year and add blank rows
-    const info = getProfileInfo();
-    if (!info) return;
-    const { grade, section, schoolYear } = info;
-    firebase.database().ref('students/' + schoolYear + '/' + section).once('value', snap => {
-        if (snap.exists()) {
-            snap.forEach(child => {
-                const student = child.val();
-                const name = (student.lname ? student.lname + ', ' : '') +
-                             (student.fname || '') +
-                             (student.mname ? ' ' + student.mname : '');
-                
-            });
-        }
-    });
+  // Only if NO grading data, fetch students for this section/year and add blank rows
+  const info = getProfileInfo();
+  if (!info) return;
+  const { grade, section, schoolYear } = info;
+  firebase.database().ref('students/' + schoolYear + '/' + section).once('value', snap => {
+      if (snap.exists()) {
+          snap.forEach(child => {
+              const student = child.val();
+              const name = (student.lname ? student.lname + ', ' : '') +
+                           (student.fname || '') +
+                           (student.mname ? ' ' + student.mname : '');
+              
+          });
+      }
+  });
 }
-    // ...rest of your code for hps/weights...
+  // ...rest of your code for hps/weights...
 });
-        }
-        // Wait for profile info to be loaded
-        function checkProfile() {
-            const grade = document.getElementById('profileGrade')?.textContent?.trim();
-            const section = document.getElementById('profileSection')?.textContent?.trim();
-            const schoolYear = localStorage.getItem('schoolYear');
-            if (grade && grade !== '-' && section && section !== '-' && schoolYear) {
-                afterProfileLoaded();
-            } else {
-                setTimeout(checkProfile, 200);
-            }
-        }
-        checkProfile();
-    }
-    waitForProfileAndFetch();
-        });
+      }
+      // Wait for profile info to be loaded
+      function checkProfile() {
+          const grade = document.getElementById('profileGrade')?.textContent?.trim();
+          const section = document.getElementById('profileSection')?.textContent?.trim();
+          const schoolYear = localStorage.getItem('schoolYear');
+          if (grade && grade !== '-' && section && section !== '-' && schoolYear) {
+              afterProfileLoaded();
+          } else {
+              setTimeout(checkProfile, 200);
+          }
+      }
+      checkProfile();
+  }
+  waitForProfileAndFetch();
+      });
 });
 
 // Helper to get the current teacher's grading sheet path for the selected quarter
 function getCurrentSheetPath() {
-    const user = firebase.auth().currentUser;
-    if (!user) return null;
-    const teacherId = user.uid;
-    const subject = document.getElementById('subjectName')?.textContent.trim();
-    const schoolYear = localStorage.getItem('schoolYear');
-    const section = document.getElementById('profileSection')?.textContent.trim();
-    const quarter = document.getElementById('quarterSelect')?.value || '1';
+  const user = firebase.auth().currentUser;
+  if (!user) return null;
+  const teacherId = user.uid;
+  const subject = document.getElementById('subjectName')?.textContent.trim();
+  const schoolYear = localStorage.getItem('schoolYear');
+  const section = document.getElementById('profileSection')?.textContent.trim();
+  const quarter = document.getElementById('quarterSelect')?.value || '1';
 
-    if (
-        !teacherId ||
-        !subject || subject === "Loading..." || subject === "N/A" ||
-        !schoolYear || !section || section === "-" || schoolYear === "-"
-    ) {
-        return null;
-    }
-    return `teachers/${teacherId}/gradingSheets/${subject}/${schoolYear}/${section}/${quarter}`;
+  if (
+      !teacherId ||
+      !subject || subject === "Loading..." || subject === "N/A" ||
+      !schoolYear || !section || section === "-" || schoolYear === "-"
+  ) {
+      return null;
+  }
+  return `teachers/${teacherId}/gradingSheets/${subject}/${schoolYear}/${section}/${quarter}`;
 }
 
 // Gather all sheet data (HPS and scores)
 function getSheetData() {
-    const hps = { WW: [...getCurrentHPS().WW], PT: [...getCurrentHPS().PT], QA: [...getCurrentHPS().QA] };
-    const weights = { ...getCurrentWeights() };
-    const students = [];
-    tbody.querySelectorAll('tr').forEach(tr => {
-        const name = tr.querySelector('.sticky-name')?.textContent || '';
-        const scores = [];
-        tr.querySelectorAll('input.score').forEach(inp => {
-            scores.push(parseFloat(inp.value) || 0);
-        });
-        students.push({ name, scores });
-    });
-    return { hps, weights, students };
+  const hps = { WW: [...getCurrentHPS().WW], PT: [...getCurrentHPS().PT], QA: [...getCurrentHPS().QA] };
+  const weights = { ...getCurrentWeights() };
+  const students = [];
+  tbody.querySelectorAll('tr').forEach(tr => {
+      const name = tr.querySelector('.sticky-name')?.textContent || '';
+      const scores = [];
+      tr.querySelectorAll('input.score').forEach(inp => {
+          scores.push(parseFloat(inp.value) || 0);
+      });
+      students.push({ name, scores });
+  });
+  return { hps, weights, students };
 }
 
 // Save to Firebase
 function saveSheetToFirebase() {
-    const path = getCurrentSheetPath();
-    if (!path) {
-        // Optionally, log for debugging:
-        // console.warn("Sheet not saved: path is null");
-        return;
-    }
-    const data = getSheetData();
-    firebase.database().ref(path).set(data);
+  const path = getCurrentSheetPath();
+  if (!path) {
+      // Optionally, log for debugging:
+      // console.warn("Sheet not saved: path is null");
+      return;
+  }
+  const data = getSheetData();
+  firebase.database().ref(path).set(data);
 }
 
 // Load from Firebase
 function loadSheetFromFirebase(callback) {
-    const path = getCurrentSheetPath();
-    if (!path) return;
-    firebase.database().ref(path).once('value', snap => {
-        const data = snap.val();
-        callback(data);
-    });
+  const path = getCurrentSheetPath();
+  if (!path) return;
+  firebase.database().ref(path).once('value', snap => {
+      const data = snap.val();
+      callback(data);
+  });
 }
 
 const DEFAULT_WEIGHTS = { WW:0.20, PT:0.60, QA:0.20 };
 const DEFAULT_HPS = { WW:Array(WW).fill(10), PT:Array(PT).fill(10), QA:Array(QA).fill(50) };
 
 let quarterData = {
-  1: { weights: {...DEFAULT_WEIGHTS}, hps: JSON.parse(JSON.stringify(DEFAULT_HPS)) },
-  2: { weights: {...DEFAULT_WEIGHTS}, hps: JSON.parse(JSON.stringify(DEFAULT_HPS)) },
-  3: { weights: {...DEFAULT_WEIGHTS}, hps: JSON.parse(JSON.stringify(DEFAULT_HPS)) },
-  4: { weights: {...DEFAULT_WEIGHTS}, hps: JSON.parse(JSON.stringify(DEFAULT_HPS)) }
+1: { weights: {...DEFAULT_WEIGHTS}, hps: JSON.parse(JSON.stringify(DEFAULT_HPS)) },
+2: { weights: {...DEFAULT_WEIGHTS}, hps: JSON.parse(JSON.stringify(DEFAULT_HPS)) },
+3: { weights: {...DEFAULT_WEIGHTS}, hps: JSON.parse(JSON.stringify(DEFAULT_HPS)) },
+4: { weights: {...DEFAULT_WEIGHTS}, hps: JSON.parse(JSON.stringify(DEFAULT_HPS)) }
 };
 
 function getCurrentQuarter() {
-  return document.getElementById('quarterSelect')?.value || '1';
+return document.getElementById('quarterSelect')?.value || '1';
 }
 function getCurrentWeights() {
-  return quarterData[getCurrentQuarter()].weights;
+return quarterData[getCurrentQuarter()].weights;
 }
 function getCurrentHPS() {
-  return quarterData[getCurrentQuarter()].hps;
+return quarterData[getCurrentQuarter()].hps;
 }
 
 
@@ -909,38 +952,38 @@ window.fetchAndDisplayStudents = fetchAndDisplayStudents;
 })();
 
 document.addEventListener('click', function(e) {
-    // Only remove highlight if you didn't click a sticky-name cell
-    if (!e.target.classList.contains('sticky-name')) {
-        Array.from(document.querySelectorAll('#tbody tr')).forEach(row => row.classList.remove('highlight-row'));
-    }
+  // Only remove highlight if you didn't click a sticky-name cell
+  if (!e.target.classList.contains('sticky-name')) {
+      Array.from(document.querySelectorAll('#tbody tr')).forEach(row => row.classList.remove('highlight-row'));
+  }
 });
 
 
 // Set subject from teacher data (after Firebase loads teacher)
 function updateSubjectDisplay(subject) {
-    document.getElementById('subjectName').textContent = subject || "N/A";
+  document.getElementById('subjectName').textContent = subject || "N/A";
 }
 
 // Example: After loading teacher data
 document.addEventListener("DOMContentLoaded", function() {
-    firebase.auth().onAuthStateChanged(async function(user) {
-        if (!user) return;
-        const uid = user.uid;
-        const snap = await firebase.database().ref('teachers/' + uid).once('value');
-        const teacher = snap.val();
-        // Set subject in controls
-        updateSubjectDisplay(teacher?.subject || "N/A");
-    });
+  firebase.auth().onAuthStateChanged(async function(user) {
+      if (!user) return;
+      const uid = user.uid;
+      const snap = await firebase.database().ref('teachers/' + uid).once('value');
+      const teacher = snap.val();
+      // Set subject in controls
+      updateSubjectDisplay(teacher?.subject || "N/A");
+  });
 });
 
 // Student search functionality
 document.getElementById('studentSearch').addEventListener('input', function() {
-    const search = this.value.toLowerCase();
-    Array.from(document.querySelectorAll('#tbody tr')).forEach(row => {
-        const nameCell = row.querySelector('.sticky-name');
-        if (!nameCell) return;
-        row.style.display = nameCell.textContent.toLowerCase().includes(search) ? '' : 'none';
-    });
+  const search = this.value.toLowerCase();
+  Array.from(document.querySelectorAll('#tbody tr')).forEach(row => {
+      const nameCell = row.querySelector('.sticky-name');
+      if (!nameCell) return;
+      row.style.display = nameCell.textContent.toLowerCase().includes(search) ? '' : 'none';
+  });
 });
 
 // Quarter filter functionality (stub, implement as needed)
@@ -948,130 +991,130 @@ document.getElementById('studentSearch').addEventListener('input', function() {
 
 
 function fetchAndDisplayStudentsWithRestore(savedStudents) {
-    const info = getProfileInfo();
-    if (!info) return;
-    const { grade, section, schoolYear } = info;
-    tbody.innerHTML = '';
-    firebase.database().ref('students').once('value', snap => {
-        if (snap.exists()) {
-            snap.forEach(child => {
-                const student = child.val();
-                if (
-                    (student.grade + '').trim() === grade &&
-                    (student.section + '').trim() === section &&
-                    (student.school_year + '').trim() === schoolYear
-                ) {
-                    const name = (student.lname ? student.lname + ', ' : '') +
-                                 (student.fname || '') +
-                                 (student.mname ? ' ' + student.mname : '');
-                    let scores = [];
-                    if (savedStudents) {
-                        const found = savedStudents.find(s => s.name === name);
-                        if (found) scores = found.scores;
-                    }
-                    addStudentRowDisplayOnly(name, scores);
-                }
-            });
-        }
-    });
+  const info = getProfileInfo();
+  if (!info) return;
+  const { grade, section, schoolYear } = info;
+  tbody.innerHTML = '';
+  firebase.database().ref('students').once('value', snap => {
+      if (snap.exists()) {
+          snap.forEach(child => {
+              const student = child.val();
+              if (
+                  (student.grade + '').trim() === grade &&
+                  (student.section + '').trim() === section &&
+                  (student.school_year + '').trim() === schoolYear
+              ) {
+                  const name = (student.lname ? student.lname + ', ' : '') +
+                               (student.fname || '') +
+                               (student.mname ? ' ' + student.mname : '');
+                  let scores = [];
+                  if (savedStudents) {
+                      const found = savedStudents.find(s => s.name === name);
+                      if (found) scores = found.scores;
+                  }
+                  addStudentRowDisplayOnly(name, scores);
+              }
+          });
+      }
+  });
 }
 </script>
 
 <div id="pageBottom">
-  <footer>
-    <div class="footer-wrap">
-      <div class="footer-col">
-        <h4 class="footer-brand">Eduktaktika</h4>
-        <p>Interactive, game‑based learning for Math, English, and Science.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Connect</h4>
-        <ul class="footer-social">
-          <li><a href="homepage.html">Homepage</a></li>
-          <li><a href="studentlist.html">Student</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Subjects</h4>
-        <ul class="footer-links">
-          <li><a href="subject_math.html">Math</a></li>
-          <li><a href="subject_english.html">English</a></li>
-          <li><a href="subject_science.html">Science</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Leaderboards</h4>
-        <ul class="footer-links">
-          <li><a href="leaderboard_math.html">Math</a></li>
-          <li><a href="leaderboard_english.html">English</a></li>
-          <li><a href="leaderboard_science.html">Science</a></li>
-        </ul>
-      </div>
+<footer>
+  <div class="footer-wrap">
+    <div class="footer-col">
+      <h4 class="footer-brand">Eduktaktika</h4>
+      <p>Interactive, game‑based learning for Math, English, and Science.</p>
     </div>
-    <div class="footer-bottom">
-      <div class="footer-social-row">
-        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-      </div>
-      <p>© 2025 Eduktaktika. All rights reserved.</p>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <ul class="footer-social">
+        <li><a href="homepage.html">Homepage</a></li>
+        <li><a href="studentlist.html">Student</a></li>
+      </ul>
     </div>
-  </footer>
+    <div class="footer-col">
+      <h4>Subjects</h4>
+      <ul class="footer-links">
+        <li><a href="subject_math.html">Math</a></li>
+        <li><a href="subject_english.html">English</a></li>
+        <li><a href="subject_science.html">Science</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Leaderboards</h4>
+      <ul class="footer-links">
+        <li><a href="leaderboard_math.html">Math</a></li>
+        <li><a href="leaderboard_english.html">English</a></li>
+        <li><a href="leaderboard_science.html">Science</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-social-row">
+      <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+      <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+      <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+    </div>
+    <p>© 2025 Eduktaktika. All rights reserved.</p>
+  </div>
+</footer>
 
-  <!-- Edit Profile Modal -->
+<!-- Edit Profile Modal -->
 
-  <script src="../assets/js/navbar.js"></script>
+<script src="../assets/js/navbar.js"></script>
 
-  <script>
-  document.addEventListener("DOMContentLoaded", function() {
-      const navLinks = document.querySelectorAll("nav ul li a");
-      const current = window.location.pathname.split('/').pop();
-      navLinks.forEach(link => {
-          if (link.getAttribute("href") === current) {
-              link.classList.add("active");
-          }
-      });
-  });
-  </script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const navLinks = document.querySelectorAll("nav ul li a");
+    const current = window.location.pathname.split('/').pop();
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
+        }
+    });
+});
+</script>
 
-  <script src="../assets/js/gradingSheet.js"></script>
+<script src="../assets/js/gradingSheet.js"></script>
 </div>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
 
-  const tabSummary = document.getElementById('tabSummary');
-  const summaryTab = document.getElementById('summaryTab');
-  const tabGrading = document.getElementById('tabGrading');
-  const tabAttendance = document.getElementById('tabAttendance');
-  const gradingTab = document.getElementById('gradingTab');
-  const attendanceTab = document.getElementById('attendanceTab');
+const tabSummary = document.getElementById('tabSummary');
+const summaryTab = document.getElementById('summaryTab');
+const tabGrading = document.getElementById('tabGrading');
+const tabAttendance = document.getElementById('tabAttendance');
+const gradingTab = document.getElementById('gradingTab');
+const attendanceTab = document.getElementById('attendanceTab');
 
-  tabGrading.addEventListener('click', function() {
-    tabGrading.classList.add('active');
-    tabAttendance.classList.remove('active');
-    tabSummary.classList.remove('active');
-    gradingTab.style.display = 'block';
-    attendanceTab.style.display = 'none';
-    summaryTab.style.display = 'none';
-  });
-  tabAttendance.addEventListener('click', function() {
-    tabAttendance.classList.add('active');
-    tabGrading.classList.remove('active');
-    tabSummary.classList.remove('active');
-    gradingTab.style.display = 'none';
-    attendanceTab.style.display = 'block';
-    summaryTab.style.display = 'none';
-  });
-  tabSummary.addEventListener('click', function() {
-    tabSummary.classList.add('active');
-    tabGrading.classList.remove('active');
-    tabAttendance.classList.remove('active');
-    gradingTab.style.display = 'none';
-    attendanceTab.style.display = 'none';
-    summaryTab.style.display = 'block';
-    loadSummaryTab();
-  });
+tabGrading.addEventListener('click', function() {
+  tabGrading.classList.add('active');
+  tabAttendance.classList.remove('active');
+  tabSummary.classList.remove('active');
+  gradingTab.style.display = 'block';
+  attendanceTab.style.display = 'none';
+  summaryTab.style.display = 'none';
+});
+tabAttendance.addEventListener('click', function() {
+  tabAttendance.classList.add('active');
+  tabGrading.classList.remove('active');
+  tabSummary.classList.remove('active');
+  gradingTab.style.display = 'none';
+  attendanceTab.style.display = 'block';
+  summaryTab.style.display = 'none';
+});
+tabSummary.addEventListener('click', function() {
+  tabSummary.classList.add('active');
+  tabGrading.classList.remove('active');
+  tabAttendance.classList.remove('active');
+  gradingTab.style.display = 'none';
+  attendanceTab.style.display = 'none';
+  summaryTab.style.display = 'block';
+  loadSummaryTab();
+});
 });
 
 // --- Attendance Tab Logic ---
@@ -1081,174 +1124,174 @@ const attendanceDays = ['Mon','Tue','Wed','Thu','Fri'];
 
 // Build attendance table header
 function buildAttendanceHead() {
-  const thead = document.getElementById('attendanceThead');
-  thead.innerHTML = '';
-  const tr1 = document.createElement('tr');
-  tr1.appendChild(th('Student Name', {rowSpan:2, className:'sticky-name', style:'background:#2e8b57;color:#fff;'}));
-  for(let w=1;w<=attendanceWeeks;w++) {
-    const thw = document.createElement('th');
-    thw.colSpan = attendanceDays.length;
-    thw.style = 'background:#2e8b57;color:#fff;';
-    thw.textContent = `Week ${w}`;
-    tr1.appendChild(thw);
-  }
-  tr1.appendChild(th('Total', {rowSpan:2, style:'background:#2e8b57;color:#fff;'}));
-  thead.appendChild(tr1);
+const thead = document.getElementById('attendanceThead');
+thead.innerHTML = '';
+const tr1 = document.createElement('tr');
+tr1.appendChild(th('Student Name', {rowSpan:2, className:'sticky-name', style:'background:#2e8b57;color:#fff;'}));
+for(let w=1;w<=attendanceWeeks;w++) {
+  const thw = document.createElement('th');
+  thw.colSpan = attendanceDays.length;
+  thw.style = 'background:#2e8b57;color:#fff;';
+  thw.textContent = `Week ${w}`;
+  tr1.appendChild(thw);
+}
+tr1.appendChild(th('Total', {rowSpan:2, style:'background:#2e8b57;color:#fff;'}));
+thead.appendChild(tr1);
 
-  const tr2 = document.createElement('tr');
-  for(let w=1;w<=attendanceWeeks;w++) {
-    for(let d=0;d<attendanceDays.length;d++) {
-      const thd = document.createElement('th');
-      thd.style = 'background:#2e8b57;color:#fff;';
-      thd.textContent = attendanceDays[d];
-      tr2.appendChild(thd);
-    }
+const tr2 = document.createElement('tr');
+for(let w=1;w<=attendanceWeeks;w++) {
+  for(let d=0;d<attendanceDays.length;d++) {
+    const thd = document.createElement('th');
+    thd.style = 'background:#2e8b57;color:#fff;';
+    thd.textContent = attendanceDays[d];
+    tr2.appendChild(thd);
   }
-  thead.appendChild(tr2);
+}
+thead.appendChild(tr2);
 }
 
 // Build attendance table body
 function buildAttendanceBody(students) {
-  const tbody = document.getElementById('attendanceTbody');
-  tbody.innerHTML = '';
-  students.forEach(stu => {
-    const tr = document.createElement('tr');
-    const nameTd = document.createElement('td');
-    nameTd.className = 'sticky-name';
-    nameTd.textContent = stu;
-    tr.appendChild(nameTd);
+const tbody = document.getElementById('attendanceTbody');
+tbody.innerHTML = '';
+students.forEach(stu => {
+  const tr = document.createElement('tr');
+  const nameTd = document.createElement('td');
+  nameTd.className = 'sticky-name';
+  nameTd.textContent = stu;
+  tr.appendChild(nameTd);
 
-    for(let w=0;w<attendanceWeeks;w++) {
-      for(let d=0;d<attendanceDays.length;d++) {
-        const td = document.createElement('td');
-        td.style = 'text-align:center;';
-        const inp = document.createElement('input');
-        inp.type = 'checkbox';
-        inp.className = 'att-checkbox';
+  for(let w=0;w<attendanceWeeks;w++) {
+    for(let d=0;d<attendanceDays.length;d++) {
+      const td = document.createElement('td');
+      td.style = 'text-align:center;';
+      const inp = document.createElement('input');
+      inp.type = 'checkbox';
+      inp.className = 'att-checkbox';
 inp.addEventListener('change', function() {
-  updateAttendanceTotal(tr);
-  saveAttendanceToFirebase(); // <-- add this line
+updateAttendanceTotal(tr);
+saveAttendanceToFirebase(); // <-- add this line
 });
-        td.appendChild(inp);
-        tr.appendChild(td);
-      }
+      td.appendChild(inp);
+      tr.appendChild(td);
     }
-    const totalTd = document.createElement('td');
-    totalTd.className = 'att-total';
-    totalTd.style = 'color:#2e8b57;font-weight:600;text-align:center;';
-    totalTd.textContent = '0/40';
-    tr.appendChild(totalTd);
+  }
+  const totalTd = document.createElement('td');
+  totalTd.className = 'att-total';
+  totalTd.style = 'color:#2e8b57;font-weight:600;text-align:center;';
+  totalTd.textContent = '0/40';
+  tr.appendChild(totalTd);
 
-    tbody.appendChild(tr);
-    updateAttendanceTotal(tr);
-  });
+  tbody.appendChild(tr);
+  updateAttendanceTotal(tr);
+});
 }
 
 // Update total present for a row
 function updateAttendanceTotal(tr) {
-  const checks = tr.querySelectorAll('input.att-checkbox');
-  let count = 0;
-  checks.forEach(chk => { if(chk.checked) count++; });
-  tr.querySelector('.att-total').textContent = `${count}/40`;
+const checks = tr.querySelectorAll('input.att-checkbox');
+let count = 0;
+checks.forEach(chk => { if(chk.checked) count++; });
+tr.querySelector('.att-total').textContent = `${count}/40`;
 }
 
 // Fetch students and build attendance table (same logic as grading sheet)
 function loadAttendanceStudents() {
-  const info = typeof getProfileInfo === "function" ? getProfileInfo() : null;
-  if (!info) return;
-  const { section, schoolYear } = info;
-  const subject = document.getElementById('subjectName')?.textContent.trim() || 'N/A';
-  const quarter = document.getElementById('quarterSelect')?.value || '1';
-  const path = `attendance/${subject}/${schoolYear}/${section}/${quarter}`;
+const info = typeof getProfileInfo === "function" ? getProfileInfo() : null;
+if (!info) return;
+const { section, schoolYear } = info;
+const subject = document.getElementById('subjectName')?.textContent.trim() || 'N/A';
+const quarter = document.getElementById('quarterSelect')?.value || '1';
+const path = `attendance/${subject}/${schoolYear}/${section}/${quarter}`;
 
-  firebase.database().ref(path).once('value', snap => {
-    if (snap.exists()) {
-      // Attendance data exists, load it
-      const data = snap.val();
+firebase.database().ref(path).once('value', snap => {
+  if (snap.exists()) {
+    // Attendance data exists, load it
+    const data = snap.val();
+    buildAttendanceHead();
+    buildAttendanceBodyWithChecks(data);
+  } else {
+    // No attendance data yet, fetch student list
+    firebase.database().ref('students/' + schoolYear + '/' + section).once('value', snap2 => {
+      const students = [];
+      if (snap2.exists()) {
+        snap2.forEach(child => {
+          const student = child.val();
+          const name = (student.lname ? student.lname + ', ' : '') +
+                       (student.fname || '') +
+                       (student.mname ? ' ' + student.mname : '');
+          students.push(name);
+        });
+      }
       buildAttendanceHead();
-      buildAttendanceBodyWithChecks(data);
-    } else {
-      // No attendance data yet, fetch student list
-      firebase.database().ref('students/' + schoolYear + '/' + section).once('value', snap2 => {
-        const students = [];
-        if (snap2.exists()) {
-          snap2.forEach(child => {
-            const student = child.val();
-            const name = (student.lname ? student.lname + ', ' : '') +
-                         (student.fname || '') +
-                         (student.mname ? ' ' + student.mname : '');
-            students.push(name);
-          });
-        }
-        buildAttendanceHead();
-        buildAttendanceBody(students);
-      });
-    }
-  });
+      buildAttendanceBody(students);
+    });
+  }
+});
 }
 // When Attendance tab is shown, build the table
 document.getElementById('tabAttendance').addEventListener('click', function() {
-  loadAttendanceStudents();
-  // Optionally update subject/quarter display
-  document.getElementById('attendanceSubject').textContent = document.getElementById('subjectName').textContent;
-  document.getElementById('attendanceQuarter').textContent = document.getElementById('quarterSelect').selectedOptions[0].textContent;
+loadAttendanceStudents();
+// Optionally update subject/quarter display
+document.getElementById('attendanceSubject').textContent = document.getElementById('subjectName').textContent;
+document.getElementById('attendanceQuarter').textContent = document.getElementById('quarterSelect').selectedOptions[0].textContent;
 });
 
 function saveAttendanceToFirebase() {
-  const info = typeof getProfileInfo === "function" ? getProfileInfo() : null;
-  if (!info) return;
-  const { section, schoolYear } = info;
-  const subject = document.getElementById('subjectName')?.textContent.trim() || 'N/A';
-  const quarter = document.getElementById('quarterSelect')?.value || '1';
+const info = typeof getProfileInfo === "function" ? getProfileInfo() : null;
+if (!info) return;
+const { section, schoolYear } = info;
+const subject = document.getElementById('subjectName')?.textContent.trim() || 'N/A';
+const quarter = document.getElementById('quarterSelect')?.value || '1';
 
-  const data = [];
-  document.querySelectorAll('#attendanceTbody tr').forEach(tr => {
-    const name = tr.querySelector('.sticky-name')?.textContent || '';
-    const checks = Array.from(tr.querySelectorAll('input.att-checkbox')).map(chk => chk.checked ? 1 : 0);
-    data.push({ name, checks });
-  });
+const data = [];
+document.querySelectorAll('#attendanceTbody tr').forEach(tr => {
+  const name = tr.querySelector('.sticky-name')?.textContent || '';
+  const checks = Array.from(tr.querySelectorAll('input.att-checkbox')).map(chk => chk.checked ? 1 : 0);
+  data.push({ name, checks });
+});
 
-  const path = `attendance/${subject}/${schoolYear}/${section}/${quarter}`;
-  firebase.database().ref(path).set(data);
+const path = `attendance/${subject}/${schoolYear}/${section}/${quarter}`;
+firebase.database().ref(path).set(data);
 }
 
 function buildAttendanceBodyWithChecks(data) {
-  const tbody = document.getElementById('attendanceTbody');
-  tbody.innerHTML = '';
-  data.forEach(row => {
-    const tr = document.createElement('tr');
-    const nameTd = document.createElement('td');
-    nameTd.className = 'sticky-name';
-    nameTd.textContent = row.name;
-    tr.appendChild(nameTd);
+const tbody = document.getElementById('attendanceTbody');
+tbody.innerHTML = '';
+data.forEach(row => {
+  const tr = document.createElement('tr');
+  const nameTd = document.createElement('td');
+  nameTd.className = 'sticky-name';
+  nameTd.textContent = row.name;
+  tr.appendChild(nameTd);
 
-    let checkIdx = 0;
-    for(let w=0;w<attendanceWeeks;w++) {
-      for(let d=0;d<attendanceDays.length;d++) {
-        const td = document.createElement('td');
-        td.style = 'text-align:center;';
-        const inp = document.createElement('input');
-        inp.type = 'checkbox';
-        inp.className = 'att-checkbox';
-        inp.checked = !!row.checks[checkIdx];
-        inp.addEventListener('change', function() {
-          updateAttendanceTotal(tr);
-          saveAttendanceToFirebase();
-        });
-        td.appendChild(inp);
-        tr.appendChild(td);
-        checkIdx++;
-      }
+  let checkIdx = 0;
+  for(let w=0;w<attendanceWeeks;w++) {
+    for(let d=0;d<attendanceDays.length;d++) {
+      const td = document.createElement('td');
+      td.style = 'text-align:center;';
+      const inp = document.createElement('input');
+      inp.type = 'checkbox';
+      inp.className = 'att-checkbox';
+      inp.checked = !!row.checks[checkIdx];
+      inp.addEventListener('change', function() {
+        updateAttendanceTotal(tr);
+        saveAttendanceToFirebase();
+      });
+      td.appendChild(inp);
+      tr.appendChild(td);
+      checkIdx++;
     }
-    const totalTd = document.createElement('td');
-    totalTd.className = 'att-total';
-    totalTd.style = 'color:#2e8b57;font-weight:600;text-align:center;';
-    totalTd.textContent = (row.checks ? row.checks.filter(Boolean).length : 0) + '/40';
-    tr.appendChild(totalTd);
+  }
+  const totalTd = document.createElement('td');
+  totalTd.className = 'att-total';
+  totalTd.style = 'color:#2e8b57;font-weight:600;text-align:center;';
+  totalTd.textContent = (row.checks ? row.checks.filter(Boolean).length : 0) + '/40';
+  tr.appendChild(totalTd);
 
-    tbody.appendChild(tr);
-    updateAttendanceTotal(tr);
-  });
+  tbody.appendChild(tr);
+  updateAttendanceTotal(tr);
+});
 }
 </script>
 </div>

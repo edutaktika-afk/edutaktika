@@ -1,0 +1,373 @@
+[33mcommit 781f0876d55b99c886bd4cf73585bd069afa23b3[m
+Author: edutaktika-afk <edutaktika@gmail.com>
+Date:   Wed Nov 19 00:43:03 2025 +0800
+
+    TUTORIAL AND GRADING SHEET
+
+[1mdiff --git a/Games/Quiz/game1.html b/Games/Quiz/game1.html[m
+[1mindex 6c71647..868e1de 100644[m
+[1m--- a/Games/Quiz/game1.html[m
+[1m+++ b/Games/Quiz/game1.html[m
+[36m@@ -135,7 +135,7 @@[m
+     <div class="modal-content" style="max-width:420px;text-align:left;">[m
+       <button class="close-btn" id="closeInfoBtn">&times;</button>[m
+       <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">[m
+[31m-        How to Play[m
+[32m+[m[32m        How to Set Answer.[m
+       </div>[m
+       <ul style="font-size:1.1em;line-height:1.7;">[m
+         <li>Drag the correct answer from the left and drop it into the target area.</li>[m
+[1mdiff --git a/Games/Quiz/game10.html b/Games/Quiz/game10.html[m
+[1mindex ca5ce48..07a21d9 100644[m
+[1m--- a/Games/Quiz/game10.html[m
+[1m+++ b/Games/Quiz/game10.html[m
+[36m@@ -695,7 +695,7 @@[m
+     <div class="modal-content" style="max-width:620px;width:80vw;text-align:left;background:rgb(241, 241, 241);padding:32px 24px;border-radius:14px;box-shadow:0 4px 24px #0002;position:relative;">[m
+         <button class="close-btn" id="closeInfoBtn" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>[m
+         <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">[m
+[31m-            How to Play[m
+[32m+[m[32m            How to Set Answer.[m
+         </div>[m
+         <ul style="font-size:1.1em;line-height:1.7;padding-left:1.2em;">[m
+             <li>Drag and drop the items to arrange them in the correct order!</li> [m
+[1mdiff --git a/Games/Quiz/game11.html b/Games/Quiz/game11.html[m
+[1mindex 809144b..41ee82f 100644[m
+[1m--- a/Games/Quiz/game11.html[m
+[1m+++ b/Games/Quiz/game11.html[m
+[36m@@ -92,7 +92,7 @@[m
+     <div class="modal-content" style="max-width:420px;text-align:left;">[m
+       <button class="close-btn" id="closeInfoBtn" style="position:absolute;top:12px;right:16px;font-size:1.7em;cursor:pointer;background:none;border:none;">&times;</button>[m
+       <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">[m
+[31m-        How to Play[m
+[32m+[m[32m        How to Set Answer.[m
+       </div>[m
+       <ul style="font-size:1.1em;line-height:1.7;">[m
+         <li>Read each open-ended question carefully and type your answer in the box provided.</li>[m
+[1mdiff --git a/Games/Quiz/game2.html b/Games/Quiz/game2.html[m
+[1mindex a3aacf9..db78398 100644[m
+[1m--- a/Games/Quiz/game2.html[m
+[1m+++ b/Games/Quiz/game2.html[m
+[36m@@ -1080,7 +1080,7 @@[m [mwindow.addEventListener('message', function(event) {[m
+     <div class="modal-content" style="max-width:620px;width:90vw;max-height:720px;text-align:left;background:rgb(237,201,153);padding:32px 24px;border-radius:14px;box-shadow:0 4px 24px #0002;position:relative;">[m
+         <button class="close-btn" id="closeInfoBtn" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>[m
+         <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">[m
+[31m-            How to Play[m
+[32m+[m[32m            How to Set Answer.[m
+         </div>[m
+         <ul style="font-size:1.1em;line-height:1.7;padding-left:1.2em;">[m
+             <li>Drag the correct answers from the Choices panel into the Answer Zone. Double‑click to remove.</li>[m
+[1mdiff --git a/Games/Quiz/game3.html b/Games/Quiz/game3.html[m
+[1mindex dcba89b..be112da 100644[m
+[1m--- a/Games/Quiz/game3.html[m
+[1m+++ b/Games/Quiz/game3.html[m
+[36m@@ -882,7 +882,7 @@[m [mupdateSubmitButtonState();[m
+     <div class="modal-content" style="max-width:620px;width:80vw;text-align:left;background:rgb(237,201,153);padding:32px 24px;border-radius:14px;box-shadow:0 4px 24px #0002;position:relative;">[m
+         <button class="close-btn" id="closeInfoBtn" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>[m
+         <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">[m
+[31m-            How to Play[m
+[32m+[m[32m           How to Set Answer.[m
+         </div>[m
+         <ul style="font-size:1.1em;line-height:1.7;padding-left:1.2em;">[m
+             <li>Select words in the grid by clicking and dragging across the letters. You can select words in any direction.</li>[m
+[1mdiff --git a/Games/Quiz/game4.html b/Games/Quiz/game4.html[m
+[1mindex f6af214..7f58dac 100644[m
+[1m--- a/Games/Quiz/game4.html[m
+[1m+++ b/Games/Quiz/game4.html[m
+[36m@@ -671,7 +671,7 @@[m [mfunction isQuizEditor() {[m
+     <div class="modal-content" style="max-width:620px;width:80vw;text-align:left;background:rgb(237,201,153);padding:32px 24px;border-radius:14px;box-shadow:0 4px 24px #0002;position:relative;">[m
+         <button class="close-btn" id="closeInfoBtn" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>[m
+         <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">[m
+[31m-            How to Play[m
+[32m+[m[32m            How to Set Answer.[m
+         </div>[m
+         <ul style="font-size:1.1em;line-height:1.7;padding-left:1.2em;">[m
+             <li>Click the correct answer from the choices.</li>[m
+[1mdiff --git a/Games/Quiz/game5.html b/Games/Quiz/game5.html[m
+[1mindex 5563d53..c9aae7d 100644[m
+[1m--- a/Games/Quiz/game5.html[m
+[1m+++ b/Games/Quiz/game5.html[m
+[36m@@ -999,7 +999,7 @@[m [mloadQuestions(function() {[m
+     <div class="modal-content" style="max-width:620px;width:80vw;text-align:left;background:rgb(237,201,153);padding:32px 24px;border-radius:14px;box-shadow:0 4px 24px #0002;position:relative;">[m
+         <button class="close-btn" id="closeInfoBtn" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>[m
+         <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">[m
+[31m-            How to Play[m
+[32m+[m[32m            How to Set Answer.[m
+         </div>[m
+         <ul style="font-size:1.1em;line-height:1.7;padding-left:1.2em;">[m
+             <li>Click the correct answer from the choices.</li>[m
+[1mdiff --git a/Games/Quiz/game6.html b/Games/Quiz/game6.html[m
+[1mindex bf75eaa..88d36e9 100644[m
+[1m--- a/Games/Quiz/game6.html[m
+[1m+++ b/Games/Quiz/game6.html[m
+[36m@@ -926,7 +926,7 @@[m [mwindow.addEventListener('message', function(event) {[m
+     <div class="modal-content" style="max-width:620px;width:80vw;text-align:left;background:rgb(241, 241, 241);padding:32px 24px;border-radius:14px;box-shadow:0 4px 24px #0002;position:relative;">[m
+         <button class="close-btn" id="closeInfoBtn" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>[m
+         <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">[m
+[31m-            How to Play[m
+[32m+[m[32m            How to Set Answer.[m
+         </div>[m
+         <ul style="font-size:1.1em;line-height:1.7;padding-left:1.2em;">[m
+             <li>Drag the correct words from the word choices into the blanks to complete each sentence.</li> [m
+[1mdiff --git a/Games/Quiz/game7.html b/Games/Quiz/game7.html[m
+[1mindex d2f0152..173a917 100644[m
+[1m--- a/Games/Quiz/game7.html[m
+[1m+++ b/Games/Quiz/game7.html[m
+[36m@@ -356,7 +356,7 @@[m
+     <div class="modal-content" style="max-width:420px;text-align:left;">[m
+       <button class="close-btn" id="closeInfoBtn">&times;</button>[m
+       <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">[m
+[31m-        How to Play[m
+[32m+[m[41m        [m
+       </div>[m
+       <ul style="font-size:1.1em;line-height:1.7;">[m
+         <li>Type the answer in the provided box and click Next to go to the next question.</li>[m
+[1mdiff --git a/Games/Quiz/trueorfals.html b/Games/Quiz/trueorfals.html[m
+[1mindex 611aba3..d145115 100644[m
+[1m--- a/Games/Quiz/trueorfals.html[m
+[1m+++ b/Games/Quiz/trueorfals.html[m
+[36m@@ -629,7 +629,7 @@[m [mdoneBtn.onclick = () => {[m
+     <div class="modal-content" style="max-width:620px;width:80vw;text-align:left;background:rgb(241, 241, 241);padding:32px 24px;border-radius:14px;box-shadow:0 4px 24px #0002;position:relative;">[m
+         <button class="close-btn" id="closeInfoBtn" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>[m
+         <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">[m
+[31m-            How to Play[m
+[32m+[m[32m            How to Set Answer.[m
+         </div>[m
+         <ul style="font-size:1.1em;line-height:1.7;padding-left:1.2em;">[m
+             <li>Read each statement carefully. Click "True" or "False" for each question.</li>[m
+[1mdiff --git a/Teacher/grading.html b/Teacher/grading.html[m
+[1mindex 3d70264..c2ecafc 100644[m
+[1m--- a/Teacher/grading.html[m
+[1m+++ b/Teacher/grading.html[m
+[36m@@ -37,7 +37,7 @@[m
+     <link rel="stylesheet" href="../CSS/dropdown.css">[m
+     <link rel="stylesheet" href="../CSS/burger.css">[m
+     <link rel="icon" type="image/png" href="../images/icons/home.png" />[m
+[31m-    <title>Grading Sheet</title>[m
+[32m+[m[32m    <title>Home</title>[m
+     <link rel="stylesheet" href="../CSS/gradingSheet.css">[m
+   <style>[m
+     .highlight-row {[m
+[36m@@ -275,9 +275,15 @@[m [minput[type=number]::-webkit-outer-spin-button {[m
+ <div class="tab-nav" style="display:flex; gap:10px; margin-bottom:18px; justify-content: center; margin-top: 18px;">[m
+   <button id="tabGrading" class="tab-btn active">Grading Sheet</button>[m
+   <button id="tabAttendance" class="tab-btn">Attendance</button>[m
+[32m+[m[32m  <button id="tabSummary" class="tab-btn">Summary</button>[m
+ </div>[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m[32m    <div id="gradingTab" class="tab-content" style="display:block;">[m
+   <div class="container">[m
+[31m-    <div class="controls" style="display:flex; align-items:center; gap:18px; margin-bottom:18px; flex-wrap:wrap;">[m
+[32m+[m[32m        <div class="controls" style="display:flex; align-items:center; gap:18px; margin-bottom:18px; flex-wrap:wrap;">[m
+       <span id="subjectDisplay" style="font-weight:600; color:#2e8b57; font-size:1.08em;">[m
+         Subject: <span id="subjectName">Loading...</span>[m
+       </span>[m
+[36m@@ -291,14 +297,12 @@[m [minput[type=number]::-webkit-outer-spin-button {[m
+       </select>[m
+       [m
+       <input type="text" id="studentSearch" placeholder="🔍 Search student..." style="margin-left:10px; padding:5px 12px; border-radius:5px; border:1px solid #b5b5b5; font-size:1em; min-width:180px;">[m
+[31m-      <button id="editPercentBtn" style="margin-left:10px; display:none;">Edit Percentages</button>[m
+[32m+[m[32m      <button id="editPercentBtn" style="margin-left:10px;">Edit Percentages</button>[m
+ [m
+     </div>[m
+[31m-<div id="quarterLabel" style="text-align:center; font-size:1.15em; font-weight:700; color:#2e8b57; margin-bottom:10px;">[m
+[32m+[m[32m    <div id="quarterLabel" style="text-align:center; font-size:1.15em; font-weight:700; color:#2e8b57; margin-bottom:10px;">[m
+         Quarter 1[m
+       </div>[m
+[31m-    <div id="gradingTab" class="tab-content" style="display:block;">[m
+[31m-  <div class="container">[m
+     <div class="sheet-wrap">[m
+       [m
+       <table id="sheet">[m
+[36m@@ -310,16 +314,12 @@[m [minput[type=number]::-webkit-outer-spin-button {[m
+ </div>[m
+     [m
+    [m
+[31m-  </div>[m
+   [m
+ [m
+   <div class="tab-content" id="attendanceTab" style="display:none;">[m
+   <div class="sheet-wrap">[m
+     <div id="attendanceHeader" style="text-align:center; font-size:1.3em; font-weight:700; color:#2e8b57; margin-bottom:10px;">[m
+       8-Week Attendance Sheet[m
+[31m-      <div style="font-size:0.8em; color:#333; font-weight:400;">[m
+[31m-        <span id="attendanceSubject">Math</span> - <span id="attendanceQuarter">Quarter 1</span> - 8-Week Attendance Sheet[m
+[31m-      </div>[m
+     </div>[m
+     <table id="attendanceSheet" style="width:100%; border-collapse:collapse;">[m
+       <thead id="attendanceThead"></thead>[m
+[36m@@ -327,6 +327,29 @@[m [minput[type=number]::-webkit-outer-spin-button {[m
+     </table>[m
+   </div>[m
+ </div>[m
+[32m+[m
+[32m+[m[32m<div class="tab-content" id="summaryTab" style="display:none;">[m
+[32m+[m[32m  <div class="sheet-wrap">[m
+[32m+[m[32m    <div id="summaryHeader" style="text-align:center; font-size:1.3em; font-weight:700; color:#2e8b57; margin-bottom:10px;">[m
+[32m+[m[32m      Summary[m
+[32m+[m[32m    </div>[m
+[32m+[m[32m    <div id="summaryStats" style="text-align:center; margin-bottom:18px;"></div>[m
+[32m+[m[32m<table id="summaryTable" style="width:100%; border-collapse:collapse;">[m
+[32m+[m[32m  <thead>[m
+[32m+[m[32m    <tr>[m
+[32m+[m[32m      <th>Student Name</th>[m
+[32m+[m[32m      <th>Total Present</th>[m
+[32m+[m[32m      <th>Q1</th>[m
+[32m+[m[32m      <th>Q2</th>[m
+[32m+[m[32m      <th>Q3</th>[m
+[32m+[m[32m      <th>Q4</th>[m
+[32m+[m[32m      <th>Final Grade</th>[m
+[32m+[m[32m    </tr>[m
+[32m+[m[32m  </thead>[m
+[32m+[m[32m  <tbody id="summaryTbody"></tbody>[m
+[32m+[m[32m</table>[m
+[32m+[m[32m  </div>[m
+[32m+[m[32m</div>[m
+   [m
+ <script>[m
+           function getProfileInfo() {[m
+[36m@@ -377,13 +400,13 @@[m [mconst s2 = (n) => Number(n).toFixed(2);[m
+     const r1=document.createElement('tr');[m
+     r1.appendChild(th("LEARNERS' NAMES",{rowSpan:3}));[m
+ [m
+[31m-function percentStr(val) {[m
+[31m-  const n = val * 100;[m
+[31m-  return Number.isInteger(n) ? n : n.toFixed(2);[m
+[31m-}[m
+[31m-const wwPercent = percentStr(getCurrentWeights().WW);[m
+[31m-const ptPercent = percentStr(getCurrentWeights().PT);[m
+[31m-const qaPercent = percentStr(getCurrentWeights().QA);[m
+[32m+[m[32m    function percentStr(val) {[m
+[32m+[m[32m      const n = val * 100;[m
+[32m+[m[32m      return Number.isInteger(n) ? n : n.toFixed(2);[m
+[32m+[m[32m    }[m
+[32m+[m[32m    const wwPercent = percentStr(getCurrentWeights().WW);[m
+[32m+[m[32m    const ptPercent = percentStr(getCurrentWeights().PT);[m
+[32m+[m[32m    const qaPercent = percentStr(getCurrentWeights().QA);[m
+ [m
+     const wwTh = document.createElement('th');[m
+     wwTh.colSpan = WW + 3;[m
+[36m@@ -465,9 +488,9 @@[m [mconst qaPercent = percentStr(getCurrentWeights().QA);[m
+     };[m
+     c.appendChild(inp); r3.appendChild(c);[m
+   }[m
+[31m-r3.appendChild(th(s2(sum(getCurrentHPS().PT))));[m
+[31m-r3.appendChild(th('100.00'));[m
+[31m-r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));[m
+[32m+[m[32m    r3.appendChild(th(s2(sum(getCurrentHPS().PT))));[m
+[32m+[m[32m    r3.appendChild(th('100.00'));[m
+[32m+[m[32m    r3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));[m
+ [m
+     // QA HPS[m
+     for(let i=0;i<QA;i++){[m
+[36m@@ -492,9 +515,29 @@[m [mr3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));[m
+     r3.appendChild(th(percentStr(getCurrentWeights().QA) + '%'));[m
+ [m
+     thead.appendChild(r3);[m
+[31m-  }[m
+ [m
+[32m+[m[32m    if (window.percentEditMode) attachPercentListeners();[m
+[32m+[m[32m  }[m
+   [m
+[32m+[m[32mfunction attachPercentListeners() {[m
+[32m+[m[32m  [[m
+[32m+[m[32m    {id:'wwPercentInput', key:'WW'},[m
+[32m+[m[32m    {id:'ptPercentInput', key:'PT'},[m
+[32m+[m[32m    {id:'qaPercentInput', key:'QA'}[m
+[32m+[m[32m  ].forEach(({id,key}) => {[m
+[32m+[m[32m    const el = document.getElementById(id);[m
+[32m+[m[32m    if (!el) return;[m
+[32m+[m[32m    el.addEventListener('change', function() {[m
+[32m+[m[32m      let v = Math.max(0, Math.min(100, parseFloat(this.value)||0));[m
+[32m+[m[32m      this.value = v;[m
+[32m+[m[32m      getCurrentWeights()[key] = v/100;[m
+[32m+[m[32m      // Recompute grades and update display[m
+[32m+[m[32m      buildHead();[m
+[32m+[m[32m      recomputeAll();[m
+[32m+[m[32m      saveSheetToFirebase();[m
+[32m+[m[32m    });[m
+[32m+[m[32m  });[m
+[32m+[m[32m}[m
+   // Toggle edit mode for percentages[m
+ [m
+   [m
+[36m@@ -586,51 +629,109 @@[m [mr3.appendChild(th(percentStr(getCurrentWeights().PT) + '%'));[m
+     recomputeRow(tr);[m
+   };[m
+ [m
+[31m-  function recomputeRow(tr){[m
+[31m-    const getVals=(start,count)=> {[m
+[31m-      const arr=[];[m
+[31m-      for(let i=0;i<count;i++){[m
+[31m-        const cell = tr.children[start+i].querySelector('input');[m
+[32m+[m[32m  function fetchAndDisplayStudents() {[m
+[32m+[m[32m    const info = getProfileInfo();[m
+[32m+[m[32m    if (!info) return;[m
+[32m+[m[32m    const { grade, section, schoolYear } = info;[m
+[32m+[m[32m    tbody.innerHTML = '';[m
+[32m+[m[32m    firebase.database().ref('students').once('value', snap => {[m
+[32m+[m[32m        if (snap.exists()) {[m
+[32m+[m[32m            snap.forEach(child => {[m
+[32m+[m[32m                const student = child.val();[m
+[32m+[m[32m                if ([m
+[32m+[m[32m                    (student.grade + '').trim() === grade &&[m
+[32m+[m[32m                    (student.section + '').trim() === section &&[m
+[32m+[m[32m                    (student.school_year + '').trim() === schoolYear[m
+[32m+[m[32m                ) {[m
+[32m+[m[32m                    const name = (student.lname ? student.lname + ', ' : '') +[m
+[32m+[m[32m                                 (student.fname || '') +[m
+[32m+[m[32m                                 (student.mname ? ' ' + student.mname : '');[m
+[32m+[m[32m                    addStudentRowDisplayOnly(name, []);[m
+[32m+[m[32m                }[m
+[32m+[m[32m            });[m
+[32m+[m[32m        }[m
+[32m+[m[32m    });[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mfunction recomputeRow(tr){[m
+[32m+[m[32m  const getVals=(start,count,hpsArr)=> {[m
+[32m+[m[32m    const arr=[];[m
+[32m+[m[32m    for(let i=0;i<count;i++){[m
+[32m+[m[32m      const cell = tr.children[start+i].querySelector('input');[m
+[32m+[m[32m      // If HPS is 0, ignore this score (treat as 0)[m
+[32m+[m[32m      if (parseFloat(hpsArr[i]) === 0) {[m
+[32m+[m[32m        arr.push(0);[m
+[32m+[m[32m      } else {[m
+         arr.push(parseFloat(cell?.value||'0'));[m
+       }[m
+[31m-      return arr;[m
+[31m-    };[m
+[31m-[m
+[31m-    const wwScores = getVals(1, WW);[m
+[31m-    const wwTotal = sum(wwScores);[m
+[31m-    const wwPS = ps(wwTotal, sum(getCurrentHPS().WW));[m
+[31m-    const wwWS = wwPS * getCurrentWeights().WW;[m
+[31m-[m
+[31m-    const ptStart = 1 + WW + 3;[m
+[31m-    const ptScores = getVals(ptStart, PT);[m
+[31m-    const ptTotal = sum(ptScores);[m
+[31m-    const ptPS = ps(ptTotal, sum(getCurrentHPS().PT));[m
+[31m-    const ptWS = ptPS * getCurrentWeights().PT;[m
+[31m-[m
+[31m-    const qaStart = ptStart + PT + 3;[m
+[31m-    const qaScores = getVals(qaStart, QA);[m
+[31m-    const qaPS = ps(sum(qaScores), sum(getCurrentHPS().QA));[m
+[31m-    const qaWS = qaPS * getCurrentWeights().QA;[m
+[31m-[m
+[31m-    tr.querySelector('.ww-total').textContent = s2(wwTotal);[m
+[31m-    tr.querySelector('.ww-ps').textContent    = s2(wwPS);[m
+[31m-    tr.querySelector('.ww-ws').textContent    = s2(wwWS);[m
+[31m-[m
+[31m-    tr.querySelector('.pt-total').textContent = s2(ptTotal);[m
+[31m-    tr.querySelector('.pt-ps').textContent    = s2(ptPS);[m
+[31m-    tr.querySelector('.pt-ws').textContent    = s2(ptWS);[m
+[32m+[m[32m    }[m
+[32m+[m[32m    return arr;[m
+[32m+[m[32m  };[m
+ [m
+[31m-    tr.querySelector('.qa-ps').textContent    = s2(qaPS);[m
+[31m-    tr.querySelector('.qa-ws').textContent    = s2(qaWS);[m
+[32m+[m[32m  const wwHPS = getCurrentHPS().WW;[m
+[32m+[m[32m  c

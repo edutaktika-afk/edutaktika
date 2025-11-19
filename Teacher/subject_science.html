@@ -163,17 +163,7 @@
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown subject-dropdown">
-      <button id="navSubjectBtn" class="dropbtn" type="button" aria-haspopup="listbox" aria-expanded="false">
-        <span id="navSubjectLabel">Subject</span>
-        <i class="fa fa-caret-down" aria-hidden="true" style="margin-left:6px;font-size:.75rem;"></i>
-      </button>
-      <ul id="navSubjectMenu" class="dropdown-content" role="listbox" aria-labelledby="navSubjectBtn">
-        <li><a href="subject_math.html" data-subject="Math" role="option">Math</a></li>
-        <li><a href="subject_english.html" data-subject="English" role="option">English</a></li>
-        <li><a href="subject_science.html" data-subject="Science" role="option">Science</a></li>
-      </ul>
-    </li>
+                    <li><a href="#" id="lessonNavBtn">Lesson</a></li>
                     <li><a href="studentlist.html">Student</a></li>
                     <li><a href="grading.html">Grading</a></li>
                     <li class="dropdown">
@@ -291,24 +281,91 @@
         <script src="../assets/js/Teacher Side/profile.js"></script>
 
     <script src="../assets/js/Teacher Side/header.js"></script>
+    
+    <script>
+    // Set Lesson button href based on teacher's selected subject
+    // Wait for Firebase to be ready
+    function setLessonButton() {
+        const authInstance = window.auth || (typeof auth !== 'undefined' ? auth : null);
+        if (!authInstance) {
+            // Wait a bit for Firebase to initialize
+            setTimeout(setLessonButton, 100);
+            return;
+        }
+        
+        authInstance.onAuthStateChanged(async function(user) {
+            if (user) {
+                try {
+                    const dbInstance = window.db || (typeof db !== 'undefined' ? db : null);
+                    if (!dbInstance) {
+                        console.error('Database not available');
+                        return;
+                    }
+                    const teacherSnap = await dbInstance.ref('teachers/' + user.uid).once('value');
+                    const teacher = teacherSnap.val();
+                    if (teacher && teacher.subject) {
+                        const subject = teacher.subject.toLowerCase();
+                        const lessonBtn = document.getElementById('lessonNavBtn');
+                        if (lessonBtn) {
+                            // Map subject to page URL
+                            const subjectMap = {
+                                'math': 'subject_math.html',
+                                'english': 'subject_english.html',
+                                'science': 'subject_science.html'
+                            };
+                            const subjectUrl = subjectMap[subject] || 'subject_math.html';
+                            lessonBtn.href = subjectUrl;
+                            console.log(`📚 Lesson button set to: ${subjectUrl} (teacher subject: ${subject})`);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error setting lesson button:', error);
+                }
+            }
+        });
+    }
+    
+    // Start after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setLessonButton);
+    } else {
+        setLessonButton();
+    }
+    </script>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        firebase.auth().onAuthStateChanged(async function(user) {
-            if (!user) {
-                window.location.href = "logreg.html";
-                return;
-            }
-            const uid = user.uid;
-            const snap = await firebase.database().ref('teachers/' + uid).once('value');
-            const teacher = snap.val();
-            if (!teacher || teacher.role !== "teacher") {
-                document.getElementById('mainContent').style.display = "none";
-                alert("Access denied.");
-                await firebase.auth().signOut();
-                window.location.href = "logreg.html";
-            } else {
-                document.getElementById('mainContent').style.display = "block";
+    // Wait for Firebase to be initialized before using it
+    function checkAuthAndAccess() {
+        const authInstance = window.auth || (typeof auth !== 'undefined' ? auth : null);
+        if (!authInstance) {
+            // Wait a bit for Firebase to initialize
+            setTimeout(checkAuthAndAccess, 100);
+            return;
+        }
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            authInstance.onAuthStateChanged(async function(user) {
+                if (!user) {
+                    window.location.href = "logreg.html";
+                    return;
+                }
+                const uid = user.uid;
+                const dbInstance = window.db || (typeof db !== 'undefined' ? db : null);
+                if (!dbInstance) {
+                    console.error('Database not available');
+                    return;
+                }
+                const snap = await dbInstance.ref('teachers/' + uid).once('value');
+                const teacher = snap.val();
+                if (!teacher || teacher.role !== "teacher") {
+                    const mainContent = document.getElementById('mainContent');
+                    if (mainContent) mainContent.style.display = "none";
+                    alert("Access denied.");
+                    await authInstance.signOut();
+                    window.location.href = "logreg.html";
+                } else {
+                    const mainContent = document.getElementById('mainContent');
+                    if (mainContent) mainContent.style.display = "block";
                 
                 // Store teacher's grade level in sessionStorage for Editor
                 if (teacher && teacher.grade) {
@@ -1176,51 +1233,26 @@ function renderDesignsForQuarter(designs, container) {
         return;
     }
     
-    container.innerHTML = `
-        <div class="gallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin: 20px 0;">
-            ${designs.map(design => `
-                <div class="card" style="background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; cursor: pointer; position: relative;" 
-                     onclick="${design.source === 'supabase' ? `openDesignViewer('${design.id}', 'subject_science', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}"
-                     onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.15)'"
-                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'">
-                    <img 
-                        class="card-image" 
-                        src="${design.thumbUrl}" 
-                        alt="${design.name}"
-                        style="width: 100%; height: 160px; object-fit: cover;"
-                        onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'200\'%3E%3Crect fill=\'%23e3f2fd\' width=\'300\' height=\'200\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'20\' fill=\'%231976d2\'%3E${design.name}%3C/text%3E%3C/svg%3E'"
-                    >
-                    <div class="card-content" style="padding: 16px;">
-                        <div class="card-title" style="font-size: 1.1rem; font-weight: 600; color: #333; margin-bottom: 4px;">${design.name}</div>
-                        <div style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Lesson: ${design.name}</div>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
-                            <button onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openDesignViewer('${design.id}', 'subject_science', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}"
-                                    style="background: #2196F3; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);"
-                                    onmouseover="this.style.background='#1976D2'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(33, 150, 243, 0.4)'"
-                                    onmouseout="this.style.background='#2196F3'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(33, 150, 243, 0.3)'">
-                                <i class="fas fa-eye" style="margin-right: 6px;"></i>View Design
-                            </button>
-                            <button onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openDesignEditor('${design.id}', 'subject_science', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignEditor('${encodeURIComponent(design.jsonUrl)}')`}"
-                                    style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);"
-                                    onmouseover="this.style.background='#F57C00'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(255, 152, 0, 0.4)'"
-                                    onmouseout="this.style.background='#FF9800'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(255, 152, 0, 0.3)'">
-                                <i class="fas fa-edit" style="margin-right: 6px;"></i>Edit Design
-                            </button>
-                            ${design.source === 'supabase' ? `
-                            <button onclick="event.stopPropagation(); (async function() { try { if(typeof window.renameDesign === 'function') { await window.renameDesign('${design.id}', 'subject_science', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}', '${design.gradeLevel || ''}'); } else { alert('Rename function not loaded. Please refresh the page.'); console.error('window.renameDesign:', typeof window.renameDesign); } } catch(err) { console.error('Error calling renameDesign:', err); alert('Error: ' + err.message); } })();" 
-                                    style="background: #9C27B0; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(156, 39, 176, 0.3);"
-                                    onmouseover="this.style.background='#7B1FA2'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(156, 39, 176, 0.4)'"
-                                    onmouseout="this.style.background='#9C27B0'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(156, 39, 176, 0.3)'">
-                                <i class="fas fa-tag" style="margin-right: 6px;"></i>Rename
-                            </button>
-                            ` : ''}
-                        </div>
-                        <div style="font-size: 0.8rem; color: #888; margin-top: 8px;">Created: ${design.created || 'Unknown'} ${design.source ? `| ${design.source.toUpperCase()}` : '| SUPABASE'}</div>
-                    </div>
-                </div>
-            `).join('')}
+    container.innerHTML = designs.map(design => `
+        <div class="lesson-item" data-presentation="${design.name}">
+            <div class="lesson-thumbnail" style="background-image: url('${design.thumbUrl}'); background-size: cover; background-position: center; background-color: #e3f2fd;">
+                <img 
+                    src="${design.thumbUrl}" 
+                    alt="${design.name}"
+                    style="width: 100%; height: 100%; object-fit: cover; display: none;"
+                    onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(135deg, #4CAF50 0%, #45a049 100%)'; this.parentElement.innerHTML='<i class=\\'fas fa-book-open\\' style=\\'font-size: 2rem; color: white;\\'></i>';"
+                    onload="this.style.display='block';"
+                >
+            </div>
+            <div class="lesson-title">
+                <h3>${design.name}</h3>
+                <p>${design.description || 'No description available'}</p>
+                <div style="font-size:0.9rem;color:#666;margin:4px 0;">Quarter: ${design.quarter || '1'}</div>
+                <button class="lesson-badge" onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openDesignViewer('${design.id}', 'subject_science', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignViewer('${encodeURIComponent(design.jsonUrl)}')`}" style="cursor:pointer;">View</button>
+                <button class="lesson-badge" onclick="event.stopPropagation(); ${design.source === 'supabase' ? `openDesignEditor('${design.id}', 'subject_science', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}')` : `openDesignEditor('${encodeURIComponent(design.jsonUrl)}')`}" style="cursor:pointer;">Edit</button>
+            </div>
         </div>
-    `;
+    `).join('');
 }
 </script>
 

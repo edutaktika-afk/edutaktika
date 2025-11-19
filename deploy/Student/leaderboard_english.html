@@ -163,7 +163,7 @@
                             </ul>
                         </li>
                         <li>
-                            <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                            <a href="#" id="profileBtn">Profile</a>
                         </li>
                     </ul>
                 </nav>
@@ -192,7 +192,7 @@
         </div>
             <div>
                 <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
-                <strong>ID:</strong> <span id="profileId">-</span>
+                <strong>LRN:</strong> <span id="profileId">-</span>
             </div>
             <div>
                 <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
@@ -345,12 +345,23 @@
                 students.push(s);
             });
 
+
+            // Load assessments to check subject field (since assessment IDs are Firebase push keys)
+            const assessmentsSnapshot = await db.ref('assessments').once('value');
+            const assessments = {};
+            assessmentsSnapshot.forEach(child => {
+                assessments[child.key] = child.val();
+            });
+
             // Calculate English-specific scores
             students.forEach(s => {
                 // English quiz points - only from English quizzes
                 let englishQuizPoints = 0;
-                if (s.quizzes && Array.isArray(s.quizzes.subject_english)) {
-                    s.quizzes.subject_english.forEach(quarterObj => {
+                if (s.quizzes && s.quizzes.subject_english) {
+                    const quarters = Array.isArray(s.quizzes.subject_english)
+                        ? s.quizzes.subject_english
+                        : Object.values(s.quizzes.subject_english);
+                    quarters.forEach(quarterObj => {
                         if (quarterObj && typeof quarterObj === 'object') {
                             Object.values(quarterObj).forEach(quizObj => {
                                 if (
@@ -365,15 +376,25 @@
                     });
                 }
                 
-                // English assessment points - only from English assessments
+                // English assessment points - check subject field from assessments collection
                 let englishAssessmentPoints = 0;
                 if (s.assessments) {
                     Object.keys(s.assessments).forEach(aid => {
-                        // Only count English-related assessments
-                        if (aid.includes('english') || aid === 'assessment2') {
-                            const summary = s.assessments[aid]?.summary;
-                            if (summary && typeof summary.best === 'number') {
-                                englishAssessmentPoints += summary.best;
+                        const summary = s.assessments[aid]?.summary;
+                        if (summary && typeof summary.best === 'number') {
+                            // Check if this assessment is an English assessment by looking up the assessment
+                            const assessment = assessments[aid];
+                            if (assessment && assessment.subject) {
+                                const subjectLower = assessment.subject.toLowerCase();
+                                // Check for English-related subjects
+                                if (subjectLower === 'english') {
+                                    englishAssessmentPoints += summary.best;
+                                }
+                            } else {
+                                // Fallback: check assessment ID pattern (for old assessments)
+                                if (aid.includes('english') || aid === 'assessment2') {
+                                    englishAssessmentPoints += summary.best;
+                                }
                             }
                         }
                     });
@@ -567,6 +588,18 @@
     <script src="../assets/js/navbar.js"></script>
 <!-- Add to each leaderboard page -->
 <script src="../assets/js/leaderboardPagination.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const navLinks = document.querySelectorAll("nav ul li a");
+    const current = window.location.pathname.split('/').pop();
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
+        }
+    });
+});
+</script>
     </div>
 </body>
 </html>

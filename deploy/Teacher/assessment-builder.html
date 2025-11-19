@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assessment Builder - Edutaktika</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.6/quill.snow.css" />
     <link rel="stylesheet" href="../CSS/header.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/dropdown.css">
@@ -16,7 +17,7 @@
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
+
             background: #f8f9fa;
             color: #1a1a1a;
             line-height: 1.8;
@@ -418,7 +419,7 @@
     </style>
 </head>
 <body>
-    <!-- Site Header -->
+
     <header>
         <div class="floating-elements">
             <div class="floating-element"></div>
@@ -431,6 +432,7 @@
                 <div class="logo-icon">
                     <i class="fas fa-graduation-cap"></i>
                 </div>
+                <!-- Replace your logo-text div with this for per-letter bounce -->
                 <div class="logo-text">
                     <span>E</span><span>d</span><span>u</span><span>t</span><span>a</span><span>k</span><span>t</span><span>i</span><span>k</span><span>a</span>
                 </div>
@@ -438,14 +440,7 @@
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="subject_math.html">Math</a></li>
-                            <li><a href="subject_english.html">English</a></li>
-                            <li><a href="subject_science.html">Science</a></li>
-                        </ul>
-                    </li>
+                    <li><a href="#" id="lessonNavBtn">Lesson</a></li>
                     <li><a href="studentlist.html">Student</a></li>
                     <li><a href="grading.html">Grading</a></li>
                     <li class="dropdown">
@@ -456,20 +451,195 @@
                         </ul>
                     </li>
                     <li class="dropdown">
-                        <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="leaderboard_math.html">Math</a></li>
-                            <li><a href="leaderboard_english.html">English</a></li>
-                            <li><a href="leaderboard_science.html">Science</a></li>
-                        </ul>
-                    </li>
+                            <a href="#" class="dropbtn">Leaderboard <i class="fa fa-caret-down"></i></a>
+                            <ul class="dropdown-content">
+                                <li><a href="leaderboard_math.html">Math</a></li>
+                                <li><a href="leaderboard_english.html">English</a></li>
+                                <li><a href="leaderboard_science.html">Science</a></li>
+                            </ul>
+                        </li>
                     <li>
-                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                        <a href="#" id="profileBtn">Profile</a>
                     </li>
                 </ul>
             </nav>
         </div>
     </header>
+
+    
+<!-- Overlay for navbar -->
+<div class="sidebar-overlay" id="navOverlay"></div>
+<!-- Overlay for profile sidebar -->
+<div class="sidebar-overlay" id="profileSidebarOverlay"></div>
+
+ <!-- Profile Sidebar (Dynamic with Firebase) -->
+<div id="profileSidebar" class="profile-sidebar">
+    <div class="sidebar-content">
+        <button class="close-btn" id="closeSidebar">&times;</button>
+        <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
+            <img class="profile-avatar" id="profileAvatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=user" alt="Profile Avatar">
+            <i class="fa-solid fa-star sidebar-star" style="position:absolute; bottom:0; right:10px; color:#ffd700; font-size:1.2rem; background:white; border-radius:50%; padding:2px 4px; box-shadow:0 1px 4px #ffd70044;"></i>
+        </div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <br>
+        <div class="profile-info" style="width:100%;max-width:260px;margin-bottom:24px;">
+            <div class="profile-role" style="color:#2e8b57; font-weight:700; font-size:1.1rem; margin-bottom:8px; letter-spacing:1px; text-align:center;">
+            Teacher
+        </div>
+            <div>
+                <i class="fa-solid fa-id-badge" style="color:violet;margin-right:10px;"></i>
+                <strong>ID:</strong> <span id="profileId">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ff69b4;margin-right:10px;"></i>
+                <strong>First Name:</strong> <span id="profileFirstName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#ffd700;margin-right:10px;"></i>
+                <strong>Middle Name:</strong> <span id="profileMiddleName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-user" style="color:#f14141;margin-right:10px;"></i>
+                <strong>Last Name:</strong> <span id="profileLastName">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-graduation-cap" style="color:#2e8b57;margin-right:10px;"></i>
+                <strong>Grade Level:</strong> <span id="profileGrade">-</span>
+            </div>
+            <div>
+                <i class="fa-solid fa-apple-whole" style="color:#4faaff;margin-right:10px;"></i>
+                <strong>Section:</strong> <span id="profileSection">-</span>
+            </div>
+            <div>
+    <i class="fas fa-map-marker-alt" style="color:#ff69b4;margin-right:10px;"></i>
+    <strong>House/Street:</strong> <span id="profileAddressStreet">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#ffd700;margin-right:10px;"></i>
+    <strong>Barangay:</strong> <span id="profileAddressBarangay">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#4faaff;margin-right:10px;"></i>
+    <strong>City:</strong> <span id="profileAddressCity">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#2e8b57;margin-right:10px;"></i>
+    <strong>Province:</strong> <span id="profileAddressProvince">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:#f14141;margin-right:10px;"></i>
+    <strong>ZIP:</strong> <span id="profileAddressZip">-</span>
+</div>
+<div>
+    <i class="fas fa-map-marker-alt" style="color:violet;margin-right:10px;"></i>
+    <strong>Region:</strong> <span id="profileAddressRegion">-</span>
+</div>
+        </div>
+        <div class="logout-switch-row">
+            <div class="logout-switch" id="logoutSwitch">
+                <div class="logout-switch-circle"></div>
+            </div>
+            <span class="logout-label" id="logoutLabel">LOGOUT</span>
+        </div>
+    </div>
+</div>
+
+        <!-- Firebase App (the core Firebase SDK) -->
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase configuration - MUST be initialized before any Firebase calls
+        // Only initialize if not already initialized (profile.js may have done it)
+        if (typeof firebase !== 'undefined' && (!firebase.apps || firebase.apps.length === 0)) {
+            const firebaseConfig = {
+                apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+                authDomain: "edutaktika.firebaseapp.com",
+                databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+                projectId: "edutaktika",
+                storageBucket: "edutaktika.appspot.com",
+                messagingSenderId: "676848575316",
+                appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+                measurementId: "G-X3GT5TNN87"
+            };
+            try {
+                firebase.initializeApp(firebaseConfig);
+            } catch (e) {
+                console.log('Firebase already initialized');
+            }
+        }
+        
+        // Use global db and auth if available (from profile.js), otherwise create them
+        // Don't redeclare if they already exist
+        if (typeof db === 'undefined') {
+            var db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+        }
+        if (typeof auth === 'undefined') {
+            var auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        }
+        
+        // Make them globally available
+        if (db) window.db = db;
+        if (auth) window.auth = auth;
+    </script>
+
+        <script src="../assets/js/Teacher Side/profile.js"></script>
+        
+
+    <script src="../assets/js/Teacher Side/header.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+    
+    <script>
+    // Set Lesson button href based on teacher's selected subject
+    // Wait for Firebase to be ready
+    function setLessonButton() {
+        const authInstance = window.auth || (typeof auth !== 'undefined' ? auth : null);
+        if (!authInstance) {
+            // Wait a bit for Firebase to initialize
+            setTimeout(setLessonButton, 100);
+            return;
+        }
+        
+        authInstance.onAuthStateChanged(async function(user) {
+            if (user) {
+                try {
+                    const dbInstance = window.db || (typeof db !== 'undefined' ? db : null);
+                    if (!dbInstance) {
+                        console.error('Database not available');
+                        return;
+                    }
+                    const teacherSnap = await dbInstance.ref('teachers/' + user.uid).once('value');
+                    const teacher = teacherSnap.val();
+                    if (teacher && teacher.subject) {
+                        const subject = teacher.subject.toLowerCase();
+                        const lessonBtn = document.getElementById('lessonNavBtn');
+                        if (lessonBtn) {
+                            // Map subject to page URL
+                            const subjectMap = {
+                                'math': 'subject_math.html',
+                                'english': 'subject_english.html',
+                                'science': 'subject_science.html'
+                            };
+                            const subjectUrl = subjectMap[subject] || 'subject_math.html';
+                            lessonBtn.href = subjectUrl;
+                            console.log(`📚 Lesson button set to: ${subjectUrl} (teacher subject: ${subject})`);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error setting lesson button:', error);
+                }
+            }
+        });
+    }
+    
+    // Start after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setLessonButton);
+    } else {
+        setLessonButton();
+    }
+    </script>
 
     <div class="container">
         <!-- Header -->
@@ -542,9 +712,14 @@
                         <i class="fas fa-question-circle"></i> Questions
                     </h3>
                     
-                    <button class="add-question-btn" onclick="openQuestionModal()">
-                        <i class="fas fa-plus"></i> Add Question
-                    </button>
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="add-question-btn" onclick="openQuestionModal()" style="flex: 1;">
+                            <i class="fas fa-plus"></i> Add Single Question
+                        </button>
+                        <button class="btn btn-secondary" onclick="openMultipleQuestionsModal()" style="flex: 1; background: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%);">
+                            <i class="fas fa-list"></i> Add Multiple Questions
+                        </button>
+                    </div>
 
                     <div id="questionsContainer">
                         <!-- Questions will be added here -->
@@ -582,9 +757,76 @@
                     </div>
                 </div>
 
+                <div style="margin-bottom: 15px;">
+                    <div id="autoSaveIndicator" style="display: none; color: #28a745; font-size: 12px; text-align: center; padding: 5px;">
+                        <i class="fas fa-check-circle"></i> Draft saved
+                    </div>
+                </div>
                 <button class="save-assessment-btn" onclick="saveAssessment()">
                     <i class="fas fa-save"></i> Save Assessment
                 </button>
+                <button class="btn btn-secondary" onclick="saveDraft()" style="width: 100%; margin-top: 10px;">
+                    <i class="fas fa-save"></i> Save Draft Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Multiple Questions Modal -->
+    <div id="multipleQuestionsModal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3><i class="fas fa-list"></i> Add Multiple Questions</h3>
+                <button class="close-btn" onclick="closeMultipleQuestionsModal()">&times;</button>
+            </div>
+
+            <div style="padding: 20px;">
+                <!-- Question Type Selector -->
+                <div class="form-group" style="margin-bottom: 25px;">
+                    <label>Select Question Type</label>
+                    <div class="question-type-selector" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                        <div class="question-type-btn" onclick="selectMultipleQuestionType('multiple-choice')" id="multipleTypeBtn">
+                            <i class="fas fa-list-ul"></i>
+                            <span>Multiple Choice</span>
+                        </div>
+                        <div class="question-type-btn" onclick="selectMultipleQuestionType('true-false')" id="trueFalseTypeBtn">
+                            <i class="fas fa-check-circle"></i>
+                            <span>True/False</span>
+                        </div>
+                        <div class="question-type-btn" onclick="selectMultipleQuestionType('short-answer')" id="shortAnswerTypeBtn">
+                            <i class="fas fa-edit"></i>
+                            <span>Short Answer</span>
+                        </div>
+                        <div class="question-type-btn" onclick="selectMultipleQuestionType('essay')" id="essayTypeBtn">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Essay</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Default Points -->
+                <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label for="defaultPoints">Default Points (per question)</label>
+                        <input type="number" id="defaultPoints" value="10" min="1" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label for="questionCount">Number of Questions</label>
+                        <input type="number" id="questionCount" value="5" min="1" max="50" onchange="generateQuestionInputs()" style="width: 100%;">
+                    </div>
+                </div>
+
+                <!-- Questions Container -->
+                <div id="multipleQuestionsContainer" style="margin-top: 20px;">
+                    <!-- Questions will be generated here -->
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px; padding-top: 20px; border-top: 2px solid #e9ecef;">
+                    <button class="btn btn-secondary" onclick="closeMultipleQuestionsModal()">Cancel</button>
+                    <button class="btn btn-primary" onclick="addMultipleQuestions()">
+                        <i class="fas fa-check"></i> Add All Questions
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -618,7 +860,25 @@
 
             <div class="form-group">
                 <label for="questionText">Question Text</label>
-                <textarea id="questionText" placeholder="Enter your question"></textarea>
+                <div id="questionTextEditor" style="min-height: 150px; background: white; border: 2px solid #e9ecef; border-radius: 8px;"></div>
+                <input type="hidden" id="questionText" />
+            </div>
+
+            <div class="form-group">
+                <label>Question Image (Optional)</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="file" id="questionImageInput" accept="image/*" style="display: none;" onchange="handleQuestionImageUpload(event)">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('questionImageInput').click()">
+                        <i class="fas fa-image"></i> Upload Image
+                    </button>
+                    <div id="questionImagePreview" style="display: none;">
+                        <img id="questionImagePreviewImg" src="" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 2px solid #e9ecef;">
+                        <button type="button" class="btn btn-danger" onclick="removeQuestionImage()" style="margin-left: 10px; padding: 5px 10px;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <input type="hidden" id="questionImageUrl" />
             </div>
 
             <div class="form-group">
@@ -647,38 +907,330 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <!-- Rich Text Editor -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
-            authDomain: "edutaktika.firebaseapp.com",
-            databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
-            projectId: "edutaktika",
-            storageBucket: "edutaktika.appspot.com",
-            messagingSenderId: "676848575316",
-            appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
-            measurementId: "G-X3GT5TNN87"
-        };
+        // Wait for Firebase to be initialized by profile.js
+        function waitForFirebase(callback) {
+            // Check if Firebase is initialized (not just if the SDK is loaded)
+            // In compat mode, we check if firebase.app() exists (which means an app was initialized)
+            try {
+                if (window.firebase && 
+                    typeof firebase.database === 'function' && 
+                    typeof firebase.auth === 'function' && 
+                    typeof firebase.storage === 'function') {
+                    // Try to access the default app - if it throws, it's not initialized
+                    try {
+                        firebase.app(); // This will throw if no app is initialized
+                        callback();
+                        return;
+                    } catch (e) {
+                        // App not initialized yet, wait
+                    }
+                }
+            } catch (e) {
+                // Firebase SDK not loaded yet
+            }
+            setTimeout(() => waitForFirebase(callback), 100);
+        }
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const auth = firebase.auth();
+        // Get Firebase instances after initialization
+        // Note: profile.js already declares const db and const auth globally
+        // We can't redeclare them, so we use the existing global variables
+        let storage;
+        waitForFirebase(function() {
+            // db and auth are already declared as const in profile.js, so we use them directly
+            // Only initialize storage if it doesn't exist
+            try {
+                if (typeof storage === 'undefined') {
+                    storage = firebase.storage();
+                }
+            } catch (error) {
+                console.error('Error initializing storage:', error);
+            }
+        });
 
         // Global variables
         let questions = [];
         let currentQuestionType = '';
         let editingQuestionIndex = -1;
+        let questionEditor = null; // Rich text editor instance
+        let autoSaveInterval = null;
+        let currentDraftId = null;
+
+        // Define functions early and make them globally accessible for onclick handlers
+        // These will be properly defined later, but we need stubs for onclick handlers
+        window.openQuestionModal = function() {
+            // This stub will be replaced by the actual function definition later
+            // Just show the modal without calling resetQuestionForm to avoid initialization issues
+            const modal = document.getElementById('questionModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        };
+
+        window.openMultipleQuestionsModal = function() {
+            // This stub will be replaced by the actual function definition later
+            // Just show the modal without calling functions to avoid initialization issues
+            const modal = document.getElementById('multipleQuestionsModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        };
+
+        // Initialize Rich Text Editor
+        function initQuestionEditor() {
+            const editorElement = document.getElementById('questionTextEditor');
+            if (!editorElement) {
+                console.warn('Question text editor element not found');
+                return;
+            }
+
+            // Check if Quill is available
+            if (typeof Quill === 'undefined') {
+                console.error('Quill library not loaded');
+                return;
+            }
+
+            // If editor already exists, properly destroy it first
+            if (questionEditor) {
+                try {
+                    // Quill doesn't have a destroy method, but we can remove the instance
+                    // and clear the element to reinitialize
+                    const quillContainer = editorElement.querySelector('.ql-container');
+                    if (quillContainer) {
+                        quillContainer.remove();
+                    }
+                    questionEditor = null;
+                } catch (e) {
+                    console.warn('Error cleaning up existing editor:', e);
+                    // Force clear the element
+                    editorElement.innerHTML = '';
+                }
+            }
+
+            // Clear any existing Quill-generated content
+            editorElement.innerHTML = '';
+
+            try {
+                questionEditor = new Quill('#questionTextEditor', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['link', 'image'],
+                            ['clean']
+                        ]
+                    },
+                    placeholder: 'Enter your question...'
+                });
+                console.log('Rich text editor initialized successfully');
+            } catch (error) {
+                console.error('Error initializing Quill editor:', error);
+                questionEditor = null;
+            }
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Check authentication
-            auth.onAuthStateChanged(function(user) {
-                if (!user) {
-                    window.location.href = 'logreg.html';
+            // Wait for Firebase to be ready before using auth
+            waitForFirebase(function() {
+                // Use the global auth from profile.js (now available as window.auth)
+                const authInstance = window.auth || (typeof auth !== 'undefined' ? auth : firebase.auth());
+                if (authInstance) {
+                    authInstance.onAuthStateChanged(function(user) {
+                        if (!user) {
+                            window.location.href = 'logreg.html';
+                        } else {
+                            // Don't initialize editor here - it will be initialized when modal opens
+                            // The modal is hidden, so Quill won't work properly
+                            
+                            // Load draft if exists
+                            loadDraft();
+                            
+                            // Start auto-save (every 30 seconds)
+                            startAutoSave();
+                            
+                            // Check if editing existing assessment
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const assessmentId = urlParams.get('id');
+                            if (assessmentId) {
+                                loadAssessmentForEdit(assessmentId);
+                            }
+                        }
+                    });
+                } else {
+                    // Fallback: use firebase.auth() directly
+                    firebase.auth().onAuthStateChanged(function(user) {
+                        if (!user) {
+                            window.location.href = 'logreg.html';
+                        } else {
+                            // Don't initialize editor here - it will be initialized when modal opens
+                            // The modal is hidden, so Quill won't work properly
+                            
+                            // Load draft if exists
+                            loadDraft();
+                            
+                            // Start auto-save (every 30 seconds)
+                            startAutoSave();
+                            
+                            // Check if editing existing assessment
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const assessmentId = urlParams.get('id');
+                            if (assessmentId) {
+                                loadAssessmentForEdit(assessmentId);
+                            }
+                        }
+                    });
                 }
             });
         });
+
+        // Auto-save functionality
+        function startAutoSave() {
+            autoSaveInterval = setInterval(() => {
+                saveDraft();
+            }, 30000); // Auto-save every 30 seconds
+        }
+
+        function saveDraft() {
+            const title = document.getElementById('assessmentTitle').value.trim();
+            if (!title && questions.length === 0) return; // Don't save empty drafts
+
+            // Check if db and auth are available (from profile.js via window)
+            const dbInstance = window.db || (typeof db !== 'undefined' ? db : null);
+            const authInstance = window.auth || (typeof auth !== 'undefined' ? auth : null);
+            if (!dbInstance || !authInstance) {
+                console.warn('Firebase not initialized yet');
+                return;
+            }
+
+            const draft = {
+                title: title || 'Untitled Assessment',
+                description: document.getElementById('assessmentDescription').value.trim(),
+                subject: document.getElementById('subject').value,
+                gradeLevel: document.getElementById('gradeLevel').value,
+                timeLimit: parseInt(document.getElementById('timeLimit').value) || 60,
+                passingScore: parseInt(document.getElementById('passingScore').value) || 70,
+                questions: questions,
+                settings: {
+                    shuffleQuestions: document.getElementById('shuffleQuestions').checked,
+                    showResults: document.getElementById('showResults').checked,
+                    allowReview: document.getElementById('allowReview').checked
+                },
+                lastSaved: new Date().toISOString()
+            };
+
+            const user = authInstance.currentUser;
+            if (!user) return;
+
+            const draftRef = currentDraftId 
+                ? dbInstance.ref(`drafts/${user.uid}/${currentDraftId}`)
+                : dbInstance.ref(`drafts/${user.uid}`).push();
+
+            if (!currentDraftId) {
+                currentDraftId = draftRef.key;
+            }
+
+            draftRef.set(draft)
+                .then(() => {
+                    console.log('Draft auto-saved');
+                    showAutoSaveIndicator();
+                })
+                .catch(error => {
+                    console.error('Error saving draft:', error);
+                });
+        }
+
+        function loadDraft() {
+            // Check if db and auth are available (from profile.js via window)
+            const dbInstance = window.db || (typeof db !== 'undefined' ? db : null);
+            const authInstance = window.auth || (typeof auth !== 'undefined' ? auth : null);
+            if (!dbInstance || !authInstance) {
+                console.warn('Firebase not initialized yet');
+                return;
+            }
+
+            const user = authInstance.currentUser;
+            if (!user) return;
+
+            dbInstance.ref(`drafts/${user.uid}`).once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const drafts = snapshot.val();
+                        const draftKeys = Object.keys(drafts);
+                        if (draftKeys.length > 0) {
+                            const latestDraftKey = draftKeys[draftKeys.length - 1];
+                            const draft = drafts[latestDraftKey];
+                            currentDraftId = latestDraftKey;
+
+                            if (confirm('Found a saved draft. Would you like to continue where you left off?')) {
+                                loadDraftData(draft);
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading draft:', error);
+                });
+        }
+
+        function loadDraftData(draft) {
+            document.getElementById('assessmentTitle').value = draft.title || '';
+            document.getElementById('assessmentDescription').value = draft.description || '';
+            document.getElementById('subject').value = draft.subject || '';
+            document.getElementById('gradeLevel').value = draft.gradeLevel || '';
+            document.getElementById('timeLimit').value = draft.timeLimit || '';
+            document.getElementById('passingScore').value = draft.passingScore || '';
+            
+            if (draft.questions) {
+                questions = draft.questions;
+                renderQuestions();
+                updatePreview();
+            }
+
+            if (draft.settings) {
+                document.getElementById('shuffleQuestions').checked = draft.settings.shuffleQuestions || false;
+                document.getElementById('showResults').checked = draft.settings.showResults || false;
+                document.getElementById('allowReview').checked = draft.settings.allowReview || false;
+            }
+        }
+
+        function showAutoSaveIndicator() {
+            const indicator = document.getElementById('autoSaveIndicator');
+            if (indicator) {
+                indicator.style.display = 'block';
+                indicator.textContent = 'Draft saved';
+                setTimeout(() => {
+                    indicator.style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        // Load assessment for editing
+        function loadAssessmentForEdit(assessmentId) {
+            // Check if db is available (from profile.js via window)
+            const dbInstance = window.db || (typeof db !== 'undefined' ? db : null);
+            if (!dbInstance) {
+                console.warn('Firebase not initialized yet');
+                return;
+            }
+
+            dbInstance.ref('assessments/' + assessmentId).once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const assessment = snapshot.val();
+                        loadDraftData(assessment);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading assessment:', error);
+                });
+        }
 
         // Question type selection
         function selectQuestionType(type) {
@@ -752,11 +1304,72 @@
             button.closest('.option-item').remove();
         }
 
-        // Open question modal
+        // Open question modal (make sure it's globally accessible)
         function openQuestionModal() {
-            document.getElementById('questionModal').style.display = 'flex';
-            resetQuestionForm();
+            const modal = document.getElementById('questionModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                
+                // Reset form first (but don't clear editor if it doesn't exist yet)
+                resetQuestionForm();
+                
+                // Initialize the rich text editor when modal opens
+                // Use a small delay to ensure the modal is fully visible and DOM is ready
+                setTimeout(() => {
+                    const editorElement = document.getElementById('questionTextEditor');
+                    if (!editorElement) {
+                        console.error('Question text editor element not found in DOM');
+                        return;
+                    }
+                    
+                    // Check if Quill is loaded
+                    if (typeof Quill === 'undefined') {
+                        console.error('Quill library not loaded. Make sure the Quill script is included.');
+                        // Try waiting a bit more for Quill to load
+                        setTimeout(() => {
+                            if (typeof Quill !== 'undefined') {
+                                initQuestionEditor();
+                            } else {
+                                console.error('Quill library still not loaded after retry');
+                            }
+                        }, 500);
+                        return;
+                    }
+                    
+                    // Always reinitialize the editor when modal opens to ensure it's fresh
+                    // Check if editor already exists in the DOM
+                    const existingEditor = editorElement.querySelector('.ql-container');
+                    
+                    // If editor exists, destroy it first
+                    if (existingEditor || questionEditor) {
+                        // Remove Quill-generated elements
+                        if (existingEditor) {
+                            existingEditor.remove();
+                        }
+                        questionEditor = null;
+                    }
+                    
+                    // Clear the element completely
+                    editorElement.innerHTML = '';
+                    
+                    // Initialize fresh editor
+                    initQuestionEditor();
+                    
+                    // Ensure editor is ready before allowing interaction
+                    if (questionEditor) {
+                        // Focus the editor after a brief delay
+                        setTimeout(() => {
+                            if (questionEditor && questionEditor.root) {
+                                questionEditor.root.focus();
+                            }
+                        }, 200);
+                    }
+                }, 150);
+            }
         }
+        
+        // Make it globally accessible (replace the stub)
+        window.openQuestionModal = openQuestionModal;
 
         // Close question modal
         function closeQuestionModal() {
@@ -766,8 +1379,31 @@
 
         // Reset question form
         function resetQuestionForm() {
-            document.getElementById('questionText').value = '';
-            document.getElementById('questionPoints').value = '10';
+            // Only clear editor if it's already initialized
+            // Don't try to clear if it doesn't exist yet (will be initialized in openQuestionModal)
+            try {
+                if (questionEditor && typeof questionEditor.root !== 'undefined') {
+                    // Use root.innerHTML to clear, or setContents with empty delta
+                    questionEditor.root.innerHTML = '<p><br></p>';
+                }
+            } catch (error) {
+                // questionEditor might not be initialized yet, which is fine
+                // This is expected when opening modal for the first time
+            }
+            
+            // Clear other form fields
+            const questionTextInput = document.getElementById('questionText');
+            if (questionTextInput) questionTextInput.value = '';
+            
+            const questionPointsInput = document.getElementById('questionPoints');
+            if (questionPointsInput) questionPointsInput.value = '10';
+            
+            const questionImageUrlInput = document.getElementById('questionImageUrl');
+            if (questionImageUrlInput) questionImageUrlInput.value = '';
+            
+            const questionImagePreview = document.getElementById('questionImagePreview');
+            if (questionImagePreview) questionImagePreview.style.display = 'none';
+            
             currentQuestionType = '';
             editingQuestionIndex = -1;
             
@@ -775,15 +1411,109 @@
                 btn.classList.remove('selected');
             });
             
-            document.getElementById('optionsContainer').style.display = 'none';
+            const optionsContainer = document.getElementById('optionsContainer');
+            if (optionsContainer) optionsContainer.style.display = 'none';
+        }
+
+        // Handle question image upload
+        function handleQuestionImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                alert('Image size must be less than 5MB');
+                return;
+            }
+
+            // Check if auth and storage are available
+            const authInstance = window.auth || (typeof auth !== 'undefined' ? auth : null);
+            if (!authInstance || typeof storage === 'undefined') {
+                console.warn('Firebase not initialized yet');
+                alert('Firebase not initialized. Please refresh the page.');
+                return;
+            }
+
+            const user = authInstance.currentUser;
+            if (!user) return;
+
+            // Show loading
+            const preview = document.getElementById('questionImagePreview');
+            preview.style.display = 'flex';
+            preview.innerHTML = '<p>Uploading...</p>';
+
+            // Upload to Firebase Storage
+            const storageRef = storage.ref(`assessment-images/${user.uid}/${Date.now()}_${file.name}`);
+            const uploadTask = storageRef.put(file);
+
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    // Progress tracking (optional)
+                },
+                (error) => {
+                    console.error('Error uploading image:', error);
+                    alert('Error uploading image. Please try again.');
+                    preview.style.display = 'none';
+                },
+                () => {
+                    // Upload complete
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        document.getElementById('questionImageUrl').value = downloadURL;
+                        document.getElementById('questionImagePreviewImg').src = downloadURL;
+                        preview.innerHTML = `
+                            <img id="questionImagePreviewImg" src="${downloadURL}" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 2px solid #e9ecef;">
+                            <button type="button" class="btn btn-danger" onclick="removeQuestionImage()" style="margin-left: 10px; padding: 5px 10px;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                    });
+                }
+            );
+        }
+
+        // Remove question image
+        function removeQuestionImage() {
+            document.getElementById('questionImageUrl').value = '';
+            document.getElementById('questionImagePreview').style.display = 'none';
+            document.getElementById('questionImageInput').value = '';
         }
 
         // Add question
         function addQuestion() {
-            const questionText = document.getElementById('questionText').value.trim();
+            // Get text from rich text editor
+            let questionTextHtml = '';
+            let questionTextPlain = '';
+            
+            if (questionEditor && questionEditor.root) {
+                try {
+                    questionTextHtml = questionEditor.root.innerHTML;
+                    questionTextPlain = questionEditor.getText().trim();
+                } catch (error) {
+                    console.error('Error getting editor content:', error);
+                    // Fallback to hidden input if editor fails
+                    const hiddenInput = document.getElementById('questionText');
+                    if (hiddenInput) {
+                        questionTextPlain = hiddenInput.value.trim();
+                        questionTextHtml = questionTextPlain;
+                    }
+                }
+            } else {
+                // Fallback to hidden input if editor not initialized
+                const hiddenInput = document.getElementById('questionText');
+                if (hiddenInput) {
+                    questionTextPlain = hiddenInput.value.trim();
+                    questionTextHtml = questionTextPlain;
+                }
+            }
+            
+            const questionImageUrl = document.getElementById('questionImageUrl').value;
             const questionPoints = parseInt(document.getElementById('questionPoints').value) || 10;
 
-            if (!questionText) {
+            if (!questionTextPlain) {
                 alert('Please enter question text');
                 return;
             }
@@ -796,7 +1526,9 @@
             const question = {
                 id: Date.now(),
                 type: currentQuestionType,
-                text: questionText,
+                text: questionTextPlain, // Plain text for compatibility
+                textHtml: questionTextHtml, // Rich text HTML
+                imageUrl: questionImageUrl || null,
                 points: questionPoints,
                 options: [],
                 correctAnswer: null
@@ -837,8 +1569,24 @@
             const question = questions[index];
             editingQuestionIndex = index;
 
-            document.getElementById('questionText').value = question.text;
+            // Open modal first
+            const modal = document.getElementById('questionModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+            
+            // Set other form fields immediately
+            document.getElementById('questionText').value = question.text || '';
             document.getElementById('questionPoints').value = question.points;
+
+            // Load image if exists
+            if (question.imageUrl) {
+                document.getElementById('questionImageUrl').value = question.imageUrl;
+                document.getElementById('questionImagePreviewImg').src = question.imageUrl;
+                document.getElementById('questionImagePreview').style.display = 'flex';
+            } else {
+                document.getElementById('questionImagePreview').style.display = 'none';
+            }
 
             // Select question type
             document.querySelectorAll('.question-type-btn').forEach(btn => {
@@ -869,7 +1617,49 @@
                 });
             }
 
-            document.getElementById('questionModal').style.display = 'flex';
+            // Wait for editor to be initialized, then set content
+            const trySetEditorContent = () => {
+                if (questionEditor && questionEditor.root) {
+                    try {
+                        if (question.textHtml) {
+                            questionEditor.root.innerHTML = question.textHtml;
+                        } else if (question.text) {
+                            questionEditor.setText(question.text);
+                        } else {
+                            questionEditor.root.innerHTML = '<p><br></p>';
+                        }
+                    } catch (error) {
+                        console.error('Error setting editor content:', error);
+                        // Fallback to plain text
+                        if (question.text) {
+                            questionEditor.setText(question.text);
+                        }
+                    }
+                } else {
+                    // Editor not ready yet, retry after a short delay
+                    setTimeout(trySetEditorContent, 100);
+                }
+            };
+            
+            // Initialize editor if needed, then set content
+            setTimeout(() => {
+                const editorElement = document.getElementById('questionTextEditor');
+                if (editorElement) {
+                    const existingEditor = editorElement.querySelector('.ql-container');
+                    if (!existingEditor || !questionEditor) {
+                        // Remove existing editor if present
+                        if (existingEditor) {
+                            existingEditor.remove();
+                        }
+                        questionEditor = null;
+                        editorElement.innerHTML = '';
+                        // Initialize fresh editor
+                        initQuestionEditor();
+                    }
+                    // Wait a bit for editor to be ready, then set content
+                    setTimeout(trySetEditorContent, 200);
+                }
+            }, 150);
         }
 
         // Delete question
@@ -906,7 +1696,10 @@
                             </button>
                         </div>
                     </div>
-                    <div class="question-text">${question.text}</div>
+                    <div class="question-text">
+                        ${question.textHtml ? question.textHtml : question.text}
+                        ${question.imageUrl ? `<img src="${question.imageUrl}" alt="Question image" style="max-width: 100%; margin-top: 10px; border-radius: 8px;">` : ''}
+                    </div>
                     ${question.options.length > 0 ? `
                         <div class="question-options">
                             ${question.options.map((option, i) => `
@@ -983,6 +1776,21 @@
                 return;
             }
 
+            // Check if db and auth are available (from profile.js via window)
+            const dbInstance = window.db || (typeof db !== 'undefined' ? db : null);
+            const authInstance = window.auth || (typeof auth !== 'undefined' ? auth : null);
+            if (!dbInstance || !authInstance) {
+                console.warn('Firebase not initialized yet');
+                alert('Firebase not initialized. Please refresh the page.');
+                return;
+            }
+
+            const user = authInstance.currentUser;
+            if (!user) {
+                alert('You must be logged in to save an assessment');
+                return;
+            }
+
             const assessment = {
                 title,
                 description,
@@ -998,14 +1806,20 @@
                     allowReview: document.getElementById('allowReview').checked
                 },
                 createdAt: new Date().toISOString(),
-                createdBy: auth.currentUser.uid,
+                createdBy: user.uid,
                 totalPoints: questions.reduce((sum, q) => sum + q.points, 0)
             };
 
             // Save to Firebase
-            const assessmentRef = db.ref('assessments').push();
+            const assessmentRef = dbInstance.ref('assessments').push();
             assessmentRef.set(assessment)
                 .then(() => {
+                    // Delete draft after successful save
+                    if (currentDraftId && user) {
+                        dbInstance.ref(`drafts/${user.uid}/${currentDraftId}`).remove();
+                        currentDraftId = null;
+                    }
+
                     alert('Assessment saved successfully!');
                     // Reset form
                     document.getElementById('assessmentTitle').value = '';
@@ -1024,11 +1838,311 @@
                 });
         }
 
+        // Multiple Questions Functions
+        let currentMultipleQuestionType = 'multiple-choice';
+        let multipleQuestionEditors = []; // Store Quill editor instances for multiple questions
+
+        // Make sure it's globally accessible
+        function openMultipleQuestionsModal() {
+            const modal = document.getElementById('multipleQuestionsModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                currentMultipleQuestionType = 'multiple-choice';
+                
+                // Use a small delay to ensure modal is visible and DOM is ready
+                setTimeout(() => {
+                    // Select the question type (this will also call generateQuestionInputs)
+                    if (typeof selectMultipleQuestionType === 'function') {
+                        selectMultipleQuestionType('multiple-choice');
+                    } else {
+                        // Fallback: directly call generateQuestionInputs if selectMultipleQuestionType doesn't exist
+                        if (typeof generateQuestionInputs === 'function') {
+                            generateQuestionInputs();
+                        } else {
+                            console.error('generateQuestionInputs function not found');
+                        }
+                    }
+                }, 100);
+            }
+        }
+        
+        // Make it globally accessible (replace the stub)
+        window.openMultipleQuestionsModal = openMultipleQuestionsModal;
+
+        function closeMultipleQuestionsModal() {
+            document.getElementById('multipleQuestionsModal').style.display = 'none';
+            document.getElementById('multipleQuestionsContainer').innerHTML = '';
+            document.getElementById('questionCount').value = '5';
+            document.getElementById('defaultPoints').value = '10';
+            // Clear editor references
+            multipleQuestionEditors = [];
+        }
+
+        function selectMultipleQuestionType(type) {
+            currentMultipleQuestionType = type;
+            
+            // Update UI
+            document.querySelectorAll('#multipleQuestionsModal .question-type-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            const btnMap = {
+                'multiple-choice': 'multipleTypeBtn',
+                'true-false': 'trueFalseTypeBtn',
+                'short-answer': 'shortAnswerTypeBtn',
+                'essay': 'essayTypeBtn'
+            };
+            
+            const btn = document.getElementById(btnMap[type]);
+            if (btn) btn.classList.add('selected');
+            
+            generateQuestionInputs();
+        }
+        
+        // Make functions globally accessible for onclick handlers
+        window.selectMultipleQuestionType = selectMultipleQuestionType;
+        window.generateQuestionInputs = generateQuestionInputs;
+
+        function generateQuestionInputs() {
+            const questionCountEl = document.getElementById('questionCount');
+            const defaultPointsEl = document.getElementById('defaultPoints');
+            const container = document.getElementById('multipleQuestionsContainer');
+            
+            if (!container) {
+                console.error('multipleQuestionsContainer not found');
+                return;
+            }
+            
+            const count = questionCountEl ? parseInt(questionCountEl.value) || 5 : 5;
+            const defaultPoints = defaultPointsEl ? parseInt(defaultPointsEl.value) || 10 : 10;
+            
+            container.innerHTML = '';
+
+            for (let i = 0; i < count; i++) {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'multiple-question-item';
+                questionDiv.style.cssText = 'background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 12px; padding: 20px; margin-bottom: 15px;';
+
+                let questionHtml = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h4 style="color: #2e8b57; margin: 0;">Question ${i + 1}</h4>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label style="font-size: 12px; color: #6c757d;">Points:</label>
+                            <input type="number" class="question-points-input" value="${defaultPoints}" min="1" style="width: 60px; padding: 5px; border: 1px solid #e9ecef; border-radius: 4px;">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label>Question Text</label>
+                        <div id="multipleQuestionEditor_${i}" style="min-height: 150px; background: white; border: 2px solid #e9ecef; border-radius: 8px; margin-bottom: 10px;"></div>
+                        <input type="hidden" class="question-text-input" id="questionText_${i}" />
+                    </div>
+                `;
+
+                // Add options for multiple choice and true/false
+                if (currentMultipleQuestionType === 'multiple-choice') {
+                    questionHtml += `
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label style="font-weight: bold; margin-bottom: 10px; display: block;">Options (select correct answer)</label>
+                            <div class="options-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: white; border: 2px solid #e9ecef; border-radius: 8px;">
+                                    <input type="radio" name="correct_${i}" value="0" class="correct-answer-radio" style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;">
+                                    <input type="text" class="option-input" placeholder="Option A" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; min-width: 0; width: 100%;">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: white; border: 2px solid #e9ecef; border-radius: 8px;">
+                                    <input type="radio" name="correct_${i}" value="1" class="correct-answer-radio" style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;">
+                                    <input type="text" class="option-input" placeholder="Option B" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; min-width: 0; width: 100%;">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: white; border: 2px solid #e9ecef; border-radius: 8px;">
+                                    <input type="radio" name="correct_${i}" value="2" class="correct-answer-radio" style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;">
+                                    <input type="text" class="option-input" placeholder="Option C" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; min-width: 0; width: 100%;">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: white; border: 2px solid #e9ecef; border-radius: 8px;">
+                                    <input type="radio" name="correct_${i}" value="3" class="correct-answer-radio" style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;">
+                                    <input type="text" class="option-input" placeholder="Option D" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; min-width: 0; width: 100%;">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (currentMultipleQuestionType === 'true-false') {
+                    questionHtml += `
+                        <div class="form-group">
+                            <label>Correct Answer</label>
+                            <div style="display: flex; gap: 15px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="radio" name="correct_${i}" value="0" class="correct-answer-radio">
+                                    <span>True</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="radio" name="correct_${i}" value="1" class="correct-answer-radio">
+                                    <span>False</span>
+                                </label>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                questionDiv.innerHTML = questionHtml;
+                container.appendChild(questionDiv);
+            }
+            
+            // Initialize Quill editors for all questions after a short delay
+            setTimeout(() => {
+                initializeMultipleQuestionEditors();
+            }, 100);
+        }
+        
+        // Initialize Quill editors for multiple questions
+        function initializeMultipleQuestionEditors() {
+            // Clear existing editors array
+            multipleQuestionEditors = [];
+            
+            // Check if Quill is available
+            if (typeof Quill === 'undefined') {
+                console.error('Quill library not loaded');
+                return;
+            }
+            
+            const questionCountEl = document.getElementById('questionCount');
+            const count = questionCountEl ? parseInt(questionCountEl.value) || 5 : 5;
+            
+            for (let i = 0; i < count; i++) {
+                const editorElement = document.getElementById(`multipleQuestionEditor_${i}`);
+                if (!editorElement) {
+                    console.warn(`Editor element not found for question ${i + 1}`);
+                    continue;
+                }
+                
+                try {
+                    // Clear any existing content
+                    editorElement.innerHTML = '';
+                    
+                    // Create new Quill instance
+                    const editor = new Quill(`#multipleQuestionEditor_${i}`, {
+                        theme: 'snow',
+                        modules: {
+                            toolbar: [
+                                [{ 'header': [1, 2, 3, false] }],
+                                ['bold', 'italic', 'underline'],
+                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                ['link', 'image'],
+                                ['clean']
+                            ]
+                        },
+                        placeholder: 'Enter your question...'
+                    });
+                    
+                    // Store editor reference
+                    multipleQuestionEditors[i] = editor;
+                    
+                    // Update hidden input when editor content changes
+                    editor.on('text-change', function() {
+                        const hiddenInput = document.getElementById(`questionText_${i}`);
+                        if (hiddenInput) {
+                            hiddenInput.value = editor.getText().trim();
+                        }
+                    });
+                    
+                } catch (error) {
+                    console.error(`Error initializing editor for question ${i + 1}:`, error);
+                    multipleQuestionEditors[i] = null;
+                }
+            }
+        }
+
+        function addMultipleQuestions() {
+            const questionItems = document.querySelectorAll('.multiple-question-item');
+            const defaultPoints = parseInt(document.getElementById('defaultPoints').value) || 10;
+            let added = 0;
+            let skipped = 0;
+
+            questionItems.forEach((item, index) => {
+                // Get question text from Quill editor
+                let questionText = '';
+                let questionTextHtml = '';
+                
+                if (multipleQuestionEditors[index]) {
+                    questionText = multipleQuestionEditors[index].getText().trim();
+                    questionTextHtml = multipleQuestionEditors[index].root.innerHTML;
+                } else {
+                    // Fallback to hidden input if editor not available
+                    const hiddenInput = document.getElementById(`questionText_${index}`);
+                    if (hiddenInput) {
+                        questionText = hiddenInput.value.trim();
+                    }
+                }
+                
+                if (!questionText) {
+                    skipped++;
+                    return;
+                }
+
+                const points = parseInt(item.querySelector('.question-points-input').value) || defaultPoints;
+                
+                const question = {
+                    id: Date.now() + index,
+                    type: currentMultipleQuestionType,
+                    text: questionText, // Plain text for compatibility
+                    textHtml: questionTextHtml || questionText, // Rich text HTML
+                    imageUrl: null,
+                    points: points,
+                    options: [],
+                    correctAnswer: null
+                };
+
+                if (currentMultipleQuestionType === 'multiple-choice') {
+                    const optionInputs = item.querySelectorAll('.option-input');
+                    const correctRadio = item.querySelector('.correct-answer-radio:checked');
+                    
+                    const options = Array.from(optionInputs)
+                        .map(input => input.value.trim())
+                        .filter(val => val);
+
+                    if (options.length < 2) {
+                        skipped++;
+                        return;
+                    }
+
+                    question.options = options;
+                    question.correctAnswer = correctRadio ? parseInt(correctRadio.value) : 0;
+                } else if (currentMultipleQuestionType === 'true-false') {
+                    const correctRadio = item.querySelector('.correct-answer-radio:checked');
+                    question.options = ['True', 'False'];
+                    question.correctAnswer = correctRadio ? parseInt(correctRadio.value) : 0;
+                }
+
+                questions.push(question);
+                added++;
+            });
+
+            if (added > 0) {
+                renderQuestions();
+                updatePreview();
+                closeMultipleQuestionsModal();
+                alert(`Successfully added ${added} question(s)${skipped > 0 ? ` (${skipped} skipped - empty questions)` : ''}`);
+            } else {
+                alert('No valid questions to add. Please fill in at least one question.');
+            }
+        }
+
+
         // Logout function
         function logout() {
-            auth.signOut().then(() => {
-                window.location.href = 'logreg.html';
-            });
+            // Check if auth is available (from profile.js via window)
+            const authInstance = window.auth || (typeof auth !== 'undefined' ? auth : null);
+            if (!authInstance) {
+                // Fallback: use firebase.auth() directly
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    firebase.auth().signOut().then(() => {
+                        window.location.href = 'logreg.html';
+                    });
+                } else {
+                    window.location.href = 'logreg.html';
+                }
+            } else {
+                authInstance.signOut().then(() => {
+                    window.location.href = 'logreg.html';
+                });
+            }
         }
     </script>
 
@@ -1081,5 +2195,7 @@
             <p>&copy; 2025 Eduktaktika. All rights reserved.</p>
         </div>
     </footer>
+
+    <script src="../assets/js/navbar.js"></script>
 </body>
 </html>

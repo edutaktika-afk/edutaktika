@@ -223,14 +223,7 @@
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="subject_math.html">Math</a></li>
-                            <li><a href="subject_english.html">English</a></li>
-                            <li><a href="subject_science.html">Science</a></li>
-                        </ul>
-                        </li>
+                    <li><a href="#" id="lessonNavBtn">Lesson</a></li>
                     <li><a href="studentlist.html">Student</a></li>
                     <li><a href="grading.html">Grading</a></li>
                     <li class="dropdown">
@@ -249,7 +242,7 @@
                             </ul>
                         </li>
                     <li>
-                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                        <a href="#" id="profileBtn">Profile</a>
                     </li>
                 </ul>
             </nav>
@@ -339,6 +332,35 @@
             <script src="../assets/js/Teacher Side/profile.js"></script>
 
             <script src="../assets/js/Teacher Side/header.js"></script>
+            
+            <script>
+            // Set Lesson button href based on teacher's selected subject
+            firebase.auth().onAuthStateChanged(async function(user) {
+                if (user) {
+                    try {
+                        const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
+                        const teacher = teacherSnap.val();
+                        if (teacher && teacher.subject) {
+                            const subject = teacher.subject.toLowerCase();
+                            const lessonBtn = document.getElementById('lessonNavBtn');
+                            if (lessonBtn) {
+                                // Map subject to page URL
+                                const subjectMap = {
+                                    'math': 'subject_math.html',
+                                    'english': 'subject_english.html',
+                                    'science': 'subject_science.html'
+                                };
+                                const subjectUrl = subjectMap[subject] || 'subject_math.html';
+                                lessonBtn.href = subjectUrl;
+                                console.log(`📚 Lesson button set to: ${subjectUrl} (teacher subject: ${subject})`);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error setting lesson button:', error);
+                    }
+                }
+            });
+            </script>
 
   <div class="container">
     <div class="topbar">
@@ -504,7 +526,7 @@
     updateSubjectUI();
 
     // Tests: Add Test 1 -> Test 2 -> ...
-    const TEST_TYPES = ['Multiple Choice','True or False','Identification','Matching Type','Short Answer','Sorting','Multiple Choice (2)'];
+    const TEST_TYPES = ['Multiple Choice (2)','Identification','Word Search','Multiple Choice','Matching Pairs','Fill in the Blanks','Short Answer','Graph Quiz','Memory Card Math','Sorting','True or False'];
     const testsList = document.getElementById('tests_list');
     const btnAddTest = document.getElementById('btnAddTest');
     let testCount = 0;
@@ -523,10 +545,19 @@
 
     // Map quiz test types to Games/Quiz pages
 const TEST_TYPE_TO_PAGE = {
-  'Multiple Choice': '../Games/Quiz/game4.html',
-  'True or False': '../Games/Quiz/trueorfals.html',
+  'Multiple Choice (2)': '../Games/Quiz/game1.html',
   'Identification': '../Games/Quiz/game2.html',
-  'Multiple Choice (2)': '../Games/Quiz/game1.html'
+  'Word Search': '../Games/Quiz/game3.html',
+  'Multiple Choice': '../Games/Quiz/game4.html',
+  'Matching Pairs': '../Games/Quiz/game5.html',
+  'Fill in the Blanks': '../Games/Quiz/game6.html',
+  'Short Answer': '../Games/Quiz/game7.html',
+  'Graph Quiz': '../Games/Quiz/game8.html',
+  'Memory Card Math': '../Games/Quiz/game9.html',
+  'Sorting': '../Games/Quiz/game10.html',
+  'True or False': '../Games/Quiz/trueorfals.html'
+
+
 };
 
 function buildGameUrl(page, { subjectKey, quarter, title, testIndex }) {

@@ -440,14 +440,7 @@
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="subject_math.html">Math</a></li>
-                            <li><a href="subject_english.html">English</a></li>
-                            <li><a href="subject_science.html">Science</a></li>
-                        </ul>
-                        </li>
+                    <li><a href="#" id="lessonNavBtn">Lesson</a></li>
                     <li><a href="studentlist.html">Student</a></li>
                     <li><a href="grading.html">Grading</a></li>
                     <li class="dropdown">
@@ -556,12 +549,97 @@
         <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
+    <script>
+        // Firebase configuration - MUST be initialized before any Firebase calls
+        // Only initialize if not already initialized (profile.js may have done it)
+        if (typeof firebase !== 'undefined' && (!firebase.apps || firebase.apps.length === 0)) {
+            const firebaseConfig = {
+                apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
+                authDomain: "edutaktika.firebaseapp.com",
+                databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
+                projectId: "edutaktika",
+                storageBucket: "edutaktika.appspot.com",
+                messagingSenderId: "676848575316",
+                appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
+                measurementId: "G-X3GT5TNN87"
+            };
+            try {
+                firebase.initializeApp(firebaseConfig);
+            } catch (e) {
+                console.log('Firebase already initialized');
+            }
+        }
+        
+        // Use global db and auth if available (from profile.js), otherwise create them
+        // Don't redeclare if they already exist
+        if (typeof db === 'undefined') {
+            var db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+        }
+        if (typeof auth === 'undefined') {
+            var auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        }
+        
+        // Make them globally available
+        if (db) window.db = db;
+        if (auth) window.auth = auth;
+    </script>
 
         <script src="../assets/js/Teacher Side/profile.js"></script>
         
 
     <script src="../assets/js/Teacher Side/header.js"></script>
     <script src="../assets/js/navbar.js"></script>
+    
+    <script>
+    // Set Lesson button href based on teacher's selected subject
+    // Wait for Firebase to be ready
+    function setLessonButton() {
+        const authInstance = window.auth || (typeof auth !== 'undefined' ? auth : null);
+        if (!authInstance) {
+            // Wait a bit for Firebase to initialize
+            setTimeout(setLessonButton, 100);
+            return;
+        }
+        
+        authInstance.onAuthStateChanged(async function(user) {
+            if (user) {
+                try {
+                    const dbInstance = window.db || (typeof db !== 'undefined' ? db : null);
+                    if (!dbInstance) {
+                        console.error('Database not available');
+                        return;
+                    }
+                    const teacherSnap = await dbInstance.ref('teachers/' + user.uid).once('value');
+                    const teacher = teacherSnap.val();
+                    if (teacher && teacher.subject) {
+                        const subject = teacher.subject.toLowerCase();
+                        const lessonBtn = document.getElementById('lessonNavBtn');
+                        if (lessonBtn) {
+                            // Map subject to page URL
+                            const subjectMap = {
+                                'math': 'subject_math.html',
+                                'english': 'subject_english.html',
+                                'science': 'subject_science.html'
+                            };
+                            const subjectUrl = subjectMap[subject] || 'subject_math.html';
+                            lessonBtn.href = subjectUrl;
+                            console.log(`📚 Lesson button set to: ${subjectUrl} (teacher subject: ${subject})`);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error setting lesson button:', error);
+                }
+            }
+        });
+    }
+    
+    // Start after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setLessonButton);
+    } else {
+        setLessonButton();
+    }
+    </script>
 
     <div class="container">
         <!-- Header -->
@@ -916,16 +994,24 @@
                 return;
             }
 
-            // If editor already exists, destroy it first to avoid duplicates
+            // If editor already exists, properly destroy it first
             if (questionEditor) {
                 try {
+                    // Quill doesn't have a destroy method, but we can remove the instance
+                    // and clear the element to reinitialize
+                    const quillContainer = editorElement.querySelector('.ql-container');
+                    if (quillContainer) {
+                        quillContainer.remove();
+                    }
                     questionEditor = null;
                 } catch (e) {
                     console.warn('Error cleaning up existing editor:', e);
+                    // Force clear the element
+                    editorElement.innerHTML = '';
                 }
             }
 
-            // Clear any existing content in the editor element
+            // Clear any existing Quill-generated content
             editorElement.innerHTML = '';
 
             try {
@@ -960,8 +1046,8 @@
                         if (!user) {
                             window.location.href = 'logreg.html';
                         } else {
-                            // Initialize rich text editor
-                            initQuestionEditor();
+                            // Don't initialize editor here - it will be initialized when modal opens
+                            // The modal is hidden, so Quill won't work properly
                             
                             // Load draft if exists
                             loadDraft();
@@ -983,8 +1069,8 @@
                         if (!user) {
                             window.location.href = 'logreg.html';
                         } else {
-                            // Initialize rich text editor
-                            initQuestionEditor();
+                            // Don't initialize editor here - it will be initialized when modal opens
+                            // The modal is hidden, so Quill won't work properly
                             
                             // Load draft if exists
                             loadDraft();
@@ -1224,40 +1310,61 @@
             if (modal) {
                 modal.style.display = 'flex';
                 
+                // Reset form first (but don't clear editor if it doesn't exist yet)
+                resetQuestionForm();
+                
                 // Initialize the rich text editor when modal opens
                 // Use a small delay to ensure the modal is fully visible and DOM is ready
                 setTimeout(() => {
                     const editorElement = document.getElementById('questionTextEditor');
-                    if (editorElement) {
-                        // Check if Quill is loaded
-                        if (typeof Quill === 'undefined') {
-                            console.error('Quill library not loaded. Make sure the Quill script is included.');
-                            // Try waiting a bit more for Quill to load
-                            setTimeout(() => {
-                                if (typeof Quill !== 'undefined') {
-                                    initQuestionEditor();
-                                }
-                            }, 200);
-                            return;
-                        }
-                        
-                        // Check if editor already exists in the DOM
-                        const existingEditor = editorElement.querySelector('.ql-container');
-                        
-                        // Initialize editor if not already initialized or if it was destroyed
-                        if (!questionEditor || !existingEditor) {
-                            // Clear the element first to ensure clean initialization
-                            if (existingEditor) {
-                                editorElement.innerHTML = '';
-                            }
-                            initQuestionEditor();
-                        }
-                    } else {
+                    if (!editorElement) {
                         console.error('Question text editor element not found in DOM');
+                        return;
                     }
-                }, 100);
-                
-                resetQuestionForm();
+                    
+                    // Check if Quill is loaded
+                    if (typeof Quill === 'undefined') {
+                        console.error('Quill library not loaded. Make sure the Quill script is included.');
+                        // Try waiting a bit more for Quill to load
+                        setTimeout(() => {
+                            if (typeof Quill !== 'undefined') {
+                                initQuestionEditor();
+                            } else {
+                                console.error('Quill library still not loaded after retry');
+                            }
+                        }, 500);
+                        return;
+                    }
+                    
+                    // Always reinitialize the editor when modal opens to ensure it's fresh
+                    // Check if editor already exists in the DOM
+                    const existingEditor = editorElement.querySelector('.ql-container');
+                    
+                    // If editor exists, destroy it first
+                    if (existingEditor || questionEditor) {
+                        // Remove Quill-generated elements
+                        if (existingEditor) {
+                            existingEditor.remove();
+                        }
+                        questionEditor = null;
+                    }
+                    
+                    // Clear the element completely
+                    editorElement.innerHTML = '';
+                    
+                    // Initialize fresh editor
+                    initQuestionEditor();
+                    
+                    // Ensure editor is ready before allowing interaction
+                    if (questionEditor) {
+                        // Focus the editor after a brief delay
+                        setTimeout(() => {
+                            if (questionEditor && questionEditor.root) {
+                                questionEditor.root.focus();
+                            }
+                        }, 200);
+                    }
+                }, 150);
             }
         }
         
@@ -1272,19 +1379,31 @@
 
         // Reset question form
         function resetQuestionForm() {
-            // Safely access questionEditor - use try-catch to handle any initialization issues
+            // Only clear editor if it's already initialized
+            // Don't try to clear if it doesn't exist yet (will be initialized in openQuestionModal)
             try {
-                if (questionEditor && typeof questionEditor.setContents === 'function') {
-                    questionEditor.setContents([]);
+                if (questionEditor && typeof questionEditor.root !== 'undefined') {
+                    // Use root.innerHTML to clear, or setContents with empty delta
+                    questionEditor.root.innerHTML = '<p><br></p>';
                 }
             } catch (error) {
                 // questionEditor might not be initialized yet, which is fine
-                console.warn('Question editor not ready yet:', error.message);
+                // This is expected when opening modal for the first time
             }
-            document.getElementById('questionText').value = '';
-            document.getElementById('questionPoints').value = '10';
-            document.getElementById('questionImageUrl').value = '';
-            document.getElementById('questionImagePreview').style.display = 'none';
+            
+            // Clear other form fields
+            const questionTextInput = document.getElementById('questionText');
+            if (questionTextInput) questionTextInput.value = '';
+            
+            const questionPointsInput = document.getElementById('questionPoints');
+            if (questionPointsInput) questionPointsInput.value = '10';
+            
+            const questionImageUrlInput = document.getElementById('questionImageUrl');
+            if (questionImageUrlInput) questionImageUrlInput.value = '';
+            
+            const questionImagePreview = document.getElementById('questionImagePreview');
+            if (questionImagePreview) questionImagePreview.style.display = 'none';
+            
             currentQuestionType = '';
             editingQuestionIndex = -1;
             
@@ -1292,7 +1411,8 @@
                 btn.classList.remove('selected');
             });
             
-            document.getElementById('optionsContainer').style.display = 'none';
+            const optionsContainer = document.getElementById('optionsContainer');
+            if (optionsContainer) optionsContainer.style.display = 'none';
         }
 
         // Handle question image upload
@@ -1365,8 +1485,31 @@
         // Add question
         function addQuestion() {
             // Get text from rich text editor
-            const questionTextHtml = questionEditor ? questionEditor.root.innerHTML : '';
-            const questionTextPlain = questionEditor ? questionEditor.getText().trim() : '';
+            let questionTextHtml = '';
+            let questionTextPlain = '';
+            
+            if (questionEditor && questionEditor.root) {
+                try {
+                    questionTextHtml = questionEditor.root.innerHTML;
+                    questionTextPlain = questionEditor.getText().trim();
+                } catch (error) {
+                    console.error('Error getting editor content:', error);
+                    // Fallback to hidden input if editor fails
+                    const hiddenInput = document.getElementById('questionText');
+                    if (hiddenInput) {
+                        questionTextPlain = hiddenInput.value.trim();
+                        questionTextHtml = questionTextPlain;
+                    }
+                }
+            } else {
+                // Fallback to hidden input if editor not initialized
+                const hiddenInput = document.getElementById('questionText');
+                if (hiddenInput) {
+                    questionTextPlain = hiddenInput.value.trim();
+                    questionTextHtml = questionTextPlain;
+                }
+            }
+            
             const questionImageUrl = document.getElementById('questionImageUrl').value;
             const questionPoints = parseInt(document.getElementById('questionPoints').value) || 10;
 
@@ -1426,14 +1569,13 @@
             const question = questions[index];
             editingQuestionIndex = index;
 
-            // Set rich text editor content
-            if (questionEditor) {
-                if (question.textHtml) {
-                    questionEditor.root.innerHTML = question.textHtml;
-                } else {
-                    questionEditor.setText(question.text || '');
-                }
+            // Open modal first
+            const modal = document.getElementById('questionModal');
+            if (modal) {
+                modal.style.display = 'flex';
             }
+            
+            // Set other form fields immediately
             document.getElementById('questionText').value = question.text || '';
             document.getElementById('questionPoints').value = question.points;
 
@@ -1475,7 +1617,49 @@
                 });
             }
 
-            document.getElementById('questionModal').style.display = 'flex';
+            // Wait for editor to be initialized, then set content
+            const trySetEditorContent = () => {
+                if (questionEditor && questionEditor.root) {
+                    try {
+                        if (question.textHtml) {
+                            questionEditor.root.innerHTML = question.textHtml;
+                        } else if (question.text) {
+                            questionEditor.setText(question.text);
+                        } else {
+                            questionEditor.root.innerHTML = '<p><br></p>';
+                        }
+                    } catch (error) {
+                        console.error('Error setting editor content:', error);
+                        // Fallback to plain text
+                        if (question.text) {
+                            questionEditor.setText(question.text);
+                        }
+                    }
+                } else {
+                    // Editor not ready yet, retry after a short delay
+                    setTimeout(trySetEditorContent, 100);
+                }
+            };
+            
+            // Initialize editor if needed, then set content
+            setTimeout(() => {
+                const editorElement = document.getElementById('questionTextEditor');
+                if (editorElement) {
+                    const existingEditor = editorElement.querySelector('.ql-container');
+                    if (!existingEditor || !questionEditor) {
+                        // Remove existing editor if present
+                        if (existingEditor) {
+                            existingEditor.remove();
+                        }
+                        questionEditor = null;
+                        editorElement.innerHTML = '';
+                        // Initialize fresh editor
+                        initQuestionEditor();
+                    }
+                    // Wait a bit for editor to be ready, then set content
+                    setTimeout(trySetEditorContent, 200);
+                }
+            }, 150);
         }
 
         // Delete question

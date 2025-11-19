@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ordering Quiz Game</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+    :root {
+      /* Define a subtle, non-bright palette */
+      --color-primary: #3b82f6; /* Blue for primary actions/accent */
+      --color-primary-dark: #2563eb;
+      --color-primary-light: #e0e7ff; /* Lighter blue for list item base */
+      --color-success: #10b981; /* Green for correct */
+      --color-success-dark: #059669;
+      --color-error: #ef4444; /* Red for error */
+      --color-error-dark: #dc2626;
+      --color-text-dark: #1f2937; /* Darker text */
+      --color-text-medium: #4b5563;
+      --color-background: #b4bccb; /* Light gray background */
+      --color-card-bg: #ffffff; /* Quiz Box main background */
+      --color-inner-bg: #f8fafc; /* **New:** Very light, subtle background inside quiz box */
+      --color-border: #d1d5db;
+      --color-disabled-bg: #e5e7eb;
+      --color-disabled-text: #6b7280;
+
+      /* **New:** Item colors for variety (subtle tertiary colors) */
+      --color-item-accent-1: #93c5fd; /* Light Blue */
+      --color-item-accent-2: #a7f3d0; /* Light Green */
+      --color-item-accent-3: #fef08a; /* Light Yellow */
+      --color-item-accent-4: #fecaca; /* Light Red/Pink */
+      --color-item-text: #1e3a8a; /* Dark Blue Text */
+    }
+    body {
+      font-family: 'Manrope', Arial, sans-serif;
+      background: var(--color-background);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 20px;
+
+      /* === ENGAGING BACKGROUND === */
+      background-image:
+        repeating-linear-gradient(45deg, rgba(189, 189, 189, 0.05) 25%, transparent 25%, transparent 75%, rgba(189, 189, 189, 0.05) 75%, rgba(189, 189, 189, 0.05)),
+        repeating-linear-gradient(45deg, rgba(189, 189, 189, 0.05) 25%, #f3f4f6 25%, #f3f4f6 75%, rgba(189, 189, 189, 0.05) 75%, rgba(189, 189, 189, 0.05));
+      background-position: 0 0, 10px 10px;
+      background-size: 20px 20px;
+    }
+    h1 {
+      color: var(--color-primary-dark);
+      margin-top: 24px;
+      margin-bottom: 12px;
+      font-size: 2.2em;
+      font-weight: 700;
+    }
+    .quiz-box {
+      background: var(--color-card-bg);
+      padding: 25px 20px;
+      max-width: 520px;
+      width: 96vw;
+      margin: 0 auto;
+      border-radius: 12px;
+      z-index: 10;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.15), 0 5px 10px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 320px;
+      transition: box-shadow 0.3s;
+    }
+
+    /* **New:** Inner background for list and question area contrast */
+    .quiz-content-area {
+      background: var(--color-inner-bg);
+      padding: 15px;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 450px;
+      margin-bottom: 15px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .question-text {
+      font-size: 1.25em;
+      color: var(--color-text-dark);
+      margin-bottom: 20px; /* Reduced margin since it's inside the new content area */
+      text-align: center;
+      font-weight: 600;
+    }
+    .sortable-list {
+      list-style: none;
+      padding: 0;
+      margin: 0; /* Removed bottom margin */
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .sortable-item {
+      /* Base styles now use CSS variables for colors */
+      background: var(--color-primary-light);
+      color: var(--color-item-text);
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: 1.1em;
+      font-weight: 600; /* Slightly bolder text */
+      cursor: grab;
+      user-select: none;
+      border: 1px solid var(--color-primary);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: all 0.2s ease-out;
+      transform: scale(1); /* For animation */
+    }
+
+    /* Applying alternating colors for items using nth-child */
+    .sortable-item:nth-child(4n+1) {
+      background: var(--color-item-accent-1);
+    }
+    .sortable-item:nth-child(4n+2) {
+      background: var(--color-item-accent-2);
+    }
+    .sortable-item:nth-child(4n+3) {
+      background: var(--color-item-accent-3);
+      color: var(--color-text-dark); /* Darker text for light yellow */
+    }
+    .sortable-item:nth-child(4n) {
+      background: var(--color-item-accent-4);
+      color: var(--color-text-dark); /* Darker text for light red */
+    }
+
+    .sortable-item:hover {
+      background: var(--color-primary);
+      color: var(--color-card-bg);
+      border-color: var(--color-primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .sortable-item.dragging {
+      background: var(--color-primary-dark);
+      color: #fff;
+      border: 2px dashed #fff;
+      opacity: 0.8;
+      cursor: grabbing;
+      transform: scale(1.05) rotate(-1deg);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    }
+    .sortable-item.over {
+      border: 2px solid var(--color-success);
+      background: #d1fae5;
+      color: var(--color-success-dark);
+    }
+    .nav-btns {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      width: 100%;
+    }
+    .nav-btn {
+      padding: 10px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.05em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      background: var(--color-primary);
+      color: #fff;
+      flex: 1;
+      max-width: 120px;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--color-primary-dark);
+      transform: translateY(-1px);
+    }
+    .nav-btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+    .nav-btn:disabled {
+      background: var(--color-disabled-bg);
+      color: var(--color-disabled-text);
+      cursor: not-allowed;
+      transform: none;
+    }
+    .result-msg {
+      font-size: 1.15em;
+      font-weight: 600;
+      margin-top: 15px;
+      min-height: 1.4em;
+      text-align: center;
+      transition: color 0.3s;
+    }
+    .result-msg.correct {
+      color: var(--color-success);
+    }
+    .result-msg.error {
+      color: var(--color-error);
+    }
+
+    /* Editor and Progress Bar Styling */
+    #quizInstruction {
+      font-size: 1.05rem;
+      color: var(--color-text-medium);
+      margin-bottom: 15px;
+      font-weight: 500;
+      width: 100%; /* Ensure it spans the quiz-box width */
+      text-align: center;
+    }
+    #progressBar {
+      width: 100%;
+      height: 8px;
+      background: var(--color-disabled-bg);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 25px;
+    }
+    #progressFill {
+      height: 100%;
+      background: var(--color-primary);
+      width: 0%;
+      transition: width 0.4s ease-out;
+    }
+    #editOpen {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      font-size: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.1s;
+    }
+    #editOpen:hover { background: var(--color-primary-dark); transform: rotate(5deg); }
+    #editorModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(31, 41, 55, 0.7); /* Darker overlay */
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    #editorCard {
+      background: var(--color-card-bg);
+      border-radius: 18px;
+      padding: 35px 30px 25px 30px;
+      width: 96vw;
+      max-width: 560px;
+      box-sizing: border-box;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3), 0 3px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: modalPop 0.3s cubic-bezier(.4,1.6,.6,1) 1;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    @keyframes modalPop {
+      from { transform: scale(0.85) translateY(50px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .editor-row { margin-bottom: 16px; text-align: left; }
+    .editor-row label { font-size: 1.05em; font-weight: 600; margin-bottom: 6px; color: var(--color-text-dark); display: block; }
+    .editor-row input, .editor-row textarea {
+      width: 100%; padding: 10px 12px; border: 1.5px solid var(--color-border); border-radius: 7px;
+      font-size: 1em; background: var(--color-background); transition: border 0.2s, box-shadow 0.2s; outline: none;
+    }
+    .editor-row input:focus, .editor-row textarea:focus {
+      border-color: var(--color-primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px var(--color-primary-light);
+    }
+    .editor-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 15px;
+      flex-wrap: wrap;
+    }
+    .editor-actions button {
+      flex: 0 0 auto;
+      max-width: 100px;
+    }
+    #editorStatus { font-size: 0.95em; color: var(--color-error); margin-top: 8px; min-height: 1.2em; text-align: left; }
+    #prevQ, #nextQ {
+      background: var(--color-disabled-bg);
+      color: var(--color-text-medium);
+    }
+    #prevQ:hover:not(:disabled), #nextQ:hover:not(:disabled) {
+      background: var(--color-border);
+    }
+    #deleteQ {
+      background: var(--color-error);
+      color: #fff;
+    }
+    #deleteQ:hover:not(:disabled) {
+      background: var(--color-error-dark);
+    }
+    #addQ {
+      background: var(--color-success);
+      color: #fff;
+    }
+    #addQ:hover:not(:disabled) {
+      background: var(--color-success-dark);
+    }
+
+    @media (max-width: 600px) {
+      .quiz-box { padding: 15px 10px; }
+      .quiz-content-area { padding: 10px; }
+      #editorCard { padding: 20px 5vw 15px 5vw; }
+      .nav-btn {
+        padding: 8px 18px;
+        font-size: 0.95em;
+      }
+    }
+</style>
+</head>
+<body>
+  <button id="editOpen" title="Edit">&#9998;</button>
+
+  <div class="quiz-box">
+    <div id="quizInstruction" style="font-size:1.08rem;color:#2e8b57;margin-bottom:10px;font-weight:500;text-align:center;">
+      Drag and drop the items to arrange them in the correct order!
+    </div>
+    <div id="progressBar" style="width:100%;height:8px;background:#e0e7ff;border-radius:6px;overflow:hidden;margin-bottom:18px;">
+      <div id="progressFill" style="height:100%;background:#2563eb;width:0%;transition:width 0.3s;"></div>
+    </div>
+    <div class="question-text" id="questionText"></div>
+    <ul class="sortable-list" id="sortableList"></ul>
+    <div class="nav-btns">
+      <button id="prevBtn" class="nav-btn">Prev</button>
+      <button id="nextBtn" class="nav-btn" disabled>Next</button>
+    </div>
+    <div class="result-msg" id="resultMsg"></div>
+  </div>
+
+  <!-- Editor Modal -->
+  <div id="editorModal" aria-hidden="true">
+    <div id="editorCard">
+      <h2 style="margin-top:0;margin-bottom:18px;font-size:1.3em;color:#2563eb;">Edit Ordering Question</h2>
+      <div class="editor-row">
+        <label for="editPrompt">Question</label>
+        <input type="text" id="editPrompt" autocomplete="off" />
+      </div>
+      <div class="editor-row">
+        <label for="editItems">Items to Order <span style="color:#64748b;font-size:0.95em;">(comma separated, in correct order)</span></label>
+        <input type="text" id="editItems" placeholder="First, Second, Third, Fourth" autocomplete="off" />
+      </div>
+      <div class="editor-actions">
+        <button id="prevQ" type="button">&larr; Prev</button>
+        <button id="nextQ" type="button">Next &rarr;</button>
+        <button id="addQ" type="button" style="background:#22c55e;color:#fff;">Add</button>
+        <button id="deleteQ" type="button" style="background:#ef4444;color:#fff;">Delete</button>
+        <button id="saveQ" type="button">Save</button>
+        <button id="cancelQ" type="button">Cancel</button>
+      </div>
+      <div id="editorStatus"></div>
+    </div>
+  </div>
+
+<script>
+    let parentTestIndex = 0;
+    window.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'setTestIndex') {
+        parentTestIndex = event.data.index;
+      }
+      if (
+        event.data &&
+        (
+          (event.data.type === 'loadQuizGameData' && event.data.gameData?.questions) ||
+          (event.data.type === 'currentGameData' && event.data.gameData?.questions)
+        )
+      ) {
+        questions = event.data.gameData.questions;
+        currentQuestion = 0;
+        userAnswers = new Array(questions.length).fill(null);
+        score = 0;
+        loadQuestion();
+      }
+    });
+
+    let questions = [
+      {
+        prompt: "Arrange the steps of the water cycle in order.",
+        items: ["Evaporation", "Condensation", "Precipitation", "Collection"]
+      },
+      {
+        prompt: "Order the planets from closest to farthest from the Sun.",
+        items: ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"]
+      },
+      {
+        prompt: "Arrange the stages of butterfly life cycle.",
+        items: ["Egg", "Caterpillar", "Pupa", "Adult"]
+      }
+    ];
+    let currentQuestion = 0;
+    let userAnswers = new Array(questions.length).fill(null);
+    let score = 0;
+    let mainQuizCurrent = 0;
+    let hasDragged = false; // Track if the user has performed any drag action
+
+    function shuffle(arr) {
+      let a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function updateProgressBar() {
+      const percent = ((currentQuestion) / questions.length) * 100;
+      document.getElementById('progressFill').style.width = percent + '%';
+    }
+
+    function loadQuestion() {
+      updateProgressBar();
+      const q = questions[currentQuestion];
+      document.getElementById("questionText").textContent = q.prompt;
+      const sortableList = document.getElementById("sortableList");
+      sortableList.innerHTML = "";
+
+      // If not answered yet, shuffle items. Otherwise, use saved answer.
+      let items = userAnswers[currentQuestion] ? userAnswers[currentQuestion].slice() : shuffle(q.items);
+      const isAnswered = userAnswers[currentQuestion] !== null;
+
+      items.forEach((item, idx) => {
+        const li = document.createElement("li");
+        li.className = "sortable-item";
+        li.textContent = item;
+        // Disable dragging if already answered
+        li.draggable = !isAnswered; 
+        li.dataset.idx = idx;
+        sortableList.appendChild(li);
+      });
+
+      hasDragged = false;
+      // Check button is enabled if not answered, Next button is enabled if answered
+      document.getElementById('nextBtn').disabled = !isAnswered;
+      document.getElementById('resultMsg').textContent = "";
+      document.getElementById('resultMsg').className = "result-msg";
+
+
+      if (!isAnswered) {
+        enableDragAndDrop(sortableList);
+      } 
+
+      document.getElementById('prevBtn').disabled = currentQuestion === 0;
+      document.getElementById('nextBtn').textContent = currentQuestion === questions.length - 1 ? "Finish" : "Next";
+    }
+
+    function enableDragAndDrop(list) {
+      let draggingEl = null;
+      let overEl = null;
+
+      Array.from(list.children).forEach(li => {
+        li.addEventListener('dragstart', function(e) {
+          draggingEl = li;
+          li.classList.add('dragging');
+          // Set a transparent drag image to avoid flicker
+          if (e.dataTransfer) {
+            const img = document.createElement('img');
+            img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P4//8/AwAI/AL+Qw2vAAAAAElFTkSuQmCC';
+            e.dataTransfer.setDragImage(img, 0, 0);
+          }
+        });
+        li.addEventListener('dragend', function(e) {
+          li.classList.remove('dragging');
+          draggingEl = null;
+          document.getElementById('nextBtn').disabled = false;
+        });
+        li.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          if (li !== draggingEl) {
+            li.classList.add('over');
+            overEl = li;
+          }
+        });
+        li.addEventListener('dragleave', function(e) {
+          li.classList.remove('over');
+          overEl = null;
+        });
+        li.addEventListener('drop', function(e) {
+          e.preventDefault();
+          li.classList.remove('over');
+          if (draggingEl && li !== draggingEl) {
+            // Move the dragged element before/after the drop target
+            const children = Array.from(list.children);
+            const fromIdx = children.indexOf(draggingEl);
+            const toIdx = children.indexOf(li);
+            if (fromIdx > -1 && toIdx > -1) {
+              if (fromIdx < toIdx) {
+                list.insertBefore(draggingEl, li.nextSibling);
+              } else {
+                list.insertBefore(draggingEl, li);
+              }
+              draggingEl.style.transform = 'scale(1.08)';
+              setTimeout(() => draggingEl.style.transform = '', 180);
+              li.style.transform = 'scale(1.08)';
+              setTimeout(() => li.style.transform = '', 180);
+              document.getElementById('nextBtn').disabled = false;
+            }
+          }
+        });
+      });
+    }
+
+    document.getElementById('nextBtn').onclick = function() {
+      const list = document.getElementById("sortableList");
+      const answer = Array.from(list.children).map(li => li.textContent);
+      userAnswers[currentQuestion] = answer;
+
+      // --- FIX SCORING: Only increment score if answer is correct ---
+      const correct = questions[currentQuestion].items;
+      let isCorrect = true;
+      answer.forEach((item, idx) => {
+        if (item !== correct[idx]) isCorrect = false;
+      });
+      if (isCorrect) score++;
+
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        loadQuestion();
+      } else {
+        document.querySelector(".quiz-box").innerHTML =
+          `<h2 style="color:var(--color-primary-dark); font-size:1.8em; margin-bottom:10px; text-align:center;">🎉 Quiz Complete!</h2>`;
+        window.parent.postMessage({
+          type: 'quizResult',
+          payload: {
+            score: score,
+            maxScore: questions.length,
+            answers: userAnswers,
+            quizId: window.location.pathname.split('/').pop(),
+            slideIndex: parentTestIndex
+          }
+        }, '*');
+      }
+    };
+
+    document.getElementById('prevBtn').onclick = function() {
+      if (currentQuestion > 0) {
+        currentQuestion--;
+        loadQuestion();
+      }
+    };
+
+    // --- Edit button logic (mostly unchanged, added 'mainQuizCurrent = currentQuestion;' to fix a bug) ---
+    document.getElementById('editOpen').onclick = () => {
+      mainQuizCurrent = currentQuestion;
+      openEditor(currentQuestion);
+    };
+    function openEditor(idx) {
+      const q = questions[idx];
+      document.getElementById('editPrompt').value = q.prompt || '';
+      document.getElementById('editItems').value = (q.items || []).join(', ');
+      document.getElementById('editorStatus').textContent = '';
+      document.getElementById('editorModal').style.display = 'flex';
+
+      document.getElementById('prevQ').disabled = (currentQuestion === 0);
+      document.getElementById('nextQ').disabled = (currentQuestion === questions.length - 1);
+      document.getElementById('deleteQ').disabled = (questions.length <= 1);
+    }
+    document.getElementById('cancelQ').onclick = () => {
+      document.getElementById('editorModal').style.display = 'none';
+      currentQuestion = mainQuizCurrent;
+      loadQuestion();
+    };
+    document.getElementById('saveQ').onclick = function() {
+      saveEditorFieldsToCurrent();
+      document.getElementById('editorStatus').textContent = "✅ Saved!";
+      setTimeout(() => { document.getElementById('editorStatus').textContent = ""; }, 1200);
+
+      // Notify parent window (iframes)
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'saveQuizGameData',
+          gameData: { questions },
+          quizId: window.location.pathname.split('/').pop(),
+          source: 'game-editor'
+        }, '*');
+      }
+    };
+    document.getElementById('prevQ').onclick = function() {
+      if (currentQuestion > 0) {
+        saveEditorFieldsToCurrent();
+        currentQuestion--;
+        openEditor(currentQuestion);
+      }
+    };
+    document.getElementById('nextQ').onclick = function() {
+      if (currentQuestion < questions.length - 1) {
+        saveEditorFieldsToCurrent();
+        currentQuestion++;
+        openEditor(currentQuestion);
+      }
+    };
+    document.getElementById('addQ').onclick = function() {
+      // Save ALL fields before adding
+      const prompt = document.getElementById('editPrompt').value.trim();
+      const items = document.getElementById('editItems').value.split(',').map(s => s.trim()).filter(Boolean);
+
+      questions[currentQuestion] = {
+        prompt,
+        items
+      };
+
+      // Insert a new blank question after the current one
+      const newQuestion = {
+        prompt: "New Question: What is the correct order?",
+        items: ["Item A", "Item B", "Item C"]
+      };
+      questions.splice(currentQuestion + 1, 0, newQuestion);
+      currentQuestion++;
+      openEditor(currentQuestion);
+    };
+    document.getElementById('deleteQ').onclick = function() {
+      if (questions.length <= 1) {
+        document.getElementById('editorStatus').textContent = "You must have at least one question.";
+        return;
+      }
+      if (!confirm("Delete this question?")) return;
+      questions.splice(currentQuestion, 1);
+      if (currentQuestion >= questions.length) currentQuestion = questions.length - 1;
+      openEditor(currentQuestion);
+
+      // Notify parent window (iframes)
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'saveQuizGameData',
+          gameData: { questions },
+          quizId: window.location.pathname.split('/').pop(),
+          source: 'game-editor'
+        }, '*');
+      }
+    };
+
+    function saveEditorFieldsToCurrent() {
+      const prompt = document.getElementById('editPrompt').value.trim();
+      const items = document.getElementById('editItems').value.split(',').map(s => s.trim()).filter(Boolean);
+
+      questions[currentQuestion] = {
+        prompt,
+        items
+      };
+    }
+
+    // --- Show edit button only in quizEditor mode ---
+    (function(){
+      let showEdit = false;
+      try {
+        const params = new URLSearchParams(window.location.search);
+        showEdit =
+          params.get('quizEditor') === '1' ||
+          params.get('mode') === 'edit' ||
+          params.get('edit') === 'true' ||
+          window.name === 'quizEditor' ||
+          window._isQuizEditor === true;
+      } catch {}
+      document.getElementById('editOpen').style.display = showEdit ? 'flex' : 'none';
+    })();
+
+    loadQuestion();
+</script>
+
+<style>
+        #infoModal .modal-content ul {
+            padding-left: 1.2em;
+        }
+        .modal-content {
+            background-color:rgb(237, 201, 153);
+              max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+        }
+    </style>
+
+<!-- Instructions Modal -->
+<div class="modal" id="infoModal" style="display:none;position:fixed;z-index:10000;left:0;top:0;width:100vw;height:100vh;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);">
+    <div class="modal-content" style="max-width:620px;width:80vw;text-align:left;background:rgb(241, 241, 241);padding:32px 24px;border-radius:14px;box-shadow:0 4px 24px #0002;position:relative;">
+        <button class="close-btn" id="closeInfoBtn" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+        <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">
+            How to Set Answer.
+        </div>
+        <ul style="font-size:1.1em;line-height:1.7;padding-left:1.2em;">
+            <li>Drag and drop the items to arrange them in the correct order!</li> 
+            <img src="../../images/GIF/game11.gif" alt="Example game with letters and image" style="width:90%;max-width:520px;height:60vh;border-radius:12px;box-shadow:0 2px 8px #0002;margin-top:0.5em;">
+        </ul>
+    </div>
+</div>
+    
+<script>
+// Place this at the end of your script section
+
+const infoModal = document.getElementById('infoModal');
+const closeInfoBtn = document.getElementById('closeInfoBtn');
+
+// Show modal at start
+window.addEventListener('DOMContentLoaded', () => {
+    infoModal.style.display = 'flex';
+});
+
+// Optional: close modal when clicking close or outside content
+closeInfoBtn.onclick = () => { infoModal.style.display = 'none'; };
+infoModal.onclick = e => { if (e.target === infoModal) infoModal.style.display = 'none'; };
+
+</script>
+
+</body>
+</html>

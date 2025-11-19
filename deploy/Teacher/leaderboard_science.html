@@ -152,14 +152,7 @@
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="subject_math.html">Math</a></li>
-                            <li><a href="subject_english.html">English</a></li>
-                            <li><a href="subject_science.html">Science</a></li>
-                        </ul>
-                    </li>
+                    <li><a href="#" id="lessonNavBtn">Lesson</a></li>
                     <li><a href="studentlist.html">Student</a></li>
                     <li><a href="grading.html">Grading</a></li>
                     <li class="dropdown">
@@ -178,7 +171,7 @@
                             </ul>
                         </li>
                     <li>
-                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                        <a href="#" id="profileBtn">Profile</a>
                     </li>
                 </ul>
             </nav>
@@ -283,6 +276,35 @@
             
 
     <script src="../assets/js/Teacher Side/header.js"></script>
+    
+    <script>
+    // Set Lesson button href based on teacher's selected subject
+    firebase.auth().onAuthStateChanged(async function(user) {
+        if (user) {
+            try {
+                const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
+                const teacher = teacherSnap.val();
+                if (teacher && teacher.subject) {
+                    const subject = teacher.subject.toLowerCase();
+                    const lessonBtn = document.getElementById('lessonNavBtn');
+                    if (lessonBtn) {
+                        // Map subject to page URL
+                        const subjectMap = {
+                            'math': 'subject_math.html',
+                            'english': 'subject_english.html',
+                            'science': 'subject_science.html'
+                        };
+                        const subjectUrl = subjectMap[subject] || 'subject_math.html';
+                        lessonBtn.href = subjectUrl;
+                        console.log(`📚 Lesson button set to: ${subjectUrl} (teacher subject: ${subject})`);
+                    }
+                }
+            } catch (error) {
+                console.error('Error setting lesson button:', error);
+            }
+        }
+    });
+    </script>
 
     <div class="leaderboard-container">
             <div class="leaderboard-title">🌟 Science Leaderboard - Grade 5 🌟</div>
@@ -312,7 +334,9 @@
 
 
     <script>
-        const firebaseConfig = {
+        // Firebase configuration - Only initialize if not already initialized
+        if (typeof firebase !== 'undefined' && (!firebase.apps || firebase.apps.length === 0)) {
+            const firebaseConfig = {
                 apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
                 authDomain: "edutaktika.firebaseapp.com",
                 databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
@@ -322,52 +346,73 @@
                 appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
                 measurementId: "G-X3GT5TNN87"
             };
-            // Removed legacy v8 firebase-app.js & firebase-database.js to prevent duplicate global definition
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.database();
-            const auth = firebase.auth();
+            try {
+                firebase.initializeApp(firebaseConfig);
+            } catch (e) {
+                console.log('Firebase already initialized');
+            }
+        }
+        
+        // Use global db and auth if available, otherwise create them
+        // Don't redeclare if they already exist
+        if (typeof db === 'undefined') {
+            var db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+        }
+        if (typeof auth === 'undefined') {
+            var auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        }
+        
+        // Make them globally available
+        if (db) window.db = db;
+        if (auth) window.auth = auth;
        
 
         // 2. Fetch and display leaderboard (Math subject only - teacher's section)
     async function loadLeaderboard() {
-            // Get current teacher's section and grade level
-            const currentUser = firebase.auth().currentUser;
-            if (!currentUser) return;
-            
-            const teacherSnapshot = await db.ref('teachers/' + currentUser.uid).once('value');
-            const teacherData = teacherSnapshot.val();
-            const teacherSection = teacherData ? teacherData.section : null;
-            const teacherGrade = teacherData ? teacherData.gradelevel : null;
-            
-            if (!teacherSection || !teacherGrade) {
-                console.error('Could not determine teacher section or grade level');
-                return;
-            }
-            
-            // Update title to show teacher's section and grade
-            const titleEl = document.querySelector('.leaderboard-title');
-            if (titleEl) {
-                titleEl.textContent = `🌟 Math Leaderboard - Grade ${teacherGrade} - Section ${teacherSection} 🌟`;
-            }
-            
-            // Update page title
-            document.title = `Math Leaderboard - Grade ${teacherGrade} - Section ${teacherSection}`;
-            
-            // Base student snapshot
-        const snapshot = await db.ref('students').once('value');
-        let students = [];
-        snapshot.forEach(child => {
-                const s = child.val() || {};
-            s._key = child.key;
-            students.push(s);
-        });
+    // Get current teacher's section and grade level
+    const currentUser = firebase.auth().currentUser;
+    if (!currentUser) return;
+    
+    const teacherSnapshot = await db.ref('teachers/' + currentUser.uid).once('value');
+    const teacherData = teacherSnapshot.val();
+    const teacherSection = teacherData ? teacherData.section : null;
+    const teacherGrade = teacherData ? teacherData.grade : null;
+    
+    if (!teacherSection || !teacherGrade) {
+        console.error('Could not determine teacher section or grade level');
+        return;
+    }
+    
+    // Update title to show teacher's section and grade
+    const titleEl = document.querySelector('.leaderboard-title');
+    if (titleEl) {
+        titleEl.textContent = `🌟 Science Leaderboard - Grade ${teacherGrade} - Section ${teacherSection} 🌟`;
+    }
+    document.title = `Science Leaderboard - Grade ${teacherGrade} - Section ${teacherSection}`;
+    
+    // Base student snapshot
+    const snapshot = await db.ref('students').once('value');
+    let students = [];
+    snapshot.forEach(child => {
+        const s = child.val() || {};
+        s._key = child.key;
+        students.push(s);
+    });
 
-            // Calculate Math-specific scores
+
+    // Load assessments to check subject field (since assessment IDs are Firebase push keys)
+    const assessmentsSnapshot = await db.ref('assessments').once('value');
+    const assessments = {};
+    assessmentsSnapshot.forEach(child => {
+        assessments[child.key] = child.val();
+    });
+
+    // Calculate Science-specific scores
             students.forEach(s => {
-                // Math quiz points - only from math quizzes
-               let scienceQuizPoints = 0;
-                if (s.quizzes && Array.isArray(s.quizzes.subject_science)) {
-                    s.quizzes.subject_science.forEach(quarterObj => {
+                // Science quiz points - only from Science quizzes
+                let scienceQuizPoints = 0;
+                if (s.quizzes && s.quizzes.subject_science && typeof s.quizzes.subject_science === 'object') {
+                    Object.values(s.quizzes.subject_science).forEach(quarterObj => {
                         if (quarterObj && typeof quarterObj === 'object') {
                             Object.values(quarterObj).forEach(quizObj => {
                                 if (
@@ -383,70 +428,123 @@
                 }
                 s.quizPoints = scienceQuizPoints;
                 
-                // Math assessment points - only from math assessments
-                let mathAssessmentPoints = 0;
+                // Science assessment points - check subject field from assessments collection
+                let scienceAssessmentPoints = 0;
                 if (s.assessments) {
                     Object.keys(s.assessments).forEach(aid => {
-                        // Only count math-related assessments
-                        if (aid.includes('math') || aid === 'assessment1') {
-                            const summary = s.assessments[aid]?.summary;
-                            if (summary && typeof summary.best === 'number') {
-                                mathAssessmentPoints += summary.best;
+                        const summary = s.assessments[aid]?.summary;
+                        if (summary && typeof summary.best === 'number') {
+                            // Check if this assessment is a Science assessment by looking up the assessment
+                            const assessment = assessments[aid];
+                            if (assessment && assessment.subject) {
+                                const subjectLower = assessment.subject.toLowerCase();
+                                // Check for Science-related subjects
+                                if (subjectLower === 'science') {
+                                    scienceAssessmentPoints += summary.best;
+                                }
+                            } else {
+                                // Fallback: check assessment ID pattern (for old assessments)
+                                if (aid.includes('science') || aid === 'assessment3') {
+                                    scienceAssessmentPoints += summary.best;
+                                }
                             }
                         }
                     });
                 }
                 
-                s.quizPoints = mathQuizPoints;
-                s.assessmentPoints = mathAssessmentPoints;
+                s.quizPoints = scienceQuizPoints;
+                s.assessmentPoints = scienceAssessmentPoints;
                 s.combinedPoints = s.quizPoints + s.assessmentPoints;
             });
 
-            // Filter for teacher's section and grade level only
-            students = students.filter(s => s.section === teacherSection && s.gradelevel == teacherGrade);
+    // Filter for teacher's section and grade level only
+    students = students.filter(s => s.section === teacherSection && s.grade == teacherGrade);
 
-            // Sort descending by combined, then assessment, then quiz, then name
-            students.sort((a,b) => {
-                // Primary sort: Combined points (descending)
-                if (b.combinedPoints !== a.combinedPoints) return b.combinedPoints - a.combinedPoints;
-                // Secondary sort: Assessment points (descending)
-                if (b.assessmentPoints !== a.assessmentPoints) return b.assessmentPoints - a.assessmentPoints;
-                // Tertiary sort: Quiz points (descending)
-                if (b.quizPoints !== a.quizPoints) return b.quizPoints - a.quizPoints;
-                // Final sort: Name (ascending)
-                const nameA = ((a.fname||'') + ' ' + (a.lname||'')).trim();
-                const nameB = ((b.fname||'') + ' ' + (b.lname||'')).trim();
-                return nameA.localeCompare(nameB);
-            });
+    // Sort descending by combined, then assessment, then quiz, then name
+    students.sort((a,b) => {
+        if (b.combinedPoints !== a.combinedPoints) return b.combinedPoints - a.combinedPoints;
+        if (b.assessmentPoints !== a.assessmentPoints) return b.assessmentPoints - a.assessmentPoints;
+        if (b.quizPoints !== a.quizPoints) return b.quizPoints - a.quizPoints;
+        const nameA = ((a.fname||'') + ' ' + (a.lname||'')).trim();
+        const nameB = ((b.fname||'') + ' ' + (b.lname||'')).trim();
+        return nameA.localeCompare(nameB);
+    });
 
-            // Podium (top 3) based on combinedPoints
-            const podiumIndices = [1, 0, 2]; // 2nd, 1st, 3rd visually
-        const podiumClasses = ['silver', 'gold', 'bronze'];
-        const podiumRanks = [2, 1, 3];
-        let podiumHtml = '';
-        podiumIndices.forEach((studentIdx, i) => {
-            if (!students[studentIdx]) return;
-            const student = students[studentIdx];
-            const avatar = student.avatar ? student.avatar : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent((student.fname||'') + (student.lname||''))}`;
-            podiumHtml += `
-            <div class="podium-place ${podiumClasses[i]}">
-                <div class="podium-rank">${podiumRanks[i]}</div>
-                <img src="${avatar}" class="avatar" alt="${student.fname||''}">
-                <div class="podium-name">${(student.fname||'') + ' ' + (student.lname||'')}</div>
-                    <div class="podium-score">${student.combinedPoints} total</div>
-            </div>`;
-        });
-        document.getElementById('podium').innerHTML = podiumHtml;
+    // Podium (top 3) based on combinedPoints
+    const podiumIndices = [1, 0, 2]; // 2nd, 1st, 3rd visually
+    const podiumClasses = ['silver', 'gold', 'bronze'];
+    const podiumRanks = [2, 1, 3];
+    let podiumHtml = '';
+    podiumIndices.forEach((studentIdx, i) => {
+        if (!students[studentIdx]) return;
+        const student = students[studentIdx];
+        const avatar = student.avatar ? student.avatar : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent((student.fname||'') + (student.lname||''))}`;
+        podiumHtml += `
+        <div class="podium-place ${podiumClasses[i]}">
+            <div class="podium-rank">${podiumRanks[i]}</div>
+            <img src="${avatar}" class="avatar" alt="${student.fname||''}">
+            <div class="podium-name">${(student.fname||'') + ' ' + (student.lname||'')}</div>
+            <div class="podium-score">${student.combinedPoints} total</div>
+        </div>`;
+    });
+    document.getElementById('podium').innerHTML = podiumHtml;
 
-            // Leaderboard table rows
-            applyLeaderboardPagination(students,{
-            tbodyId:'leaderboard-body',
-            paginationId:'pagination',
-            rowsPerPage:10
-            });
+    // Leaderboard table rows
+    applyLeaderboardPagination(students, {
+        tbodyId: 'leaderboard-body',
+        paginationId: 'pagination',
+        rowsPerPage: 10
+    });
+}
+
+// loadLeaderboard() is now called after authentication is confirmed
+
+function applyLeaderboardPagination(students, {tbodyId, paginationId, rowsPerPage}) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+    const totalPages = Math.ceil(students.length / rowsPerPage);
+    let currentPage = 1;
+
+    function renderPage(page) {
+        tbody.innerHTML = '';
+        const start = (page - 1) * rowsPerPage;
+        const end = Math.min(start + rowsPerPage, students.length);
+        for (let i = start; i < end; i++) {
+            const s = students[i];
+            const avatar = s.avatar ? s.avatar : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent((s.fname||'') + (s.lname||''))}`;
+            tbody.innerHTML += `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td class="player-cell">
+                        <img src="${avatar}" alt="avatar" style="width:32px;height:32px;border-radius:50%;margin-right:6px;">
+                        <span>${(s.fname||'') + ' ' + (s.lname||'')}</span>
+                    </td>
+                    <td>${s.quizPoints || 0}</td>
+                    <td>${s.assessmentPoints || 0}</td>
+                    <td>${s.combinedPoints || 0}</td>
+                    <td>
+                        ${s.combinedPoints >= 100 ? '<span class="badge gold">Gold</span>' : ''}
+                        ${s.combinedPoints >= 50 ? '<span class="badge silver">Silver</span>' : ''}
+                        ${s.combinedPoints >= 20 ? '<span class="badge bronze">Bronze</span>' : ''}
+                    </td>
+                </tr>
+            `;
+        }
+        // Pagination controls (optional)
+        const pagination = document.getElementById(paginationId);
+        if (pagination) {
+            pagination.innerHTML = '';
+            for (let p = 1; p <= totalPages; p++) {
+                const btn = document.createElement('button');
+                btn.textContent = p;
+                btn.className = p === page ? 'active' : '';
+                btn.onclick = () => renderPage(p);
+                pagination.appendChild(btn);
+            }
+        }
     }
-
-    // loadLeaderboard() is now called after authentication is confirmed
+    renderPage(currentPage);
+}
     </script>
 
     <footer>
@@ -569,7 +667,7 @@
                     document.getElementById('profileFirstName').textContent = data.fname || '';
                     document.getElementById('profileMiddleName').textContent = data.mname || '';
                     document.getElementById('profileLastName').textContent = data.lname || '';
-                    document.getElementById('profileGrade').textContent = data.gradelevel || '-';
+                    document.getElementById('profileGrade').textContent = data.grade || '-';
                     document.getElementById('profileSection').textContent = data.section || '-';
                     document.getElementById('profileAvatar').src = "https://api.dicebear.com/7.x/bottts/svg?seed=" + encodeURIComponent(data.fname || "teacher");
                 }
@@ -583,7 +681,7 @@
                 }
                 
             });
-        }
+        }   
     });
     </script>
 
@@ -608,6 +706,86 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="../assets/js/navbar.js"></script>
 <!-- Add to each leaderboard page -->
 <script src="../assets/js/leaderboardPagination.js"></script>
+<script>
+// Utility: Get quiz summary for a student and quiz key
+async function getQuizSummary(studentUID, quizKey) {
+    // Try global quizSummaries path first
+    let snap = await firebase.database().ref(`quizSummaries/${quizKey}/${studentUID}`).once('value');
+    if (snap.exists()) return snap.val();
+    // Fallback to student's own quizzes path
+    snap = await firebase.database().ref(`students/${studentUID}/quizzes/${quizKey}/summary`).once('value');
+    if (snap.exists()) return snap.val();
+    return null;
+}
+
+// Load Science quizzes and display scores
+async function loadScienceQuizzesWithScores(studentUID, filterQuarter = null) {
+    const quizzesContainer = document.getElementById('quizzesContainer');
+    if (!quizzesContainer) return;
+
+    quizzesContainer.innerHTML = '<div style="color:#888;text-align:center;padding:20px;">Loading your Science quizzes...</div>';
+
+    // Example quiz keys for Science (replace/add as needed)
+    const scienceQuizzes = [
+        { key: 'lesson1', title: 'Quiz 1: Science - Basic Concepts', description: 'Test your basic science knowledge and concepts.', quarter: 1 },
+        { key: 'science-experiments', title: 'Quiz 2: Science - Experiments & Observations', description: 'Test your understanding of scientific experiments and observations.', quarter: 2 }
+        // Add more quizzes here if needed
+    ];
+
+    // Filter by quarter if needed
+    const filteredQuizzes = filterQuarter ? scienceQuizzes.filter(q => String(q.quarter) === String(filterQuarter)) : scienceQuizzes;
+
+    quizzesContainer.innerHTML = '';
+    for (const quiz of filteredQuizzes) {
+        const summary = await getQuizSummary(studentUID, quiz.key);
+        let lastScore = '-';
+        let bestScore = '-';
+        if (summary) {
+            lastScore = `${summary.last || 0}/${summary.total || 0} (${summary.lastPercentage || 0}%)`;
+            bestScore = `${summary.best || 0}/${summary.total || 0} (${summary.bestPercentage || 0}%) in ${summary.attempts || 1} attempt${(summary.attempts || 1) > 1 ? 's' : ''}`;
+        }
+        const card = document.createElement('div');
+        card.className = 'lesson-item';
+        card.innerHTML = `
+            <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;">${quiz.title.split(' ')[1]}</div>
+            <div class="lesson-title">
+                <h3>${quiz.title}</h3>
+                <p>${quiz.description}</p>
+                <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/science_quiz.html'">Start</span>
+                <div style="margin-top:8px;font-size:0.9rem;color:#444;">Last Score: ${lastScore}</div>
+                <div style="font-size:0.9rem;color:#444;">Best Score: ${bestScore}</div>
+            </div>
+        `;
+        quizzesContainer.appendChild(card);
+    }
+}
+
+// Listen for filter changes
+document.getElementById('quiz-quarter-filter').addEventListener('change', function() {
+    const user = firebase.auth().currentUser;
+    if (user) {
+        loadScienceQuizzesWithScores(user.uid, this.value);
+    }
+});
+
+// Initial load after auth
+firebase.auth().onAuthStateChanged(function(user) {
+    if (user) {
+        loadScienceQuizzesWithScores(user.uid);
+    }
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const navLinks = document.querySelectorAll("nav ul li a");
+    const current = window.location.pathname.split('/').pop();
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
+        }
+    });
+});
+</script>
 </div>
 </body>
 </html>

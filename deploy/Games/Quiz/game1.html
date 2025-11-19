@@ -7,8 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../CSS/game11.css">
-
-
+    <style>
+        
+    </style>
 </head>
 <body>
     <div class="game-container">
@@ -120,6 +121,28 @@
         </div>
     </div>
 
+    <style>
+        #infoModal .modal-content ul {
+            padding-left: 1.2em;
+        }
+        .modal-content {
+            background-color:rgb(237, 201, 153);
+        }
+    </style>
+    
+  <!-- Instructions Modal -->
+  <div class="modal" id="infoModal">
+    <div class="modal-content" style="max-width:420px;text-align:left;">
+      <button class="close-btn" id="closeInfoBtn">&times;</button>
+      <div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">
+        How to Set Answer.
+      </div>
+      <ul style="font-size:1.1em;line-height:1.7;">
+        <li>Drag the correct answer from the left and drop it into the target area.</li>
+        <img src="../../images/GIF/game1.gif" alt="Example game with letters and image" style="width:90%;max-width:370px;box-shadow:0 2px 8px #0002;margin-top:0.5em;justify-content: center;margin: auto;">
+      </ul>
+    </div>
+  </div>
     <script>
         
         // Auto-detect if embedded in iframe
@@ -1088,5 +1111,20 @@ window.addEventListener('message', function(event) {
 })();
 </script>
 
+<script>
+// Place this at the end of your script section
+
+const infoModal = document.getElementById('infoModal');
+const closeInfoBtn = document.getElementById('closeInfoBtn');
+
+// Show modal at start
+window.addEventListener('DOMContentLoaded', () => {
+    infoModal.style.display = 'flex';
+});
+
+// Optional: close modal when clicking close or outside content
+closeInfoBtn.onclick = () => { infoModal.style.display = 'none'; };
+infoModal.onclick = e => { if (e.target === infoModal) infoModal.style.display = 'none'; };
+</script>
 </body>
 </html>

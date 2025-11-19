@@ -23,6 +23,11 @@
                 window.location.href = "logreg.html";
             } else {
                 document.getElementById('mainContent').style.display = "block";
+                // Hide loading screen
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
             }
         });
     });
@@ -42,6 +47,8 @@
     <link rel="stylesheet" href="../CSS/subject.css">
     <link rel="stylesheet" href="../CSS/footer.css">
     <link rel="stylesheet" href="../CSS/burger.css">
+    <link rel="stylesheet" href="../CSS/loadQuizzes.css">
+    <link rel="stylesheet" href="../CSS/loading.css">
     <title>English</title>
     <style>
         nav ul {
@@ -107,34 +114,23 @@
         nav ul li.dropdown:hover .dropdown-content {
             display: block;
         }
-        #quarter-5 .lessons-container {
-    display: flex;
-    flex-direction: row;
-    gap: 18px;
-    overflow-x: auto;
-    padding-bottom: 12px;
-    align-items: stretch;
-    /* Optional: for smooth scrolling */
-    scroll-behavior: smooth;
-}
-#quizzesContainer {
-    display: flex !important;
-    flex-direction: row;
-    gap: 18px;
-    overflow-x: auto;
-    padding-bottom: 12px;
-    align-items: stretch;
-    /* Optional: for smooth scrolling */
-    scroll-behavior: smooth;
-    -ms-overflow-style: none;
-}
-#quizzesContainer::-webkit-scrollbar {
-    display: none;                 /* Chrome, Safari, Opera */
-}
-
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-overlay">
+        <div class="loading-container">
+            <div class="loading-spinner">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div class="loading-text">Loading English Lessons</div>
+            <div class="loading-subtext">Please wait while we prepare your content...</div>
+            <div class="loading-progress-container">
+                <div class="loading-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+    
     <div id="mainContent" style="display:none;">
 
             <!-- Burger icon for mobile -->
@@ -184,7 +180,7 @@
                             </ul>
                         </li>
                     <li>
-                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                        <a href="#" id="profileBtn">Profile</a>
                     </li>
                 </ul>
             </nav>
@@ -288,6 +284,8 @@
 
 
     <script src="../assets/js/Student Side/header.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/loadSupabaseDesigns.js"></script>
     
 
     <div class="container">
@@ -313,16 +311,14 @@
         </div>
 
         <div class="quarter-section active" id="quarter-1">
-            <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <i class="fas fa-calendar-alt"></i>
-                    <h2 style="display:inline-block;margin:0 0 0 8px;">
-                        Quarter 1: 
-                        <span class="bounce-word">
-                            <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
-                        </span>
-                    </h2>
-                </div>
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>
+                    Quarter 1: 
+                    <span class="bounce-word">
+                        <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
+                    </span>
+                </h2>
             </div>
 
             <div class="lessons-container">
@@ -333,16 +329,7 @@
 
             
 
-             <!-- YouTube Lessons (auto-fetched) -->
-            <div id="youtube-lessons" data-playlist-id="PLlUKeoFRy2FslU5009s_m_AhD0bQNbiaW" style="margin-top: 20px;">
-                <div class="quarter-title" style="align-items:center; gap:10px;">
-                    <i class="fab fa-youtube"></i>
-                    <h3 style="margin:0;">Video Lessons</h3>
-                </div>
-                <div class="lessons-container">
-                    <div>Loading YouTube lessons…</div>
-                </div>
-            </div>
+
 
             <!-- <div class="progress-container">
                 <div class="progress-title">Quarter Progress</div>
@@ -370,16 +357,14 @@
 
         <!-- Quarter 2 -->
         <div class="quarter-section" id="quarter-2">
-            <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <i class="fas fa-calendar-alt"></i>
-                    <h2 style="display:inline-block;margin:0 0 0 8px;">
-                        Quarter 2: 
-                        <span class="bounce-word">
-                            <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
-                        </span>
-                    </h2>
-                </div>
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                 <h2>
+                    Quarter 2: 
+                    <span class="bounce-word">
+                        <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
+                    </span>
+                </h2>
             </div>
 
             <div class="lessons-container">
@@ -412,16 +397,14 @@
 
         <!-- Quarter 3 -->
         <div class="quarter-section" id="quarter-3">
-            <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <i class="fas fa-calendar-alt"></i>
-                    <h2 style="display:inline-block;margin:0 0 0 8px;">
-                        Quarter 3: 
-                        <span class="bounce-word">
-                            <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
-                        </span>
-                    </h2>
-                </div>
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>
+                    Quarter 3: 
+                    <span class="bounce-word">
+                        <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
+                    </span>
+                </h2>
             </div>
 
             <div class="lessons-container">
@@ -454,16 +437,14 @@
 
         <!-- Quarter 4 -->
         <div class="quarter-section" id="quarter-4">
-            <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <i class="fas fa-calendar-alt"></i>
-                    <h2 style="display:inline-block;margin:0 0 0 8px;">
-                        Quarter 4: 
-                        <span class="bounce-word">
-                            <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
-                        </span>
-                    </h2>
-                </div>
+            <div class="quarter-title">
+                <i class="fas fa-calendar-alt"></i>
+                <h2>
+                    Quarter 4: 
+                    <span class="bounce-word">
+                        <span>E</span><span>N</span><span>G</span><span>L</span><span>I</span><span>S</span><span>H</span>
+                    </span>
+                </h2>
             </div>
 
             <div class="lessons-container">
@@ -494,7 +475,8 @@
             </div> -->
         </div>
 
-<div class="quarter-section" id="quarter-5">
+        <!-- Quizzes -->
+        <div class="quarter-section" id="quarter-5">
             <div class="quarter-title" style="display: flex; align-items: center; justify-content: space-between;">
                 <div>
                     <i class="fas fa-calendar-alt"></i>
@@ -515,9 +497,7 @@
                 <div id="quizzesContainer"></div>
                 
             </div>
-            
         </div>
-
         <!-- Assessments panel -->
         <div class="quarter-section" id="quarter-assessments">
             <div class="quarter-title">
@@ -617,30 +597,70 @@
             }
 
             for (let q = 1; q <= 4; q++) {
-                const lessonsSnap = await db.ref('teachers/' + teacherUID + '/sections/' + student.section + '/lessons/subject_math/quarter-' + q).once('value');
                 const container = document.querySelector(`#quarter-${q} .lessons-container`);
                 if (!container) continue;
-                container.innerHTML = '';
-                if (!lessonsSnap.exists()) {
-                    
-                    continue;
+                container.innerHTML = '<div style="text-align:center;padding:10px;color:#666;"><i class="fa fa-spinner fa-spin"></i> Loading...</div>';
+                
+                // Load from Supabase only
+                let supabaseDesigns = [];
+                if (typeof loadSupabaseDesignsForQuarter === 'function') {
+                    try {
+                        // Get student's grade level for proper folder structure
+                        // Normalize to Firebase format: grade=5, grade=6, etc.
+                        // Students use "grade" field (not "gradelevel") - check both for backward compatibility
+                        let studentGrade = null;
+                        const rawGrade = student.grade || student.gradelevel;
+                        if (rawGrade) {
+                            const grade = rawGrade.toString();
+                            if (grade.includes('=')) {
+                                studentGrade = grade; // Already in correct format
+                            } else {
+                                const numberMatch = grade.match(/(\d+)/);
+                                if (numberMatch) {
+                                    const gradeNum = parseInt(numberMatch[1], 10);
+                                    if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
+                                        studentGrade = `grade=${gradeNum}`;
+                                    } else {
+                                        studentGrade = grade; // Keep as-is if invalid
+                                    }
+                                } else {
+                                    studentGrade = grade; // Keep as-is if no number found
+                                }
+                            }
+                        }
+                        console.log(`Loading Supabase designs for English Q${q}, grade: ${studentGrade}`);
+                        // Don't pass container - we'll render manually with lesson-item format
+                        supabaseDesigns = await loadSupabaseDesignsForQuarter('subject_english', q.toString(), null, false, studentGrade);
+                        console.log(`Loaded ${supabaseDesigns ? supabaseDesigns.length : 0} Supabase designs for English Q${q}`);
+                    } catch (error) {
+                        console.error('Error loading Supabase designs:', error);
+                        container.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">Error loading lessons. Please refresh the page.</div>';
+                    }
+                } else {
+                    console.error('loadSupabaseDesignsForQuarter function not found');
+                    container.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">Lesson loading system not available. Please refresh the page.</div>';
                 }
-                lessonsSnap.forEach(lessonSnap => {
-                    const lesson = lessonSnap.val();
-                    const name = lesson.title || lessonSnap.key;
-                    const div = document.createElement('div');
-                    div.className = 'lesson-item';
-                    div.setAttribute('data-presentation', name);
-                    div.innerHTML = `
-                        <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
-                        <div class="lesson-title">
-                            <h3>${name}</h3>
-                            <p>${lesson.description || ''}</p>
-                            <span class="lesson-badge" onclick="window.location.href='present.html?subject=subject_math&quarter=${q}&name=${encodeURIComponent(name)}'" style="cursor:pointer;">View</span>
-                        </div>
-                    `;
-                    container.appendChild(div);
-                });
+                
+                // Render Supabase designs manually with lesson-item format
+                container.innerHTML = '';
+                if (supabaseDesigns && Array.isArray(supabaseDesigns) && supabaseDesigns.length > 0) {
+                    supabaseDesigns.forEach(design => {
+                        const div = document.createElement('div');
+                        div.className = 'lesson-item';
+                        div.setAttribute('data-presentation', design.name);
+                        div.innerHTML = `
+                            <div class="lesson-thumbnail" style="background-image: url('${design.thumbnail || ''}'); background-size: cover; background-position: center; background-color: var(--peach);"></div>
+                            <div class="lesson-title">
+                                <h3>${design.name}</h3>
+                                <p>${design.description || 'English Lesson'}</p>
+                                <span class="lesson-badge" onclick="if(typeof openSupabaseDesignViewer === 'function') { openSupabaseDesignViewer('${design.id}', 'subject_english', '${design.name.replace(/'/g, "\\'")}', '${q}'); } else { console.error('openSupabaseDesignViewer not found'); }" style="cursor:pointer;">View</span>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                    });
+                } else {
+                    container.innerHTML = '<div style="text-align:center;padding:20px;color:#666;">No lessons available for this quarter.</div>';
+                }
             }
         }
     });
@@ -687,219 +707,10 @@ document.getElementById('logoutSwitch').onclick = function() {
 
 // Place this at the end of your file, after Firebase scripts
 
-const subjectPage = "subject_english";
-
-// Enhanced lesson loading function
-async function loadStudentLessons() {
-    const user = firebase.auth().currentUser;
-    if (!user) return;
-
-    const uid = user.uid;
-    
-    // Get student info
-    const studentSnap = await db.ref('students/' + uid).once('value');
-    const student = studentSnap.val();
-    if (!student || !student.section) {
-        console.log('Student section not found');
-        return;
-    }
-
-    // Find teacher for this section
-    let teacherUID = null;
-    const teachersSnap = await db.ref('teachers').once('value');
-    teachersSnap.forEach(tsnap => {
-        const t = tsnap.val();
-        if (t.section && t.section.trim().toLowerCase() === student.section.trim().toLowerCase()) {
-            teacherUID = tsnap.key;
-        }
-    });
-
-    if (!teacherUID) {
-        document.querySelectorAll('.lessons-container').forEach(c => {
-            if (!c.querySelector('.lesson-item')) {
-                c.innerHTML = "<div style='text-align:center;padding:20px;color:#666;'>No teacher found for your section.</div>";
-            }
-        });
-        return;
-    }
-
-    console.log('Loading lessons for teacher:', teacherUID, 'section:', student.section);
-
-    // Load lessons for each quarter
-    for (let q = 1; q <= 4; q++) {
-        const container = document.querySelector(`#quarter-${q} .lessons-container`);
-        if (!container) continue;
-
-        let lessons = [];
-
-        // Load teacher's lessons from Editor
-        try {
-            const lessonsSnap = await db.ref(`teachers/${teacherUID}/sections/${student.section}/lessons/${subjectPage}/quarter-${q}`).once('value');
-            if (lessonsSnap.exists()) {
-                lessonsSnap.forEach(lessonSnap => {
-                    const lesson = lessonSnap.val();
-                    lessons.push({
-                        title: lesson.title || lessonSnap.key,
-                        description: lesson.description || 'No description available',
-                        quarter: q,
-                        teacherUID: teacherUID,
-                        source: 'teacher'
-                    });
-                });
-            }
-        } catch (error) {
-            console.error('Error loading teacher lessons:', error);
-        }
-
-        // Load global/shared lessons
-        try {
-            const globalSnap = await db.ref(`presentations/${subjectPage}/quarter-${q}`).once('value');
-            if (globalSnap.exists()) {
-                globalSnap.forEach(lessonSnap => {
-                    const lesson = lessonSnap.val();
-                    lessons.push({
-                        title: lesson.title || lessonSnap.key,
-                        description: lesson.description || 'No description available',
-                        quarter: q,
-                        source: 'global'
-                    });
-                });
-            }
-        } catch (error) {
-            console.error('Error loading global lessons:', error);
-        }
-
-        // Render lessons
-        if (lessons.length === 0) {
-            if (!container.querySelector('.lesson-item')) {
-                container.innerHTML = "<div style='text-align:center;padding:20px;color:#666;'>No lessons available for this quarter.</div>";
-            }
-        } else {
-            // Sort lessons by title
-            lessons.sort((a, b) => a.title.localeCompare(b.title));
-            
-            container.innerHTML = lessons.map(lesson => `
-                <div class="lesson-item" data-presentation="${lesson.title}">
-                    <div class="lesson-thumbnail" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-book-open" style="font-size: 2rem; color: white;"></i>
-                    </div>
-                    <div class="lesson-title">
-                        <h3>${lesson.title}</h3>
-                        <p>${lesson.description}</p>
-                        <div style="margin-top: 8px;">
-                            <span class="lesson-badge" onclick="openLesson('${lesson.title}', ${lesson.quarter}, '${lesson.source}', '${lesson.teacherUID || ''}')" style="cursor:pointer; background: #4CAF50; color: white; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem;">View Lesson</span>
-                        </div>
-                        <div style="font-size: 0.8rem; color: #888; margin-top: 4px;">
-                            ${lesson.source === 'teacher' ? 'Teacher Lesson' : 'Shared Lesson'}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-    }
-}
-
-// Function to open lesson
-function openLesson(lessonTitle, quarter, source, teacherUID) {
-    const params = new URLSearchParams({
-        subject: subjectPage,
-        quarter: quarter,
-        name: lessonTitle,
-        source: source
-    });
-    
-    if (teacherUID) {
-        params.append('teacherUID', teacherUID);
-    }
-    
-    window.location.href = `present.html?${params.toString()}`;
-}
-
-// Initialize lesson loading when user is authenticated
-firebase.auth().onAuthStateChanged(async function(user) {
-    if (user) {
-        await loadStudentLessons();
-    }
-});
+// Removed old Firebase lesson loading code - using Supabase only
     </script>
 
-    
-    <script>
-
-auth.onAuthStateChanged(async function(user) {
-    if (user) {
-        const uid = user.uid;
-        // Get student info
-        const studentSnap = await db.ref('students/' + uid).once('value');
-        const student = studentSnap.val();
-        if (!student || !student.section) return;
-
-        // Find teacher for this section
-        let teacherUID = null;
-        const teachersSnap = await db.ref('teachers').once('value');
-        teachersSnap.forEach(tsnap => {
-            const t = tsnap.val();
-            if (t.section && t.section.trim().toLowerCase() === student.section.trim().toLowerCase()) {
-                teacherUID = tsnap.key;
-            }
-        });
-
-        for (let q = 1; q <= 4; q++) {
-            const container = document.querySelector(`#quarter-${q} .lessons-container`);
-            if (!container) continue;
-
-            let lessons = [];
-
-            // 1. Global lessons
-            const globalSnap = await db.ref('presentations/' + subjectPage + '/quarter-' + q).once('value');
-            if (globalSnap.exists()) {
-                globalSnap.forEach(child => {
-                    const data = child.val();
-                    lessons.push({
-                        title: data.title || child.key,
-                        description: data.description || '',
-                        source: 'global'
-                    });
-                });
-            }
-
-            // 2. Teacher lessons
-            if (teacherUID) {
-                const teacherSnap = await db.ref('teachers/' + teacherUID + '/sections/' + student.section + '/lessons/' + subjectPage + '/quarter-' + q).once('value');
-                if (teacherSnap.exists()) {
-                    teacherSnap.forEach(child => {
-                        const data = child.val();
-                        lessons.push({
-                            title: data.title || child.key,
-                            description: data.description || '',
-                            source: 'teacher'
-                        });
-                    });
-                }
-            }
-
-            // Sort all lessons by title
-            lessons.sort((a, b) => a.title.localeCompare(b.title));
-
-            // Render
-            if (lessons.length === 0) {
-                
-            } else {
-                container.innerHTML = lessons.map(lesson => `
-                    <div class="lesson-item" data-presentation="${lesson.title}">
-                        <div class="lesson-thumbnail" style="background-color: var(--peach)"></div>
-                        <div class="lesson-title">
-                            <h3>${lesson.title}</h3>
-                            <p>${lesson.description}</p>
-                            <span class="lesson-badge" onclick="window.location.href='present.html?subject=${subjectPage}&quarter=${q}&name=${encodeURIComponent(lesson.title)}'" style="cursor:pointer;">View</span>
-                        </div>
-                    </div>
-                `).join('');
-            }
-        }
-    }
-});
-</script>
+// Removed old Firebase lesson loading code - using Supabase only
 
 <!-- Edit Profile Modal -->
 <div id="editProfileModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.35);z-index:99999;align-items:center;justify-content:center;">
@@ -987,93 +798,11 @@ auth.onAuthStateChanged(async function(user) {
 .lesson-badge:hover {
     background: #ffd600;
 }
-    #createQuizModal {
-        display: none;
-        position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(0,0,0,0.35);
-        z-index: 99999;
-        align-items: center;
-        justify-content: center;
-    }
-    #createQuizModal .modal-content {
-        background: #fff;
-        padding: 32px 28px;
-        border-radius: 16px;
-        max-width: 370px;
-        width: 90%;
-        box-shadow: 0 4px 24px #0002;
-        text-align: left;
-        position: relative;
-        animation: modalPop 0.25s;
-    }
-        @keyframes modalPop {
-        0% { transform: scale(0.95); opacity: 0; }
-        100% { transform: scale(1); opacity: 1; }
-    }
-    #createQuizModal h3 {
-        margin-top: 0;
-        margin-bottom: 18px;
-        font-size: 1.35rem;
-        color: #059981;
-        letter-spacing: 1px;
-    }
-    #createQuizModal label {
-        font-weight: 500;
-        color: #2d3923;
-        font-size: 1rem;
-    }
-    #createQuizModal input, #createQuizModal select, #createQuizModal textarea {
-        width: 100%;
-        padding: 8px 10px;
-        margin-top: 4px;
-        margin-bottom: 12px;
-        border: 1px solid #b2b2b2;
-        border-radius: 6px;
-        font-size: 1rem;
-        background: #f8f8f8;
-        transition: border 0.2s;
-    }
-    #createQuizModal input:focus, #createQuizModal select:focus, #createQuizModal textarea:focus {
-        border: 1.5px solid #059981;
-        outline: none;
-        background: #fff;
-    }
-    #createQuizModal .modal-actions {
-        text-align: right;
-        margin-top: 10px;
-    }
-    #createQuizModal button[type="button"] {
-        background: #eee;
-        color: #333;
-        border: none;
-        border-radius: 6px;
-        padding: 8px 18px;
-        font-size: 1rem;
-        margin-right: 8px;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    #createQuizModal button[type="button"]:hover {
-        background: #e0e0e0;
-    }
-    #createQuizModal button[type="submit"] {
-        background: #059981;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 8px 22px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    #createLessonModal button[type="submit"]:hover {
-        background: #037a65;
-    }
+
 </style>
 
 <script>
+/* HIDDEN FOR FUTURE USE - YouTube Video Loading Function
 // Load latest YouTube videos via playlist RSS feed into Quarter 1 - English
 async function loadYouTubeVideosTeacher() {
     const wrapper = document.getElementById('youtube-lessons');
@@ -1216,7 +945,8 @@ async function loadYouTubeVideosTeacher() {
         `;
     }
 }
-document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher);
+// document.addEventListener('DOMContentLoaded', loadYouTubeVideosTeacher); // DISABLED - Hidden for future use
+*/
 
 // Test function to manually check playlist (can be called from browser console)
 window.testPlaylist = function() {
@@ -1253,24 +983,109 @@ window.testPlaylist = function() {
     const container = document.getElementById('assessmentsContainer');
     if(!container) return;
 
-    // Load assessments from Firebase
-    function loadAssessments() {
+    // Load assessments from Firebase - filtered by student's grade and section
+    async function loadAssessments() {
         // Clear existing content
         container.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Loading assessments...</div>';
         
-        // Load published assessments for English subject
-        firebase.database().ref('assessments').orderByChild('subject').equalTo('english').once('value')
-            .then(snapshot => {
-                const assessments = [];
-                snapshot.forEach(childSnapshot => {
-                    const assessment = childSnapshot.val();
-                    if (assessment.status === 'published') {
-                        assessments.push({
-                            id: childSnapshot.key,
-                            ...assessment
-                        });
+        try {
+            // Get current student's data
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+            
+            const studentSnap = await firebase.database().ref('students/' + user.uid).once('value');
+            const student = studentSnap.val();
+            
+            if (!student) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #e74c3c;">Student profile not found.</div>';
+                return;
+            }
+            
+            // Get student's grade and section (normalize formats)
+            const studentGrade = (student.grade || student.gradelevel || '').toString().trim();
+            const studentSection = (student.section || '').toString().trim().toLowerCase();
+            
+            console.log('Loading assessments for student:', {
+                grade: studentGrade,
+                section: studentSection
+            });
+            
+            // Load published assessments for English subject
+            const snapshot = await firebase.database().ref('assessments').orderByChild('subject').equalTo('english').once('value');
+            const assessments = [];
+            
+            // Process each assessment and filter by grade and section
+            const assessmentPromises = [];
+            snapshot.forEach(childSnapshot => {
+                const assessment = childSnapshot.val();
+                if (assessment.status === 'published') {
+                    // Check if grade level matches
+                    const assessmentGrade = (assessment.gradeLevel || '').toString().trim();
+                    const gradeMatches = !assessmentGrade || assessmentGrade === studentGrade;
+                    
+                    if (gradeMatches) {
+                        // Check if teacher's section matches student's section
+                        const teacherUID = assessment.createdBy;
+                        if (teacherUID) {
+                            const promise = firebase.database().ref(`teachers/${teacherUID}`).once('value')
+                                .then(teacherSnap => {
+                                    const teacher = teacherSnap.val();
+                                    if (teacher) {
+                                        // Check if teacher has a section that matches student's section
+                                        // Teachers can have sections stored in different ways
+                                        let sectionMatches = false;
+                                        
+                                        // Check teacher.section (single section)
+                                        if (teacher.section) {
+                                            const teacherSection = teacher.section.toString().trim().toLowerCase();
+                                            if (teacherSection === studentSection) {
+                                                sectionMatches = true;
+                                            }
+                                        }
+                                        
+                                        // Check teacher.sections (object with multiple sections)
+                                        if (!sectionMatches && teacher.sections && typeof teacher.sections === 'object') {
+                                            const sectionKeys = Object.keys(teacher.sections);
+                                            for (const sectionKey of sectionKeys) {
+                                                const sectionKeyLower = sectionKey.toString().trim().toLowerCase();
+                                                if (sectionKeyLower === studentSection) {
+                                                    sectionMatches = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        
+                                        // If no section specified for student or teacher, include the assessment
+                                        if (!studentSection || sectionMatches) {
+                                            assessments.push({
+                                                id: childSnapshot.key,
+                                                ...assessment
+                                            });
+                                        }
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error('Error checking teacher section:', err);
+                                    // If we can't check teacher section, include the assessment anyway
+                                    assessments.push({
+                                        id: childSnapshot.key,
+                                        ...assessment
+                                    });
+                                });
+                            assessmentPromises.push(promise);
+                        } else {
+                            // No teacher UID, include assessment anyway
+                            assessments.push({
+                                id: childSnapshot.key,
+                                ...assessment
+                            });
+                        }
                     }
-                });
+                }
+            });
+            
+            // Wait for all teacher section checks to complete
+            await Promise.all(assessmentPromises);
 
                 if (assessments.length === 0) {
                     container.innerHTML = `
@@ -1356,8 +1171,8 @@ window.testPlaylist = function() {
     window.startAssessment = function(assessmentId) {
         // Store assessment ID for the taker
         sessionStorage.setItem('currentAssessmentId', assessmentId);
-        // Navigate to assessment taker
-        window.location.href = 'assessment-taker.html';
+        // Navigate to assessment taker with ID in URL for redundancy
+        window.location.href = 'assessment-taker.html?id=' + assessmentId;
     };
 
     // Load assessments when page loads
@@ -1365,6 +1180,93 @@ window.testPlaylist = function() {
 })();
 
 
+// --- Inject Quiz Card for English (Multiple Attempts Allowed) ---
+(function(){
+    const container = document.getElementById('quizzesContainer');
+    if(!container) return;
+    const card = document.createElement('div');
+    card.className='lesson-item';
+    card.innerHTML = `
+        <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;">Q1</div>
+        <div class="lesson-title">
+            <h3>Quiz 1: English - Spelling Bee</h3>
+            <p>Test your spelling skills with drag and drop letters!</p>
+            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/spelling-bee-quiz.html'">Start</span>
+            <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="q1LastScore">Last Score: -</div>
+            <div style="font-size:0.9rem;color:#444;" id="q1BestScore">Best Score: -</div>
+        </div>`;
+    container.appendChild(card);
+
+    firebase.auth().onAuthStateChanged(user => {
+        if(!user) return;
+        const uid = user.uid;
+        // Prefer global quizSummaries path
+        const summaryRef = firebase.database().ref(`quizSummaries/spelling-bee/${uid}`);
+        summaryRef.once('value').then(snap => {
+            if(snap.exists()){
+                const s = snap.val();
+                const lastEl = document.getElementById('q1LastScore');
+                const bestEl = document.getElementById('q1BestScore');
+                if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+                if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
+            } else {
+                // Fallback student path
+                firebase.database().ref(`students/${uid}/quizzes/spelling-bee/summary`).once('value').then(msnap => {
+                    if(!msnap.exists()) return;
+                    const s = msnap.val();
+                    const lastEl = document.getElementById('q1LastScore');
+                    const bestEl = document.getElementById('q1BestScore');
+                    if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+                    if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
+                });
+            }
+        });
+    });
+})();
+
+// --- Inject Quiz Card 2 for English (Reading Comprehension) ---
+(function(){
+    const container = document.getElementById('quizzesContainer');
+    if(!container) return;
+    const card = document.createElement('div');
+    card.className='lesson-item';
+    card.innerHTML = `
+        <div class="lesson-thumbnail" style="background-color: var(--peach);display:flex;align-items:center;justify-content:center;font-size:36px;color:#fff;">Q2</div>
+        <div class="lesson-title">
+            <h3>Quiz 2: English - Advanced Spelling</h3>
+            <p>More challenging spelling words to test your skills!</p>
+            <span class="lesson-badge" style="cursor:pointer;" onclick="window.location.href='../Games/Quiz/spelling-bee-quiz.html'">Start</span>
+            <div style="margin-top:8px;font-size:0.9rem;color:#444;" id="q2LastScore">Last Score: -</div>
+            <div style="font-size:0.9rem;color:#444;" id="q2BestScore">Best Score: -</div>
+        </div>`;
+    container.appendChild(card);
+
+    firebase.auth().onAuthStateChanged(user => {
+        if(!user) return;
+        const uid = user.uid;
+        // Use spelling-bee-advanced as the key for this specific quiz
+        const summaryRef = firebase.database().ref(`quizSummaries/spelling-bee-advanced/${uid}`);
+        summaryRef.once('value').then(snap => {
+            if(snap.exists()){
+                const s = snap.val();
+                const lastEl = document.getElementById('q2LastScore');
+                const bestEl = document.getElementById('q2BestScore');
+                if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+                if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
+            } else {
+                // Fallback student path
+                firebase.database().ref(`students/${uid}/quizzes/spelling-bee-advanced/summary`).once('value').then(msnap => {
+                    if(!msnap.exists()) return;
+                    const s = msnap.val();
+                    const lastEl = document.getElementById('q2LastScore');
+                    const bestEl = document.getElementById('q2BestScore');
+                    if(lastEl) lastEl.textContent = `Last Score: ${s.last}/${s.total} (${s.lastPercentage}%)`;
+                    if(bestEl) bestEl.textContent = `Best Score: ${s.best}/${s.total} (${s.bestPercentage}%) in ${s.attempts||1} attempt${(s.attempts||1)>1?'s':''}`;
+                });
+            }
+        });
+    });
+})();
 
 // --- Extend tab switching to include Assessments ---
 (function(){
@@ -1385,9 +1287,6 @@ window.testPlaylist = function() {
         });
     });
 })();
-
-// Function to create a new lesson
-// Student view - no lesson creation functionality needed
 </script>
 
 <script src="../assets/js/navbar.js"></script>
@@ -1400,10 +1299,217 @@ window.testPlaylist = function() {
 <script src="../assets/js/student-qa-empty-state.js"></script>
 <!-- ...existing script includes... -->
 <script src="../assets/js/Student Side/student-card-clickable.js"></script>
-</body>
-</html>
-</body>
-</html>
-</div>
+
+<script>
+// Enhanced quiz loading with filter functionality for English - Teacher quizzes only
+async function loadStudentAvailableQuizzes(studentUID, filterQuarter = null) {
+    console.log('Loading available quizzes for student:', studentUID, 'Quarter filter:', filterQuarter);
+    
+    const quizzesContainer = document.getElementById('quizzesContainer');
+    if (!quizzesContainer) return;
+
+    // Show loading message
+    quizzesContainer.innerHTML = '<div style="color:#888;text-align:center;padding:20px;">Loading your assigned quizzes...</div>';
+
+    try {
+        const subjectPage = "subject_english";
+        let allQuizzes = [];
+
+        // Load quizzes from specific quarter or all quarters
+        const quartersToLoad = filterQuarter ? [parseInt(filterQuarter)] : [1, 2, 3, 4];
+        
+        for (let q of quartersToLoad) {
+            const quizzesPath = `students/${studentUID}/quizzes/${subjectPage}/${q}`;
+            console.log(`Checking available quizzes: ${quizzesPath}`);
+            
+            const quizzesSnap = await db.ref(quizzesPath).once('value');
+            if (quizzesSnap.exists()) {
+                console.log(`✓ Found available quizzes for Q${q}:`, quizzesSnap.val());
+                quizzesSnap.forEach(quizSnap => {
+                    const quiz = quizSnap.val();
+                    allQuizzes.push({
+                        ...quiz,
+                        name: quizSnap.key,
+                        quarter: q,
+                        source: 'teacher'
+                    });
+                });
+            }
+        }
+
+        console.log(`Total teacher quizzes found:`, allQuizzes.length);
+
+        // Clear container and set proper grid styling
+        quizzesContainer.innerHTML = '';
+        quizzesContainer.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 15px;';
+
+        if (allQuizzes.length === 0) {
+            const emptyMsg = document.createElement('div');
+            
+            quizzesContainer.appendChild(emptyMsg);
+        } else {
+            // Sort quizzes by creation date (newest first)
+            allQuizzes.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+            allQuizzes.forEach(quiz => {
+                const quizItem = document.createElement('div');
+                quizItem.className = 'lesson-item student-quiz-item';
+                
+                const createdDate = quiz.createdAt ? new Date(quiz.createdAt).toLocaleDateString() : '';
+                const isLocked = quiz.isLocked !== false;
+                const hasPassword = quiz.hasPassword !== false;
+                
+                quizItem.innerHTML = `
+                    <div class="lesson-thumbnail" style="background: linear-gradient(135deg, #ffe600 0%, #ffcd00 100%); position: relative; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
+                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; font-size: 10px; padding: 2px 6px; border-radius: 3px;">
+                            ${quiz.teacherName || 'Teacher'}
+                        </div>
+                        <div style="position: absolute; top: 5px; left: 5px; background: ${isLocked ? '#e74c3c' : '#27ae60'}; color: white; font-size: 9px; padding: 2px 4px; border-radius: 3px; font-weight: bold;">
+                            ${isLocked ? '🔒 LOCKED' : '🔓 UNLOCKED'}
+                        </div>
+                        <div style="position: absolute; bottom: 5px; right: 5px; background: rgba(255,255,255,0.9); color: #333; font-size: 10px; padding: 2px 6px; border-radius: 3px;">
+                            Q${quiz.quarter}
+                        </div>
+                        <div style="position: absolute; top: 8px; center: 8px; background: rgba(255,255,255,0.9); color: #333; font-size: 9px; padding: 3px 8px; border-radius: 12px; font-weight: bold;">
+                            TEACHER QUIZ
+                        </div>
+                        📝
+                    </div>
+                    <div class="lesson-title">
+                        <h3>${quiz.title || quiz.name}</h3>
+                        <p>${quiz.description || 'Teacher-created quiz'}</p>
+                        <div style="font-size: 0.85rem; color: #666; margin: 8px 0; padding: 8px; background: #f8f9fa; border-radius: 4px;">
+                            <i class="fas fa-user-tie" style="margin-right: 4px;"></i><strong>Teacher:</strong> ${quiz.teacherName || 'Unknown'}<br>
+                            ${createdDate ? `<i class="fas fa-calendar" style="margin-right: 4px;"></i><strong>Created:</strong> ${createdDate}<br>` : ''}
+                            <strong>Status:</strong> <span style="color: ${isLocked ? '#e74c3c' : '#27ae60'};">${isLocked ? 'Locked' : 'Available'}</span>
+                            ${quiz.attempts ? `<br><strong>Attempts:</strong> ${quiz.attempts}` : ''}
+                            ${quiz.bestScore ? `<br><strong>Best Score:</strong> ${quiz.bestScore}` : ''}
+                        </div>
+                        ${isLocked ? 
+                            `<button class="lesson-badge" onclick="unlockStudentQuiz('${quiz.quarter}','${quiz.name}','${subjectPage}')" style="cursor:pointer; background: #e74c3c;">
+                                🔒 Enter Password
+                            </button>` :
+                            `<button class="lesson-badge" onclick="startStudentQuiz('${quiz.quarter}','${quiz.name}','${quiz.createdBy}','${subjectPage}')" style="cursor:pointer; background: #27ae60;">
+                                ▶ Start Quiz
+                            </button>`
+                        }
+                    </div>
+                `;
+                quizzesContainer.appendChild(quizItem);
+            });
+        }
+
+    } catch (error) {
+        console.error('Error loading available quizzes:', error);
+        quizzesContainer.innerHTML = `<div style="color:#e74c3c;text-align:center;padding:20px;">Error loading quizzes: ${error.message}</div>`;
+    }
+}
+
+// Function to unlock student quiz with password
+window.unlockStudentQuiz = async function(quarter, name, subject) {
+    const password = prompt('Enter the quiz password provided by your teacher:');
+    if (!password) return;
+
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    const studentUID = user.uid;
+
+    try {
+        // Check the quiz from student's collection to get the correct password
+        const studentQuizRef = db.ref(`students/${studentUID}/quizzes/${subject}/${quarter}/${name}`);
+        const studentQuizSnap = await studentQuizRef.once('value');
+        
+        if (!studentQuizSnap.exists()) {
+            alert('Quiz not found.');
+            return;
+        }
+
+        const studentQuiz = studentQuizSnap.val();
+        
+        if (studentQuiz.password === password) {
+            // Unlock the quiz
+            await studentQuizRef.update({
+                isLocked: false,
+                unlockedAt: new Date().toISOString(),
+                status: 'unlocked'
+            });
+            
+            alert('Quiz unlocked successfully! You can now start the quiz.');
+            
+            // Reload the quizzes to show updated status
+            const filterSelect = document.getElementById('quiz-quarter-filter');
+            const currentFilter = filterSelect ? filterSelect.value : null;
+            loadStudentAvailableQuizzes(studentUID, currentFilter);
+        } else {
+            alert('Incorrect password. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error unlocking quiz:', error);
+        alert('Error unlocking quiz. Please try again.');
+    }
+};
+
+// Function to start student quiz
+window.startStudentQuiz = function(quarter, name, teacherUID, subject) {
+    console.log('Starting student quiz:', { quarter, name, teacherUID, subject });
+    
+    const params = new URLSearchParams({
+        quarter: quarter,
+        name: name,
+        subject: subject,
+        teacher: teacherUID,
+        mode: 'student'
+    });
+    
+    window.location.href = 'quizView.html?' + params.toString();
+};
+
+// Enhanced auth state handler with filter support for English
+firebase.auth().onAuthStateChanged(async function(user) {
+    if (!user) {
+        window.location.href = "logreg.html";
+        return;
+    }
+
+    const studentUID = user.uid;
+    
+    try {
+        const studentSnap = await db.ref('students/' + studentUID).once('value');
+        const student = studentSnap.val();
+        
+        if (!student || student.role !== "student") {
+            alert("Access denied.");
+            await firebase.auth().signOut();
+            window.location.href = "logreg.html";
+            return;
+        }
+
+        document.getElementById('mainContent').style.display = "block";
+        // Hide loading screen
+        const loadingScreen = document.getElementById('loadingScreen');
+        if (loadingScreen) {
+            loadingScreen.style.display = 'none';
+        }
+
+        // Load quizzes initially (all quarters)
+        await loadStudentAvailableQuizzes(studentUID);
+
+        // Set up filter functionality
+        const filterSelect = document.getElementById('quiz-quarter-filter');
+        if (filterSelect) {
+            filterSelect.addEventListener('change', function() {
+                const selectedQuarter = this.value;
+                console.log('Filter changed to quarter:', selectedQuarter);
+                loadStudentAvailableQuizzes(studentUID, selectedQuarter);
+            });
+        }
+
+    } catch (error) {
+        console.error('Error in student auth state change:', error);
+    }
+});
+</script>
+
 </body>
 </html>

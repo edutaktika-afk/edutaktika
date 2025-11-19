@@ -107,24 +107,8 @@ const SUBJECT_FOLDERS = {
  * @returns {string} Public URL
  */
 function getSupabaseFileUrl(key) {
-  // Try to get client, but don't block if not available
-  const client = getSupabaseClient();
-  
-  if (client && client.storage) {
-    try {
-      const { data } = client.storage
-        .from(SUPABASE_BUCKET)
-        .getPublicUrl(key);
-      
-      if (data && data.publicUrl) {
-        return data.publicUrl;
-      }
-    } catch (error) {
-      console.warn('Error getting Supabase public URL from client:', error);
-    }
-  }
-  
-  // Fallback to direct URL construction (always works even without client)
+  // Always use the direct URL construction method to ensure proper encoding
+  // Supabase's getPublicUrl() may not properly encode filenames with spaces
   // This is the standard Supabase Storage public URL format
   // Note: Key should be URL-encoded, but forward slashes should remain as path separators
   const parts = key.split('/');
@@ -134,61 +118,12 @@ function getSupabaseFileUrl(key) {
 }
 
 /**
- * Normalize grade level from Firebase format (grade=5) to Supabase format (Grade5)
- * Handles various formats: "grade=5", "grade5", "5", "Grade5", etc.
- * @param {string} gradeLevel - Grade level in various formats
- * @returns {string} Normalized grade (Grade5, Grade6, etc.)
- */
-function normalizeGradeForSupabase(gradeLevel) {
-  if (!gradeLevel) return null;
-  
-  let normalized = String(gradeLevel);
-  
-  // Handle Firebase format: "grade=5" or "grade=6"
-  if (normalized.includes('=')) {
-    const parts = normalized.split('=');
-    if (parts.length === 2 && parts[0].toLowerCase().trim() === 'grade') {
-      normalized = parts[1].trim();
-    }
-  }
-  
-  // Remove common suffixes like "th", "st", "nd", "rd"
-  normalized = normalized.replace(/(\d+)(th|st|nd|rd)/i, '$1');
-  
-  // Remove "grade" prefix if present (case-insensitive)
-  if (/^grade/i.test(normalized)) {
-    normalized = normalized.replace(/^grade/i, '');
-  }
-  
-  // Remove "Grade" prefix if present
-  if (/^Grade/.test(normalized)) {
-    normalized = normalized.replace(/^Grade/, '');
-  }
-  
-  // Extract just the number if there's text before it
-  const numberMatch = normalized.match(/(\d+)/);
-  if (numberMatch) {
-    normalized = numberMatch[1];
-  }
-  
-  // Validate it's a number
-  const gradeNum = parseInt(normalized, 10);
-  if (isNaN(gradeNum) || gradeNum < 1 || gradeNum > 12) {
-    console.warn(`⚠️ Invalid grade level: "${gradeLevel}"`);
-    return null;
-  }
-  
-  // Format as "Grade5", "Grade6", etc. (for Supabase storage)
-  return `Grade${gradeNum}`;
-}
-
-/**
  * Load designs for a specific subject and quarter from Supabase Storage
  * @param {string} subject - Subject name (math, science, english or subject_math, etc.)
  * @param {string} quarter - Quarter number (1, 2, 3, 4)
  * @param {HTMLElement} container - Container element to render designs into (optional)
  * @param {boolean} isTeacher - Whether user is a teacher (can edit)
- * @param {string} gradeLevel - Grade level (grade=5, grade=6, etc.) - optional
+ * @param {string} gradeLevel - Grade level (grade5, grade6, etc.) - optional
  * @returns {Promise<Array>} Array of designs
  */
 async function loadSupabaseDesignsForQuarter(subject, quarter, container = null, isTeacher = false, gradeLevel = null) {
@@ -206,43 +141,38 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
     try {
       const user = firebase.auth().currentUser;
       if (user) {
-        const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
-        const teacher = teacherSnap.val();
-        if (teacher) {
-          // Check both 'grade' and 'gradelevel' fields (Firebase stores as 'grade')
-          const gradeValue = teacher.grade || teacher.gradelevel;
-          if (gradeValue) {
-            // Normalize to Firebase format: grade=5, grade=6, etc.
-            const grade = gradeValue.toString();
-            if (grade.includes('=')) {
-              gradeLevel = grade; // Already in correct format
+        if (isTeacher) {
+          // Check teacher profile
+          const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
+          const teacher = teacherSnap.val();
+          if (teacher) {
+            // Check both 'grade' and 'gradelevel' fields (Firebase stores as 'grade')
+            const gradeValue = teacher.grade || teacher.gradelevel;
+            if (gradeValue) {
+              gradeLevel = gradeValue.toString();
+              console.log(`📚 Grade level from teacher profile: ${gradeLevel}`);
             } else {
-              const numberMatch = grade.match(/(\d+)/);
-              if (numberMatch) {
-                const gradeNum = parseInt(numberMatch[1], 10);
-                if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
-                  gradeLevel = `grade=${gradeNum}`;
-                } else {
-                  gradeLevel = grade; // Keep as-is if invalid
-                }
-              } else {
-                gradeLevel = grade; // Keep as-is if no number found
-              }
+              console.warn('⚠️ No grade level found in teacher profile. Will try to load without grade filter.');
             }
-            console.log(`📚 Grade level from Firebase: ${gradeValue} → normalized: ${gradeLevel}`);
           } else {
-            console.error('❌ No grade level found in teacher profile! Cannot load lessons.');
-            if (container) {
-              container.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">⚠️ Grade level not found in your profile.<br>Please update your profile with your grade level.</div>';
-            }
-            return [];
+            console.warn('⚠️ Teacher profile not found. Will try to load without grade filter.');
           }
         } else {
-          console.error('❌ Teacher profile not found! Cannot load lessons.');
-          if (container) {
-            container.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">⚠️ Teacher profile not found.<br>Please ensure you are logged in correctly.</div>';
+          // Check student profile
+          const studentSnap = await firebase.database().ref('students/' + user.uid).once('value');
+          const student = studentSnap.val();
+          if (student) {
+            // Check both 'grade' and 'gradelevel' fields
+            const gradeValue = student.grade || student.gradelevel;
+            if (gradeValue) {
+              gradeLevel = gradeValue.toString();
+              console.log(`📚 Grade level from student profile: ${gradeLevel}`);
+            } else {
+              console.warn('⚠️ No grade level found in student profile. Will try to load without grade filter.');
+            }
+          } else {
+            console.warn('⚠️ Student profile not found. Will try to load without grade filter.');
           }
-          return [];
         }
       } else {
         console.error('❌ User not authenticated! Cannot load lessons.');
@@ -253,24 +183,57 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
       }
     } catch (error) {
       console.error('❌ Error fetching grade level:', error);
-      if (container) {
-        container.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">⚠️ Error loading grade level.<br>Please refresh the page.</div>';
+      console.warn('⚠️ Will continue without grade level filter.');
+    }
+  }
+  
+  // Normalize grade format: "5" -> "Grade5", "grade5" -> "Grade5", "grade=6" -> "Grade6"
+  let normalizedGrade = null;
+  if (gradeLevel) {
+    normalizedGrade = String(gradeLevel);
+    // Handle "grade=X" format (from Firebase)
+    if (normalizedGrade.startsWith('grade=')) {
+      // Extract just the number from "grade=6" -> "6", then create "Grade6"
+      const numberMatch = normalizedGrade.match(/grade=(\d+)/);
+      if (numberMatch) {
+        normalizedGrade = `Grade${numberMatch[1]}`; // "grade=6" -> "Grade6"
+      } else {
+        // Fallback: remove "grade=" prefix
+        normalizedGrade = `Grade${normalizedGrade.substring(6)}`; // "grade=6" -> "Grade6"
       }
-      return [];
+    } else if (normalizedGrade.startsWith('grade') && normalizedGrade.length > 5) {
+      // Extract number from "grade6" -> "6", then create "Grade6"
+      const numberMatch = normalizedGrade.match(/grade(\d+)/);
+      if (numberMatch) {
+        normalizedGrade = `Grade${numberMatch[1]}`; // "grade6" -> "Grade6"
+      } else {
+        // Fallback: remove "grade" prefix
+        normalizedGrade = `Grade${normalizedGrade.substring(5)}`; // "grade6" -> "Grade6"
+      }
+    } else if (!normalizedGrade.startsWith('Grade') && !normalizedGrade.startsWith('grade')) {
+      // If it's just a number like "5", convert to "Grade5"
+      // Extract number if there are other characters
+      const numberMatch = normalizedGrade.match(/(\d+)/);
+      if (numberMatch) {
+        normalizedGrade = `Grade${numberMatch[1]}`;
+      } else {
+        normalizedGrade = `Grade${normalizedGrade}`;
+      }
+    }
+    // If it already starts with "Grade", keep it as is (but ensure it's "GradeX" not "Grade=X")
+    if (normalizedGrade.startsWith('Grade=')) {
+      const numberMatch = normalizedGrade.match(/Grade=(\d+)/);
+      if (numberMatch) {
+        normalizedGrade = `Grade${numberMatch[1]}`;
+      }
     }
   }
   
-  // Normalize grade format: "grade=5" -> "Grade5", "grade5" -> "Grade5", "5" -> "Grade5"
-  const normalizedGrade = normalizeGradeForSupabase(gradeLevel);
-  if (!normalizedGrade) {
-    console.error('❌ Invalid grade level format:', gradeLevel);
-    if (container) {
-      container.innerHTML = '<div style="text-align:center;padding:20px;color:#f44336;">⚠️ Invalid grade level format.<br>Please update your profile.</div>';
-    }
-    return [];
+  if (normalizedGrade) {
+    console.log(`🔄 [Supabase] Loading: ${subjectFolder}, quarter=${quarter}, grade=${normalizedGrade} (STRICT ISOLATION)`);
+  } else {
+    console.log(`🔄 [Supabase] Loading: ${subjectFolder}, quarter=${quarter} (NO GRADE FILTER - will search all grades)`);
   }
-  
-  console.log(`🔄 [Supabase] Loading: ${subjectFolder}, quarter=${quarter}, grade=${normalizedGrade} (STRICT ISOLATION)`);
 
   try {
     // Show loading state with styled indicator
@@ -286,14 +249,25 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
 
     // Build prefix matching Supabase bucket structure: GradeLevel/Subject/Quarter/
     // Example: Grade5/MATH/Quarter1/ or Grade6/SCIENCE/Quarter2/
-    // CRITICAL: This ensures STRICT grade-level isolation - Grade 5 teachers can ONLY see Grade 5 lessons
+    // If grade level is available, use it for STRICT grade-level isolation
     const quarterFolder = `Quarter${quarter}`;
     
-    // ALWAYS require grade level - no fallback without grade (prevents cross-grade access)
-    const prefix = `${normalizedGrade}/${subjectFolder}/${quarterFolder}/`;
-    console.log(`🔒 Loading STRICTLY for grade: ${normalizedGrade} (prevents cross-grade access)`);
+    // Build prefix with or without grade level
+    let prefixesToTry = [];
+    if (normalizedGrade) {
+      prefixesToTry.push(`${normalizedGrade}/${subjectFolder}/${quarterFolder}/`);
+      console.log(`🔒 Loading STRICTLY for grade: ${normalizedGrade} (prevents cross-grade access)`);
+    } else {
+      // Fallback: Try common grade levels if grade is not found
+      // This is less secure but allows loading when grade is missing from profile
+      const commonGrades = ['Grade5', 'Grade6', 'Grade7', 'Grade8', 'Grade9', 'Grade10'];
+      for (const grade of commonGrades) {
+        prefixesToTry.push(`${grade}/${subjectFolder}/${quarterFolder}/`);
+      }
+      console.log(`⚠️ Grade level not found - will try common grades: ${commonGrades.join(', ')}`);
+    }
     
-    console.log(`📂 [Supabase] Listing files with prefix: ${prefix}`);
+    console.log(`📂 [Supabase] Will try prefixes: ${prefixesToTry.join(', ')}`);
     
     let files = [];
     
@@ -303,61 +277,72 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
       client = await initializeSupabaseClient();
     }
     
-    // Try to load design-ids.json first (faster and more efficient)
-    const designIdsPath = `${prefix}design-ids.json`;
-    const designIdsUrl = getSupabaseFileUrl(designIdsPath);
-    console.log(`📦 [Supabase] Loading design IDs from: ${designIdsUrl}`);
+    // Try to load design-ids.json and list files for each prefix
+    let allDesignIdsFromFile = [];
+    let allDirectListFiles = [];
     
-    let designIdsFromFile = [];
-    try {
-      const idsResponse = await fetch(designIdsUrl);
-      if (idsResponse.ok) {
-        const idsData = await idsResponse.json();
-        console.log(`✅ [Supabase] Loaded ${idsData.length} design IDs from file:`, idsData);
-        designIdsFromFile = idsData;
-      } else {
-        console.log(`⚠️ [Supabase] Design IDs file not found (${idsResponse.status}), will use direct listing only`);
+    for (const prefix of prefixesToTry) {
+      // Try to load design-ids.json first (faster and more efficient)
+      const designIdsPath = `${prefix}design-ids.json`;
+      const designIdsUrl = getSupabaseFileUrl(designIdsPath);
+      console.log(`📦 [Supabase] Loading design IDs from: ${designIdsUrl}`);
+      
+      try {
+        const idsResponse = await fetch(designIdsUrl);
+        if (idsResponse.ok) {
+          const idsData = await idsResponse.json();
+          console.log(`✅ [Supabase] Loaded ${idsData.length} design IDs from file:`, idsData);
+          allDesignIdsFromFile.push(...idsData);
+        } else {
+          console.log(`⚠️ [Supabase] Design IDs file not found (${idsResponse.status}) for prefix: ${prefix}`);
+        }
+      } catch (idsError) {
+        console.log(`⚠️ [Supabase] Error loading design IDs file for ${prefix}:`, idsError.message);
       }
-    } catch (idsError) {
-      console.log(`⚠️ [Supabase] Error loading design IDs file:`, idsError.message);
+      
+      // ALWAYS do direct listing to ensure we get ALL files (design-ids.json might be outdated)
+      if (client && client.storage) {
+        try {
+          console.log(`📂 [Supabase] Listing files directly from storage with prefix: ${prefix}`);
+          const { data, error } = await client.storage
+            .from(SUPABASE_BUCKET)
+            .list(prefix, {
+              limit: 100,
+              offset: 0,
+              sortBy: { column: 'name', order: 'asc' }
+            });
+          
+          if (error) {
+            console.error(`❌ Supabase list error for ${prefix}:`, error);
+          } else if (data) {
+            // Filter for JSON files and extract design info
+            const jsonFiles = data.filter(file => file.name && file.name.endsWith('.json') && file.name !== 'design-ids.json');
+            const prefixFiles = jsonFiles.map(file => {
+              const id = file.name.replace('.json', '');
+              return {
+                key: `${prefix}${file.name}`,
+                url: getSupabaseFileUrl(`${prefix}${file.name}`),
+                isJson: true,
+                thumbnailKey: `${prefix}${id}.jpg`,
+                thumbnailUrl: getSupabaseFileUrl(`${prefix}${id}.jpg`),
+                name: id, // Use ID as name initially
+                id: id
+              };
+            });
+            allDirectListFiles.push(...prefixFiles);
+            console.log(`✅ [Supabase] Listed ${prefixFiles.length} designs from ${prefix}`);
+          }
+        } catch (listError) {
+          console.error(`❌ Error listing files from Supabase for ${prefix}:`, listError);
+        }
+      }
     }
     
-    // ALWAYS do direct listing to ensure we get ALL files (design-ids.json might be outdated)
-    let directListFiles = [];
-    if (client && client.storage) {
-      try {
-        console.log(`📂 [Supabase] Listing files directly from storage with prefix: ${prefix}`);
-        const { data, error } = await client.storage
-          .from(SUPABASE_BUCKET)
-          .list(prefix, {
-            limit: 100,
-            offset: 0,
-            sortBy: { column: 'name', order: 'asc' }
-          });
-        
-        if (error) {
-          console.error('❌ Supabase list error:', error);
-        } else if (data) {
-          // Filter for JSON files and extract design info
-          const jsonFiles = data.filter(file => file.name && file.name.endsWith('.json') && file.name !== 'design-ids.json');
-          directListFiles = jsonFiles.map(file => {
-            const id = file.name.replace('.json', '');
-            return {
-              key: `${prefix}${file.name}`,
-              url: getSupabaseFileUrl(`${prefix}${file.name}`),
-              isJson: true,
-              thumbnailKey: `${prefix}${id}.jpg`,
-              thumbnailUrl: getSupabaseFileUrl(`${prefix}${id}.jpg`),
-              name: id, // Use ID as name initially
-              id: id
-            };
-          });
-          console.log(`✅ [Supabase] Listed ${directListFiles.length} designs directly from storage`);
-        }
-      } catch (listError) {
-        console.error('❌ Error listing files from Supabase:', listError);
-      }
-    } else {
+    // Use the first successful prefix's results (or combine if needed)
+    const designIdsFromFile = allDesignIdsFromFile;
+    const directListFiles = allDirectListFiles;
+    
+    if (!client || !client.storage) {
       console.warn('⚠️ Supabase client not available for direct listing');
     }
     
@@ -370,23 +355,38 @@ async function loadSupabaseDesignsForQuarter(subject, quarter, container = null,
       });
       
       // Use direct listing files, but update names from design-ids.json if available
-      files = directListFiles.map(file => ({
-        ...file,
-        name: nameMap[file.id] || file.name || file.id
-      }));
+      // Also deduplicate by ID in case we got results from multiple prefixes
+      const uniqueFiles = new Map();
+      directListFiles.forEach(file => {
+        if (!uniqueFiles.has(file.id)) {
+          uniqueFiles.set(file.id, {
+            ...file,
+            name: nameMap[file.id] || file.name || file.id
+          });
+        }
+      });
+      files = Array.from(uniqueFiles.values());
       
       console.log(`✅ [Supabase] Merged results: ${files.length} designs (${directListFiles.length} from direct listing, ${designIdsFromFile.length} names from design-ids.json)`);
     } else if (designIdsFromFile.length > 0) {
       // Fallback: If direct listing failed but design-ids.json exists, use it
-      files = designIdsFromFile.map(design => ({
-        key: `${prefix}${design.id}.json`,
-        url: getSupabaseFileUrl(`${prefix}${design.id}.json`),
-        isJson: true,
-        thumbnailKey: `${prefix}${design.id}.jpg`,
-        thumbnailUrl: getSupabaseFileUrl(`${prefix}${design.id}.jpg`),
-        name: design.name || design.id,
-        id: design.id
-      }));
+      // Use the first prefix for building paths
+      const fallbackPrefix = prefixesToTry[0];
+      const uniqueDesigns = new Map();
+      designIdsFromFile.forEach(design => {
+        if (!uniqueDesigns.has(design.id)) {
+          uniqueDesigns.set(design.id, {
+            key: `${fallbackPrefix}${design.id}.json`,
+            url: getSupabaseFileUrl(`${fallbackPrefix}${design.id}.json`),
+            isJson: true,
+            thumbnailKey: `${fallbackPrefix}${design.id}.jpg`,
+            thumbnailUrl: getSupabaseFileUrl(`${fallbackPrefix}${design.id}.jpg`),
+            name: design.name || design.id,
+            id: design.id
+          });
+        }
+      });
+      files = Array.from(uniqueDesigns.values());
       console.log(`✅ [Supabase] Using design-ids.json only (${files.length} designs) - direct listing unavailable`);
     }
     
@@ -490,10 +490,6 @@ function renderDesigns(designs, quarter, container, subject, isTeacher) {
                     style="background: #FF9800; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600;">
               <i class="fas fa-edit" style="margin-right: 6px;"></i>Edit
             </button>
-            <button onclick="event.stopPropagation(); (async function() { try { if(typeof window.renameDesign === 'function') { await window.renameDesign('${design.id}', '${subject}', '${design.name.replace(/'/g, "\\'")}', '${design.quarter || '1'}', '${design.gradeLevel || ''}'); } else { alert('Rename function not loaded. Please refresh the page.'); console.error('window.renameDesign:', typeof window.renameDesign); } } catch(err) { console.error('Error calling renameDesign:', err); alert('Error: ' + err.message); } })();" 
-                    style="background: #9C27B0; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; flex: 1; min-width: 100px; font-weight: 600;">
-              <i class="fas fa-tag" style="margin-right: 6px;"></i>Rename
-            </button>
             ` : ''}
           </div>
           <div style="font-size: 0.8rem; color: #888; margin-top: 8px;">Storage: Supabase</div>
@@ -547,7 +543,6 @@ async function openDesignViewer(designId, subject, designName = 'Design', quarte
         const teacher = teacherSnap.val();
         
         if (teacher) {
-          // Check both 'grade' and 'gradelevel' fields (Firebase stores as 'grade')
           const gradeValue = teacher.grade || teacher.gradelevel;
           if (gradeValue) {
             // Normalize to Firebase format: grade=5, grade=6, etc.
@@ -617,53 +612,128 @@ async function openDesignViewer(designId, subject, designName = 'Design', quarte
       return;
     }
     
-    // Normalize grade format: "grade=5" -> "Grade5", "grade5" -> "Grade5", "5" -> "Grade5"
-    const normalizedGrade = normalizeGradeForSupabase(gradeLevel);
-    if (!normalizedGrade) {
-      console.error('❌ Invalid grade level format:', gradeLevel);
-      alert(`Error: Invalid grade level format: ${gradeLevel}`);
-      return;
+    // Normalize grade format: "5" -> "Grade5", "grade5" -> "Grade5", "grade=6" -> "Grade=6"
+    let normalizedGrade = null;
+    if (gradeLevel) {
+      normalizedGrade = String(gradeLevel);
+      // Handle "grade=X" format (from Firebase)
+      if (normalizedGrade.startsWith('grade=')) {
+        // Extract just the number from "grade=6" -> "6", then create "Grade6"
+        const numberMatch = normalizedGrade.match(/grade=(\d+)/);
+        if (numberMatch) {
+          normalizedGrade = `Grade${numberMatch[1]}`; // "grade=6" -> "Grade6"
+        } else {
+          // Fallback: remove "grade=" prefix
+          normalizedGrade = `Grade${normalizedGrade.substring(6)}`; // "grade=6" -> "Grade6"
+        }
+      } else if (normalizedGrade.startsWith('grade') && normalizedGrade.length > 5) {
+        // Extract number from "grade6" -> "6", then create "Grade6"
+        const numberMatch = normalizedGrade.match(/grade(\d+)/);
+        if (numberMatch) {
+          normalizedGrade = `Grade${numberMatch[1]}`; // "grade6" -> "Grade6"
+        } else {
+          // Fallback: remove "grade" prefix
+          normalizedGrade = `Grade${normalizedGrade.substring(5)}`; // "grade6" -> "Grade6"
+        }
+      } else if (!normalizedGrade.startsWith('Grade') && !normalizedGrade.startsWith('grade')) {
+        // If it's just a number like "5", convert to "Grade5"
+        // Extract number if there are other characters
+        const numberMatch = normalizedGrade.match(/(\d+)/);
+        if (numberMatch) {
+          normalizedGrade = `Grade${numberMatch[1]}`;
+        } else {
+          normalizedGrade = `Grade${normalizedGrade}`;
+        }
+      }
+      // If it already starts with "Grade", keep it as is (but ensure it's "GradeX" not "Grade=X")
+      if (normalizedGrade.startsWith('Grade=')) {
+        const numberMatch = normalizedGrade.match(/Grade=(\d+)/);
+        if (numberMatch) {
+          normalizedGrade = `Grade${numberMatch[1]}`;
+        }
+      }
     }
     
     // Build Supabase URL matching bucket structure: GradeLevel/Subject/Quarter/id.json
-    // CRITICAL: This ensures Grade 5 teachers can ONLY access Grade 5 lessons
     const quarterFolder = `Quarter${quarter}`;
-    const jsonPath = `${normalizedGrade}/${subjectFolder}/${quarterFolder}/${designId}.json`;
-    console.log(`🔒 Opening lesson STRICTLY for grade: ${normalizedGrade} (prevents cross-grade access)`);
     
-    const jsonUrl = getSupabaseFileUrl(jsonPath);
-    console.log(`📥 [Supabase] Loading JSON from: ${jsonUrl}`);
+    // Try multiple path variations in case the file is stored differently
+    const pathsToTry = [];
     
-    // Fetch JSON from Supabase
-    const response = await fetch(jsonUrl);
-    
-    // Get response text first to check for quota errors
-    const responseText = await response.text();
-    
-    // Check if response contains quota error message
-    if (responseText.includes('quota has been exceeded') || responseText.includes('quota exceeded') || responseText.includes('Quota')) {
-      throw new Error(`Supabase Quota Exceeded: Your Supabase project has exceeded its quota. This could be:\n\n` +
-        `• Storage bandwidth quota (downloads/uploads)\n` +
-        `• API requests quota\n` +
-        `• Storage size quota\n\n` +
-        `Please check your Supabase dashboard at https://app.supabase.com for quota limits and upgrade your plan if needed.`);
-    }
-    
-    // Check if response is OK
-    if (!response.ok) {
-      // Try to parse error as JSON
-      let errorMessage = `Failed to load design: ${response.status} ${response.statusText}`;
-      try {
-        const errorJson = JSON.parse(responseText);
-        if (errorJson.message || errorJson.error) {
-          errorMessage = errorJson.message || errorJson.error;
-        }
-      } catch {
-        // If not JSON, use the response text if it's a meaningful error
-        if (responseText && responseText.length < 500) {
-          errorMessage = responseText;
+    if (normalizedGrade) {
+      // Primary path with normalized grade
+      pathsToTry.push(`${normalizedGrade}/${subjectFolder}/${quarterFolder}/${designId}.json`);
+      
+      // Try alternative grade formats
+      if (normalizedGrade.includes('=')) {
+        // If normalizedGrade is "Grade=6", also try "Grade6"
+        const altGrade = normalizedGrade.replace('=', '');
+        pathsToTry.push(`${altGrade}/${subjectFolder}/${quarterFolder}/${designId}.json`);
+      } else {
+        // If normalizedGrade is "Grade6", also try "Grade=6"
+        const match = normalizedGrade.match(/Grade(\d+)/);
+        if (match) {
+          pathsToTry.push(`Grade=${match[1]}/${subjectFolder}/${quarterFolder}/${designId}.json`);
         }
       }
+      
+      console.log(`🔒 Opening lesson for grade: ${normalizedGrade}`);
+    } else {
+      // Fallback: Try common grades
+      const commonGrades = ['Grade6', 'Grade=6', 'Grade5', 'Grade=5'];
+      for (const grade of commonGrades) {
+        pathsToTry.push(`${grade}/${subjectFolder}/${quarterFolder}/${designId}.json`);
+      }
+      console.log(`⚠️ Grade level not found - trying common grades as fallback`);
+    }
+    
+    // Try each path until one works
+    let response = null;
+    let responseText = '';
+    let lastError = null;
+    let jsonUrl = null;
+    
+    for (const jsonPath of pathsToTry) {
+      jsonUrl = getSupabaseFileUrl(jsonPath);
+      console.log(`📥 [Supabase] Trying to load JSON from: ${jsonUrl}`);
+      
+      try {
+        response = await fetch(jsonUrl);
+        responseText = await response.text();
+        
+        // Check if response contains quota error message
+        if (responseText.includes('quota has been exceeded') || responseText.includes('quota exceeded') || responseText.includes('Quota')) {
+          throw new Error(`Supabase Quota Exceeded: Your Supabase project has exceeded its quota. This could be:\n\n` +
+            `• Storage bandwidth quota (downloads/uploads)\n` +
+            `• API requests quota\n` +
+            `• Storage size quota\n\n` +
+            `Please check your Supabase dashboard at https://app.supabase.com for quota limits and upgrade your plan if needed.`);
+        }
+        
+        // If we got a successful response, break out of the loop
+        if (response.ok) {
+          console.log(`✅ Successfully loaded from: ${jsonUrl}`);
+          break;
+        } else {
+          // Store error but continue trying other paths
+          try {
+            const errorJson = JSON.parse(responseText);
+            lastError = errorJson.message || errorJson.error || `Failed to load: ${response.status} ${response.statusText}`;
+          } catch {
+            lastError = responseText && responseText.length < 500 ? responseText : `Failed to load: ${response.status} ${response.statusText}`;
+          }
+          console.log(`❌ Failed to load from: ${jsonUrl} (${response.status})`);
+        }
+      } catch (fetchError) {
+        lastError = fetchError.message;
+        console.log(`❌ Error fetching from: ${jsonUrl} - ${fetchError.message}`);
+        continue;
+      }
+    }
+    
+    // If we tried all paths and none worked, throw error
+    if (!response || !response.ok) {
+      const errorMessage = lastError || `Object not found. Tried ${pathsToTry.length} path(s). Last attempted: ${jsonUrl || 'unknown'}`;
       throw new Error(errorMessage);
     }
     
@@ -679,18 +749,28 @@ async function openDesignViewer(designId, subject, designName = 'Design', quarte
     const loadingText = loadingOverlay.querySelector('.loading-text');
     if (loadingText) loadingText.textContent = 'Opening Viewer...';
     
-    // Don't store large JSON in sessionStorage (it can exceed browser quota)
-    // Instead, pass the JSON URL as a parameter and let the editor fetch it directly
-    // Store only small metadata items
+    // NEW METHOD: Pass all data via URL parameters to avoid sessionStorage quota issues
+    // Only store small metadata items as fallback (for backward compatibility)
+    // Clean up any old large JSON storage that might cause conflicts
     try {
+      // Clean up old method that stored full JSON (causes quota issues)
+      sessionStorage.removeItem('supabase-design-to-load');
+      
+      // Store only small metadata items (safe, won't exceed quota)
       sessionStorage.setItem('supabase-design-id', designId);
       sessionStorage.setItem('supabase-design-subject', subject);
       sessionStorage.setItem('supabase-design-name', designName);
       sessionStorage.setItem('supabase-design-quarter', quarter);
       sessionStorage.setItem('supabase-design-grade', gradeLevel || '');
     } catch (storageError) {
-      // If sessionStorage quota exceeded, continue anyway - we'll use URL params
-      console.warn('⚠️ Could not store metadata in sessionStorage:', storageError);
+      // If sessionStorage quota exceeded, continue anyway - we'll use URL params only
+      console.warn('⚠️ Could not store metadata in sessionStorage (quota may be exceeded):', storageError);
+      // Clean up old keys that might be taking up space
+      try {
+        sessionStorage.removeItem('supabase-design-to-load');
+      } catch (e) {
+        // Ignore cleanup errors
+      }
     }
 
     // Open in viewer mode - pass JSON URL as parameter instead of storing in sessionStorage
@@ -719,20 +799,22 @@ async function openDesignViewer(designId, subject, designName = 'Design', quarte
     params.set('supabaseDesign', designId);
     params.set('subject', subject);
     params.set('quarter', quarter);
+    params.set('name', designName); // Pass name in URL to avoid sessionStorage dependency
     if (gradeLevel) params.set('grade', gradeLevel);
-    params.set('view', 'true');
-    params.set('present', 'true'); // Open in presentation mode (no editor UI)
+    params.set('view', 'true'); // View-only mode (hides editing UI but shows pages timeline)
+    // NOTE: We removed 'present=true' so students can see the pages timeline navigation
     // Pass the JSON URL so editor can fetch directly (avoid sessionStorage quota)
+    // This is the NEW method - no large JSON in sessionStorage
     params.set('jsonUrl', jsonUrl);
     
     const editorUrl = editorBaseUrl + (editorBaseUrl.includes('?') ? '&' : '?') + params.toString();
-    console.log('🔗 Opening viewer in presentation mode:', editorUrl);
+    console.log('🔗 Opening viewer in view-only mode (with pages timeline):', editorUrl);
     
     // Update loading text before opening
-    if (loadingText) loadingText.textContent = 'Launching Presentation...';
+    if (loadingText) loadingText.textContent = 'Opening Lesson...';
     
-    // Open in fullscreen presentation mode
-    window.open(editorUrl, '_blank', 'fullscreen=yes');
+    // Open in new window (not fullscreen, so students can see the pages timeline)
+    window.open(editorUrl, '_blank');
     
     // Remove loading overlay after a short delay (allows window to open)
     setTimeout(() => {
@@ -777,64 +859,100 @@ async function openDesignEditor(designId, subject, designName = 'Design', quarte
   try {
     const subjectFolder = SUBJECT_FOLDERS[subject.toLowerCase()] || subject.toUpperCase();
     
-    // Get grade level
-    // CRITICAL: Get grade level from Firebase - REQUIRED for grade-level isolation
+    // Get grade level - try both teacher and student profiles
     let gradeLevel = null;
     try {
       const user = firebase.auth().currentUser;
       if (user) {
+        // Try teacher profile first
         const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
         const teacher = teacherSnap.val();
         if (teacher) {
-          // Check both 'grade' and 'gradelevel' fields (Firebase stores as 'grade')
           const gradeValue = teacher.grade || teacher.gradelevel;
           if (gradeValue) {
-            // Normalize to Firebase format: grade=5, grade=6, etc.
-            const grade = gradeValue.toString();
-            if (grade.includes('=')) {
-              gradeLevel = grade; // Already in correct format
-            } else {
-              const numberMatch = grade.match(/(\d+)/);
-              if (numberMatch) {
-                const gradeNum = parseInt(numberMatch[1], 10);
-                if (!isNaN(gradeNum) && gradeNum >= 1 && gradeNum <= 12) {
-                  gradeLevel = `grade=${gradeNum}`;
-                } else {
-                  gradeLevel = grade; // Keep as-is if invalid
-                }
-              } else {
-                gradeLevel = grade; // Keep as-is if no number found
-              }
-            }
-            console.log(`📚 Grade level for viewer: ${gradeValue} → normalized: ${gradeLevel}`);
-          } else {
-            throw new Error('Grade level not found in teacher profile. Cannot open lesson.');
+            gradeLevel = gradeValue.toString();
+            console.log(`📚 Grade level from teacher profile: ${gradeLevel}`);
           }
-        } else {
-          throw new Error('Teacher profile not found. Cannot open lesson.');
+        }
+        
+        // If not found in teacher profile, try student profile
+        if (!gradeLevel) {
+          const studentSnap = await firebase.database().ref('students/' + user.uid).once('value');
+          const student = studentSnap.val();
+          if (student) {
+            const gradeValue = student.grade || student.gradelevel;
+            if (gradeValue) {
+              gradeLevel = gradeValue.toString();
+              console.log(`📚 Grade level from student profile: ${gradeLevel}`);
+            }
+          }
+        }
+        
+        if (!gradeLevel) {
+          console.warn('⚠️ Grade level not found in profile. Will try common grades.');
         }
       } else {
         throw new Error('User not authenticated. Cannot open lesson.');
       }
     } catch (error) {
       console.error('❌ Error fetching grade level:', error);
-      alert(`Error: ${error.message}`);
-      return;
+      // Don't block - try to continue without grade level
+      console.warn('⚠️ Will try to open lesson without grade level filter');
     }
     
-    // Normalize grade format: "grade=5" -> "Grade5", "grade5" -> "Grade5", "5" -> "Grade5"
-    const normalizedGrade = normalizeGradeForSupabase(gradeLevel);
-    if (!normalizedGrade) {
-      console.error('❌ Invalid grade level format:', gradeLevel);
-      alert(`Error: Invalid grade level format: ${gradeLevel}`);
-      return;
+    // Normalize grade format: "5" -> "Grade5", "grade5" -> "Grade5", "grade=6" -> "Grade=6"
+    let normalizedGrade = null;
+    if (gradeLevel) {
+      normalizedGrade = String(gradeLevel);
+      // Handle "grade=X" format (from Firebase)
+      if (normalizedGrade.startsWith('grade=')) {
+        // Extract just the number from "grade=6" -> "6", then create "Grade6"
+        const numberMatch = normalizedGrade.match(/grade=(\d+)/);
+        if (numberMatch) {
+          normalizedGrade = `Grade${numberMatch[1]}`; // "grade=6" -> "Grade6"
+        } else {
+          // Fallback: remove "grade=" prefix
+          normalizedGrade = `Grade${normalizedGrade.substring(6)}`; // "grade=6" -> "Grade6"
+        }
+      } else if (normalizedGrade.startsWith('grade') && normalizedGrade.length > 5) {
+        // Extract number from "grade6" -> "6", then create "Grade6"
+        const numberMatch = normalizedGrade.match(/grade(\d+)/);
+        if (numberMatch) {
+          normalizedGrade = `Grade${numberMatch[1]}`; // "grade6" -> "Grade6"
+        } else {
+          // Fallback: remove "grade" prefix
+          normalizedGrade = `Grade${normalizedGrade.substring(5)}`; // "grade6" -> "Grade6"
+        }
+      } else if (!normalizedGrade.startsWith('Grade') && !normalizedGrade.startsWith('grade')) {
+        // If it's just a number like "5", convert to "Grade5"
+        // Extract number if there are other characters
+        const numberMatch = normalizedGrade.match(/(\d+)/);
+        if (numberMatch) {
+          normalizedGrade = `Grade${numberMatch[1]}`;
+        } else {
+          normalizedGrade = `Grade${normalizedGrade}`;
+        }
+      }
+      // If it already starts with "Grade", keep it as is (but ensure it's "GradeX" not "Grade=X")
+      if (normalizedGrade.startsWith('Grade=')) {
+        const numberMatch = normalizedGrade.match(/Grade=(\d+)/);
+        if (numberMatch) {
+          normalizedGrade = `Grade${numberMatch[1]}`;
+        }
+      }
     }
     
     // Build Supabase URL matching bucket structure: GradeLevel/Subject/Quarter/id.json
-    // CRITICAL: This ensures Grade 5 teachers can ONLY access Grade 5 lessons
     const quarterFolder = `Quarter${quarter}`;
-    const jsonPath = `${normalizedGrade}/${subjectFolder}/${quarterFolder}/${designId}.json`;
-    console.log(`🔒 Opening lesson STRICTLY for grade: ${normalizedGrade} (prevents cross-grade access)`);
+    let jsonPath;
+    if (normalizedGrade) {
+      jsonPath = `${normalizedGrade}/${subjectFolder}/${quarterFolder}/${designId}.json`;
+      console.log(`🔒 Opening lesson for grade: ${normalizedGrade}`);
+    } else {
+      // Fallback: Try common grades
+      jsonPath = `Grade5/${subjectFolder}/${quarterFolder}/${designId}.json`;
+      console.log(`⚠️ Grade level not found - trying Grade5 as fallback`);
+    }
     
     const jsonUrl = getSupabaseFileUrl(jsonPath);
     console.log(`📥 [Supabase] Loading JSON from: ${jsonUrl}`);
@@ -884,18 +1002,28 @@ async function openDesignEditor(designId, subject, designName = 'Design', quarte
     const loadingText = loadingOverlay.querySelector('.loading-text');
     if (loadingText) loadingText.textContent = 'Opening Editor...';
     
-    // Don't store large JSON in sessionStorage (it can exceed browser quota)
-    // Instead, pass the JSON URL as a parameter and let the editor fetch it directly
-    // Store only small metadata items
+    // NEW METHOD: Pass all data via URL parameters to avoid sessionStorage quota issues
+    // Only store small metadata items as fallback (for backward compatibility)
+    // Clean up any old large JSON storage that might cause conflicts
     try {
+      // Clean up old method that stored full JSON (causes quota issues)
+      sessionStorage.removeItem('supabase-design-to-load');
+      
+      // Store only small metadata items (safe, won't exceed quota)
       sessionStorage.setItem('supabase-design-id', designId);
       sessionStorage.setItem('supabase-design-subject', subject);
       sessionStorage.setItem('supabase-design-name', designName);
       sessionStorage.setItem('supabase-design-quarter', quarter);
       sessionStorage.setItem('supabase-design-grade', gradeLevel || '');
     } catch (storageError) {
-      // If sessionStorage quota exceeded, continue anyway - we'll use URL params
-      console.warn('⚠️ Could not store metadata in sessionStorage:', storageError);
+      // If sessionStorage quota exceeded, continue anyway - we'll use URL params only
+      console.warn('⚠️ Could not store metadata in sessionStorage (quota may be exceeded):', storageError);
+      // Clean up old keys that might be taking up space
+      try {
+        sessionStorage.removeItem('supabase-design-to-load');
+      } catch (e) {
+        // Ignore cleanup errors
+      }
     }
 
     // Open in editor mode - pass JSON URL as parameter instead of storing in sessionStorage
@@ -924,8 +1052,10 @@ async function openDesignEditor(designId, subject, designName = 'Design', quarte
     params.set('supabaseDesign', designId);
     params.set('subject', subject);
     params.set('quarter', quarter);
+    params.set('name', designName); // Pass name in URL to avoid sessionStorage dependency
     if (gradeLevel) params.set('grade', gradeLevel);
     // Pass the JSON URL so editor can fetch directly (avoid sessionStorage quota)
+    // This is the NEW method - no large JSON in sessionStorage
     params.set('jsonUrl', jsonUrl);
     
     const editorUrl = editorBaseUrl + (editorBaseUrl.includes('?') ? '&' : '?') + params.toString();
@@ -1001,14 +1131,45 @@ async function renameDesign(designId, subject, currentName, quarter, gradeLevel 
       }
     }
     
-    // Normalize grade format
+    // Normalize grade format: "5" -> "Grade5", "grade5" -> "Grade5", "grade=6" -> "Grade=6"
     let normalizedGrade = null;
     if (gradeLevel) {
       normalizedGrade = String(gradeLevel);
-      if (!normalizedGrade.startsWith('Grade') && !normalizedGrade.startsWith('grade')) {
-        normalizedGrade = `Grade${normalizedGrade}`;
-      } else if (normalizedGrade.startsWith('grade')) {
-        normalizedGrade = `Grade${normalizedGrade.substring(5)}`;
+      // Handle "grade=X" format (from Firebase)
+      if (normalizedGrade.startsWith('grade=')) {
+        // Extract just the number from "grade=6" -> "6", then create "Grade6"
+        const numberMatch = normalizedGrade.match(/grade=(\d+)/);
+        if (numberMatch) {
+          normalizedGrade = `Grade${numberMatch[1]}`; // "grade=6" -> "Grade6"
+        } else {
+          // Fallback: remove "grade=" prefix
+          normalizedGrade = `Grade${normalizedGrade.substring(6)}`; // "grade=6" -> "Grade6"
+        }
+      } else if (normalizedGrade.startsWith('grade') && normalizedGrade.length > 5) {
+        // Extract number from "grade6" -> "6", then create "Grade6"
+        const numberMatch = normalizedGrade.match(/grade(\d+)/);
+        if (numberMatch) {
+          normalizedGrade = `Grade${numberMatch[1]}`; // "grade6" -> "Grade6"
+        } else {
+          // Fallback: remove "grade" prefix
+          normalizedGrade = `Grade${normalizedGrade.substring(5)}`; // "grade6" -> "Grade6"
+        }
+      } else if (!normalizedGrade.startsWith('Grade') && !normalizedGrade.startsWith('grade')) {
+        // If it's just a number like "5", convert to "Grade5"
+        // Extract number if there are other characters
+        const numberMatch = normalizedGrade.match(/(\d+)/);
+        if (numberMatch) {
+          normalizedGrade = `Grade${numberMatch[1]}`;
+        } else {
+          normalizedGrade = `Grade${normalizedGrade}`;
+        }
+      }
+      // If it already starts with "Grade", keep it as is (but ensure it's "GradeX" not "Grade=X")
+      if (normalizedGrade.startsWith('Grade=')) {
+        const numberMatch = normalizedGrade.match(/Grade=(\d+)/);
+        if (numberMatch) {
+          normalizedGrade = `Grade${numberMatch[1]}`;
+        }
       }
     }
     

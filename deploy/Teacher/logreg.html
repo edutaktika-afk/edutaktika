@@ -516,12 +516,12 @@ label {
                                 <label for="reg_address_province">Province</label>
                                 <input type="text" name="reg_address_province" id="reg_address_province" value="Pampanga" readonly style="background:#eee;cursor:not-allowed;">
                             </div>
-                            <!-- Municipality and Barangay -->
+                            <!-- Barangay -->
                             <div class="form-row pair">
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
                                     <label for="reg_address_city">Municipality/City</label>
-                                    <!-- FIXED municipality to Apalit (readonly) -->
+                                    <!-- FIXED municipality to Apalit -->
                                     <input type="text" name="reg_address_city" id="reg_address_city" value="Apalit" readonly style="background:#eee;cursor:not-allowed;">
                                 </div>
                                 <div class="form-group">
@@ -529,9 +529,6 @@ label {
                                     <label for="reg_address_barangay">Barangay</label>
                                     <select name="reg_address_barangay" id="reg_address_barangay" required>
                                         <option value="">Select Barangay</option>
-                                        <option value="Balucuc">Balucuc</option>
-                                        <option value="Calantipe">Calantipe</option>
-                                        <option value="Cansinala">Cansinala</option>
                                         <option value="Colgante">Colgante</option>
                                         <option value="Sampaloc">Sampaloc</option>
                                         <option value="Sucad">Sucad</option>
@@ -573,18 +570,21 @@ label {
                                 <div class="form-group">
                                     <span class="input-icon"><i class="fas fa-users"></i></span>
                                     <label for="reg_section">Section</label>
-                                    <select name="reg_section" id="reg_section" required>
-                                        <option value="">Select Section</option>
-                                        <option value="Ubas">Ubas</option>
-                                        <option value="Durian">Durian</option>
-                                        <option value="Kasoy">Kasoy</option>
-                                        <option value="Melon">Melon</option>
-                                        <option value="Langka">Langka</option>
-                                        <option value="Fruit Salad">Fruit Salad</option>
-                                        <option value="Guyabano">Guyabano</option>
-                                        <option value="Santol">Santol</option>
+                                    <select name="reg_section" id="reg_section" required disabled>
+                                        <option value="">Select Grade First</option>
                                     </select>
                                 </div>
+                            </div>
+                            <div class="form-group">
+                                <span class="input-icon"><i class="fas fa-book"></i></span>
+                                <label for="reg_subject">Subject</label>
+                                <select name="reg_subject" id="reg_subject" required>
+                                    <option value="">Select Subject</option>
+                                    <option value="math">Mathematics</option>
+                                    <option value="english">English</option>
+                                    <option value="science">Science</option>
+                                </select>
+                                <span id="subject-warning" class="field-warning" style="display:none;">Please select a subject</span>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
@@ -810,7 +810,10 @@ document.getElementById('registerForm').onsubmit = async function(e) {
         email: email,
         
         grade: document.getElementById('reg_grade').value,     // (optional, for clarity)
+        gradelevel: document.getElementById('reg_grade').value, // Also store as gradelevel for compatibility
         section: document.getElementById('reg_section').value, // (optional, for clarity)
+        subject: document.getElementById('reg_subject').value, // Subject selection
+        subjects: [document.getElementById('reg_subject').value], // Store as array for compatibility
         school_year: document.getElementById('reg_school_year').value, // (optional)
         role: "teacher",
         approved: false,
@@ -885,16 +888,20 @@ document.getElementById('loginForm').onsubmit = async function(e) {
             return;
         }
 
-        // Teachers must be verified
-        if (!user.emailVerified) {
+        // Teacher flow with approval
+        const snapshot = await db.ref('teachers/' + uid).once('value');
+        const teacher = snapshot.val();
+
+        // Check if this is a bulk-created account (bypass email verification for Sampaloc)
+        const isBulkCreated = teacher && teacher.bulkCreated === true;
+        const isSampaloc = teacher && teacher.address && teacher.address.barangay === 'Sampaloc';
+
+        // Teachers must be verified (unless bulk-created or Sampaloc)
+        if (!user.emailVerified && !isBulkCreated && !isSampaloc) {
             showCustomModal('Please verify your email before logging in.');
             await auth.signOut();
             return;
         }
-
-        // Teacher flow with approval
-        const snapshot = await db.ref('teachers/' + uid).once('value');
-        const teacher = snapshot.val();
 
         if (!teacher || teacher.approved !== true) {
             showCustomModal('Your account is pending approval by the admin.');
@@ -978,16 +985,23 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             } catch (_) {}
 
-            // Teachers must be verified
-            if (!user.emailVerified) {
-                showCustomModal('Please verify your email before logging in.');
-                await firebase.auth().signOut();
-                return;
-            }
-
             // Teacher route
             const snapshot = await db.ref('teachers/' + uid).once('value');
             const teacher = snapshot.val();
+
+            // Check if this is a bulk-created account (bypass email verification for Sampaloc)
+            const isBulkCreated = teacher && teacher.bulkCreated === true;
+            const isSampaloc = teacher && teacher.address && teacher.address.barangay === 'Sampaloc';
+
+            // Teachers must be verified (unless bulk-created or Sampaloc)
+            if (!user.emailVerified && !isBulkCreated && !isSampaloc) {
+                // Only show alert if login tab is active (user is trying to log in)
+                if (document.getElementById('loginSection') && document.getElementById('loginSection').style.display !== "none") {
+                    showCustomModal('Please verify your email before logging in.');
+                }
+                await firebase.auth().signOut();
+                return;
+            }
 
             if (teacher && teacher.approved === true) {
                 window.location.href = "homepage.html";
@@ -1157,8 +1171,43 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Grade field
+    // Grade field - update sections based on grade
     const gradeField = document.getElementById('reg_grade');
+    const sectionField = document.getElementById('reg_section');
+
+    function updateSectionsForGrade(grade) {
+        // Clear existing options
+        sectionField.innerHTML = '<option value="">Select Section</option>';
+
+        if (grade === '5') {
+            // Grade 5 sections
+            const grade5Sections = ['Melon', 'Kasoy', 'Ubas', 'Durian'];
+            grade5Sections.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section;
+                option.textContent = section;
+                sectionField.appendChild(option);
+            });
+            // Enable the section field
+            sectionField.disabled = false;
+        } else if (grade === '6') {
+            // Grade 6 sections
+            const grade6Sections = ['Fruit Salad', 'Langka', 'Santol', 'Guyabano'];
+            grade6Sections.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section;
+                option.textContent = section;
+                sectionField.appendChild(option);
+            });
+            // Enable the section field
+            sectionField.disabled = false;
+        } else {
+            // No grade selected
+            sectionField.innerHTML = '<option value="">Select Grade First</option>';
+            sectionField.disabled = true;
+        }
+    }
+
     gradeField.addEventListener('change', () => {
         const warning = document.getElementById('grade-warning') || (() => {
             const span = document.createElement('span');
@@ -1170,10 +1219,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return span;
         })();
         validateField(gradeField, 'grade-warning');
+
+        // Update sections based on selected grade
+        updateSectionsForGrade(gradeField.value);
+
+        // Reset section selection
+        sectionField.value = '';
     });
     
     // Section field
-    const sectionField = document.getElementById('reg_section');
     sectionField.addEventListener('change', () => {
         const warning = document.getElementById('section-warning') || (() => {
             const span = document.createElement('span');
@@ -1215,6 +1269,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return span;
         })();
         validateField(schoolYearField, 'schoolyear-warning');
+    });
+    
+    // Subject field
+    const subjectField = document.getElementById('reg_subject');
+    subjectField.addEventListener('change', () => {
+        validateField(subjectField, 'subject-warning');
     });
 });
 

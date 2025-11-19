@@ -685,10 +685,14 @@
         </div>
         
         <div class="right-breadcrumb-btns">
+
+            <button id="showInfoBtn" style="background:var(--primary);color:#fff;padding:8px 18px;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;margin:12px 0 0 12px;margin-right: 320px;">
+                <i class="fa fa-info-circle" style="margin-right:6px;"></i> Tutorial
+            </button>
+
             <button id="save-btn"><i class="fa fa-save"></i> Save</button>
-            <button id="export-btn"><i class="fa fa-download"></i> Export</button>
-            <button id="import-btn"><i class="fa fa-upload"></i> Import</button>
-            <button id="present-btn"><i class="fa fa-play"></i> Present</button>
+
+
         </div>
         
         <div id="burger-dropdown">
@@ -2256,7 +2260,11 @@ function renderQuizTestsSidebar() {
                 {name: 'Word Search', url: '../Games/Quiz/game3.html'},
                 {name: 'Multiple Choice', url: '../Games/Quiz/game4.html'},
                 {name: 'Matching Pairs', url: '../Games/Quiz/game5.html'},
+                {name: 'Fill in the Blank', url: '../Games/Quiz/game6.html'},
+                {name: 'Short Answer', url: '../Games/Quiz/game7.html'},
+                {name: 'Graph Quiz', url: '../Games/Quiz/game8.html'},
                 {name: 'Memory Card Match', url: '../Games/Quiz/game9.html'},
+                {name: 'Sorting', url: '../Games/Quiz/game10.html'},
                 {name: 'True or False', url: '../Games/Quiz/trueorfals.html'}
             ].forEach(opt => {
                 const option = document.createElement('option');
@@ -2377,5 +2385,61 @@ const quizId = 'game7.html'; // Or your actual quiz ID
 loadQuizForStudent(quizId, gameIframe);
 </script>
 
+
+  </script>
+
+      <style>
+        #infoModal .modal-content ul {
+            padding-left: 1.2em;
+        }
+        .modal-content {
+            background-color:rgb(237, 201, 153);
+              max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+        }
+    </style>
+
+<!-- Instructions Modal -->
+<div class="modal" id="infoModal" style="display:none;position:fixed;z-index:10000;left:0;top:0;width:100vw;height:100vh;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);">
+    <div class="modal-content" style="max-width:920px;width:80vw;text-align:left;background:rgb(255, 255, 255);padding:32px 24px;border-radius:14px;box-shadow:0 4px 24px #0002;position:relative;">
+        <button class="close-btn" id="closeInfoBtn" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+<div style="font-size:1.3em;font-weight:700;margin-bottom:0.7em;text-align:center;">
+    How to Create a Quiz
+</div>
+<ul style="font-size:1em;line-height:1.7;padding-left:1.2em;">
+    <li>Click the <b>“Add Game”</b> button or select a quiz type from the sidebar.</li>
+    <li>Choose your preferred quiz format (e.g., Multiple Choice, Identification, Matching, etc.).</li>
+    <li>Fill in the questions, choices, and correct answers as prompted.</li>
+    <li>Use the canvas area to add instructions, images, or additional content for your quiz.</li>
+    <li>Click <b>“Save”</b> to save your quiz. You can edit or add more slides/questions as needed.</li>
+    <li>When finished, your quiz will be available for students in their subject page.</li>
+            <video controls autoplay loop muted style="width:90%;max-width:940px;height:60vh;border-radius:12px;box-shadow:0 2px 8px #0002;margin-top:0.5em;">
+                <source src="../images/Video/tutorial.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </ul>
+    </div>
+</div>
+    
+<script>
+// Place this at the end of your script section
+const showInfoBtn = document.getElementById('showInfoBtn');
+if (showInfoBtn) {
+    showInfoBtn.onclick = () => { infoModal.style.display = 'flex'; };
+}
+const infoModal = document.getElementById('infoModal');
+const closeInfoBtn = document.getElementById('closeInfoBtn');
+
+// Show modal at start
+window.addEventListener('DOMContentLoaded', () => {
+    infoModal.style.display = 'flex';
+});
+
+// Optional: close modal when clicking close or outside content
+closeInfoBtn.onclick = () => { infoModal.style.display = 'none'; };
+infoModal.onclick = e => { if (e.target === infoModal) infoModal.style.display = 'none'; };
+
+</script>
 </body>
 </html>

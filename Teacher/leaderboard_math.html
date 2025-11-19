@@ -158,14 +158,7 @@ nav ul li .dropdown-content a.active {
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="subject_math.html">Math</a></li>
-                            <li><a href="subject_english.html">English</a></li>
-                            <li><a href="subject_science.html">Science</a></li>
-                        </ul>
-                    </li>
+                    <li><a href="#" id="lessonNavBtn">Lesson</a></li>
                     <li><a href="studentlist.html">Student</a></li>
                     <li><a href="grading.html">Grading</a></li>
                     <li class="dropdown">
@@ -290,6 +283,35 @@ nav ul li .dropdown-content a.active {
             
 
     <script src="../assets/js/Teacher Side/header.js"></script>
+    
+    <script>
+    // Set Lesson button href based on teacher's selected subject
+    firebase.auth().onAuthStateChanged(async function(user) {
+        if (user) {
+            try {
+                const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
+                const teacher = teacherSnap.val();
+                if (teacher && teacher.subject) {
+                    const subject = teacher.subject.toLowerCase();
+                    const lessonBtn = document.getElementById('lessonNavBtn');
+                    if (lessonBtn) {
+                        // Map subject to page URL
+                        const subjectMap = {
+                            'math': 'subject_math.html',
+                            'english': 'subject_english.html',
+                            'science': 'subject_science.html'
+                        };
+                        const subjectUrl = subjectMap[subject] || 'subject_math.html';
+                        lessonBtn.href = subjectUrl;
+                        console.log(`📚 Lesson button set to: ${subjectUrl} (teacher subject: ${subject})`);
+                    }
+                }
+            } catch (error) {
+                console.error('Error setting lesson button:', error);
+            }
+        }
+    });
+    </script>
 
     <div class="leaderboard-container">
             <div class="leaderboard-title">🌟 Math Leaderboard - Grade 5 🌟</div>
@@ -317,7 +339,9 @@ nav ul li .dropdown-content a.active {
     </div>
     
     <script>
-        const firebaseConfig = {
+        // Firebase configuration - Only initialize if not already initialized
+        if (typeof firebase !== 'undefined' && (!firebase.apps || firebase.apps.length === 0)) {
+            const firebaseConfig = {
                 apiKey: "AIzaSyB5BbeLLvPX8l1c4Lq0f-CmIUml4hQOQlE",
                 authDomain: "edutaktika.firebaseapp.com",
                 databaseURL: "https://edutaktika-default-rtdb.firebaseio.com",
@@ -327,10 +351,25 @@ nav ul li .dropdown-content a.active {
                 appId: "1:676848575316:web:f78f8c0f83bf3d9dfb5ec1",
                 measurementId: "G-X3GT5TNN87"
             };
-            // Removed legacy v8 firebase-app.js & firebase-database.js to prevent duplicate global definition
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.database();
-            const auth = firebase.auth();
+            try {
+                firebase.initializeApp(firebaseConfig);
+            } catch (e) {
+                console.log('Firebase already initialized');
+            }
+        }
+        
+        // Use global db and auth if available, otherwise create them
+        // Don't redeclare if they already exist
+        if (typeof db === 'undefined') {
+            var db = window.db || (typeof firebase !== 'undefined' ? firebase.database() : null);
+        }
+        if (typeof auth === 'undefined') {
+            var auth = window.auth || (typeof firebase !== 'undefined' ? firebase.auth() : null);
+        }
+        
+        // Make them globally available
+        if (db) window.db = db;
+        if (auth) window.auth = auth;
        
 
         // 2. Fetch and display leaderboard (Math subject only - teacher's section)

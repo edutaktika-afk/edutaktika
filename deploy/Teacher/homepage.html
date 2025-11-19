@@ -1,23 +1,58 @@
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        firebase.auth().onAuthStateChanged(async function(user) {
-            if (!user) {
-                window.location.href = "logreg.html";
-                return;
-            }
-            const uid = user.uid;
-            const snap = await firebase.database().ref('teachers/' + uid).once('value');
-            const teacher = snap.val();
-            if (!teacher || teacher.role !== "teacher") {
-                document.getElementById('mainContent').style.display = "none";
-                alert("Access denied.");
-                await firebase.auth().signOut();
-                window.location.href = "logreg.html";
-            } else {
-                document.getElementById('mainContent').style.display = "block";
-            }
-        });
-    });
+    // Wait for Firebase to be initialized before using it
+    function checkAuthAndAccess() {
+        const authInstance = window.auth || (typeof auth !== 'undefined' ? auth : null);
+        if (!authInstance) {
+            // Wait a bit for Firebase to initialize
+            setTimeout(checkAuthAndAccess, 100);
+            return;
+        }
+        
+        // Execute immediately if DOM is ready, otherwise wait
+        function executeAuthCheck() {
+            authInstance.onAuthStateChanged(async function(user) {
+                if (!user) {
+                    window.location.href = "logreg.html";
+                    return;
+                }
+                const uid = user.uid;
+                const dbInstance = window.db || (typeof db !== 'undefined' ? db : null);
+                if (!dbInstance) {
+                    console.error('Database not available, retrying...');
+                    setTimeout(executeAuthCheck, 200);
+                    return;
+                }
+                try {
+                    const snap = await dbInstance.ref('teachers/' + uid).once('value');
+                    const teacher = snap.val();
+                    if (!teacher || teacher.role !== "teacher") {
+                        const mainContent = document.getElementById('mainContent');
+                        if (mainContent) mainContent.style.display = "none";
+                        alert("Access denied.");
+                        await authInstance.signOut();
+                        window.location.href = "logreg.html";
+                    } else {
+                        const mainContent = document.getElementById('mainContent');
+                        if (mainContent) mainContent.style.display = "block";
+                    }
+                } catch (error) {
+                    console.error('Error checking teacher access:', error);
+                    // Show content anyway if there's an error (graceful degradation)
+                    const mainContent = document.getElementById('mainContent');
+                    if (mainContent) mainContent.style.display = "block";
+                }
+            });
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener("DOMContentLoaded", executeAuthCheck);
+        } else {
+            executeAuthCheck();
+        }
+    }
+    
+    // Start checking when script loads
+    checkAuthAndAccess();
 </script>
     
 <!DOCTYPE html>
@@ -25,7 +60,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="../CSS/fonts.css">
 <!-- ...inside <head> -->
@@ -73,14 +108,7 @@
             <nav>
                 <ul>
                     <li><a href="homepage.html">Home</a></li>
-                    <li class="dropdown">
-                        <a href="#" class="dropbtn">Subject <i class="fa fa-caret-down"></i></a>
-                        <ul class="dropdown-content">
-                            <li><a href="subject_math.html">Math</a></li>
-                            <li><a href="subject_english.html">English</a></li>
-                            <li><a href="subject_science.html">Science</a></li>
-                        </ul>
-                        </li>
+                    <li><a href="#" id="lessonNavBtn">Lesson</a></li>
                     <li><a href="studentlist.html">Student</a></li>
                     <li><a href="grading.html">Grading</a></li>
                     <li class="dropdown">
@@ -99,7 +127,7 @@
                             </ul>
                         </li>
                     <li>
-                        <a href="#" id="profileBtn"><i class="fas fa-user-circle"></i> Profile</a>
+                        <a href="#" id="profileBtn">Profile</a>
                     </li>
                 </ul>
             </nav>
@@ -112,7 +140,7 @@
 <!-- Overlay for profile sidebar -->
 <div class="sidebar-overlay" id="profileSidebarOverlay"></div>
 
- <!-- Profile Sidebar (Dynamic with Firebase) -->
+ <!-- Profile Sidebar -->
 <div id="profileSidebar" class="profile-sidebar">
     <div class="sidebar-content">
         <button class="close-btn" id="closeSidebar">&times;</button>
@@ -193,7 +221,37 @@
         <script src="../assets/js/Teacher Side/profile.js"></script>
         
 
-    <script src="../assets/js/Teacher Side/header.js"></script>
+        <script src="../assets/js/Teacher Side/header.js"></script>
+        <script src="../assets/js/Teacher Side/homepageTutorial.js"></script>
+    
+    <script>
+    // Set Lesson button href based on teacher's selected subject
+    firebase.auth().onAuthStateChanged(async function(user) {
+        if (user) {
+            try {
+                const teacherSnap = await firebase.database().ref('teachers/' + user.uid).once('value');
+                const teacher = teacherSnap.val();
+                if (teacher && teacher.subject) {
+                    const subject = teacher.subject.toLowerCase();
+                    const lessonBtn = document.getElementById('lessonNavBtn');
+                    if (lessonBtn) {
+                        // Map subject to page URL
+                        const subjectMap = {
+                            'math': 'subject_math.html',
+                            'english': 'subject_english.html',
+                            'science': 'subject_science.html'
+                        };
+                        const subjectUrl = subjectMap[subject] || 'subject_math.html';
+                        lessonBtn.href = subjectUrl;
+                        console.log(`📚 Lesson button set to: ${subjectUrl} (teacher subject: ${subject})`);
+                    }
+                }
+            } catch (error) {
+                console.error('Error setting lesson button:', error);
+            }
+        }
+    });
+    </script>
 
     <!--<div class="imgs">
         <img src="dinosaur.png" alt="">
@@ -298,11 +356,11 @@
                 <canvas id="completionGraph" width="280" height="180"></canvas>
             </div>
             <div class="graph-card" style="background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(79,140,255,0.08);padding:28px 22px;text-align:center;box-shadow: 0 4px 24px var(--accent, #ff69b4, 0.13);">
-                <h3 style="color:#3f4d34;margin-bottom:10px;">Average Scores per Subject</h3>
+                <h3 style="color:#3f4d34;margin-bottom:10px;">Average Scores</h3>
                 <canvas id="subjectGraph" width="280" height="180"></canvas>
             </div>
             <div class="graph-card" style="background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(79,140,255,0.08);padding:28px 22px;text-align:center;box-shadow: 0 4px 24px var(--accent, #ff69b4, 0.13);">
-                <h3 style="color:#3f4d34;margin-bottom:10px;">Monthly Activity</h3>
+                <h3 style="color:#3f4d34;margin-bottom:10px;">Grade Distribution</h3>
                 <canvas id="monthlyGraph" width="280" height="180"></canvas>
             </div>
         </div>
@@ -434,7 +492,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-   <script src="../assets/js/Teacher SIde/graph.js"></script>
+   <script src="../assets/js/Teacher Side/graph.js"></script>
 
 <footer>
   <div class="footer-wrap">
@@ -569,6 +627,18 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 
 <script src="../assets/js/navbar.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const navLinks = document.querySelectorAll("nav ul li a");
+    const current = window.location.pathname.split('/').pop();
+    navLinks.forEach(link => {
+        if (link.getAttribute("href") === current) {
+            link.classList.add("active");
+        }
+    });
+});
+</script>
 </div>
 </body>
 
