@@ -388,16 +388,17 @@
                     const mainContent = document.getElementById('mainContent');
                     if (mainContent) mainContent.style.display = "block";
                 
-                // Store teacher's grade level in sessionStorage for Editor
-                if (teacher && teacher.grade) {
-                    const grade = teacher.grade.toString();
-                    const gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
-                    sessionStorage.setItem('supabase-design-grade', gradeLevel);
-                    console.log(`📚 Stored teacher grade level in sessionStorage: ${gradeLevel}`);
+                    // Store teacher's grade level in sessionStorage for Editor
+                    if (teacher && teacher.grade) {
+                        const grade = teacher.grade.toString();
+                        const gradeLevel = grade.startsWith('grade') ? grade : `grade${grade}`;
+                        sessionStorage.setItem('supabase-design-grade', gradeLevel);
+                        console.log(`📚 Stored teacher grade level in sessionStorage: ${gradeLevel}`);
+                    }
                 }
             }
         });
-    });
+    }
     </script>
 
     <div class="container">
@@ -1061,7 +1062,11 @@ function closeCreateLessonModal() {
 
 // Set the subject page variable based on the current page
 const subjectPage = "subject_science";
-document.getElementById('createLessonForm').onsubmit = async function(e) {
+
+// Only attach form handler if the form exists (it may not exist if using direct editor creation)
+const createLessonForm = document.getElementById('createLessonForm');
+if (createLessonForm) {
+    createLessonForm.onsubmit = async function(e) {
     e.preventDefault();
     const quarter = document.getElementById('lesson_quarter').value;
     const title = document.getElementById('lesson_title').value.trim();
@@ -1119,7 +1124,8 @@ document.getElementById('createLessonForm').onsubmit = async function(e) {
             });
         }
     });
-};
+    };
+}
 </script>
 
 <script>
@@ -2310,10 +2316,17 @@ async function loadQuizManagementContent() {
 }
 
 // Open modal and load content on button click
-document.getElementById('someButtonId').onclick = function() {
-    openQuizManagementModal();
-    loadQuizManagementContent();
-};
+// Note: This button doesn't exist in the current UI - removed to prevent errors
+// If you want to add quiz management, add a button with id="quizManagementBtn" and uncomment:
+/*
+const quizManagementBtn = document.getElementById('quizManagementBtn');
+if (quizManagementBtn) {
+    quizManagementBtn.onclick = function() {
+        openQuizManagementModal();
+        loadQuizManagementContent();
+    };
+}
+*/
 </script>
 
 
